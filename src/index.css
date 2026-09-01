@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Token system ─────────────────────────────────────────────────────────── */
+:root {
+  /* Light mode: warm-white ground, not the generic cream */
+  --bg:           #FAFAF9;
+  --bg-card:      #F2F0ED;
+  --bg-card-2:    #E8E5E0;
+  --border:       rgba(0, 0, 0, 0.07);
+  --border-hover: rgba(0, 0, 0, 0.18);
+  --text:         #14141C;
+  --muted:        #6B6B80;
+  --faint:        #B0ADBA;
+  --accent:       #5548D9;
+  --accent-dim:   rgba(85, 72, 217, 0.1);
+
+  /* Hero is always cinematic black regardless of mode */
+  --hero-bg:      #000000;
+
+  --radius:       7px;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* Dark via OS */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:           #000000;
+    --bg-card:      #0D0D0F;
+    --bg-card-2:    #111115;
+    --border:       rgba(255, 255, 255, 0.07);
+    --border-hover: rgba(255, 255, 255, 0.18);
+    --text:         #FFFFFF;
+    --muted:        #6B6B80;
+    --faint:        #2A2A38;
+    --accent:       #7C6AF7;
+    --accent-dim:   rgba(124, 106, 247, 0.12);
+  }
+}
+
+/* Dark via explicit toggle */
+:root[data-theme="dark"] {
+  --bg:           #000000;
+  --bg-card:      #0D0D0F;
+  --bg-card-2:    #111115;
+  --border:       rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --text:         #FFFFFF;
+  --muted:        #6B6B80;
+  --faint:        #2A2A38;
+  --accent:       #7C6AF7;
+  --accent-dim:   rgba(124, 106, 247, 0.12);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+a { color: inherit; text-decoration: none; }
+img, canvas { display: block; max-width: 100%; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 4px; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* Reduced motion: disable reveals and slow marquee */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  [style*="animation"] { animation-duration: 0.01ms !important; }
+}
