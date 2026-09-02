@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-export default function Navbar({ onLoginClick }) {
+export default function Navbar({ onLoginClick, onStartLearning }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function Navbar({ onLoginClick }) {
         </button>
         <button
           className="btn btn-primary"
-          onClick={onLoginClick}
+          onClick={onStartLearning}
           aria-label="Start learning for free"
         >
           Start Free

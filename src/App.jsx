@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import './App.css'
 
 import Navbar       from './components/Navbar'
@@ -7,18 +7,33 @@ import ToolsStrip   from './components/ToolsStrip'
 import Modules      from './components/Modules'
 import Gamification from './components/Gamification'
 import LoginModal   from './components/LoginModal'
+import LearnPage    from './pages/LearnPage'
 
 export default function App() {
-  const [loginOpen, setLoginOpen] = useState(false)
+  const [loginOpen,    setLoginOpen]    = useState(false)
+  const [currentPage,  setCurrentPage]  = useState('landing')
 
-  /* Sections are always visible; hero entrance is CSS @keyframes */
+  if (currentPage === 'learn') {
+    return (
+      <>
+        <LearnPage
+          onGoHome={() => setCurrentPage('landing')}
+          onLoginClick={() => setLoginOpen(true)}
+        />
+        {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
+      </>
+    )
+  }
 
   return (
     <div className="app">
-      <Navbar onLoginClick={() => setLoginOpen(true)} />
+      <Navbar
+        onLoginClick={() => setLoginOpen(true)}
+        onStartLearning={() => setCurrentPage('learn')}
+      />
 
       <main>
-        <Hero onStartLearning={() => setLoginOpen(true)} />
+        <Hero onStartLearning={() => setCurrentPage('learn')} />
         <ToolsStrip />
         <Modules />
         <Gamification />
