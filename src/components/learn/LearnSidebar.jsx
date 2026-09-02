@@ -81,7 +81,7 @@ export default function LearnSidebar({ active, onChange, onGoHome }) {
       <button className="ls-logo" onClick={onGoHome} aria-label="Return to LunX home">
         <span className="ls-logo-mark" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 2h2.5v8H10v2H2V2Z" fill="#fff"/>
+            <path d="M2 2h2.5v8H10v2H2V2Z" fill="#000"/>
           </svg>
         </span>
         LunX
