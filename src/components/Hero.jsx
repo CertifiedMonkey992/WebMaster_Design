@@ -152,19 +152,24 @@ export default function Hero({ onStartLearning }) {
           <NeuralNet />
         </div>
 
-        {/* Right column: benefit rail */}
+        {/* Right column: curriculum path */}
         <div className="hero-right">
-          <p className="hero-right-eyebrow">Who it's for</p>
-          <div className="hero-right-rail">
+          <p className="hero-right-eyebrow">Curriculum</p>
+          <div className="hero-path">
             {[
-              'Beginners with zero AI background',
-              'Professionals navigating an AI-driven world',
-              'Anyone using AI tools in their daily work',
-              'Future leaders who want to shape technology',
-            ].map((item, i) => (
-              <span className="hero-right-item" key={i}>{item}</span>
+              ['01', 'AI Foundations'],
+              ['02', 'Machine Learning'],
+              ['03', 'Neural Networks'],
+              ['04', 'Practical AI Tools'],
+              ['05', 'AI Ethics'],
+            ].map(([num, label]) => (
+              <div className="hero-path-item" key={num}>
+                <span className="hero-path-num">{num}</span>
+                <span className="hero-path-label">{label}</span>
+              </div>
             ))}
           </div>
+          <p className="hero-path-meta">22 lessons · Self-paced · Free to start</p>
         </div>
       </section>
     </>

@@ -10,23 +10,23 @@ export default function Gamification() {
 
         {/* Left: copy */}
         <div className="reveal">
-          <span className="section-eyebrow">Gamification</span>
+          <span className="section-eyebrow">Your Progress</span>
           <h2 className="gamif-heading" id="gamif-heading">
-            Learn, earn,<br />and level up<br />in real time.
+            Every quiz,<br />every dilemma,<br />every lesson — counted.
           </h2>
           <p className="gamif-body">
-            Every lesson completed, every quiz aced, and every ethical
-            dilemma you work through earns XP and unlocks badges.
-            Progress feels visible because it is.
+            XP stacks lesson by lesson. Badges mark real milestones.
+            Streaks hold you accountable. Your dashboard doesn't soften
+            where you've been or what's still left to do.
           </p>
 
           <ul className="feature-list">
             {[
-              'XP Points & tiered level system',
-              'Achievement badges for every milestone',
+              'Tiered XP — level up from Curious to Architect',
+              'Badges tied to real content, not just completion',
               'Daily learning streaks',
-              'Module completion leaderboards',
-              'Personalized progress dashboard',
+              'Weekly module leaderboards',
+              'Dashboard that shows gaps, not just wins',
             ].map((f, i) => (
               <li className="feature-item" key={i}>
                 <span className="feature-dot" aria-hidden="true" />
@@ -36,7 +36,7 @@ export default function Gamification() {
           </ul>
 
           <a href="#" className="btn btn-outline section-cta" style={{ marginTop: '2rem' }}>
-            See Your Dashboard →
+            Open Dashboard →
           </a>
         </div>
 

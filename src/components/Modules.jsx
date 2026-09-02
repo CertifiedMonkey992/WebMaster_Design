@@ -129,7 +129,7 @@ const MODULES = [
   {
     id: 'fundamentals',
     eyebrow: 'Module 01 — Fundamentals',
-    heading: 'Build a foundation that actually sticks.',
+    heading: 'Understand AI from first principles.',
     stat: <><em>30+ lessons</em> covering AI from absolute zero to confident understanding.</>,
     body: (
       <>
@@ -149,7 +149,7 @@ const MODULES = [
   {
     id: 'tools',
     eyebrow: 'Module 02 — Practical Tools',
-    heading: "Master the AI tools everyone's actually using.",
+    heading: 'Get hands-on with the tools shaping every industry.',
     stat: <><em>6 tools, hands-on</em> — prompt engineering to image generation.</>,
     body: (
       <>
@@ -169,7 +169,7 @@ const MODULES = [
   {
     id: 'ethics',
     eyebrow: 'Module 03 — AI Ethics',
-    heading: 'Navigate AI responsibly in every context.',
+    heading: 'Develop your ethical framework — before you need one.',
     stat: <><em>Real dilemmas,</em> no easy answers — think, don't just comply.</>,
     body: (
       <>

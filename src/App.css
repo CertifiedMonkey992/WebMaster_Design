@@ -262,26 +262,53 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.28);
-  margin-bottom: 0.875rem;
+  color: rgba(255, 255, 255, 0.22);
+  margin-bottom: 0.75rem;
 }
 
-.hero-right-rail {
+/* Curriculum path — replaces generic "Who it's for" bullet list */
+.hero-path {
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.hero-right-item {
-  display: block;
-  padding: 0.6rem 0;
+.hero-path-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.42);
   cursor: default;
   user-select: none;
+  transition: all 0.18s;
+}
+.hero-path-item:hover .hero-path-label { color: rgba(255, 255, 255, 0.88); }
+.hero-path-item:hover .hero-path-num   { color: rgba(255, 255, 255, 0.35); }
+
+.hero-path-num {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.16);
+  flex-shrink: 0;
   transition: color 0.18s;
 }
-.hero-right-item:hover { color: rgba(255, 255, 255, 0.88); }
+
+.hero-path-label {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.18s;
+}
+
+.hero-path-meta {
+  margin-top: 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.18);
+  letter-spacing: 0.01em;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    TOOLS STRIP

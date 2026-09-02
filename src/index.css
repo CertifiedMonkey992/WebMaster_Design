@@ -20,9 +20,44 @@
   --hero-bg:      #000000;
 
   --radius:       7px;
+  --radius-sm:    4px;
+  --radius-lg:    12px;
+  --radius-xl:    16px;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body:    'DM Sans', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* Type scale */
+  --text-xs:   0.6875rem;   /* 11px — micro labels */
+  --text-sm:   0.8125rem;   /* 13px — captions, metadata */
+  --text-base: 0.9375rem;   /* 15px — body */
+  --text-md:   1.0625rem;   /* 17px — lead text */
+  --text-lg:   1.25rem;     /* 20px — section intros */
+  --text-xl:   1.625rem;    /* 26px — sub-headings */
+  --text-2xl:  2.25rem;     /* 36px — section headings */
+  --text-3xl:  3.25rem;     /* 52px — page headings */
+
+  /* Spacing scale (8pt grid) */
+  --sp-1:  0.25rem;   /* 4px */
+  --sp-2:  0.5rem;    /* 8px */
+  --sp-3:  0.75rem;   /* 12px */
+  --sp-4:  1rem;      /* 16px */
+  --sp-5:  1.25rem;   /* 20px */
+  --sp-6:  1.5rem;    /* 24px */
+  --sp-8:  2rem;      /* 32px */
+  --sp-10: 2.5rem;    /* 40px */
+  --sp-12: 3rem;      /* 48px */
+  --sp-16: 4rem;      /* 64px */
+  --sp-20: 5rem;      /* 80px */
+  --sp-24: 6rem;      /* 96px */
+
+  /* Z-index scale */
+  --z-base:    1;
+  --z-above:   10;
+  --z-tooltip: 60;
+  --z-nav:     100;
+  --z-modal:   200;
+  --z-overlay: 10000;
 }
 
 /* Dark via OS */

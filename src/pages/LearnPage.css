@@ -124,6 +124,7 @@
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 /* ── Module list ──────────────────────────────────────────── */
@@ -267,6 +268,7 @@
   flex-direction: column;
   align-items: center;
   padding: 1.5rem 0 0.5rem;
+  overflow: visible;
 }
 
 .sc-path-banner {
@@ -288,12 +290,14 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  overflow: visible;
 }
 
 .sc-node-track {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: visible;
 }
 
 .sc-connector {
@@ -391,7 +395,7 @@
   padding: 1rem 1.125rem;
   width: 230px;
   text-align: center;
-  z-index: 30;
+  z-index: 9999;
   box-shadow: 0 8px 40px rgba(0,0,0,0.8);
   animation: popupIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -615,7 +619,7 @@
 
 .qw-fill {
   height: 100%;
-  background: #fff;
+  background: #7C6AF7;
   border-radius: 99px;
   transition: width 0.5s ease;
 }

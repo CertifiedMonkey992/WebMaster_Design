@@ -94,7 +94,7 @@
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
-.lm-tab--active { color: #1cb0f6; border-bottom-color: #1cb0f6; }
+.lm-tab--active { color: #7C6AF7; border-bottom-color: #7C6AF7; }
 .lm-tab--locked { opacity: 0.35; cursor: not-allowed; }
 .lm-tab-done { color: #58cc02; }
 
@@ -112,7 +112,7 @@
   background: #e5e5e5;
   transition: all 0.2s;
 }
-.lm-dot--active { background: #1cb0f6; width: 24px; border-radius: 4px; }
+.lm-dot--active { background: #7C6AF7; width: 24px; border-radius: 4px; }
 .lm-dot--done   { background: #58cc02; }
 
 /* ── Scrollable body ─────────────────────────────────────── */
@@ -178,12 +178,12 @@
   justify-content: center;
   min-width: 90px;
   padding: 0.15rem 0.75rem;
-  border-bottom: 3px solid #1cb0f6;
+  border-bottom: 3px solid #7C6AF7;
   border-top: none; border-left: none; border-right: none;
   background: transparent;
   font-size: 1rem;
   font-weight: 700;
-  color: #1cb0f6;
+  color: #7C6AF7;
   cursor: pointer;
   border-radius: 4px 4px 0 0;
   white-space: nowrap;
@@ -195,7 +195,7 @@
   background: rgba(0,0,0,0.03);
   min-width: 110px;
 }
-.lm-blank--filled:hover { background: rgba(28,176,246,0.08); }
+.lm-blank--filled:hover { background: rgba(124,106,247,0.08); }
 
 /* ── Chips ───────────────────────────────────────────────── */
 .lm-chips-row {
@@ -223,8 +223,8 @@
   box-shadow: 0 3px 0 #c5c5c5;
 }
 .lm-chip:hover:not(.lm-chip--ghost) {
-  border-color: #1cb0f6;
-  box-shadow: 0 3px 0 #8ed0f5;
+  border-color: #7C6AF7;
+  box-shadow: 0 3px 0 rgba(124,106,247,0.45);
   transform: translateY(-2px);
 }
 .lm-chip:active:not(.lm-chip--ghost) { transform: translateY(1px); box-shadow: none; }
@@ -248,7 +248,7 @@
   text-align: center;
   transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
 }
-.lm-binary-btn:hover { border-color: #1cb0f6; box-shadow: 0 4px 0 #8ed0f5; transform: translateY(-2px); }
+.lm-binary-btn:hover { border-color: #7C6AF7; box-shadow: 0 4px 0 rgba(124,106,247,0.45); transform: translateY(-2px); }
 
 /* ── MCQ ─────────────────────────────────────────────────── */
 .lm-mcq { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; }
@@ -282,10 +282,10 @@
   line-height: 1.45;
   transition: border-color 0.15s, background 0.15s;
 }
-.lm-mcq-btn:hover { border-color: #1cb0f6; }
+.lm-mcq-btn:hover { border-color: #7C6AF7; }
 
 /* ── Option states ───────────────────────────────────────── */
-.lm-opt--selected { border-color: #1cb0f6 !important; background: rgba(28,176,246,0.07) !important; box-shadow: 0 2px 0 #8ed0f5 !important; }
+.lm-opt--selected { border-color: #7C6AF7 !important; background: rgba(124,106,247,0.07) !important; box-shadow: 0 2px 0 rgba(124,106,247,0.45) !important; }
 .lm-opt--correct  { border-color: #58cc02 !important; background: rgba(88,204,2,0.08) !important; color: #3a8800 !important; box-shadow: 0 2px 0 #3a8800 !important; }
 .lm-opt--wrong    { border-color: #ff4b4b !important; background: rgba(255,75,75,0.08) !important; color: #cc0000 !important; box-shadow: 0 2px 0 #aa0000 !important; }
 
@@ -323,19 +323,19 @@
   padding: 0.875rem 2.5rem;
   border-radius: 14px;
   border: none;
-  background: #1cb0f6;
+  background: #7C6AF7;
   color: #fff;
   font-size: 0.95rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   cursor: pointer;
-  box-shadow: 0 4px 0 #0a8fc4;
+  box-shadow: 0 4px 0 #4a3db0;
   transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
 }
 .lm-btn-check:disabled { background: #e5e5e5; color: #afafaf; box-shadow: 0 4px 0 #c5c5c5; cursor: not-allowed; }
-.lm-btn-check:not(:disabled):hover { background: #18a0de; transform: translateY(-2px); }
-.lm-btn-check:not(:disabled):active { transform: translateY(2px); box-shadow: 0 2px 0 #0a8fc4; }
+.lm-btn-check:not(:disabled):hover { background: #6b59e8; transform: translateY(-2px); }
+.lm-btn-check:not(:disabled):active { transform: translateY(2px); box-shadow: 0 2px 0 #4a3db0; }
 
 .lm-btn-continue {
   padding: 0.875rem 2.5rem;
@@ -363,7 +363,7 @@
   padding: 2rem;
   text-align: center;
   position: relative;
-  background: linear-gradient(160deg, #f0f8ff 0%, #fff 60%);
+  background: linear-gradient(160deg, #f3f1ff 0%, #fff 60%);
 }
 .lm-welcome-emoji { font-size: 5rem; margin-bottom: 1rem; animation: bounceIn 0.55s ease; }
 @keyframes bounceIn {
