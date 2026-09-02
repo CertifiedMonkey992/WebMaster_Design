@@ -1,5 +1,5 @@
 /* Lesson node — a single step on the learning path */
-export default function LessonNode({ lesson, offset, isPopupOpen, onTogglePopup }) {
+export default function LessonNode({ lesson, offset, isPopupOpen, onTogglePopup, onStartLesson }) {
   const handleClick = () => {
     if (lesson.status === 'locked') return
     onTogglePopup()
@@ -18,7 +18,7 @@ export default function LessonNode({ lesson, offset, isPopupOpen, onTogglePopup 
   return (
     <div
       className="lesson-node-wrapper"
-      style={{ transform: `translateX(${offset}px)` }}
+      style={{ transform: `translateX(${offset}px)`, position: 'relative', zIndex: isPopupOpen ? 200 : 1 }}
     >
       <div
         className={`lesson-node ln-${lesson.status}`}
@@ -39,7 +39,11 @@ export default function LessonNode({ lesson, offset, isPopupOpen, onTogglePopup 
           <div className="ln-popup-desc">{lesson.desc}</div>
           <button
             className="ln-popup-btn"
-            onClick={(e) => { e.stopPropagation(); onTogglePopup() }}
+            onClick={(e) => {
+              e.stopPropagation()
+              onTogglePopup()
+              if (onStartLesson) onStartLesson(lesson.id)
+            }}
           >
             Start Lesson →
           </button>

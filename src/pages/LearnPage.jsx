@@ -2,6 +2,7 @@ import { useState } from 'react'
 import LearnSidebar from '../components/learn/LearnSidebar'
 import ModuleList   from '../components/learn/ModuleList'
 import RightSidebar from '../components/learn/RightSidebar'
+import LessonModal  from '../components/learn/LessonModal'
 import './LearnPage.css'
 
 const PLACEHOLDER_VIEWS = {
@@ -27,6 +28,7 @@ function PlaceholderView({ viewId }) {
 
 export default function LearnPage({ onGoHome, onLoginClick }) {
   const [activeNav, setActiveNav] = useState('learn')
+  const [activeLessonId, setActiveLessonId] = useState(null)
 
   return (
     <div className="learn-app">
@@ -34,12 +36,19 @@ export default function LearnPage({ onGoHome, onLoginClick }) {
 
       <main className="learn-main" id="learn-content">
         {activeNav === 'learn'
-          ? <ModuleList />
+          ? <ModuleList onStartLesson={setActiveLessonId} />
           : <PlaceholderView viewId={activeNav} />
         }
       </main>
 
       <RightSidebar onSignup={onLoginClick} />
+
+      {activeLessonId && (
+        <LessonModal
+          lessonId={activeLessonId}
+          onClose={() => setActiveLessonId(null)}
+        />
+      )}
     </div>
   )
 }

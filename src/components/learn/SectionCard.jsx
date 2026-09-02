@@ -4,7 +4,7 @@ import LessonNode from './LessonNode'
 /* Zigzag offsets — cycle through these per lesson index */
 const OFFSETS = [0, 70, 100, 70, 0, -70, -100, -70]
 
-export default function SectionCard({ section, sectionNumber }) {
+export default function SectionCard({ section, sectionNumber, onStartLesson }) {
   const [activeLesson, setActiveLesson] = useState(null)
   const pathRef = useRef(null)
 
@@ -68,6 +68,7 @@ export default function SectionCard({ section, sectionNumber }) {
                   offset={OFFSETS[i % OFFSETS.length]}
                   isPopupOpen={activeLesson === lesson.id}
                   onTogglePopup={() => toggle(lesson.id)}
+                  onStartLesson={onStartLesson}
                 />
               </div>
             ))}
