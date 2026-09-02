@@ -4,20 +4,24 @@
 
 /* ── Token system ─────────────────────────────────────────────────────────── */
 :root {
-  /* Light mode: warm-white ground, not the generic cream */
-  --bg:           #FAFAF9;
-  --bg-card:      #F2F0ED;
-  --bg-card-2:    #E8E5E0;
-  --border:       rgba(0, 0, 0, 0.07);
-  --border-hover: rgba(0, 0, 0, 0.18);
-  --text:         #14141C;
-  --muted:        #6B6B80;
-  --faint:        #B0ADBA;
-  --accent:       #5548D9;
-  --accent-dim:   rgba(85, 72, 217, 0.1);
+  /* Light mode: clean cool-neutral */
+  --bg:           #F8FAFC;
+  --bg-card:      #FFFFFF;
+  --bg-card-2:    #F1F5F9;
+  --border:       #E2E8F0;
+  --border-hover: #CBD5E1;
+  --text:         #0F172A;
+  --muted:        #64748B;
+  --faint:        #94A3B8;
+  --accent:       #4F46E5;
+  --accent-dim:   rgba(79, 70, 229, 0.1);
+  --cyan:         #06B6D4;
+  --success:      #22C55E;
+  --warning:      #F59E0B;
+  --error:        #EF4444;
 
-  /* Hero is always cinematic black regardless of mode */
-  --hero-bg:      #000000;
+  /* Hero always dark navy regardless of mode */
+  --hero-bg:      #0F172A;
 
   --radius:       7px;
   --radius-sm:    4px;
@@ -63,31 +67,31 @@
 /* Dark via OS */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:           #000000;
-    --bg-card:      #0D0D0F;
-    --bg-card-2:    #111115;
+    --bg:           #0F172A;
+    --bg-card:      #1E293B;
+    --bg-card-2:    #334155;
     --border:       rgba(255, 255, 255, 0.07);
     --border-hover: rgba(255, 255, 255, 0.18);
-    --text:         #FFFFFF;
-    --muted:        #6B6B80;
-    --faint:        #2A2A38;
-    --accent:       #7C6AF7;
-    --accent-dim:   rgba(124, 106, 247, 0.12);
+    --text:         #F8FAFC;
+    --muted:        #94A3B8;
+    --faint:        #334155;
+    --accent:       #6366F1;
+    --accent-dim:   rgba(99, 102, 241, 0.15);
   }
 }
 
 /* Dark via explicit toggle */
 :root[data-theme="dark"] {
-  --bg:           #000000;
-  --bg-card:      #0D0D0F;
-  --bg-card-2:    #111115;
+  --bg:           #0F172A;
+  --bg-card:      #1E293B;
+  --bg-card-2:    #334155;
   --border:       rgba(255, 255, 255, 0.07);
   --border-hover: rgba(255, 255, 255, 0.18);
-  --text:         #FFFFFF;
-  --muted:        #6B6B80;
-  --faint:        #2A2A38;
-  --accent:       #7C6AF7;
-  --accent-dim:   rgba(124, 106, 247, 0.12);
+  --text:         #F8FAFC;
+  --muted:        #94A3B8;
+  --faint:        #334155;
+  --accent:       #6366F1;
+  --accent-dim:   rgba(99, 102, 241, 0.15);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */

@@ -41,8 +41,8 @@ function NeuralNet() {
         </filter>
         {/* Background radial gradient */}
         <radialGradient id="bgPurple" cx="50%" cy="55%" r="50%">
-          <stop offset="0%" stopColor="#7C6AF7" stopOpacity="0.13"/>
-          <stop offset="100%" stopColor="#7C6AF7" stopOpacity="0"/>
+          <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.13"/>
+          <stop offset="100%" stopColor="#4F46E5" stopOpacity="0"/>
         </radialGradient>
         {/* Paths for animateMotion — defined once in defs */}
         {NN_EDGES.map(([a, b], i) => (
@@ -74,13 +74,13 @@ function NeuralNet() {
       {NN_EDGES.map((_, i) => (
         <g key={i}>
           {/* Glow halo */}
-          <circle r="5" fill="rgba(124,106,247,0.55)" filter="url(#sigGlow)">
+          <circle r="5" fill="rgba(79,70,229,0.55)" filter="url(#sigGlow)">
             <animateMotion dur={`${DURATIONS[i]}s`} repeatCount="indefinite" begin="0s">
               <mpath href={`#ep${i}`}/>
             </animateMotion>
           </circle>
           {/* Core dot */}
-          <circle r="2" fill="#C4B8FF">
+          <circle r="2" fill="#A5B4FC">
             <animateMotion dur={`${DURATIONS[i]}s`} repeatCount="indefinite" begin="0s">
               <mpath href={`#ep${i}`}/>
             </animateMotion>

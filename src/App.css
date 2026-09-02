@@ -164,8 +164,8 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(124, 106, 247, 0.18);
-  color: #9D8DF7;
+  background: rgba(79, 70, 229, 0.18);
+  color: #818CF8;
   padding: 0.18rem 0.55rem;
   border-radius: 100px;
   flex-shrink: 0;
@@ -474,7 +474,7 @@
 
 /* ── Browser mockups (always dark — simulating app screenshots) ──────────── */
 .mock-browser {
-  background: #0C0C0E;
+  background: #0F172A;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   overflow: hidden;
@@ -482,7 +482,7 @@
 }
 
 .mock-chrome {
-  background: #141418;
+  background: #1E293B;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 0.625rem 0.875rem;
   display: flex;
@@ -534,12 +534,12 @@
   gap: 0.375rem;
 }
 .mock-side-item.active {
-  background: rgba(124,106,247,0.12);
-  border: 1px solid rgba(124,106,247,0.2);
+  background: rgba(79,70,229,0.12);
+  border: 1px solid rgba(79,70,229,0.2);
 }
 
 .mock-side-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.1); flex-shrink: 0; }
-.mock-side-item.active .mock-side-dot { background: #7C6AF7; }
+.mock-side-item.active .mock-side-dot { background: #4F46E5; }
 .mock-side-bar { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); flex: 1; }
 
 .mock-content-col { display: flex; flex-direction: column; gap: 0.45rem; }
@@ -551,8 +551,8 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  background: rgba(124,106,247,0.12);
-  color: #9D8DF7;
+  background: rgba(79,70,229,0.12);
+  color: #818CF8;
   padding: 0.18rem 0.5rem;
   border-radius: 4px;
   margin-bottom: 0.25rem;
@@ -576,7 +576,7 @@
 .mock-prog-fill {
   height: 100%;
   width: 28%;
-  background: linear-gradient(to right, #7C6AF7, #818cf8);
+  background: linear-gradient(to right, #4F46E5, #6366F1);
   border-radius: 3px;
 }
 
@@ -598,8 +598,8 @@
   gap: 0.35rem;
 }
 .mock-tool-card.hl {
-  border-color: rgba(124,106,247,0.28);
-  background: rgba(124,106,247,0.06);
+  border-color: rgba(79,70,229,0.28);
+  background: rgba(79,70,229,0.06);
 }
 
 .mock-tool-icon { width: 24px; height: 24px; background: rgba(255,255,255,0.07); border-radius: 5px; margin-bottom: 0.25rem; }
@@ -680,7 +680,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: 228px;
-  background: #111116;
+  background: #1E293B;
   border: 1px solid color-mix(in srgb, var(--accent) 22%, rgba(255,255,255,0.09));
   border-radius: 9px;
   padding: 0.7rem 0.875rem;
@@ -761,7 +761,7 @@
 
 /* Achievement card — always dark, independent of page theme */
 .ach-card {
-  background: #0C0C0E;
+  background: #0F172A;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
   padding: 1.75rem;
@@ -780,14 +780,14 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  background: rgba(124,106,247,0.14);
-  border: 1px solid rgba(124,106,247,0.24);
+  background: rgba(79,70,229,0.14);
+  border: 1px solid rgba(79,70,229,0.24);
   padding: 0.28rem 0.7rem;
   border-radius: 100px;
   font-family: var(--font-display);
   font-size: 0.75rem;
   font-weight: 700;
-  color: #9D8DF7;
+  color: #818CF8;
 }
 
 .ach-level-tag {
@@ -819,7 +819,7 @@
 .ach-xp-fill {
   height: 100%;
   width: 62%;
-  background: linear-gradient(to right, #7C6AF7, #818cf8);
+  background: linear-gradient(to right, #4F46E5, #6366F1);
   border-radius: 100px;
 }
 
@@ -860,8 +860,8 @@
 }
 
 .ach-badge.on {
-  background: rgba(124,106,247,0.1);
-  border: 1px solid rgba(124,106,247,0.2);
+  background: rgba(79,70,229,0.1);
+  border: 1px solid rgba(79,70,229,0.2);
 }
 .ach-badge.on:hover { transform: scale(1.1); }
 
@@ -932,7 +932,7 @@
 @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
 
 .modal-panel {
-  background: #0F0F11;
+  background: #0F172A;
   border: 1px solid rgba(255,255,255,0.09);
   border-radius: 16px;
   padding: 2.25rem;
@@ -1030,8 +1030,8 @@
 }
 .form-input::placeholder { color: rgba(255,255,255,0.22); }
 .form-input:focus {
-  border-color: rgba(124,106,247,0.55);
-  background: rgba(124,106,247,0.04);
+  border-color: rgba(79,70,229,0.55);
+  background: rgba(79,70,229,0.04);
 }
 
 .form-extras {
