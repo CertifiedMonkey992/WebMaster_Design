@@ -3,7 +3,8 @@ import LessonNode from './LessonNode'
 
 const NODE_SIZE = 72
 const STEP_Y = 120
-const AMPLITUDE = 120
+const AMPLITUDE = 100
+const PATTERN = [0, 0.6, 0.9, 0.6, 0, -0.6, -0.9, -0.6]
 
 const MODULE_THEMES = {
   green: {
@@ -32,7 +33,7 @@ const MODULE_THEMES = {
 function computeOffsets(count, sectionNumber) {
   const direction = sectionNumber % 2 === 1 ? 1 : -1
   return Array.from({ length: count }, (_, i) =>
-    direction * AMPLITUDE * Math.sin((Math.PI / 2) * i)
+    direction * AMPLITUDE * PATTERN[i % PATTERN.length]
   )
 }
 
@@ -121,9 +122,9 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
           <div className="sc-path-container" style={{ height: totalHeight }}>
             <svg
               className="sc-connector-svg"
-              width="360"
+              width="300"
               height={totalHeight}
-              viewBox={`-180 0 360 ${totalHeight}`}
+              viewBox={`-150 0 300 ${totalHeight}`}
             >
               <defs>
                 <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
