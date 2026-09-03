@@ -4,21 +4,24 @@ const DOT_RADIUS = 9
 const GRID_SPACING = 46
 const PIN_LENGTH = 34
 const PIN_GAP = 14
+const IDLE_DELAY = 2000
 
 function buildDots(cx, cy) {
   const dots = []
   const gridSize = 4
   const half = (gridSize - 1) / 2
 
-  // Inner 4x4 grid
   for (let r = 0; r < gridSize; r++) {
     for (let c = 0; c < gridSize; c++) {
+      const x = cx + (c - half) * GRID_SPACING
+      const y = cy + (r - half) * GRID_SPACING
+      const distFromCenter = Math.sqrt((c - half) ** 2 + (r - half) ** 2)
       dots.push({
-        x: cx + (c - half) * GRID_SPACING,
-        y: cy + (r - half) * GRID_SPACING,
+        x, y,
         brightness: 0,
         targetBrightness: 0,
         type: 'core',
+        distFromCenter,
       })
     }
   }
@@ -31,36 +34,34 @@ function buildDots(cx, cy) {
     edgeMax - GRID_SPACING * 0.5,
   ]
 
+  const pinDist = 3.2
+
   // Top pins
   pinPositions.forEach(px => {
     dots.push({
-      x: cx + px,
-      y: cy + edgeMin - PIN_GAP - PIN_LENGTH,
-      brightness: 0, targetBrightness: 0, type: 'pin',
+      x: cx + px, y: cy + edgeMin - PIN_GAP - PIN_LENGTH,
+      brightness: 0, targetBrightness: 0, type: 'pin', distFromCenter: pinDist,
     })
   })
   // Bottom pins
   pinPositions.forEach(px => {
     dots.push({
-      x: cx + px,
-      y: cy + edgeMax + PIN_GAP + PIN_LENGTH,
-      brightness: 0, targetBrightness: 0, type: 'pin',
+      x: cx + px, y: cy + edgeMax + PIN_GAP + PIN_LENGTH,
+      brightness: 0, targetBrightness: 0, type: 'pin', distFromCenter: pinDist,
     })
   })
   // Left pins
   pinPositions.forEach(py => {
     dots.push({
-      x: cx + edgeMin - PIN_GAP - PIN_LENGTH,
-      y: cy + py,
-      brightness: 0, targetBrightness: 0, type: 'pin',
+      x: cx + edgeMin - PIN_GAP - PIN_LENGTH, y: cy + py,
+      brightness: 0, targetBrightness: 0, type: 'pin', distFromCenter: pinDist,
     })
   })
   // Right pins
   pinPositions.forEach(py => {
     dots.push({
-      x: cx + edgeMax + PIN_GAP + PIN_LENGTH,
-      y: cy + py,
-      brightness: 0, targetBrightness: 0, type: 'pin',
+      x: cx + edgeMax + PIN_GAP + PIN_LENGTH, y: cy + py,
+      brightness: 0, targetBrightness: 0, type: 'pin', distFromCenter: pinDist,
     })
   })
 
@@ -79,33 +80,17 @@ function getPinLines(cx, cy) {
     edgeMax - GRID_SPACING * 0.5,
   ]
 
-  // Top
   pinPositions.forEach(px => {
-    lines.push({
-      x1: cx + px, y1: cy + edgeMin,
-      x2: cx + px, y2: cy + edgeMin - PIN_GAP - PIN_LENGTH + DOT_RADIUS,
-    })
+    lines.push({ x1: cx + px, y1: cy + edgeMin, x2: cx + px, y2: cy + edgeMin - PIN_GAP - PIN_LENGTH + DOT_RADIUS })
   })
-  // Bottom
   pinPositions.forEach(px => {
-    lines.push({
-      x1: cx + px, y1: cy + edgeMax,
-      x2: cx + px, y2: cy + edgeMax + PIN_GAP + PIN_LENGTH - DOT_RADIUS,
-    })
+    lines.push({ x1: cx + px, y1: cy + edgeMax, x2: cx + px, y2: cy + edgeMax + PIN_GAP + PIN_LENGTH - DOT_RADIUS })
   })
-  // Left
   pinPositions.forEach(py => {
-    lines.push({
-      x1: cx + edgeMin, y1: cy + py,
-      x2: cx + edgeMin - PIN_GAP - PIN_LENGTH + DOT_RADIUS, y2: cy + py,
-    })
+    lines.push({ x1: cx + edgeMin, y1: cy + py, x2: cx + edgeMin - PIN_GAP - PIN_LENGTH + DOT_RADIUS, y2: cy + py })
   })
-  // Right
   pinPositions.forEach(py => {
-    lines.push({
-      x1: cx + edgeMax, y1: cy + py,
-      x2: cx + edgeMax + PIN_GAP + PIN_LENGTH - DOT_RADIUS, y2: cy + py,
-    })
+    lines.push({ x1: cx + edgeMax, y1: cy + py, x2: cx + edgeMax + PIN_GAP + PIN_LENGTH - DOT_RADIUS, y2: cy + py })
   })
 
   return lines
@@ -118,60 +103,168 @@ export default function TriangleGlow() {
     lines: [],
     mouse: { x: -9999, y: -9999 },
     isHovering: false,
-    hasEnteredOnce: false,
     animId: 0,
     dpr: 1,
     cx: 0,
     cy: 0,
+    lastMoveTime: 0,
+    idlePhase: 'none',    // 'none' | 'ripple-out' | 'ripple-in' | 'pause'
+    idleStartTime: 0,
+    idleCycleTime: 0,
   })
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const { dots, lines, mouse, isHovering, dpr } = stateRef.current
+    const st = stateRef.current
+    const { dots, lines, mouse, isHovering, dpr, cx, cy } = st
     const w = canvas.width / dpr
     const h = canvas.height / dpr
+    const now = performance.now()
 
     ctx.save()
     ctx.scale(dpr, dpr)
     ctx.clearRect(0, 0, w, h)
 
-    const HOVER_RADIUS = 90
-    const FULL_RADIUS = 30
+    // --- Idle animation logic ---
+    const timeSinceMove = now - st.lastMoveTime
+    const shouldIdle = !isHovering && timeSinceMove > IDLE_DELAY && st.lastMoveTime > 0
 
-    let anyNearby = false
-    dots.forEach(dot => {
-      if (isHovering) {
-        const dx = mouse.x - dot.x
-        const dy = mouse.y - dot.y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < HOVER_RADIUS) {
-          anyNearby = true
-          const t = Math.max(0, 1 - Math.max(0, dist - FULL_RADIUS) / (HOVER_RADIUS - FULL_RADIUS))
-          dot.targetBrightness = 0.03 + Math.pow(t, 0.5) * 0.97
-        } else {
-          dot.targetBrightness = 0.03
-        }
-      } else {
-        dot.targetBrightness = 0.38
-      }
-    })
-
-    if (isHovering && !anyNearby) {
-      dots.forEach(dot => { dot.targetBrightness = 0.06 })
+    if (shouldIdle && st.idlePhase === 'none') {
+      st.idlePhase = 'ripple-out'
+      st.idleCycleTime = now
+    }
+    if (isHovering && st.idlePhase !== 'none') {
+      st.idlePhase = 'none'
     }
 
+    // Max distance from center for normalization
+    const maxDist = 3.2
+
+    // Idle ripple animation
+    if (st.idlePhase !== 'none') {
+      const elapsed = now - st.idleCycleTime
+      const cycleDuration = 1800
+      const pauseDuration = 600
+
+      if (st.idlePhase === 'ripple-out') {
+        const progress = Math.min(elapsed / cycleDuration, 1)
+        dots.forEach(dot => {
+          const normDist = dot.distFromCenter / maxDist
+          const wave = Math.max(0, 1 - Math.abs(normDist - progress) * 3)
+          dot.targetBrightness = 0.08 + wave * 0.92
+        })
+        if (progress >= 1) {
+          st.idlePhase = 'pause-out'
+          st.idleCycleTime = now
+        }
+      } else if (st.idlePhase === 'pause-out') {
+        dots.forEach(dot => { dot.targetBrightness = 0.9 })
+        if (elapsed > pauseDuration) {
+          st.idlePhase = 'ripple-in'
+          st.idleCycleTime = now
+        }
+      } else if (st.idlePhase === 'ripple-in') {
+        const progress = Math.min(elapsed / cycleDuration, 1)
+        dots.forEach(dot => {
+          const normDist = dot.distFromCenter / maxDist
+          const invertDist = 1 - normDist
+          const wave = Math.max(0, 1 - Math.abs(invertDist - progress) * 3)
+          dot.targetBrightness = 0.08 + wave * 0.92
+        })
+        if (progress >= 1) {
+          st.idlePhase = 'pause-in'
+          st.idleCycleTime = now
+        }
+      } else if (st.idlePhase === 'pause-in') {
+        dots.forEach(dot => { dot.targetBrightness = 0.15 })
+        if (elapsed > pauseDuration) {
+          st.idlePhase = 'ripple-out'
+          st.idleCycleTime = now
+        }
+      }
+    } else {
+      // --- Normal hover logic ---
+      const HOVER_RADIUS = 48
+      const FULL_RADIUS = 12
+
+      let anyNearby = false
+      dots.forEach(dot => {
+        if (isHovering) {
+          const dx = mouse.x - dot.x
+          const dy = mouse.y - dot.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+          if (dist < HOVER_RADIUS) {
+            anyNearby = true
+            const t = Math.max(0, 1 - Math.max(0, dist - FULL_RADIUS) / (HOVER_RADIUS - FULL_RADIUS))
+            dot.targetBrightness = 0.03 + Math.pow(t, 0.4) * 0.97
+          } else {
+            dot.targetBrightness = 0.03
+          }
+        } else {
+          dot.targetBrightness = 0.38
+        }
+      })
+
+      if (isHovering && !anyNearby) {
+        dots.forEach(dot => { dot.targetBrightness = 0.06 })
+      }
+    }
+
+    // Smooth lerp
     dots.forEach(dot => {
-      const speed = dot.targetBrightness > dot.brightness ? 0.15 : 0.05
+      const speed = dot.targetBrightness > dot.brightness ? 0.18 : 0.07
       dot.brightness += (dot.targetBrightness - dot.brightness) * speed
     })
 
-    // Draw pin connector lines
+    // --- Background glow ---
+    // Large radial ambient glow behind the chip
+    const avgBrightness = dots.reduce((s, d) => s + d.brightness, 0) / dots.length
+    const bgGlowR = 220 + avgBrightness * 80
+    const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, bgGlowR)
+    bgGrad.addColorStop(0, `rgba(255, 255, 255, ${avgBrightness * 0.08})`)
+    bgGrad.addColorStop(0.25, `rgba(255, 255, 255, ${avgBrightness * 0.04})`)
+    bgGrad.addColorStop(0.5, `rgba(255, 255, 255, ${avgBrightness * 0.015})`)
+    bgGrad.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    ctx.beginPath()
+    ctx.arc(cx, cy, bgGlowR, 0, Math.PI * 2)
+    ctx.fillStyle = bgGrad
+    ctx.fill()
+
+    // Directional light rays from bright dots
+    dots.forEach(dot => {
+      if (dot.brightness < 0.5) return
+      const b = dot.brightness
+      const dx = dot.x - cx
+      const dy = dot.y - cy
+      const angle = Math.atan2(dy, dx)
+      const rayLen = 60 + b * 100
+      const rayWidth = 8 + b * 12
+
+      ctx.save()
+      ctx.translate(dot.x, dot.y)
+      ctx.rotate(angle)
+
+      const rayGrad = ctx.createLinearGradient(0, 0, rayLen, 0)
+      rayGrad.addColorStop(0, `rgba(255, 255, 255, ${(b - 0.5) * 0.15})`)
+      rayGrad.addColorStop(0.3, `rgba(255, 255, 255, ${(b - 0.5) * 0.06})`)
+      rayGrad.addColorStop(1, 'rgba(255, 255, 255, 0)')
+
+      ctx.beginPath()
+      ctx.moveTo(0, -rayWidth / 2)
+      ctx.lineTo(rayLen, -rayWidth * 0.15)
+      ctx.lineTo(rayLen, rayWidth * 0.15)
+      ctx.lineTo(0, rayWidth / 2)
+      ctx.closePath()
+      ctx.fillStyle = rayGrad
+      ctx.fill()
+
+      ctx.restore()
+    })
+
+    // --- Pin connector lines ---
     lines.forEach((line, i) => {
-      const coreDotIdx = i < 3 ? i : i < 6 ? i - 3 : i < 9 ? i - 6 : i - 9
-      const side = i < 3 ? 'top' : i < 6 ? 'bottom' : i < 9 ? 'left' : 'right'
-      // Find the brightness of the corresponding pin dot (index 16 + i)
       const pinDot = dots[16 + i]
       const b = pinDot ? pinDot.brightness : 0.2
       ctx.beginPath()
@@ -182,7 +275,7 @@ export default function TriangleGlow() {
       ctx.stroke()
     })
 
-    // Draw dots with glow
+    // --- Draw dots with glow ---
     dots.forEach(dot => {
       const b = dot.brightness
       if (b < 0.003) return
@@ -192,7 +285,6 @@ export default function TriangleGlow() {
 
       ctx.globalCompositeOperation = 'lighter'
 
-      // Layer 1: Ultra-wide atmospheric bloom
       if (b > 0.15) {
         const bloom0R = (120 + b * 60) * scale
         const g0 = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, bloom0R)
@@ -206,7 +298,6 @@ export default function TriangleGlow() {
         ctx.fill()
       }
 
-      // Layer 2: Wide bloom halo
       const bloom1R = (55 + b * 45) * scale
       const g1 = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, bloom1R)
       g1.addColorStop(0, `rgba(255, 255, 255, ${b * 0.22})`)
@@ -218,7 +309,6 @@ export default function TriangleGlow() {
       ctx.fillStyle = g1
       ctx.fill()
 
-      // Layer 3: Medium glow
       const bloom2R = (28 + b * 20) * scale
       const g2 = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, bloom2R)
       g2.addColorStop(0, `rgba(255, 255, 255, ${b * 0.45})`)
@@ -230,7 +320,6 @@ export default function TriangleGlow() {
       ctx.fillStyle = g2
       ctx.fill()
 
-      // Layer 4: Tight inner glow
       const innerR = (14 + b * 6) * scale
       const g3 = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, innerR)
       g3.addColorStop(0, `rgba(255, 255, 255, ${b * 0.7})`)
@@ -243,7 +332,6 @@ export default function TriangleGlow() {
 
       ctx.globalCompositeOperation = 'source-over'
 
-      // Layer 5: Solid core
       const coreR = DOT_RADIUS * scale
       const coreAlpha = Math.min(b * 1.8, 1)
       const g4 = ctx.createRadialGradient(dot.x, dot.y, 0, dot.x, dot.y, coreR)
@@ -255,7 +343,6 @@ export default function TriangleGlow() {
       ctx.fillStyle = g4
       ctx.fill()
 
-      // Layer 6: White-hot center
       const hotR = DOT_RADIUS * 0.42 * scale
       ctx.beginPath()
       ctx.arc(dot.x, dot.y, hotR, 0, Math.PI * 2)
@@ -264,46 +351,45 @@ export default function TriangleGlow() {
     })
 
     ctx.restore()
-    stateRef.current.animId = requestAnimationFrame(draw)
+    st.animId = requestAnimationFrame(draw)
   }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
+    const st = stateRef.current
 
     const resize = () => {
       const rect = canvas.parentElement.getBoundingClientRect()
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      stateRef.current.dpr = dpr
+      st.dpr = dpr
       canvas.width = rect.width * dpr
       canvas.height = rect.height * dpr
       canvas.style.width = rect.width + 'px'
       canvas.style.height = rect.height + 'px'
-      const cx = rect.width / 2
-      const cy = rect.height / 2
-      stateRef.current.cx = cx
-      stateRef.current.cy = cy
-      stateRef.current.dots = buildDots(cx, cy)
-      stateRef.current.lines = getPinLines(cx, cy)
+      st.cx = rect.width / 2
+      st.cy = rect.height / 2
+      st.dots = buildDots(st.cx, st.cy)
+      st.lines = getPinLines(st.cx, st.cy)
     }
 
     const onMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect()
-      stateRef.current.mouse.x = e.clientX - rect.left
-      stateRef.current.mouse.y = e.clientY - rect.top
-      stateRef.current.isHovering = true
-      stateRef.current.hasEnteredOnce = true
+      st.mouse.x = e.clientX - rect.left
+      st.mouse.y = e.clientY - rect.top
+      st.isHovering = true
+      st.lastMoveTime = performance.now()
+      st.idlePhase = 'none'
     }
 
     const onMouseLeave = () => {
-      stateRef.current.isHovering = false
-      const dots = stateRef.current.dots
+      st.isHovering = false
+      st.lastMoveTime = performance.now()
+      const dots = st.dots
       dots.forEach((dot, i) => {
         const delay = i * 25
         setTimeout(() => {
-          if (!stateRef.current.isHovering) {
-            dot.targetBrightness = 0.38
-          }
+          if (!st.isHovering) dot.targetBrightness = 0.38
         }, delay)
       })
     }
@@ -313,20 +399,23 @@ export default function TriangleGlow() {
     canvas.addEventListener('mousemove', onMouseMove)
     canvas.addEventListener('mouseleave', onMouseLeave)
 
-    const dots = stateRef.current.dots
-    dots.forEach((dot, i) => {
+    // Animate in on mount
+    st.dots.forEach((dot, i) => {
       dot.brightness = 0
       dot.targetBrightness = 0
       setTimeout(() => { dot.targetBrightness = 0.38 }, 200 + i * 40)
     })
 
-    stateRef.current.animId = requestAnimationFrame(draw)
+    // Kick off idle animation after initial entrance
+    st.lastMoveTime = performance.now() + 2500
+
+    st.animId = requestAnimationFrame(draw)
 
     return () => {
       window.removeEventListener('resize', resize)
       canvas.removeEventListener('mousemove', onMouseMove)
       canvas.removeEventListener('mouseleave', onMouseLeave)
-      cancelAnimationFrame(stateRef.current.animId)
+      cancelAnimationFrame(st.animId)
     }
   }, [draw])
 
