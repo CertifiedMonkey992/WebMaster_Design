@@ -1,9 +1,9 @@
 import { useRef, useEffect, useCallback } from 'react'
 
-const DOT_RADIUS = 9
-const GRID_SPACING = 46
-const PIN_LENGTH = 34
-const PIN_GAP = 14
+const DOT_RADIUS = 12
+const GRID_SPACING = 62
+const PIN_LENGTH = 44
+const PIN_GAP = 18
 const IDLE_DELAY = 2000
 
 function buildDots(cx, cy) {
@@ -186,8 +186,8 @@ export default function TriangleGlow() {
       }
     } else {
       // --- Normal hover logic ---
-      const HOVER_RADIUS = 48
-      const FULL_RADIUS = 12
+      const HOVER_RADIUS = 58
+      const FULL_RADIUS = 16
 
       let anyNearby = false
       dots.forEach(dot => {
