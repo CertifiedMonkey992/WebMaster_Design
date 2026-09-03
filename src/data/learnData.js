@@ -5,6 +5,7 @@ export const SECTIONS = [
     title: 'AI Foundations',
     subtitle: 'Understand what AI actually is',
     status: 'completed',
+    moduleTheme: 'green',
     lessons: [
       { id: 'what-is-ai',   title: 'What is Artificial Intelligence?', desc: 'Explore the definition, history, and core ideas behind AI systems.', status: 'completed' },
       { id: 'types-of-ai',  title: 'Types of AI Systems',              desc: 'Narrow AI, General AI, and Superintelligence — what exists today.', status: 'completed' },
@@ -18,6 +19,7 @@ export const SECTIONS = [
     title: 'Machine Learning',
     subtitle: 'Data-driven intelligence explained',
     status: 'completed',
+    moduleTheme: 'blue',
     lessons: [
       { id: 'what-is-ml',   title: 'What is Machine Learning?', desc: 'The core idea: computers learning from examples rather than rules.', status: 'completed' },
       { id: 'training-data',title: 'Training Data & Datasets',  desc: 'Why data quality and diversity shape everything a model learns.', status: 'completed' },
@@ -31,6 +33,7 @@ export const SECTIONS = [
     title: 'Neural Networks',
     subtitle: 'Inside the architecture of modern AI',
     status: 'in-progress',
+    moduleTheme: 'purple',
     lessons: [
       { id: 'perceptron',   title: 'The Perceptron',          desc: 'The original artificial neuron — weights, bias, and a single decision.', status: 'completed' },
       { id: 'hidden-layers',title: 'Hidden Layers',            desc: 'Stacking neurons to learn complex, non-linear representations.', status: 'completed' },
@@ -45,6 +48,7 @@ export const SECTIONS = [
     title: 'Practical AI Tools',
     subtitle: 'Master the tools reshaping every industry',
     status: 'locked',
+    moduleTheme: 'blue',
     lessons: [
       { id: 'prompt-eng',   title: 'Prompt Engineering',       desc: 'Write prompts that consistently get the results you actually need.', status: 'locked' },
       { id: 'chatgpt',      title: 'ChatGPT Deep Dive',        desc: 'Capabilities, real limits, and the best use cases for GPT-4.', status: 'locked' },
@@ -59,6 +63,7 @@ export const SECTIONS = [
     title: 'AI Ethics',
     subtitle: 'Navigate AI responsibly in every context',
     status: 'locked',
+    moduleTheme: 'purple',
     lessons: [
       { id: 'bias',        title: 'Algorithmic Bias',          desc: 'How AI systems learn, reflect, and amplify human prejudices.', status: 'locked' },
       { id: 'deepfakes',   title: 'Deepfakes & Misinformation',desc: 'Synthetic media and the emerging crisis of trust online.', status: 'locked' },

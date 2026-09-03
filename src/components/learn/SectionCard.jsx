@@ -4,11 +4,34 @@ import LessonNode from './LessonNode'
 /* Zigzag offsets — cycle through these per lesson index */
 const OFFSETS = [0, 70, 100, 70, 0, -70, -100, -70]
 
+const MODULE_THEMES = {
+  green: {
+    color:   '#58CC02',
+    shadow:  '#2B8700',
+    glow:    'rgba(88,204,2,0.18)',
+    outer:   'rgba(88,204,2,0.06)',
+    banner:  'rgba(88,204,2,0.08)',
+  },
+  blue: {
+    color:   '#1CB0F6',
+    shadow:  '#0B8DC9',
+    glow:    'rgba(28,176,246,0.18)',
+    outer:   'rgba(28,176,246,0.06)',
+    banner:  'rgba(28,176,246,0.08)',
+  },
+  purple: {
+    color:   '#A560FF',
+    shadow:  '#7430E0',
+    glow:    'rgba(165,96,255,0.18)',
+    outer:   'rgba(165,96,255,0.06)',
+    banner:  'rgba(165,96,255,0.08)',
+  },
+}
+
 export default function SectionCard({ section, sectionNumber, onStartLesson }) {
   const [activeLesson, setActiveLesson] = useState(null)
   const pathRef = useRef(null)
 
-  /* Close popup on click outside the path */
   useEffect(() => {
     if (!activeLesson) return
     const handleOutside = (e) => {
@@ -24,9 +47,18 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
     setActiveLesson((prev) => (prev === lessonId ? null : lessonId))
 
   const isLocked = section.status === 'locked'
+  const theme = MODULE_THEMES[section.moduleTheme] || MODULE_THEMES.green
+
+  const cssVars = {
+    '--module-color':  theme.color,
+    '--module-shadow': theme.shadow,
+    '--module-glow':   theme.glow,
+    '--module-outer':  theme.outer,
+    '--module-banner': theme.banner,
+  }
 
   return (
-    <div className="sc-wrapper">
+    <div className="sc-wrapper" style={cssVars}>
       {/* Section header card */}
       <div className={`sc-header sc-${section.status}`}>
         <div className="sc-header-top">
