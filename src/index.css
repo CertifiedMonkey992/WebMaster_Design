@@ -4,15 +4,15 @@
 
 /* ── Token system ─────────────────────────────────────────────────────────── */
 :root {
-  /* Light mode: clean cool-neutral */
-  --bg:           #F8FAFC;
-  --bg-card:      #FFFFFF;
-  --bg-card-2:    #F1F5F9;
-  --border:       #E2E8F0;
-  --border-hover: #CBD5E1;
-  --text:         #0F172A;
-  --muted:        #64748B;
-  --faint:        #94A3B8;
+  /* Dark mode base */
+  --bg:           #0f0f13;
+  --bg-card:      #16161e;
+  --bg-card-2:    #1e1e2a;
+  --border:       rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --text:         #F8FAFC;
+  --muted:        #94A3B8;
+  --faint:        #334155;
   --accent:       #4F46E5;
   --accent-dim:   rgba(79, 70, 229, 0.1);
   --cyan:         #06B6D4;
@@ -20,8 +20,8 @@
   --warning:      #F59E0B;
   --error:        #EF4444;
 
-  /* Hero always dark navy regardless of mode */
-  --hero-bg:      #0F172A;
+  /* Hero always dark */
+  --hero-bg:      #0f0f13;
 
   --radius:       7px;
   --radius-sm:    4px;
