@@ -67,9 +67,9 @@
 /* Dark via OS */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:           #0F172A;
-    --bg-card:      #1E293B;
-    --bg-card-2:    #334155;
+    --bg:           #0f0f13;
+    --bg-card:      #16161e;
+    --bg-card-2:    #1e1e2a;
     --border:       rgba(255, 255, 255, 0.07);
     --border-hover: rgba(255, 255, 255, 0.18);
     --text:         #F8FAFC;
@@ -82,9 +82,9 @@
 
 /* Dark via explicit toggle */
 :root[data-theme="dark"] {
-  --bg:           #0F172A;
-  --bg-card:      #1E293B;
-  --bg-card-2:    #334155;
+  --bg:           #0f0f13;
+  --bg-card:      #16161e;
+  --bg-card-2:    #1e1e2a;
   --border:       rgba(255, 255, 255, 0.07);
   --border-hover: rgba(255, 255, 255, 0.18);
   --text:         #F8FAFC;
