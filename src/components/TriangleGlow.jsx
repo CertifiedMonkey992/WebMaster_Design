@@ -1,9 +1,9 @@
 import { useRef, useEffect, useCallback } from 'react'
 
-const DOT_RADIUS = 7
-const GRID_SPACING = 36
-const PIN_LENGTH = 28
-const PIN_GAP = 10
+const DOT_RADIUS = 9
+const GRID_SPACING = 46
+const PIN_LENGTH = 34
+const PIN_GAP = 14
 
 function buildDots(cx, cy) {
   const dots = []

@@ -190,7 +190,7 @@
   overflow: hidden;
   padding: 4.5rem 5% 5.5rem;
   display: grid;
-  grid-template-columns: 1fr 420px 1fr;
+  grid-template-columns: 1fr 500px 1fr;
   gap: 2rem;
   align-items: center;
   min-height: calc(100svh - 92px);
@@ -247,8 +247,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 420px;
-  height: 380px;
+  width: 500px;
+  height: 460px;
+  margin-left: -40px;
 }
 
 .hero-right {
