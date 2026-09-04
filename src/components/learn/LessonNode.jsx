@@ -1,4 +1,6 @@
-export default function LessonNode({ lesson, index, icon, isPopupOpen, onTogglePopup, onStartLesson }) {
+import { getLessonIcon } from './LessonIcons'
+
+export default function LessonNode({ lesson, index, isPopupOpen, onTogglePopup, onStartLesson }) {
   const handleClick = () => {
     if (lesson.status === 'locked') return
     onTogglePopup()
@@ -9,7 +11,7 @@ export default function LessonNode({ lesson, index, icon, isPopupOpen, onToggleP
   }
 
   return (
-    <div className="ln-row-wrapper">
+    <div className="ln-row-wrapper" data-status={lesson.status}>
       <div
         className={`ln-row ln-${lesson.status}`}
         onClick={handleClick}
@@ -20,25 +22,29 @@ export default function LessonNode({ lesson, index, icon, isPopupOpen, onToggleP
         aria-expanded={lesson.status !== 'locked' ? isPopupOpen : undefined}
       >
         <div className="ln-icon-box">
-          {icon}
+          {getLessonIcon(lesson.id)}
         </div>
         <div className="ln-info">
-          <span className="ln-label">Lesson {index + 1}</span>
+          <span className="ln-label">Lesson {index + 1}{lesson.duration ? ` · ${lesson.duration}` : ''}</span>
           <span className="ln-title">{lesson.title}</span>
         </div>
         {lesson.status === 'completed' && (
-          <svg className="ln-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+          <div className="ln-status-icon ln-check">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
         )}
         {lesson.status === 'current' && (
-          <span className="ln-current-dot" />
+          <span className="ln-status-icon ln-current-badge">Next</span>
         )}
         {lesson.status === 'locked' && (
-          <svg className="ln-lock" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
+          <div className="ln-status-icon ln-lock">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
         )}
       </div>
 

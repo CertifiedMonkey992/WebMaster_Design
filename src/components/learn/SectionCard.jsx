@@ -1,17 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
+import { getSectionProgress } from '../../data/learnData'
 import LessonNode from './LessonNode'
-
-const LESSON_ICONS = [
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4m-8.66-14.5 3.46 2m10.4 6 3.46 2M1 12h4m14 0h4M4.34 4.34l2.83 2.83m9.66 9.66 2.83 2.83M4.34 19.66l2.83-2.83m9.66-9.66 2.83-2.83"/></svg>,
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>,
-]
 
 export default function SectionCard({ section, sectionNumber, onStartLesson }) {
   const [activeLesson, setActiveLesson] = useState(null)
   const cardRef = useRef(null)
+  const { completed, total, pct, totalDuration } = getSectionProgress(section)
 
   useEffect(() => {
     if (!activeLesson) return
@@ -34,22 +28,35 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
       <div className={`sc-header sc-${section.status}`}>
         <div className="sc-header-top">
           <span className="sc-level">{section.level}</span>
-          <button className="sc-details-btn">See Details</button>
-        </div>
-        <div className="sc-title-row">
-          <div>
-            <span className="sc-number">Section {sectionNumber}</span>
-            <h2 className="sc-title">{section.title}</h2>
-          </div>
           {section.status === 'completed' && (
-            <span className="sc-badge sc-badge-done">Completed</span>
+            <span className="sc-badge sc-badge-done">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Completed
+            </span>
           )}
           {section.status === 'in-progress' && (
-            <button className="sc-review-btn">Review</button>
+            <span className="sc-badge sc-badge-progress">In Progress</span>
           )}
           {isLocked && (
-            <span className="sc-badge sc-badge-locked">Locked</span>
+            <span className="sc-badge sc-badge-locked">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Locked
+            </span>
           )}
+        </div>
+
+        <h2 className="sc-title">{section.title}</h2>
+        <p className="sc-desc">{section.description || section.subtitle}</p>
+
+        <div className="sc-progress-row">
+          <div className="sc-progress-bar">
+            <div className="sc-progress-fill" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="sc-progress-text">{pct}%</span>
+        </div>
+
+        <div className="sc-meta">
+          {total} lessons · ~{totalDuration} min
         </div>
       </div>
 
@@ -60,7 +67,6 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
               key={lesson.id}
               lesson={lesson}
               index={i}
-              icon={LESSON_ICONS[i % LESSON_ICONS.length]}
               isPopupOpen={activeLesson === lesson.id}
               onTogglePopup={() => toggle(lesson.id)}
               onStartLesson={onStartLesson}

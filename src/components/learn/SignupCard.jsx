@@ -1,14 +1,17 @@
 export default function SignupCard({ onSignup }) {
   return (
     <div className="signup-card">
-      <span className="signup-card-icon" aria-hidden="true">🚀</span>
-      <h3 className="signup-card-heading">Sign up for free</h3>
-      <p className="signup-card-body">
-        Create an account to save your progress, track your stats, and sync across devices.
-      </p>
-      <button className="signup-card-btn" onClick={onSignup}>
-        Sign up for free
-      </button>
+      <div className="signup-card-content">
+        <div className="signup-card-text">
+          <h3 className="signup-card-heading">Save your progress</h3>
+          <p className="signup-card-body">
+            Create an account to sync across devices.
+          </p>
+        </div>
+        <button className="signup-card-btn" onClick={onSignup}>
+          Sign Up
+        </button>
+      </div>
     </div>
   )
 }

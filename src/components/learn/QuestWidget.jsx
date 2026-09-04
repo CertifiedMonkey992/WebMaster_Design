@@ -8,7 +8,7 @@ function QuestItem({ quest }) {
       <div className="qw-info">
         <div className="qw-label">{quest.label}</div>
         <div className="qw-track" role="progressbar" aria-valuenow={quest.current} aria-valuemin={0} aria-valuemax={quest.total}>
-          <div className="qw-fill" style={{ width: `${pct}%` }} />
+          <div className={`qw-fill${quest.done ? ' qw-fill-done' : ''}`} style={{ width: `${pct}%` }} />
         </div>
       </div>
       <span className={`qw-count${quest.done ? ' done' : ''}`}>
@@ -22,7 +22,7 @@ export default function QuestWidget() {
   return (
     <div className="quest-widget">
       <div className="qw-header">
-        <span className="qw-title">Daily Quests</span>
+        <span className="qw-title">Today's Goals</span>
         <button className="qw-view-all">View All</button>
       </div>
 
@@ -31,7 +31,7 @@ export default function QuestWidget() {
       </div>
 
       <div className="qw-weekly">
-        <div className="qw-weekly-label">Weekly Quest</div>
+        <div className="qw-weekly-label">This Week</div>
         <QuestItem quest={WEEKLY_QUEST} />
       </div>
     </div>
