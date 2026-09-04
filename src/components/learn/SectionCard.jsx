@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
-import { getSectionProgress } from '../../data/learnData'
 import LessonNode from './LessonNode'
 
+/**
+ * A course section. `section` arrives pre-derived from deriveCourse(), so
+ * completed/total/pct/status already reflect real progression state.
+ */
 export default function SectionCard({ section, sectionNumber, onStartLesson }) {
   const [activeLesson, setActiveLesson] = useState(null)
   const cardRef = useRef(null)
-  const { completed, total, pct, totalDuration } = getSectionProgress(section)
+  const { completed, total, pct, totalDuration } = section
 
   useEffect(() => {
     if (!activeLesson) return
@@ -35,7 +38,9 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
             </span>
           )}
           {section.status === 'in-progress' && (
-            <span className="sc-badge sc-badge-progress">In Progress</span>
+            <span className="sc-badge sc-badge-progress">
+              {completed === 0 ? 'Up Next' : 'In Progress'}
+            </span>
           )}
           {isLocked && (
             <span className="sc-badge sc-badge-locked">
@@ -56,7 +61,7 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
         </div>
 
         <div className="sc-meta">
-          {total} lessons · ~{totalDuration} min
+          {completed}/{total} lessons · ~{totalDuration} min
         </div>
       </div>
 
@@ -72,6 +77,12 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
               onStartLesson={onStartLesson}
             />
           ))}
+        </div>
+      )}
+
+      {isLocked && (
+        <div className="sc-locked-hint">
+          Finish the previous section to unlock these {total} lessons.
         </div>
       )}
     </div>

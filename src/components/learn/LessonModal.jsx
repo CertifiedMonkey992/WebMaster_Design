@@ -1,126 +1,49 @@
-import { useState } from 'react'
+/* ═══════════════════════════════════════════════════════════════════════════
+   LessonModal.jsx — THE GRADED LESSON
+   ---------------------------------------------------------------------------
+   The lesson UI is unchanged. What changed is where the numbers come from:
+   hearts, gems, XP and the streak in the top bar are the REAL progression
+   state, and every answer is reported to the central engine.
+
+     wrong answer   → progression.recordAnswer → a real heart is spent
+     correct answer → progression.recordAnswer → real XP (budgeted per lesson)
+     lesson finished→ progression.completeLesson → XP, gems, streak, quests,
+                      achievements, level and statistics all update at once
+
+   Completion is dispatched exactly once per session (`committedRef`), so a
+   double click, a re-render or a StrictMode remount cannot award it twice.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './LessonModal.css'
 
-const LESSONS = {
-  default: {
-    title: 'What is Artificial Intelligence?',
-    subtitle: 'Traditional Programming vs AI',
-    gemReward: 15,
-    tabs: [
-      {
-        id: 'lesson', label: 'Lesson',
-        steps: [
-          {
-            id: 'l1', type: 'fill-blank',
-            teaching: '🧠 Traditional programs follow rigid, hardcoded rules — like an Arduino wired to turn on an LED exactly when brightness drops below 20%.',
-            template: 'Traditional software follows ________ ; AI discovers ________.',
-            answers: ['hardcoded rules', 'patterns'],
-            choices: ['hardcoded rules', 'patterns', 'recipes', 'sensors'],
-          },
-          {
-            id: 'l2', type: 'binary',
-            teaching: "🤖 AI doesn't need written rules — it uses a goal + historical data to discover patterns. Like learning you prefer lights at 6 PM on cloudy Tuesdays.",
-            prompt: 'AI or Traditional? → "A thermostat that turns off heating if temp > 30°C"',
-            correct: 'Traditional',
-            options: [{ label: 'AI 🤖', value: 'AI' }, { label: 'Traditional 💻', value: 'Traditional' }],
-          },
-          {
-            id: 'l3', type: 'fill-blank',
-            teaching: '⚡ Key insight: Traditional = programmer writes every rule. AI = machine finds rules from examples all on its own.',
-            template: 'Instead of a hardcoded ________ , AI uses ________ to find patterns.',
-            answers: ['recipe', 'data'],
-            choices: ['recipe', 'data', 'loop', 'sensor'],
-          },
-        ],
-      },
-      {
-        id: 'practice', label: 'Practice',
-        steps: [
-          {
-            id: 'p1', type: 'mcq',
-            scenario: '📧 You\'re building an email spam filter. It needs to:\n(A) Always block emails from "scammer@fake.com"\n(B) Learn from 10,000 labeled emails which patterns signal spam.',
-            prompt: 'Which part uses Traditional Programming?',
-            options: [
-              { id: 'a', text: '(A) Blocking "scammer@fake.com" — a hardcoded rule', correct: true },
-              { id: 'b', text: '(B) Learning spam patterns from 10,000 emails' },
-              { id: 'c', text: 'Both parts use Traditional Programming' },
-              { id: 'd', text: 'Neither — email filtering is always AI' },
-            ],
-          },
-        ],
-      },
-      {
-        id: 'quiz', label: 'Quiz',
-        steps: [
-          {
-            id: 'q1', type: 'mcq',
-            prompt: 'What is the core difference between Traditional Programming and AI?',
-            options: [
-              { id: 'a', text: 'Traditional uses more data than AI' },
-              { id: 'b', text: 'Traditional = hardcoded rules; AI = discovers patterns from data', correct: true },
-              { id: 'c', text: 'AI always requires an internet connection' },
-              { id: 'd', text: 'Traditional programming is always faster' },
-            ],
-          },
-          {
-            id: 'q2', type: 'mcq',
-            prompt: 'A self-driving car identifies pedestrians by training on millions of labeled photos. This is...',
-            options: [
-              { id: 'a', text: 'Traditional — a rule detects shapes larger than 150px' },
-              { id: 'b', text: 'AI — it learned from labeled examples', correct: true },
-              { id: 'c', text: 'Neither — it only uses GPS' },
-              { id: 'd', text: 'Traditional — the programmer defined all shapes' },
-            ],
-          },
-          {
-            id: 'q3', type: 'mcq',
-            prompt: '🔥 Tricky! A weather app shows ☀️ when temperature > 25°C. This is...',
-            options: [
-              { id: 'a', text: 'AI — it analyzed historical weather patterns' },
-              { id: 'b', text: 'AI — temperature data trained a model' },
-              { id: 'c', text: 'Traditional — a dev hardcoded the ">25°C = sunny" rule', correct: true },
-              { id: 'd', text: 'Both AI and Traditional combined' },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-}
-
-function parseTemplate(template) {
-  const parts = []
-  let rest = template
-  let idx = 0
-  while (rest.includes('________')) {
-    const pos = rest.indexOf('________')
-    if (pos > 0) parts.push({ type: 'text', val: rest.slice(0, pos) })
-    parts.push({ type: 'blank', index: idx++ })
-    rest = rest.slice(pos + 8)
-  }
-  if (rest) parts.push({ type: 'text', val: rest })
-  return parts
-}
-
-function correctLabel(step) {
-  if (step.type === 'fill-blank') return step.answers.join(', ')
-  if (step.type === 'binary') return step.correct
-  if (step.type === 'mcq') return step.options.find(o => o.correct)?.text ?? ''
-  return ''
-}
+import { useProgression } from '../../state/ProgressionContext'
+import { getLessonContent, countSteps } from '../../data/lessonContent'
+import { getLessonById } from '../../data/learnData'
+import { XP, HEARTS } from '../../config/progressionConfig'
+import { HeartIcon, GemIcon, FlameIcon, Icon } from '../progression/Icons'
+import { formatClock } from '../../utils/dateUtils'
+import StepBody, { correctLabel, isAnswerCorrect, canCheckStep } from './StepRenderer'
 
 export default function LessonModal({ lessonId, onClose }) {
-  const lesson = LESSONS[lessonId] ?? LESSONS.default
+  const { state, vm, actions } = useProgression()
+
+  const meta = getLessonById(lessonId)
+  const lesson = getLessonContent(lessonId)
+  const totalSteps = useMemo(() => countSteps(lesson), [lesson])
+  /* The XP budget a lesson can pay out for correct answers. Spent once ever —
+     replays draw on an already-empty budget, so review cannot farm XP. */
+  const maxAnswerXP = totalSteps * XP.CORRECT_ANSWER
+
+  /* Captured ONCE when the modal opens. Deriving it live would flip to true
+     the instant the lesson is recorded, mislabelling a first completion as a
+     review on its own summary screen. */
+  const [isReplay] = useState(() => Boolean(state.lessons[lessonId]))
 
   const [screen, setScreen] = useState('welcome')
   const [tabIdx, setTabIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [stepPhase, setStepPhase] = useState('answering')
-
-  const [hearts, setHearts] = useState(5)
-  const [gems, setGems] = useState(0)
-  const [xp, setXp] = useState(5)
-  const [streak] = useState(0)
 
   const [filled, setFilled] = useState([])
   const [selected, setSelected] = useState(null)
@@ -128,48 +51,108 @@ export default function LessonModal({ lessonId, onClose }) {
   const [perfect, setPerfect] = useState(true)
   const [unlockedTabs, setUnlockedTabs] = useState([0])
   const [completedTabs, setCompletedTabs] = useState([])
+  const [correctCount, setCorrectCount] = useState(0)
+  const [sessionXP, setSessionXP] = useState(0)
+  const [sessionGems, setSessionGems] = useState(0)
+
+  /* Real time spent in the lesson — feeds practice-time quests honestly. */
+  const startedAtRef = useRef(null)
+  /* Idempotency guard: completion is committed at most once per mount. */
+  const committedRef = useRef(false)
+  /* Running total of what the engine actually granted this session, tallied
+     from its own events so the summary can never overstate the reward. */
+  const earnedRef = useRef({ xp: 0, gems: 0 })
+
+  function tally(events = []) {
+    for (const event of events) {
+      if (event.type === 'XP_AWARDED') earnedRef.current.xp += event.amount
+      if (event.type === 'GEMS_AWARDED') earnedRef.current.gems += event.amount
+    }
+  }
 
   const currentTab = lesson.tabs[tabIdx]
   const currentStep = currentTab?.steps[stepIdx]
-  const totalSteps = lesson.tabs.reduce((s, t) => s + t.steps.length, 0)
   const doneSteps = lesson.tabs.slice(0, tabIdx).reduce((s, t) => s + t.steps.length, 0) + stepIdx
   const progress = screen === 'complete' ? 1 : screen === 'welcome' ? 0 : doneSteps / totalSteps
 
+  const blocked = !vm.canStartLesson
+
+  /* Time spent before abandoning still counts as learning time. */
+  useEffect(() => () => {
+    if (startedAtRef.current && !committedRef.current) {
+      const seconds = Math.round((Date.now() - startedAtRef.current) / 1000)
+      if (seconds > 20) actions.addPracticeTime(Math.min(seconds, 1800))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function resetStep() { setFilled([]); setSelected(null); setStepPhase('answering') }
 
+  function start() {
+    if (blocked) return
+    startedAtRef.current = Date.now()
+    setScreen('step')
+  }
+
+  function commitCompletion() {
+    if (committedRef.current) return
+    committedRef.current = true
+    const seconds = startedAtRef.current
+      ? Math.round((Date.now() - startedAtRef.current) / 1000)
+      : 0
+    tally(actions.completeLesson({
+      lessonId,
+      perfect,
+      seconds,
+      accuracy: totalSteps ? correctCount / totalSteps : 0,
+    }))
+    /* Mirror what the engine actually granted, rather than guessing at it. */
+    setSessionXP(earnedRef.current.xp)
+    setSessionGems(earnedRef.current.gems)
+  }
+
   function advance() {
+    /* Ran out of hearts mid-lesson — the run ends here. Time spent is still
+       credited on unmount, and the blocked screen explains what to do next. */
+    if (vm.hearts <= 0) {
+      setScreen('welcome')
+      return
+    }
+
     const tab = lesson.tabs[tabIdx]
     if (stepIdx + 1 < tab.steps.length) {
-      setStepIdx(s => s + 1); resetStep()
+      setStepIdx((s) => s + 1)
+      resetStep()
+      return
+    }
+
+    setCompletedTabs((p) => (p.includes(tabIdx) ? p : [...p, tabIdx]))
+
+    if (tabIdx + 1 < lesson.tabs.length) {
+      const next = tabIdx + 1
+      setTabIdx(next)
+      setStepIdx(0)
+      setUnlockedTabs((p) => (p.includes(next) ? p : [...p, next]))
+      resetStep()
     } else {
-      setCompletedTabs(p => [...p, tabIdx])
-      if (tabIdx + 1 < lesson.tabs.length) {
-        const next = tabIdx + 1
-        setTabIdx(next); setStepIdx(0)
-        setUnlockedTabs(p => p.includes(next) ? p : [...p, next])
-        resetStep()
-      } else {
-        setGems(g => g + lesson.gemReward)
-        setScreen('complete')
-      }
+      commitCompletion()
+      setScreen('complete')
     }
   }
 
   function check() {
-    const s = currentStep
-    let ok = false
-    if (s.type === 'fill-blank') ok = s.answers.every((a, i) => (filled[i] ?? '').toLowerCase() === a.toLowerCase())
-    else if (s.type === 'binary') ok = selected === s.correct
-    else if (s.type === 'mcq') ok = s.options.find(o => o.id === selected)?.correct === true
+    const ok = isAnswerCorrect(currentStep, { filled, selected })
 
-    if (ok) { setXp(x => x + 10); setStepPhase('correct') }
-    else { setHearts(h => Math.max(0, h - 1)); setPerfect(false); setStepPhase('wrong') }
-  }
+    /* Every answer goes through the central engine — no local XP or hearts. */
+    tally(actions.recordAnswer({ lessonId, correct: ok, maxAnswerXP }))
 
-  function canCheck() {
-    if (!currentStep) return false
-    if (currentStep.type === 'fill-blank') return filled.filter(Boolean).length === currentStep.answers.length
-    return selected !== null
+    if (ok) {
+      setCorrectCount((c) => c + 1)
+      setStepPhase('correct')
+    } else {
+      setPerfect(false)
+      setStepPhase('wrong')
+    }
   }
 
   function chipClick(chip) {
@@ -184,57 +167,119 @@ export default function LessonModal({ lessonId, onClose }) {
     const arr = [...filled]; arr[idx] = null; setFilled(arr)
   }
 
-  const usedInBlanks = filled.filter(Boolean)
-  const availChips = currentStep?.type === 'fill-blank'
-    ? currentStep.choices.filter(c => !usedInBlanks.includes(c))
-    : []
+  function dropChip(idx) {
+    if (!draggedChip) return
+    const arr = [...filled]; arr[idx] = draggedChip; setFilled(arr); setDraggedChip(null)
+  }
 
-  if (screen === 'welcome') return (
-    <div className="lm-overlay">
-      <div className="lm-welcome">
-        <button className="lm-close lm-close--abs" onClick={onClose}>✕</button>
-        <div className="lm-welcome-emoji">🧠</div>
-        <h2 className="lm-welcome-title">{lesson.title}</h2>
-        <p className="lm-welcome-sub">{lesson.subtitle}</p>
-        <div className="lm-welcome-bonus">⭐ +5 XP Welcome Bonus</div>
-        <div className="lm-welcome-meta">
-          <span>❤️ 5 hearts</span>
-          <span>💎 Earn {lesson.gemReward} gems</span>
-          <span>🔥 Build your streak</span>
+  /* ── Out of hearts ── */
+  if (screen === 'welcome' && blocked) {
+    return (
+      <div className="lm-overlay">
+        <div className="lm-welcome lm-blocked">
+          <button className="lm-close lm-close--abs" onClick={onClose} aria-label="Close">✕</button>
+          <div className="lm-blocked-icon"><HeartIcon size={44} empty /></div>
+          <h2 className="lm-welcome-title">You’re out of hearts</h2>
+          <p className="lm-welcome-sub">
+            Graded lessons need at least {HEARTS.COST_TO_START_LESSON} heart. One comes back
+            every {HEARTS.RECOVERY_MINUTES} minutes — even while LunX is closed.
+          </p>
+          <div className="lm-blocked-timer">
+            <Icon name="clock" size={15} />
+            Next heart in <strong>{formatClock(vm.heartRecovery.msUntilNext)}</strong>
+          </div>
+          <p className="lm-blocked-alt">
+            Practice sessions never cost hearts — head to <b>Practice</b> to keep learning
+            and keep your streak alive.
+          </p>
+          <button className="lm-start-btn" onClick={onClose}>Back to lessons</button>
         </div>
-        <button className="lm-start-btn" onClick={() => setScreen('step')}>Start Lesson</button>
       </div>
-    </div>
-  )
+    )
+  }
 
-  if (screen === 'complete') return (
-    <div className="lm-overlay">
-      <div className="lm-complete">
-        <button className="lm-close lm-close--abs" onClick={onClose}>✕</button>
-        <div className="lm-complete-trophy">🏆</div>
-        <h2 className="lm-complete-title">Lesson Complete!</h2>
-        {perfect && <div className="lm-perfect-badge">🌟 Perfect Run!</div>}
-        <div className="lm-complete-rewards">
-          <div className="lm-reward"><span className="lm-reward-icon">💎</span><span className="lm-reward-val">+{lesson.gemReward}</span><span className="lm-reward-lbl">Gems</span></div>
-          <div className="lm-reward"><span className="lm-reward-icon">⭐</span><span className="lm-reward-val">+{xp}</span><span className="lm-reward-lbl">XP</span></div>
-          {perfect && <div className="lm-reward"><span className="lm-reward-icon lm-fire">🔥</span><span className="lm-reward-val">+1 Day</span><span className="lm-reward-lbl">Streak</span></div>}
+  /* ── Welcome ── */
+  if (screen === 'welcome') {
+    return (
+      <div className="lm-overlay">
+        <div className="lm-welcome">
+          <button className="lm-close lm-close--abs" onClick={onClose} aria-label="Close">✕</button>
+          <div className="lm-welcome-emoji">🧠</div>
+          <h2 className="lm-welcome-title">{meta?.title ?? lesson.title}</h2>
+          <p className="lm-welcome-sub">{lesson.subtitle}</p>
+          <div className="lm-welcome-bonus">
+            {isReplay
+              ? 'Review mode · keeps your streak alive'
+              : `Earn up to ${XP.LESSON + XP.PERFECT_BONUS + maxAnswerXP} XP`}
+          </div>
+          <div className="lm-welcome-meta">
+            <span><HeartIcon size={14} /> {vm.hearts} hearts</span>
+            <span><GemIcon size={14} /> {isReplay ? 'Already earned' : `+${lesson.gemReward} on a perfect run`}</span>
+            <span><FlameIcon size={14} /> Build your streak</span>
+          </div>
+          {isReplay && (
+            <p className="lm-replay-note">
+              You’ve already completed this lesson, so it won’t pay out again — but the
+              time still counts toward practice quests and your streak.
+            </p>
+          )}
+          <button className="lm-start-btn" onClick={start}>
+            {isReplay ? 'Review Lesson' : 'Start Lesson'}
+          </button>
         </div>
-        <button className="lm-done-btn" onClick={onClose}>Done</button>
       </div>
-    </div>
-  )
+    )
+  }
 
+  /* ── Complete ── */
+  if (screen === 'complete') {
+    return (
+      <div className="lm-overlay">
+        <div className="lm-complete">
+          <button className="lm-close lm-close--abs" onClick={onClose} aria-label="Close">✕</button>
+          <div className="lm-complete-trophy">🏆</div>
+          <h2 className="lm-complete-title">{isReplay ? 'Review Complete!' : 'Lesson Complete!'}</h2>
+          {perfect && <div className="lm-perfect-badge">🌟 Perfect Run!</div>}
+          <div className="lm-complete-rewards">
+            <div className="lm-reward">
+              <span className="lm-reward-icon"><GemIcon size={22} /></span>
+              <span className="lm-reward-val">+{sessionGems}</span>
+              <span className="lm-reward-lbl">Gems</span>
+            </div>
+            <div className="lm-reward">
+              <span className="lm-reward-icon"><Icon name="bolt" size={22} strokeWidth={2.2} /></span>
+              <span className="lm-reward-val">+{sessionXP}</span>
+              <span className="lm-reward-lbl">XP</span>
+            </div>
+            <div className="lm-reward">
+              <span className="lm-reward-icon lm-fire"><FlameIcon size={22} /></span>
+              <span className="lm-reward-val">{vm.streak}</span>
+              <span className="lm-reward-lbl">Day streak</span>
+            </div>
+          </div>
+          <div className="lm-complete-score">
+            {correctCount} of {totalSteps} correct · Level {vm.level} · {vm.levelProgress.xpUntilNextLevel} XP to next
+          </div>
+          <button className="lm-done-btn" onClick={onClose}>Done</button>
+        </div>
+      </div>
+    )
+  }
+
+  /* ── Step runner ── */
   return (
     <div className="lm-overlay">
       <div className="lm-topbar">
-        <button className="lm-close" onClick={onClose}>✕</button>
+        <button className="lm-close" onClick={onClose} aria-label="Close lesson">✕</button>
         <div className="lm-progress-wrap">
           <div className="lm-progress-bar"><div className="lm-progress-fill" style={{ width: `${progress * 100}%` }} /></div>
         </div>
         <div className="lm-currency-row">
-          <span className="lm-cur"><span>❤️</span>{hearts}</span>
-          <span className="lm-cur"><span>💎</span>{gems}</span>
-          <span className="lm-cur"><span className="lm-fire">🔥</span>{streak}</span>
+          <span className={`lm-cur${vm.hearts === 0 ? ' lm-cur--empty' : ''}`}>
+            <HeartIcon size={16} empty={vm.hearts === 0} />{vm.hearts}
+          </span>
+          <span className="lm-cur lm-cur--gem"><GemIcon size={16} />{vm.gems}</span>
+          <span className="lm-cur lm-cur--flame"><FlameIcon size={16} dim={vm.streak === 0} />{vm.streak}</span>
         </div>
       </div>
 
@@ -258,92 +303,42 @@ export default function LessonModal({ lessonId, onClose }) {
       </div>
 
       <div className="lm-body">
-        {currentStep.type === 'fill-blank' && (
-          <div className="lm-fill-blank">
-            {currentStep.teaching && <p className="lm-teaching">{currentStep.teaching}</p>}
-            <h3 className="lm-q-label">Fill in the blanks</h3>
-            <div className="lm-sentence">
-              {parseTemplate(currentStep.template).map((p, i) =>
-                p.type === 'text'
-                  ? <span key={i} className="lm-sent-text">{p.val}</span>
-                  : <span
-                      key={i}
-                      className={`lm-blank${filled[p.index] ? ' lm-blank--filled' : ' lm-blank--empty'}`}
-                      onClick={() => filled[p.index] && blankClick(p.index)}
-                      onDragOver={e => e.preventDefault()}
-                      onDrop={e => { e.preventDefault(); if (!draggedChip) return; const a=[...filled]; a[p.index]=draggedChip; setFilled(a); setDraggedChip(null) }}
-                    >{filled[p.index] || ''}</span>
-              )}
-            </div>
-            <div className="lm-chips-row">
-              {currentStep.choices.map(chip => {
-                const isUsed = !availChips.includes(chip)
-                return (
-                  <span
-                    key={chip}
-                    className={`lm-chip${isUsed ? ' lm-chip--ghost' : ''}`}
-                    draggable={!isUsed}
-                    onDragStart={() => setDraggedChip(chip)}
-                    onDragEnd={() => setDraggedChip(null)}
-                    onClick={() => !isUsed && chipClick(chip)}
-                  >{chip}</span>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {currentStep.type === 'binary' && (
-          <div className="lm-binary">
-            {currentStep.teaching && <p className="lm-teaching">{currentStep.teaching}</p>}
-            <h3 className="lm-q-label">{currentStep.prompt}</h3>
-            <div className="lm-binary-opts">
-              {currentStep.options.map(opt => {
-                let cls = 'lm-binary-btn'
-                if (selected === opt.value) cls += ' lm-opt--selected'
-                if (stepPhase !== 'answering') {
-                  if (opt.value === currentStep.correct) cls += ' lm-opt--correct'
-                  else if (selected === opt.value) cls += ' lm-opt--wrong'
-                }
-                return <button key={opt.value} className={cls} onClick={() => stepPhase === 'answering' && setSelected(opt.value)}>{opt.label}</button>
-              })}
-            </div>
-          </div>
-        )}
-
-        {currentStep.type === 'mcq' && (
-          <div className="lm-mcq">
-            {currentStep.scenario && <pre className="lm-scenario">{currentStep.scenario}</pre>}
-            <h3 className="lm-q-label">{currentStep.prompt}</h3>
-            <div className="lm-mcq-opts">
-              {currentStep.options.map(opt => {
-                let cls = 'lm-mcq-btn'
-                if (selected === opt.id) cls += ' lm-opt--selected'
-                if (stepPhase !== 'answering') {
-                  if (opt.correct) cls += ' lm-opt--correct'
-                  else if (selected === opt.id) cls += ' lm-opt--wrong'
-                }
-                return <button key={opt.id} className={cls} onClick={() => stepPhase === 'answering' && setSelected(opt.id)}>{opt.text}</button>
-              })}
-            </div>
-          </div>
-        )}
+        <StepBody
+          step={currentStep}
+          phase={stepPhase}
+          filled={filled}
+          selected={selected}
+          draggedChip={draggedChip}
+          onChipClick={chipClick}
+          onBlankClick={blankClick}
+          onSelect={setSelected}
+          onDropChip={dropChip}
+          onDragChip={setDraggedChip}
+        />
       </div>
 
       {stepPhase === 'answering' && (
         <div className="lm-action lm-action--neutral">
-          <button className="lm-btn-check" disabled={!canCheck()} onClick={check}>Check</button>
+          <button
+            className="lm-btn-check"
+            disabled={!canCheckStep(currentStep, { filled, selected })}
+            onClick={check}
+          >
+            Check
+          </button>
         </div>
       )}
+
       {stepPhase === 'correct' && (
         <div className="lm-action lm-action--correct">
           <div className="lm-feedback">
             <span className="lm-fb-icon">✓</span>
-            <div><div className="lm-fb-title">Nice! +10 XP 🎉</div></div>
+            <div><div className="lm-fb-title">Nice work!</div></div>
           </div>
           <button className="lm-btn-continue lm-btn-continue--correct" onClick={advance}>Continue</button>
         </div>
       )}
+
       {stepPhase === 'wrong' && (
         <div className="lm-action lm-action--wrong">
           <div className="lm-feedback">

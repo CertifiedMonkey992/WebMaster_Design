@@ -1,6 +1,10 @@
 import { getLessonIcon } from './LessonIcons'
+import { useProgression } from '../../state/ProgressionContext'
+import { HeartIcon } from '../progression/Icons'
 
 export default function LessonNode({ lesson, index, isPopupOpen, onTogglePopup, onStartLesson }) {
+  const { vm } = useProgression()
+
   const handleClick = () => {
     if (lesson.status === 'locked') return
     onTogglePopup()
@@ -9,6 +13,8 @@ export default function LessonNode({ lesson, index, isPopupOpen, onTogglePopup, 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick() }
   }
+
+  const outOfHearts = !vm.canStartLesson
 
   return (
     <div className="ln-row-wrapper" data-status={lesson.status}>
@@ -52,6 +58,13 @@ export default function LessonNode({ lesson, index, isPopupOpen, onTogglePopup, 
         <div className="ln-popup" role="dialog" aria-label={`Start ${lesson.title}`}>
           <div className="ln-popup-title">{lesson.title}</div>
           <div className="ln-popup-desc">{lesson.desc}</div>
+
+          {outOfHearts && lesson.status !== 'completed' && (
+            <div className="ln-popup-warn">
+              <HeartIcon size={13} empty /> No hearts left — try Practice instead
+            </div>
+          )}
+
           <button
             className="ln-popup-btn"
             onClick={(e) => {

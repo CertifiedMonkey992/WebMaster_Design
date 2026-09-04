@@ -9,19 +9,21 @@ import Gamification from './components/Gamification'
 import LoginModal   from './components/LoginModal'
 import LearnPage    from './pages/LearnPage'
 
+import { ProgressionProvider } from './state/ProgressionContext'
+
 export default function App() {
   const [loginOpen,    setLoginOpen]    = useState(false)
   const [currentPage,  setCurrentPage]  = useState('landing')
 
   if (currentPage === 'learn') {
     return (
-      <>
+      <ProgressionProvider>
         <LearnPage
           onGoHome={() => setCurrentPage('landing')}
           onLoginClick={() => setLoginOpen(true)}
         />
         {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
-      </>
+      </ProgressionProvider>
     )
   }
 

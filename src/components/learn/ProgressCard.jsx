@@ -1,55 +1,44 @@
-import { SECTIONS } from '../../data/learnData'
+/* Your Progress card — every number comes from the progression view model. */
+
+import { useProgression } from '../../state/ProgressionContext'
+import LevelProgress from '../progression/LevelProgress'
+import { FlameIcon, Icon } from '../progression/Icons'
 
 export default function ProgressCard() {
-  const totalLessons = SECTIONS.reduce((sum, s) => sum + s.lessons.length, 0)
-  const completedLessons = SECTIONS.reduce((sum, s) =>
-    sum + s.lessons.filter(l => l.status === 'completed').length, 0)
-
-  const xpPerLesson = 50
-  const totalXP = completedLessons * xpPerLesson
-  const levels = [0, 50, 150, 300, 500, 750, 1050, 1400, 1800, 2250]
-
-  let level = 1
-  let xpInLevel = totalXP
-  let xpNeeded = levels[1]
-
-  for (let i = levels.length - 1; i >= 0; i--) {
-    if (totalXP >= levels[i]) {
-      level = i + 1
-      xpInLevel = totalXP - levels[i]
-      xpNeeded = (levels[i + 1] || levels[i] + 500) - levels[i]
-      break
-    }
-  }
-
-  const xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100))
-  const nextLevelXP = levels[level] || totalXP + 250
-  const streak = 7
+  const { vm } = useProgression()
+  const goalPct = vm.dailyGoalPercent
 
   return (
     <div className="progress-card">
       <div className="pc-header">Your Progress</div>
 
-      <div className="pc-level-row">
-        <div className="pc-level-badge">
-          <span className="pc-level-num">{level}</span>
+      <LevelProgress size="md" />
+
+      {/* Daily goal — the ring the whole day is measured against */}
+      <div className="pc-goal">
+        <div className="pc-goal-top">
+          <span className="pc-goal-label">Daily goal</span>
+          <span className={`pc-goal-value${goalPct >= 100 ? ' is-met' : ''}`}>
+            {vm.daily.xp} / {vm.goals.dailyXP} XP
+            {goalPct >= 100 && <Icon name="check" size={11} strokeWidth={3} />}
+          </span>
         </div>
-        <div className="pc-xp-col">
-          <div className="pc-xp-bar" role="progressbar" aria-valuenow={xpInLevel} aria-valuemax={xpNeeded}>
-            <div className="pc-xp-fill" style={{ width: `${xpPct}%` }} />
-          </div>
-          <div className="pc-xp-text">{totalXP} / {nextLevelXP} XP to Level {level + 1}</div>
+        <div className="pc-goal-track">
+          <div className={`pc-goal-fill${goalPct >= 100 ? ' is-met' : ''}`} style={{ width: `${goalPct}%` }} />
         </div>
       </div>
 
       <div className="pc-stats">
         <div className="pc-stat">
-          <span className="pc-stat-value">🔥 {streak}</span>
+          <span className="pc-stat-value">
+            <FlameIcon size={14} dim={vm.streak === 0} className="pc-stat-flame" />
+            {vm.streak}
+          </span>
           <span className="pc-stat-label">day streak</span>
         </div>
         <div className="pc-stat-divider" />
         <div className="pc-stat">
-          <span className="pc-stat-value">{completedLessons}/{totalLessons}</span>
+          <span className="pc-stat-value">{vm.course.completedCount}/{vm.course.totalLessons}</span>
           <span className="pc-stat-label">lessons done</span>
         </div>
       </div>

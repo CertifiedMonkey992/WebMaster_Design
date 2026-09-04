@@ -12,15 +12,68 @@ html:has(.learn-app) body {
 .learn-app {
   display: grid;
   grid-template-columns: 230px 1fr 310px;
+  grid-template-rows: 58px 1fr;
   min-height: 100vh;
   background: #0f0f13;
   font-family: var(--font-body, 'DM Sans', sans-serif);
   color: #F8FAFC;
 }
 
+/* ── Player status bar ────────────────────────────────────────
+   Spans the full height of its grid area so `position: sticky`
+   has room to travel; only the 58px header strip is painted, and
+   pointer events are re-enabled on the controls alone so the empty
+   area below never swallows clicks meant for the lesson list. */
+
+.learn-topbar {
+  grid-column: 2 / 4;
+  grid-row: 1 / -1;
+  align-self: start;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  pointer-events: none;
+  background: linear-gradient(to bottom, #0f0f13 68%, rgba(15, 15, 19, 0.86) 88%, rgba(15, 15, 19, 0));
+}
+
+.learn-topbar > * { pointer-events: auto; }
+
+.lt-brand {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0;
+}
+
+.lt-brand-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #6366F1, #818CF8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ── Left Sidebar ─────────────────────────────────────────── */
 
 .learn-sidebar {
+  grid-column: 1;
+  grid-row: 1 / -1;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -159,7 +212,9 @@ html:has(.learn-app) body {
 /* ── Main Content ─────────────────────────────────────────── */
 
 .learn-main {
-  padding: 2rem 2.5rem;
+  grid-column: 2;
+  grid-row: 2;
+  padding: 0.5rem 2.5rem 2rem;
   max-width: 700px;
   margin: 0 auto;
   width: 100%;
@@ -652,14 +707,16 @@ html:has(.learn-app) body {
 /* ── Right Sidebar ────────────────────────────────────────── */
 
 .learn-right {
+  grid-column: 3;
+  grid-row: 2;
   border-left: 1px solid rgba(255,255,255,0.06);
-  padding: 1.5rem 1rem;
+  padding: 0.5rem 1rem 1.5rem;
   background: transparent;
 }
 
 .learn-right-sticky {
   position: sticky;
-  top: 1.5rem;
+  top: 4.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -995,10 +1052,23 @@ html:has(.learn-app) body {
 @media (max-width: 900px) {
   .learn-app {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: 54px auto 1fr auto;
   }
 
+  .learn-topbar {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    height: 54px;
+    padding: 0 1rem;
+    background: #0f0f13;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .lt-brand { display: flex; }
+
   .learn-sidebar {
+    grid-column: 1;
+    grid-row: 2;
     position: static;
     height: auto;
     flex-direction: row;
@@ -1047,11 +1117,15 @@ html:has(.learn-app) body {
   }
 
   .learn-main {
+    grid-column: 1;
+    grid-row: 3;
     padding: 1.5rem 1.25rem;
     max-width: 100%;
   }
 
   .learn-right {
+    grid-column: 1;
+    grid-row: 4;
     border-left: none;
     border-top: 1px solid rgba(255,255,255,0.06);
     padding: 1.25rem;
@@ -1103,4 +1177,110 @@ html:has(.learn-app) body {
   .sc-lessons::before {
     display: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Progression additions — quest widget, goals, locked hints
+   ═══════════════════════════════════════════════════════════ */
+
+.qw-title { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.qw-badge {
+  background: rgba(41, 182, 246, 0.18);
+  border: 1px solid rgba(41, 182, 246, 0.3);
+  color: #7FD3F7;
+  border-radius: 99px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 0.05rem 0.34rem;
+  line-height: 1.5;
+}
+
+.qw-reset {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.24);
+  margin-bottom: 0.7rem;
+}
+
+.qw-reset-count { margin-left: auto; }
+
+.qw-empty { font-size: 0.7rem; color: rgba(255,255,255,0.3); margin: 0.3rem 0; }
+
+/* Daily goal bar inside the progress card */
+.pc-goal {
+  margin: 0.85rem 0 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.pc-goal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.35rem;
+}
+
+.pc-goal-label { font-size: 0.65rem; color: rgba(255,255,255,0.3); }
+
+.pc-goal-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+}
+
+.pc-goal-value.is-met { color: #4ADE80; }
+
+.pc-goal-track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.pc-goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366F1, #06B6D4);
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.pc-goal-fill.is-met { background: linear-gradient(90deg, #22C55E, #4ADE80); }
+
+.pc-stat-value { display: inline-flex; align-items: center; gap: 0.3rem; }
+.pc-stat-flame { color: #FF8A3D; }
+
+/* Locked section hint */
+.sc-locked-hint {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.24);
+  padding: 0.6rem 0 0.2rem 1.1rem;
+}
+
+/* Lesson popup warning when hearts are empty */
+.ln-popup-warn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: #FF8A96;
+  background: rgba(255, 75, 92, 0.09);
+  border: 1px solid rgba(255, 75, 92, 0.2);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Course-complete state of the Continue card */
+.cl-card--done { opacity: 0.9; }
+.cl-card--done .cl-content { margin-bottom: 0; }
+
+@media (max-width: 900px) {
+  .tm-card { flex: 1 1 100%; }
 }

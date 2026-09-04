@@ -432,3 +432,87 @@
   transition: background 0.15s, transform 0.1s;
 }
 .lm-done-btn:hover { background: #4338CA; transform: translateY(-2px); }
+
+/* ═══════════════════════════════════════════════════════════
+   Progression additions (light lesson theme)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Live currency icons in the lesson top bar: coloured marks, dark numerals */
+.lm-cur { font-variant-numeric: tabular-nums; }
+.lm-cur svg { flex-shrink: 0; color: #FF4B5C; }
+.lm-cur--gem svg   { color: #1BA8E0; }
+.lm-cur--flame svg { color: #F97316; }
+.lm-cur--empty svg { color: #CBD5E1; }
+.lm-cur--empty     { color: #94A3B8; }
+
+/* Reward icons on the completion screen */
+.lm-reward-icon { display: flex; align-items: center; justify-content: center; height: 28px; }
+.lm-complete-rewards .lm-reward:nth-child(1) .lm-reward-icon { color: #1BA8E0; }
+.lm-complete-rewards .lm-reward:nth-child(2) .lm-reward-icon { color: #4F46E5; }
+.lm-complete-rewards .lm-reward:nth-child(3) .lm-reward-icon { color: #F97316; }
+
+.lm-complete-score {
+  font-size: 0.85rem;
+  color: #64748B;
+  margin-bottom: 1.75rem;
+  font-weight: 500;
+}
+
+/* Welcome meta row: icon + label pairs */
+.lm-welcome-meta span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.lm-welcome-meta span:nth-child(1) svg { color: #FF4B5C; }
+.lm-welcome-meta span:nth-child(2) svg { color: #1BA8E0; }
+.lm-welcome-meta span:nth-child(3) svg { color: #F97316; }
+
+.lm-replay-note {
+  max-width: 26rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #64748B;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  margin: 0 0 1.5rem;
+}
+
+/* ── Out-of-hearts screen ── */
+.lm-blocked {
+  background: linear-gradient(160deg, #FFF1F2 0%, #fff 62%);
+}
+
+.lm-blocked-icon {
+  color: #FF4B5C;
+  opacity: 0.85;
+  margin-bottom: 1rem;
+  animation: bounceIn 0.5s ease;
+}
+
+.lm-blocked .lm-welcome-sub {
+  max-width: 30rem;
+  color: #64748B;
+}
+
+.lm-blocked-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #fff;
+  border: 2px solid #FECDD3;
+  border-radius: 12px;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  color: #9F1239;
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+}
+.lm-blocked-timer strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+
+.lm-blocked-alt {
+  max-width: 28rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: #64748B;
+  margin: 0 0 2rem;
+}
+.lm-blocked-alt b { color: #4F46E5; }
