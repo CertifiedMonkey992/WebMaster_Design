@@ -1,66 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import LessonNode from './LessonNode'
 
-const NODE_SIZE = 72
-const STEP_Y = 120
-const AMPLITUDE = 100
-const PATTERN = [0, 0.6, 0.9, 0.6, 0, -0.6, -0.9, -0.6]
-
-const MODULE_THEMES = {
-  green: {
-    color:   '#6BFF00',
-    shadow:  '#3D9900',
-    glow:    'rgba(107,255,0,0.25)',
-    outer:   'rgba(107,255,0,0.08)',
-    banner:  'rgba(107,255,0,0.1)',
-  },
-  blue: {
-    color:   '#00D4FF',
-    shadow:  '#0099BB',
-    glow:    'rgba(0,212,255,0.25)',
-    outer:   'rgba(0,212,255,0.08)',
-    banner:  'rgba(0,212,255,0.1)',
-  },
-  purple: {
-    color:   '#BB77FF',
-    shadow:  '#7744CC',
-    glow:    'rgba(187,119,255,0.25)',
-    outer:   'rgba(187,119,255,0.08)',
-    banner:  'rgba(187,119,255,0.1)',
-  },
-}
-
-function computeOffsets(count, sectionNumber) {
-  const direction = sectionNumber % 2 === 1 ? 1 : -1
-  return Array.from({ length: count }, (_, i) =>
-    direction * AMPLITUDE * PATTERN[i % PATTERN.length]
-  )
-}
-
-function buildSvgPath(offsets) {
-  if (offsets.length < 2) return ''
-  const positions = offsets.map((x, i) => ({
-    x,
-    y: i * STEP_Y + NODE_SIZE / 2,
-  }))
-  let d = `M ${positions[0].x} ${positions[0].y}`
-  for (let i = 1; i < positions.length; i++) {
-    const prev = positions[i - 1]
-    const curr = positions[i]
-    const midY = (prev.y + curr.y) / 2
-    d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`
-  }
-  return d
-}
+const LESSON_ICONS = [
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4m-8.66-14.5 3.46 2m10.4 6 3.46 2M1 12h4m14 0h4M4.34 4.34l2.83 2.83m9.66 9.66 2.83 2.83M4.34 19.66l2.83-2.83m9.66-9.66 2.83-2.83"/></svg>,
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z"/></svg>,
+]
 
 export default function SectionCard({ section, sectionNumber, onStartLesson }) {
   const [activeLesson, setActiveLesson] = useState(null)
-  const pathRef = useRef(null)
+  const cardRef = useRef(null)
 
   useEffect(() => {
     if (!activeLesson) return
     const handleOutside = (e) => {
-      if (pathRef.current && !pathRef.current.contains(e.target)) {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
         setActiveLesson(null)
       }
     }
@@ -72,23 +28,9 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
     setActiveLesson((prev) => (prev === lessonId ? null : lessonId))
 
   const isLocked = section.status === 'locked'
-  const theme = MODULE_THEMES[section.moduleTheme] || MODULE_THEMES.green
-
-  const cssVars = {
-    '--module-color':  theme.color,
-    '--module-shadow': theme.shadow,
-    '--module-glow':   theme.glow,
-    '--module-outer':  theme.outer,
-    '--module-banner': theme.banner,
-  }
-
-  const offsets = computeOffsets(section.lessons.length, sectionNumber)
-  const totalHeight = (section.lessons.length - 1) * STEP_Y + NODE_SIZE
-  const svgPath = buildSvgPath(offsets)
-  const filterId = `glow-${section.id}`
 
   return (
-    <div className="sc-wrapper" style={cssVars}>
+    <div className="sc-wrapper" ref={cardRef}>
       <div className={`sc-header sc-${section.status}`}>
         <div className="sc-header-top">
           <span className="sc-level">{section.level}</span>
@@ -100,7 +42,7 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
             <h2 className="sc-title">{section.title}</h2>
           </div>
           {section.status === 'completed' && (
-            <span className="sc-badge sc-badge-done">✓ Completed</span>
+            <span className="sc-badge sc-badge-done">Completed</span>
           )}
           {section.status === 'in-progress' && (
             <button className="sc-review-btn">Review</button>
@@ -112,63 +54,18 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
       </div>
 
       {!isLocked && (
-        <div className="sc-path" ref={pathRef}>
-          {section.status === 'in-progress' && (
-            <div className="sc-path-banner">
-              <span>Section {sectionNumber} — {section.subtitle}</span>
-            </div>
-          )}
-
-          <div className="sc-path-container" style={{ height: totalHeight }}>
-            <svg
-              className="sc-connector-svg"
-              width="300"
-              height={totalHeight}
-              viewBox={`-150 0 300 ${totalHeight}`}
-            >
-              <defs>
-                <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="4" />
-                </filter>
-              </defs>
-              <path
-                d={svgPath}
-                stroke="var(--module-color)"
-                strokeWidth="6"
-                fill="none"
-                opacity="0.12"
-                filter={`url(#${filterId})`}
-                strokeLinecap="round"
-              />
-              <path
-                d={svgPath}
-                stroke="var(--module-color)"
-                strokeWidth="3"
-                strokeDasharray="8 12"
-                fill="none"
-                opacity="0.4"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            {section.lessons.map((lesson, i) => (
-              <div
-                key={lesson.id}
-                className="sc-node-item"
-                style={{
-                  top: i * STEP_Y,
-                  transform: `translateX(calc(-50% + ${offsets[i]}px))`,
-                }}
-              >
-                <LessonNode
-                  lesson={lesson}
-                  isPopupOpen={activeLesson === lesson.id}
-                  onTogglePopup={() => toggle(lesson.id)}
-                  onStartLesson={onStartLesson}
-                />
-              </div>
-            ))}
-          </div>
+        <div className="sc-lessons">
+          {section.lessons.map((lesson, i) => (
+            <LessonNode
+              key={lesson.id}
+              lesson={lesson}
+              index={i}
+              icon={LESSON_ICONS[i % LESSON_ICONS.length]}
+              isPopupOpen={activeLesson === lesson.id}
+              onTogglePopup={() => toggle(lesson.id)}
+              onStartLesson={onStartLesson}
+            />
+          ))}
         </div>
       )}
     </div>

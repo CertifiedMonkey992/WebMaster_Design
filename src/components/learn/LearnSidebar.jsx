@@ -2,7 +2,7 @@ const NAV_ITEMS = [
   {
     id: 'learn',
     label: 'Learn',
-    color: '#58CC02',
+    color: '#6366F1',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   {
     id: 'practice',
     label: 'Practice',
-    color: '#1CB0F6',
+    color: '#6366F1',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10"/>
@@ -25,7 +25,7 @@ const NAV_ITEMS = [
   {
     id: 'leaderboards',
     label: 'Leaderboards',
-    color: '#FF9600',
+    color: '#6366F1',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M8 21h8M12 17v4M5 3H2v7c0 3.31 2.69 6 6 6h8c3.31 0 6-2.69 6-6V3h-3"/>
@@ -36,7 +36,7 @@ const NAV_ITEMS = [
   {
     id: 'quests',
     label: 'Quests',
-    color: '#FF4B4B',
+    color: '#6366F1',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
@@ -46,7 +46,7 @@ const NAV_ITEMS = [
   {
     id: 'shop',
     label: 'Shop',
-    color: '#CE82FF',
+    color: '#6366F1',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
@@ -58,7 +58,7 @@ const NAV_ITEMS = [
   {
     id: 'profile',
     label: 'Profile',
-    color: '#2B9FE5',
+    color: '#6366F1',
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
