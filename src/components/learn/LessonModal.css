@@ -111,7 +111,9 @@
   width: 8px; height: 8px;
   border-radius: 50%;
   background: #E8EBF0;
-  transition: all 0.2s;
+  transition: width 0.28s var(--lx-ease-out),
+              border-radius 0.28s var(--lx-ease-out),
+              background 0.2s ease;
 }
 .lm-dot--active { background: var(--lx-accent); width: 24px; border-radius: 4px; }
 .lm-dot--done   { background: var(--lx-success); }

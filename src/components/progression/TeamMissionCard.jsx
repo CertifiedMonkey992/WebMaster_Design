@@ -12,6 +12,7 @@ import { useRef, useState } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { QuestIcon, GemIcon, Icon } from './Icons'
 import { formatDuration } from '../../utils/dateUtils'
+import useProgressWidth from '../../hooks/useProgressWidth'
 
 export default function TeamMissionCard() {
   const { vm, actions } = useProgression()
@@ -20,6 +21,11 @@ export default function TeamMissionCard() {
   const guard = useRef(false)
 
   const team = vm.team
+
+  /* Called before the early return so hook order stays stable when the
+     mission is absent. */
+  const teamWidth = useProgressWidth(team?.percent ?? 0)
+
   if (!team) return null
 
   const claim = () => {
@@ -56,7 +62,7 @@ export default function TeamMissionCard() {
           </span>
         </div>
         <div className="tm-track" role="progressbar" aria-valuenow={team.total} aria-valuemax={team.goal}>
-          <div className="tm-fill" style={{ width: `${team.percent}%` }} />
+          <div className="tm-fill" style={{ width: `${teamWidth}%` }} />
         </div>
         {team.mission.requiresEveryMember && (
           <div className="tm-rule">

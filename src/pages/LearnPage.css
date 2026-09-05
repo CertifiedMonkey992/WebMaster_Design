@@ -11,7 +11,8 @@ html:has(.learn-app) body {
 
 .learn-app {
   display: grid;
-  grid-template-columns: 230px 1fr 310px;
+  /* minmax(0, …) rather than a bare 1fr: see the note in the 900px block. */
+  grid-template-columns: 230px minmax(0, 1fr) 310px;
   grid-template-rows: 58px 1fr;
   min-height: 100vh;
   background: #F6F6FB;
@@ -29,10 +30,11 @@ html:has(.learn-app) body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* Two washes, not three. The amber one across the bottom sat below the
+     threshold of being seen and only muddied the ground it lay on. */
   background:
-    radial-gradient(760px 480px at 8% -8%, rgba(var(--lx-accent-rgb), 0.08), transparent 60%),
-    radial-gradient(620px 460px at 96% 18%, rgba(15, 42, 63, 0.05), transparent 62%),
-    radial-gradient(900px 520px at 50% 115%, rgba(245, 158, 11, 0.035), transparent 65%);
+    radial-gradient(760px 480px at 8% -8%, rgba(var(--lx-accent-rgb), 0.07), transparent 60%),
+    radial-gradient(620px 460px at 96% 18%, rgba(15, 42, 63, 0.045), transparent 62%);
 }
 
 /* ── Player status bar ────────────────────────────────────────
@@ -276,6 +278,11 @@ html:has(.learn-app) body {
 
 /* ── Continue Learning Card (level 2 — quick jump-back-in banner) ───────── */
 
+/* The whole card is the jump-back-in target, so it answers the pointer as a
+   single object: a 4px lift and a slightly deeper turquoise shadow. Only
+   transform and box-shadow animate, so the lift costs no layout and nothing
+   below it shifts. :focus-within gives a keyboard user tabbing to the Start
+   button exactly the same feedback the pointer gets. */
 .cl-card {
   background: #FFFFFF;
   border: 1px solid rgba(23, 20, 46, 0.07);
@@ -284,7 +291,22 @@ html:has(.learn-app) body {
   margin-bottom: 1.5rem;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 22px rgba(23, 20, 46, 0.06), 0 1px 3px rgba(23, 20, 46, 0.04);
+  box-shadow: var(--lx-shadow-accent);
+  transition: transform var(--lx-lift) var(--lx-ease-out),
+              box-shadow var(--lx-lift) var(--lx-ease-out);
+}
+
+.cl-card:hover,
+.cl-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: var(--lx-shadow-accent-lift);
+}
+
+/* The course-complete state is a receipt, not a destination — it stays put. */
+.cl-card--done:hover,
+.cl-card--done:focus-within {
+  transform: none;
+  box-shadow: var(--lx-shadow-accent);
 }
 
 .cl-card::before {
@@ -298,10 +320,10 @@ html:has(.learn-app) body {
 }
 
 .cl-label {
-  font-size: 0.65rem;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: #0E7490;
   margin-bottom: 0.875rem;
 }
@@ -324,6 +346,15 @@ html:has(.learn-app) body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: border-color var(--lx-lift) ease, background var(--lx-lift) ease;
+}
+
+/* Secondary response: the tint firms up rather than the icon moving. Two
+   things travelling on one hover reads as a wobble. */
+.cl-card:hover .cl-icon,
+.cl-card:focus-within .cl-icon {
+  border-color: rgba(var(--lx-accent-rgb), 0.32);
+  background: linear-gradient(140deg, rgba(var(--lx-accent-rgb), 0.18), rgba(var(--lx-accent-rgb), 0.1));
 }
 
 .cl-text {
@@ -333,22 +364,25 @@ html:has(.learn-app) body {
 
 .cl-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
   color: #17152B;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
 }
 
 .cl-desc {
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   color: #6B7086;
-  line-height: 1.5;
-  margin-bottom: 0.35rem;
+  line-height: 1.55;
+  margin-bottom: 0.4rem;
 }
 
 .cl-meta {
   font-size: 0.7rem;
   color: #6E7389;
+  font-variant-numeric: tabular-nums;
 }
 
 .cl-btn {
@@ -370,11 +404,17 @@ html:has(.learn-app) body {
   box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.32);
 }
 
+.cl-btn svg { transition: transform 0.18s var(--lx-ease-out); }
+
 .cl-btn:hover {
   opacity: 0.94;
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(var(--lx-accent-rgb), 0.4);
 }
+
+/* The arrow leads the way out of the card — one small piece of direction,
+   only while the pointer is on the button. */
+.cl-btn:hover svg { transform: translateX(3px); }
 
 .cl-btn:active {
   transform: none;
@@ -398,18 +438,26 @@ html:has(.learn-app) body {
   border-radius: 1px;
 }
 
+/* A section header labels the lessons underneath it; it is not itself a
+   button. So it takes a smaller 2px lift than the cards that actually go
+   somewhere — the depth still says "this is a surface" without promising a
+   click that isn't there, and four identical 4px lifts stacked down the page
+   would read as a template rather than a hierarchy. */
 .sc-header {
   border: 1px solid rgba(23, 20, 46, 0.07);
   border-radius: 16px;
   padding: 1.125rem 1.25rem;
   background: #FFFFFF;
-  box-shadow: 0 1px 2px rgba(23, 20, 46, 0.04);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  box-shadow: var(--lx-shadow-1);
+  transition: border-color var(--lx-lift) ease,
+              box-shadow var(--lx-lift) var(--lx-ease-out),
+              transform var(--lx-lift) var(--lx-ease-out);
 }
 
 .sc-header:hover {
   border-color: rgba(23, 20, 46, 0.12);
-  box-shadow: 0 8px 20px rgba(23, 20, 46, 0.07);
+  box-shadow: var(--lx-shadow-2);
+  transform: translateY(-2px);
 }
 
 .sc-completed {
@@ -426,6 +474,7 @@ html:has(.learn-app) body {
   box-shadow: none;
 }
 
+/* Locked sections don't respond — nothing is going to happen. */
 .sc-locked:hover {
   border-color: rgba(23, 20, 46, 0.07);
   box-shadow: none;
@@ -449,16 +498,35 @@ html:has(.learn-app) body {
 
 .sc-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1.1rem;
+  font-size: 1.0625rem;
   font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
   color: #17152B;
   margin: 0 0 0.3rem;
 }
 
+/* …but the active course is the page's headline, and at 1.1rem it was
+   competing with its own lesson rows. Size carries the hierarchy here;
+   the weight stays where it is. */
+.sc-header.sc-hero .sc-title {
+  font-size: 1.4375rem;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.4rem;
+  text-wrap: balance;
+}
+
+.sc-header.sc-hero .sc-desc {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  max-width: 30rem;
+}
+
 .sc-desc {
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   color: #6B7086;
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0 0 0.75rem;
 }
 
@@ -482,9 +550,14 @@ html:has(.learn-app) body {
   height: 100%;
   border-radius: 99px;
   background: linear-gradient(90deg, var(--lx-accent), var(--lx-accent-bright));
-  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transition: width 0.6s var(--lx-ease-settle);
   position: relative;
 }
+
+/* The leading-edge marker only makes sense once the bar has left the gate —
+   at 0% it sits outside the track looking like a stray dot. */
+.sc-progress-fill::after { transition: opacity 0.3s ease 0.2s; }
+.sc-progress-fill[style*=": 0%"]::after { opacity: 0; transition-delay: 0s; }
 
 /* Glowing leading-edge node — the "distinctive" progress indicator asked
    for: a small lit marker traveling the journey, not a generic loading bar. */
@@ -509,16 +582,20 @@ html:has(.learn-app) body {
 }
 
 .sc-progress-text {
-  font-size: 0.68rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 0.7rem;
   font-weight: 700;
-  color: #6E7389;
-  min-width: 2rem;
+  color: #4A5064;
+  min-width: 2.25rem;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .sc-meta {
   font-size: 0.68rem;
   color: #6E7389;
+  font-variant-numeric: tabular-nums;
 }
 
 .sc-badge {
@@ -560,14 +637,21 @@ html:has(.learn-app) body {
   display: flex;
   align-items: center;
   gap: 1.25rem;
-  box-shadow: 0 24px 48px rgba(76, 47, 196, 0.12), 0 4px 14px rgba(23, 20, 46, 0.06);
+  /* Was a violet shadow left over from the pre-turquoise palette — under a
+     teal-accented card it read as a grey-purple smudge. Now mixed toward the
+     brand navy and accent, so the card floats in its own colour family. */
+  box-shadow: 0 20px 40px rgba(15, 42, 63, 0.10),
+              0 4px 14px rgba(var(--lx-accent-rgb), 0.10);
   position: relative;
   overflow: hidden;
 }
 
+/* The active course is the one section worth reaching for, so it takes the
+   full 4px lift the quieter sections don't. */
 .sc-header.sc-hero:hover {
-  box-shadow: 0 28px 56px rgba(76, 47, 196, 0.16), 0 6px 16px rgba(23, 20, 46, 0.07);
-  transform: none;
+  box-shadow: 0 28px 52px rgba(15, 42, 63, 0.13),
+              0 6px 18px rgba(var(--lx-accent-rgb), 0.16);
+  transform: translateY(-4px);
 }
 
 .sc-hero-content {
@@ -647,13 +731,23 @@ html:has(.learn-app) body {
 
 .ln-row:hover {
   border-color: rgba(var(--lx-accent-rgb), 0.4);
-  box-shadow: 0 6px 16px rgba(23, 20, 46, 0.07);
-  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15, 42, 63, 0.08);
+  transform: translateY(-2px);
 }
 
+/* Keyboard focus earns the lift too, not just a ring — otherwise the list
+   only feels alive to people using a mouse. */
 .ln-row:focus-visible {
   outline: 2px solid var(--lx-accent);
   outline-offset: 2px;
+  border-color: rgba(var(--lx-accent-rgb), 0.4);
+  box-shadow: 0 8px 18px rgba(15, 42, 63, 0.08);
+  transform: translateY(-2px);
+}
+
+.ln-row.ln-locked:focus-visible {
+  transform: none;
+  box-shadow: none;
 }
 
 /* Upcoming stops on the path stay neutral — the turquoise is spent on the
@@ -687,15 +781,18 @@ html:has(.learn-app) body {
 }
 
 .ln-label {
-  font-size: 0.67rem;
+  font-size: 0.66rem;
   font-weight: 600;
-  color: #6E7389;
+  color: #7C8194;
+  letter-spacing: 0.005em;
+  font-variant-numeric: tabular-nums;
 }
 
 .ln-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 600;
+  letter-spacing: -0.008em;
   color: #17152B;
   white-space: nowrap;
   overflow: hidden;
@@ -718,6 +815,10 @@ html:has(.learn-app) body {
   border-radius: 50%;
 }
 
+/* This arrow used to nudge itself sideways forever. A permanent animation
+   stops meaning anything after about ten seconds and just keeps the page
+   busy at the edge of vision — so it now moves when the row is actually
+   pointed at, which is the only moment the hint is worth anything. */
 .ln-current-arrow {
   color: var(--lx-accent-ink);
   width: 26px;
@@ -727,12 +828,13 @@ html:has(.learn-app) body {
   align-items: center;
   justify-content: center;
   background: rgba(var(--lx-accent-rgb), 0.1);
-  animation: ln-arrow-nudge 1.6s ease-in-out infinite;
+  transition: transform 0.2s var(--lx-ease-out), background 0.2s ease;
 }
 
-@keyframes ln-arrow-nudge {
-  0%, 100% { transform: translateX(0); }
-  50%      { transform: translateX(2px); }
+.ln-row-wrapper[data-status='current']:hover .ln-current-arrow,
+.ln-row-wrapper[data-status='current']:focus-within .ln-current-arrow {
+  transform: translateX(3px);
+  background: rgba(var(--lx-accent-rgb), 0.16);
 }
 
 .ln-lock {
@@ -781,15 +883,17 @@ html:has(.learn-app) body {
   background: #FFFFFF;
   border: 1.5px solid rgba(var(--lx-accent-rgb), 0.5);
   border-radius: 16px;
-  box-shadow: 0 10px 28px rgba(var(--lx-accent-rgb), 0.14),
-              0 2px 6px rgba(23, 20, 46, 0.05);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: var(--lx-shadow-accent);
+  transition: border-color var(--lx-lift) ease,
+              box-shadow var(--lx-lift) var(--lx-ease-out),
+              transform var(--lx-lift) var(--lx-ease-out);
 }
 
-.ln-row-wrapper[data-status='current']:hover {
+.ln-row-wrapper[data-status='current']:hover,
+.ln-row-wrapper[data-status='current']:focus-within {
   border-color: var(--lx-accent);
-  box-shadow: 0 14px 34px rgba(var(--lx-accent-rgb), 0.2),
-              0 2px 6px rgba(23, 20, 46, 0.05);
+  box-shadow: var(--lx-shadow-accent-lift);
+  transform: translateY(-3px);
 }
 
 /* A turquoise cap across the top marks the active card at a glance. */
@@ -886,11 +990,15 @@ html:has(.learn-app) body {
   box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.32);
 }
 
+.ln-start-btn svg { transition: transform 0.18s var(--lx-ease-out); }
+
 .ln-start-btn:hover {
   opacity: 0.94;
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(var(--lx-accent-rgb), 0.4);
 }
+
+.ln-start-btn:hover svg { transform: translateX(3px); }
 
 .ln-start-btn:active {
   transform: none;
@@ -1017,8 +1125,9 @@ html:has(.learn-app) body {
 
 .pc-header {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   font-weight: 700;
+  letter-spacing: -0.005em;
   color: #17152B;
   margin-bottom: 0.75rem;
 }
@@ -1066,7 +1175,7 @@ html:has(.learn-app) body {
   height: 100%;
   background: linear-gradient(90deg, var(--lx-accent), var(--lx-accent-bright));
   border-radius: 99px;
-  transition: width 0.5s ease;
+  transition: width 0.6s var(--lx-ease-settle);
 }
 
 .pc-xp-text {
@@ -1097,14 +1206,19 @@ html:has(.learn-app) body {
 
 .pc-stat-value {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.9rem;
+  font-size: 1.0625rem;
   font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: #17152B;
+  font-variant-numeric: tabular-nums;
 }
 
 .pc-stat-label {
-  font-size: 0.62rem;
-  color: #6E7389;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: #7C8194;
 }
 
 /* ── Signup Card (compact) ────────────────────────────────── */
@@ -1183,23 +1297,29 @@ html:has(.learn-app) body {
 
 .qw-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.82rem;
+  font-size: 0.8125rem;
   font-weight: 700;
+  letter-spacing: -0.005em;
   color: #17152B;
 }
 
 .qw-view-all {
-  font-size: 0.65rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--lx-accent-ink);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  transition: color 0.15s;
+  padding: 0.1rem 0;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.qw-view-all:hover { color: var(--lx-accent-deep); }
+/* A text link needs to prove it is a link on hover; colour alone is thin. */
+.qw-view-all:hover {
+  color: var(--lx-accent-deep);
+  border-bottom-color: rgba(var(--lx-accent-rgb), 0.45);
+}
 
 .qw-list {
   display: flex;
@@ -1213,11 +1333,15 @@ html:has(.learn-app) body {
   padding-top: 0.7rem;
 }
 
+/* "This Week" is a divider label, not a heading — uppercase micro-tracking
+   files it with the other structural labels instead of the card titles. */
 .qw-weekly-label {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  color: #6E7389;
-  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #8A8FA3;
+  margin-bottom: 0.55rem;
 }
 
 /* ── Placeholder views ────────────────────────────────────── */
@@ -1281,15 +1405,15 @@ html:has(.learn-app) body {
 }
 
 @keyframes chv-shadow-breathe {
-  0%, 100% { transform: scaleX(1); opacity: 0.16; }
-  50%      { transform: scaleX(0.88); opacity: 0.1; }
+  0%, 100% { transform: scaleX(1); opacity: 0.14; }
+  50%      { transform: scaleX(0.94); opacity: 0.1; }
 }
 
 .chv-orbit {
   animation: chv-spin linear infinite;
 }
-.chv-orbit--slow { animation-duration: 22s; }
-.chv-orbit--fast { animation-duration: 15s; animation-direction: reverse; }
+.chv-orbit--slow { animation-duration: 34s; }
+.chv-orbit--fast { animation-duration: 24s; animation-direction: reverse; }
 
 @keyframes chv-spin {
   from { transform: rotate(0deg); }
@@ -1297,7 +1421,7 @@ html:has(.learn-app) body {
 }
 
 .chv-node {
-  animation: chv-pulse 3s ease-in-out infinite;
+  animation: chv-pulse 4.5s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -1308,26 +1432,26 @@ html:has(.learn-app) body {
 .chv-node--5 { animation-delay: 2.4s; }
 
 @keyframes chv-pulse {
-  0%, 100% { transform: scale(1);   opacity: 0.85; }
-  50%      { transform: scale(1.35); opacity: 1; }
+  0%, 100% { transform: scale(1);    opacity: 0.88; }
+  50%      { transform: scale(1.16); opacity: 1; }
 }
 
 .chv-chip {
-  animation: chv-float 4s ease-in-out infinite;
+  animation: chv-float 5.5s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }
 
 @keyframes chv-float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50%      { transform: translateY(-6px) rotate(-3deg); }
+  50%      { transform: translateY(-4px) rotate(-2deg); }
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
 
 @media (max-width: 1100px) {
   .learn-app {
-    grid-template-columns: 200px 1fr 280px;
+    grid-template-columns: 200px minmax(0, 1fr) 280px;
   }
   .learn-main {
     padding: 1.5rem 2rem;
@@ -1336,8 +1460,12 @@ html:has(.learn-app) body {
 }
 
 @media (max-width: 900px) {
+  /* A bare 1fr is minmax(auto, 1fr), and that auto floor refuses to shrink
+     below its content — so the horizontally-scrolling nav strip, which is
+     wider than a phone screen on purpose, pushed the whole grid out and gave
+     the page a 10px horizontal scroll instead of scrolling inside itself. */
   .learn-app {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 54px auto 1fr auto;
   }
 
@@ -1485,8 +1613,9 @@ html:has(.learn-app) body {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.62rem;
-  color: #6E7389;
+  font-size: 0.63rem;
+  color: #7C8194;
+  font-variant-numeric: tabular-nums;
   margin-bottom: 0.7rem;
 }
 
@@ -1508,16 +1637,18 @@ html:has(.learn-app) body {
   margin-bottom: 0.35rem;
 }
 
-.pc-goal-label { font-size: 0.65rem; color: #6E7389; }
+.pc-goal-label { font-size: 0.66rem; color: #7C8194; letter-spacing: 0.01em; }
 
 .pc-goal-value {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #6B7086;
+  letter-spacing: -0.01em;
+  color: #4A5064;
+  font-variant-numeric: tabular-nums;
 }
 
 .pc-goal-value.is-met { color: var(--lx-success); }
@@ -1533,7 +1664,9 @@ html:has(.learn-app) body {
   height: 100%;
   background: linear-gradient(90deg, var(--lx-accent), var(--lx-accent-bright));
   border-radius: 99px;
-  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+  /* A hair behind the level bar above it so the two read as a sequence
+     rather than one synchronised block. */
+  transition: width 0.6s var(--lx-ease-settle) 90ms, background 0.3s ease;
 }
 
 .pc-goal-fill.is-met { background: linear-gradient(90deg, var(--lx-success), #22C55E); }

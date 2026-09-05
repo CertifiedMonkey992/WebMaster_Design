@@ -16,6 +16,7 @@ import HeartsPanel from './HeartsPanel'
 import GemsPanel from './GemsPanel'
 import StreakPanel from './StreakPanel'
 import { formatNumber } from '../../utils/progressionUtils'
+import useIncreaseFlash from '../../hooks/useIncreaseFlash'
 
 export default function PlayerStatusBar({ compact = false, onOpenShop }) {
   const { vm } = useProgression()
@@ -34,6 +35,7 @@ export default function PlayerStatusBar({ compact = false, onOpenShop }) {
   useClock()
 
   const streakActive = vm.streak > 0
+  const streakRose = useIncreaseFlash(vm.streak)
   const heartsLow = vm.hearts === 0
 
   return (
@@ -43,7 +45,7 @@ export default function PlayerStatusBar({ compact = false, onOpenShop }) {
         <button
           type="button"
           data-popover-trigger
-          className={`pg-pill pg-pill--streak${streakActive ? ' is-active' : ' is-dim'}`}
+          className={`pg-pill pg-pill--streak${streakActive ? ' is-active' : ' is-dim'}${streakRose ? ' just-rose' : ''}`}
           onClick={() => toggle('streak')}
           aria-expanded={openPanel === 'streak'}
           aria-label={`Streak: ${vm.streak} day${vm.streak === 1 ? '' : 's'}. Open streak details`}

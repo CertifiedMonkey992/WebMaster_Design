@@ -6,11 +6,13 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useProgression } from '../../state/ProgressionContext'
+import useProgressWidth from '../../hooks/useProgressWidth'
 import { formatNumber } from '../../utils/progressionUtils'
 
 export default function LevelProgress({ size = 'md', showTitle = true }) {
   const { vm } = useProgression()
   const p = vm.levelProgress
+  const fillWidth = useProgressWidth(p.percent)
 
   return (
     <div className={`lv-block lv-${size}`}>
@@ -32,7 +34,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
           aria-valuemax={p.xpForThisLevel}
           aria-label={`Level ${vm.level} progress`}
         >
-          <div className="lv-fill" style={{ width: `${p.percent}%` }} />
+          <div className="lv-fill" style={{ width: `${fillWidth}%` }} />
         </div>
 
         <div className="lv-meta">

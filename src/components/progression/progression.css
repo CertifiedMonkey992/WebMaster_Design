@@ -42,12 +42,16 @@
   --pg-green-fill:#22C55E;
   --pg-gold:      var(--lx-gold-ink);
 
-  /* ── Elevation (soft, natural, tinted toward the brand — never harsh black) ── */
-  --pg-shadow-1:  0 1px 2px rgba(23, 20, 46, 0.05);
-  --pg-shadow-2:  0 8px 20px rgba(23, 20, 46, 0.07), 0 1px 3px rgba(23, 20, 46, 0.05);
-  --pg-shadow-3:  0 24px 48px rgba(15, 42, 63, 0.16), 0 4px 14px rgba(23, 20, 46, 0.07);
-  --pg-shadow-hover: 0 12px 26px rgba(23, 20, 46, 0.10), 0 3px 8px rgba(23, 20, 46, 0.06);
-  --pg-shadow-pop: 0 28px 64px rgba(23, 20, 46, 0.16), 0 6px 18px rgba(23, 20, 46, 0.08);
+  /* ── Elevation ──
+     Aliased onto the shared tinted set in index.css so the dashboard and the
+     rest of the app can't drift apart. All navy-mixed rather than neutral
+     black: on this cool off-white ground a black penumbra reads as grey
+     smudge, a navy one reads as air. */
+  --pg-shadow-1:     var(--lx-shadow-1);
+  --pg-shadow-2:     var(--lx-shadow-2);
+  --pg-shadow-3:     var(--lx-shadow-pop);
+  --pg-shadow-hover: var(--lx-shadow-3);
+  --pg-shadow-pop:   var(--lx-shadow-pop);
 
   --pg-gradient-brand: linear-gradient(90deg, var(--lx-accent), var(--lx-accent-bright));
   --pg-gradient-brand-soft: linear-gradient(135deg, rgba(var(--lx-accent-rgb), 0.12), rgba(var(--lx-accent-rgb), 0.08));
@@ -103,7 +107,10 @@
 
 .pg-pill-icon { flex-shrink: 0; transition: filter 0.2s ease, transform 0.2s ease; }
 .pg-pill:hover .pg-pill-icon { transform: scale(1.08); }
-.pg-pill-value { min-width: 0.9ch; }
+.pg-pill-value {
+  min-width: 0.9ch;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Inactive (zero) items stay quiet — the colour only appears once it means something */
 .pg-pill.is-dim .pg-pill-icon { color: #C5C8D6; }
@@ -145,6 +152,21 @@
   0%   { transform: scale(1); }
   40%  { transform: scale(1.22); }
   100% { transform: scale(1); }
+}
+
+/* A streak is the one number in this app that can only be earned by coming
+   back, so it is the one number worth acknowledging when it moves. The flame
+   swells once and settles — no loop, and nothing at all on a page load or
+   when the streak breaks (see useIncreaseFlash). */
+@keyframes pg-streak-rise {
+  0%   { transform: scale(1)    translateY(0); }
+  35%  { transform: scale(1.28) translateY(-2px); }
+  100% { transform: scale(1)    translateY(0); }
+}
+
+.pg-pill--streak.just-rose .pg-pill-icon,
+.pc-stat.just-rose .pc-stat-flame {
+  animation: pg-streak-rise 0.6s var(--lx-ease-out);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -613,14 +635,18 @@
 .lv-top { display: flex; align-items: baseline; gap: 0.45rem; margin-bottom: 0.3rem; }
 .lv-label {
   font-family: var(--pg-display);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--pg-text);
+  font-variant-numeric: tabular-nums;
 }
+/* The level title is a badge for the level, so it stays a notch below the
+   label it sits beside rather than matching it. */
 .lv-title {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--pg-accent-deep);
   font-weight: 700;
 }
@@ -637,9 +663,14 @@
   height: 100%;
   background: var(--pg-gradient-brand);
   border-radius: 99px;
-  transition: width 0.65s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transition: width 0.65s var(--lx-ease-settle);
   position: relative;
 }
+
+/* Same reasoning as the course bar: the lit node marks a leading edge, and
+   at zero there is no edge for it to mark. */
+.lv-fill::after { transition: opacity 0.3s ease 0.2s; }
+.lv-fill[style*=": 0%"]::after { opacity: 0; transition-delay: 0s; }
 
 .lv-fill::after {
   content: '';
@@ -653,7 +684,12 @@
   box-shadow: 0 0 8px rgba(var(--lx-accent-rgb), 0.6);
 }
 
-.lv-meta { font-size: 0.64rem; color: var(--pg-faint); margin-top: 0.32rem; }
+.lv-meta {
+  font-size: 0.65rem;
+  color: var(--pg-faint);
+  margin-top: 0.32rem;
+  font-variant-numeric: tabular-nums;
+}
 .lv-meta-next { color: var(--pg-faint); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -692,6 +728,7 @@
 }
 
 .qc-compact-fill {
+  /* stagger set per-row below */
   height: 100%;
   background: var(--pg-gradient-brand);
   border-radius: 99px;
@@ -699,7 +736,17 @@
 }
 .qc-compact-fill.is-done { background: linear-gradient(90deg, var(--lx-success), #22C55E); }
 
+/* Three quest bars snapping to their values on the same frame is the tell
+   that they were generated together rather than designed. A 70ms cascade —
+   below the threshold of looking like a "sequence", above the threshold of
+   looking simultaneous — reads as the list settling in. */
+.qw-list .qc-compact:nth-child(1) .qc-compact-fill { transition-delay: 60ms; }
+.qw-list .qc-compact:nth-child(2) .qc-compact-fill { transition-delay: 130ms; }
+.qw-list .qc-compact:nth-child(3) .qc-compact-fill { transition-delay: 200ms; }
+.qw-weekly .qc-compact-fill { transition-delay: 270ms; }
+
 .qc-compact-count {
+  font-variant-numeric: tabular-nums;
   font-family: var(--pg-display);
   font-size: 0.68rem;
   font-weight: 700;
@@ -748,7 +795,9 @@
   position: relative;
   overflow: hidden;
   box-shadow: var(--pg-shadow-1);
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: border-color var(--lx-lift) ease,
+              box-shadow var(--lx-lift) var(--lx-ease-out),
+              transform var(--lx-lift) var(--lx-ease-out);
 }
 
 .qc-card::before {
@@ -763,7 +812,15 @@
 .qc-medium { --qc-accent: var(--lx-accent); }
 .qc-hard   { --qc-accent: #D97706; }
 
-.qc-card:hover { border-color: var(--pg-line-2); box-shadow: var(--pg-shadow-hover); transform: translateY(-1px); }
+/* Quest cards are read, not clicked — the only control on them is the Claim
+   button. They get a 2px acknowledgement, not the 4px lift the cards that
+   actually navigate somewhere use. */
+.qc-card:hover,
+.qc-card:focus-within {
+  border-color: var(--pg-line-2);
+  box-shadow: var(--pg-shadow-hover);
+  transform: translateY(-2px);
+}
 .qc-card.is-complete { background: linear-gradient(180deg, rgba(23, 163, 74, 0.05), var(--pg-card) 60%); }
 .qc-card.is-claimable {
   border-color: rgba(14, 165, 233, 0.28);
@@ -823,11 +880,12 @@
   height: 100%;
   background: linear-gradient(90deg, var(--qc-accent, var(--lx-accent)), color-mix(in srgb, var(--qc-accent, var(--lx-accent)) 45%, white));
   border-radius: 99px;
-  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transition: width 0.6s var(--lx-ease-settle);
 }
 .qc-card-fill.is-done { background: linear-gradient(90deg, var(--lx-success), #22C55E); }
 
 .qc-card-count {
+  font-variant-numeric: tabular-nums;
   font-family: var(--pg-display);
   font-size: 0.72rem;
   font-weight: 700;
@@ -1105,6 +1163,7 @@
 .tm-progress-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.4rem; }
 
 .tm-total {
+  font-variant-numeric: tabular-nums;
   font-family: var(--pg-display);
   font-size: 1rem;
   font-weight: 700;
@@ -1112,14 +1171,18 @@
 }
 .tm-total-goal { font-size: 0.72rem; color: var(--pg-faint); font-weight: 600; }
 
-.tm-timer { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.63rem; color: var(--pg-faint); }
+.tm-timer {
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  font-size: 0.63rem; color: var(--pg-faint);
+  font-variant-numeric: tabular-nums;
+}
 
 .tm-track { height: 8px; background: rgba(23, 20, 46, 0.07); border-radius: 99px; overflow: hidden; }
 .tm-fill {
   height: 100%;
   background: var(--pg-gradient-brand);
   border-radius: 99px;
-  transition: width 0.7s cubic-bezier(0.2, 0.8, 0.3, 1);
+  transition: width 0.7s var(--lx-ease-settle);
 }
 
 .tm-rule {
@@ -1157,6 +1220,7 @@
 .tm-bar-fill { display: block; height: 100%; border-radius: 99px; transition: width 0.6s ease; opacity: 0.9; }
 
 .tm-value {
+  font-variant-numeric: tabular-nums;
   font-family: var(--pg-display);
   font-size: 0.68rem;
   font-weight: 700;
@@ -1179,16 +1243,47 @@
 .ac-title { font-family: var(--pg-display); font-size: 1rem; font-weight: 700; margin: 0; color: var(--pg-text); }
 .ac-sub { font-size: 0.7rem; color: var(--pg-faint); margin: 0.15rem 0 0; }
 
+/* This was a complete circle with a percentage printed inside it — the ring
+   said 100% while the number said 33%. It is now drawn from the same figure
+   it displays, and the stroke travels to that value on mount instead of the
+   whole ring fading in. */
 .ac-ring {
+  position: relative;
   width: 44px; height: 44px;
-  border-radius: 50%;
-  border: 2px solid rgba(var(--lx-accent-rgb), 0.25);
-  background: var(--pg-card);
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+}
+
+.ac-ring-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);   /* start the sweep at 12 o'clock */
+  overflow: visible;
+}
+
+.ac-ring-track {
+  fill: none;
+  stroke: rgba(var(--lx-accent-rgb), 0.14);
+  stroke-width: 3;
+}
+
+.ac-ring-fill {
+  fill: none;
+  stroke: var(--lx-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.75s var(--lx-ease-settle);
+}
+
+.ac-ring-num {
+  position: relative;
   font-family: var(--pg-display);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--pg-accent-deep);
+  font-variant-numeric: tabular-nums;
 }
 
 .ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; }
@@ -1231,7 +1326,8 @@
 .ac-progress { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.45rem; }
 .ac-track { flex: 1; height: 3px; background: rgba(23, 20, 46, 0.07); border-radius: 99px; overflow: hidden; }
 .ac-fill { height: 100%; background: var(--pg-accent-2); border-radius: 99px; }
-.ac-count { font-size: 0.58rem; color: var(--pg-faint); font-variant-numeric: tabular-nums; }
+.ac-count {
+  font-variant-numeric: tabular-nums; font-size: 0.58rem; color: var(--pg-faint); font-variant-numeric: tabular-nums; }
 
 .ac-unlocked {
   display: inline-flex; align-items: center; gap: 0.25rem;
@@ -1721,7 +1817,18 @@
     animation: none !important;
   }
   .rt-chip { opacity: 1; }
-  .lv-fill, .qc-card-fill, .qc-compact-fill, .tm-fill, .pg-milestone-fill { transition: none; }
+  .lv-fill, .qc-card-fill, .qc-compact-fill, .tm-fill, .pg-milestone-fill,
+  .ac-fill, .ac-ring-fill, .sc-progress-fill, .pc-goal-fill, .pc-xp-fill {
+    transition: none;
+    transition-delay: 0s;
+  }
+
+  /* Cards keep their hover shadow and border — the feedback survives, only
+     the travel is dropped. */
+  .cl-card, .sc-header, .ln-row, .qc-card,
+  .ln-row-wrapper[data-status='current'] {
+    transform: none !important;
+  }
 }
 
 .dev-test-result {

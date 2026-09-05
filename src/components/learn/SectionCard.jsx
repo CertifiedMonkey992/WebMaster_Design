@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, Fragment } from 'react'
 import LessonNode from './LessonNode'
 import CourseHeroVisual from './CourseHeroVisual'
+import useProgressWidth from '../../hooks/useProgressWidth'
 
 /**
  * A course section. `section` arrives pre-derived from deriveCourse(), so
@@ -14,6 +15,7 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
   const [activeLesson, setActiveLesson] = useState(null)
   const cardRef = useRef(null)
   const { completed, total, pct, totalDuration } = section
+  const fillWidth = useProgressWidth(pct)
 
   useEffect(() => {
     if (!activeLesson) return
@@ -59,7 +61,7 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
     <>
       <div className="sc-progress-row">
         <div className="sc-progress-bar">
-          <div className="sc-progress-fill" style={{ width: `${pct}%` }} />
+          <div className="sc-progress-fill" style={{ width: `${fillWidth}%` }} />
         </div>
         <span className="sc-progress-text">{pct}%</span>
       </div>

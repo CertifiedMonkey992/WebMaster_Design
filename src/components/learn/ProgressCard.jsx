@@ -3,10 +3,14 @@
 import { useProgression } from '../../state/ProgressionContext'
 import LevelProgress from '../progression/LevelProgress'
 import { FlameIcon, Icon } from '../progression/Icons'
+import useProgressWidth from '../../hooks/useProgressWidth'
+import useIncreaseFlash from '../../hooks/useIncreaseFlash'
 
 export default function ProgressCard() {
   const { vm } = useProgression()
   const goalPct = vm.dailyGoalPercent
+  const goalWidth = useProgressWidth(goalPct)
+  const streakRose = useIncreaseFlash(vm.streak)
 
   return (
     <div className="progress-card">
@@ -24,14 +28,14 @@ export default function ProgressCard() {
           </span>
         </div>
         <div className="pc-goal-track">
-          <div className={`pc-goal-fill${goalPct >= 100 ? ' is-met' : ''}`} style={{ width: `${goalPct}%` }} />
+          <div className={`pc-goal-fill${goalPct >= 100 ? ' is-met' : ''}`} style={{ width: `${goalWidth}%` }} />
         </div>
       </div>
 
       <div className="pc-stats">
-        <div className="pc-stat">
+        <div className={`pc-stat${streakRose ? ' just-rose' : ''}`}>
           <span className="pc-stat-value">
-            <FlameIcon size={14} dim={vm.streak === 0} className="pc-stat-flame" />
+            <FlameIcon size={16} dim={vm.streak === 0} className="pc-stat-flame" />
             {vm.streak}
           </span>
           <span className="pc-stat-label">day streak</span>

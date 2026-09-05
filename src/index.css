@@ -95,6 +95,35 @@
   --lx-success-ink:   #15803D;
   --lx-heart:         #F43F5E;   /* coral */
   --lx-heart-ink:     #BE123C;
+
+  /* ── Elevation ────────────────────────────────────────────────────────────
+     Light surfaces sit on a cool off-white ground, and a neutral black shadow
+     turns that ground grey — the cards look smudged rather than floating. So
+     every shadow is mixed toward the brand's deep navy-teal instead: same
+     perceived weight, but the penumbra stays in the same colour family as the
+     page. Opacities are kept low on purpose; depth is the point, glow isn't.
+
+       -1  resting hairline lift (sidebar widgets, list rows)
+       -2  a card that is genuinely raised off the page
+       -3  a card the pointer is on
+       -accent  reserved for surfaces that carry the turquoise itself
+                (the active lesson, the primary card) — nothing else, or the
+                whole interface starts to hum. */
+  --lx-shadow-navy-rgb: 15, 42, 63;
+
+  --lx-shadow-1: 0 1px 2px rgba(15, 42, 63, 0.05);
+  --lx-shadow-2: 0 8px 22px rgba(15, 42, 63, 0.07), 0 1px 3px rgba(15, 42, 63, 0.05);
+  --lx-shadow-3: 0 16px 34px rgba(15, 42, 63, 0.10), 0 3px 8px rgba(15, 42, 63, 0.05);
+  --lx-shadow-pop: 0 26px 56px rgba(15, 42, 63, 0.16), 0 6px 18px rgba(15, 42, 63, 0.07);
+
+  --lx-shadow-accent:      0 10px 25px rgba(var(--lx-accent-rgb), 0.15), 0 1px 3px rgba(15, 42, 63, 0.05);
+  --lx-shadow-accent-lift: 0 18px 36px rgba(var(--lx-accent-rgb), 0.22), 0 4px 10px rgba(15, 42, 63, 0.06);
+
+  /* Motion — one easing for "something settled into place", one for
+     "something responded to you". Shared so timings can't drift apart. */
+  --lx-ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --lx-ease-out:    cubic-bezier(0.33, 1, 0.68, 1);
+  --lx-lift:        180ms;
 }
 
 /* Dark via OS */
@@ -157,4 +186,14 @@ img, canvas { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   [style*="animation"] { animation-duration: 0.01ms !important; }
+
+  /* Hover feedback survives as colour and shadow; only the travel is dropped,
+     so a reduced-motion user still gets a clear "this is interactive" signal. */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto; }
 }

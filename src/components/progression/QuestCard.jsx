@@ -14,6 +14,7 @@ import { useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import { QuestIcon, GemIcon, Icon } from './Icons'
 import { percent } from '../../utils/progressionUtils'
+import useProgressWidth from '../../hooks/useProgressWidth'
 
 const DIFFICULTY_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Challenge' }
 
@@ -23,6 +24,7 @@ export function QuestCard({ quest, variant = 'full' }) {
   const claimGuard = useRef(false)
 
   const pct = percent(quest.progress, quest.target)
+  const fillWidth = useProgressWidth(pct)
   const claimable = quest.completed && !quest.claimed
 
   /* Idempotency at the UI layer too: the ref blocks a second synchronous
@@ -49,7 +51,7 @@ export function QuestCard({ quest, variant = 'full' }) {
             aria-valuemax={quest.target}
             aria-label={quest.description}
           >
-            <div className={`qc-compact-fill${quest.completed ? ' is-done' : ''}`} style={{ width: `${pct}%` }} />
+            <div className={`qc-compact-fill${quest.completed ? ' is-done' : ''}`} style={{ width: `${fillWidth}%` }} />
           </div>
         </div>
         {claimable ? (
@@ -96,7 +98,7 @@ export function QuestCard({ quest, variant = 'full' }) {
           aria-valuemin={0}
           aria-valuemax={quest.target}
         >
-          <div className={`qc-card-fill${quest.completed ? ' is-done' : ''}`} style={{ width: `${pct}%` }} />
+          <div className={`qc-card-fill${quest.completed ? ' is-done' : ''}`} style={{ width: `${fillWidth}%` }} />
         </div>
         <span className="qc-card-count">{quest.progress}/{quest.target}</span>
       </div>
