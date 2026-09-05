@@ -25,6 +25,7 @@
 
 import { XP, CURRENCY, HEARTS } from '../config/progressionConfig'
 import { SHIELD, SHOP_ITEMS } from '../config/shopConfig'
+import { normalizeDay } from '../config/dailyBonusConfig'
 import { getLevelFromXP, getXPProgress, getLevelTitle, clamp } from '../utils/progressionUtils'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
 import { emptyDaily, emptyWeekly } from './storageService'
@@ -34,6 +35,7 @@ import questService from './questService'
 import achievementService from './achievementService'
 import teamService from './teamQuestService'
 import shopService from './shopService'
+import dailyBonusService from './dailyBonusService'
 import { deriveCourse, getSectionById, getLessonById } from '../data/learnData'
 
 /* ── Action names ────────────────────────────────────────────────────────── */
@@ -51,6 +53,7 @@ export const ACTIONS = {
   COMPLETE_PRACTICE:  'COMPLETE_PRACTICE',
   ADD_PRACTICE_TIME:  'ADD_PRACTICE_TIME',
   PURCHASE_ITEM:      'PURCHASE_ITEM',
+  CLAIM_DAILY_BONUS:  'CLAIM_DAILY_BONUS',
   CLAIM_QUEST:        'CLAIM_QUEST',
   CLAIM_ALL_QUESTS:   'CLAIM_ALL_QUESTS',
   CLAIM_TEAM_REWARD:  'CLAIM_TEAM_REWARD',
@@ -61,6 +64,8 @@ export const ACTIONS = {
   DEV_RESET_DAILY:    'DEV_RESET_DAILY',
   DEV_RESET_WEEKLY:   'DEV_RESET_WEEKLY',
   DEV_SHIFT_DAYS:     'DEV_SHIFT_DAYS',
+  DEV_SET_BONUS_DAY:  'DEV_SET_BONUS_DAY',
+  DEV_RESET_BONUS:    'DEV_RESET_BONUS',
 }
 
 /* ── Small internal helpers ──────────────────────────────────────────────── */
@@ -498,6 +503,18 @@ export function reduce(state, action, now = Date.now()) {
       return acc
     }
 
+    case ACTIONS.CLAIM_DAILY_BONUS: {
+      /* `awardXP` is handed in rather than imported by the bonus service,
+         which keeps the dependency pointing one way. */
+      const result = dailyBonusService.claimDailyBonus(acc.state, { awardXP }, now)
+      acc.state = result.state
+      acc.events.push(...result.events)
+      /* A bonus can finish a gem quest or unlock an achievement, so a
+         successful claim runs the same pipeline as any other award. */
+      if (result.ok) merge(acc, runPipeline(acc.state, now))
+      return acc
+    }
+
     case ACTIONS.CLAIM_QUEST: {
       const result = questService.claimQuest(acc.state, payload.questId, now)
       acc.state = result.state
@@ -557,6 +574,34 @@ export function reduce(state, action, now = Date.now()) {
       }
       merge(acc, applyRollover(acc.state, now))
       merge(acc, runPipeline(acc.state, now))
+      return acc
+    }
+
+    /* Jump to a cycle day and mark today unclaimed, so any day of the track
+       can be exercised without waiting a week. */
+    case ACTIONS.DEV_SET_BONUS_DAY: {
+      acc.state = {
+        ...acc.state,
+        dailyBonus: {
+          ...acc.state.dailyBonus,
+          cycleDay: normalizeDay(payload.day ?? 1),
+          lastClaimDate: null,
+        },
+      }
+      return acc
+    }
+
+    case ACTIONS.DEV_RESET_BONUS: {
+      acc.state = {
+        ...acc.state,
+        dailyBonus: {
+          cycleDay: 1,
+          lastClaimDate: null,
+          cycleStartDate: null,
+          cyclesCompleted: 0,
+          totalClaimed: 0,
+        },
+      }
       return acc
     }
 
@@ -620,6 +665,7 @@ export function buildViewModel(state, now = Date.now()) {
       }),
       purchaseCount: state.shop.purchaseCount,
     },
+    dailyBonus: dailyBonusService.getBonusView(state, now),
     achievements: achievementService.listAchievements(state),
     achievementsUnlocked: achievementService.getUnlockedCount(state),
     stats: state.stats,

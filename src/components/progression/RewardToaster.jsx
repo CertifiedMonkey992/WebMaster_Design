@@ -36,6 +36,7 @@ const LIFETIME = {
   DAILY_GOAL_MET: 3000,
   TEAM_MISSION_COMPLETE: 3600,
   TEAM_MISSION_CLAIMED: 2400,
+  DAILY_CYCLE_COMPLETE: 4200,
   LEVEL_UP: 4200,
 }
 
@@ -224,6 +225,19 @@ function Toast({ reward }) {
         <div className="rt-toast rt-toast--quest">
           <Icon name="users" size={18} />
           <span><b>Shared reward claimed</b></span>
+        </div>
+      )
+
+    /* The per-day claim animates inside the bonus panel; only finishing a whole
+       track is worth interrupting the page for. */
+    case 'DAILY_CYCLE_COMPLETE':
+      return (
+        <div className="rt-toast rt-toast--gold">
+          <Icon name="calendar" size={18} />
+          <span>
+            <b>Seven days complete</b>
+            <em>A fresh bonus track starts tomorrow</em>
+          </span>
         </div>
       )
 

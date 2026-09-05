@@ -1,33 +1,72 @@
-/* Gamification section — achievement dashboard mockup */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Gamification.jsx — DAILY REWARDS SECTION
+   ---------------------------------------------------------------------------
+   The visual here is not a mockup and not a screenshot: it is the REAL
+   DailyBonusTrack component from the product, rendered against a view built by
+   the real dailyBonusService. Nothing about the track is re-drawn for
+   marketing, so the section cannot drift away from the shipped feature — if a
+   reward or a card state changes, this section changes with it.
 
-const BADGES_ON  = ['🧠', '⚡', '🔥', '🎯', '⚖️']
-const BADGES_OFF = ['🏆', '🔭', '🤖']
+   The showcase state puts the learner mid-track (three days claimed, day four
+   waiting), which is the state that shows every card variation at once. Dates
+   are derived from the real clock so "today" is genuinely today.
 
-export default function Gamification() {
+   `onClaim` is deliberately not passed: the landing track is inert, and there
+   is no progression provider out here to claim against.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+import { useMemo } from 'react'
+import DailyBonusTrack from './daily/DailyBonusTrack'
+import { getBonusView } from '../services/dailyBonusService'
+import { createDefaultState } from '../services/storageService'
+import { getLocalDateKey, addDays } from '../utils/dateUtils'
+
+/** Everything the section claims the feature does — and does. */
+const FACTS = [
+  'A new reward every calendar day you come back',
+  'Gems, XP and hearts paid into the same balances you spend',
+  'Day 7 hands you a Streak Shield that covers a missed day',
+  'Miss a day and the track waits — it never resets you to zero',
+  'Nothing auto-collects; you claim it yourself',
+]
+
+export default function Gamification({ onStartLearning }) {
+  /* A representative mid-cycle state, run through the real service. Recomputed
+     only when the calendar day changes. */
+  const today = getLocalDateKey()
+  const view = useMemo(() => {
+    const base = createDefaultState()
+    return getBonusView({
+      ...base,
+      dailyBonus: {
+        ...base.dailyBonus,
+        cycleDay: 4,
+        lastClaimDate: addDays(today, -1),
+        cycleStartDate: addDays(today, -3),
+        cyclesCompleted: 0,
+        totalClaimed: 3,
+      },
+    })
+  }, [today])
+
   return (
     <section className="gamification" id="progress" aria-labelledby="gamif-heading">
       <div className="gamif-wrap">
 
         {/* Left: copy */}
         <div className="reveal">
-          <span className="section-eyebrow">Your Progress</span>
+          <span className="section-eyebrow">Daily Rewards</span>
           <h2 className="gamif-heading" id="gamif-heading">
-            Every quiz,<br />every dilemma,<br />every lesson — counted.
+            Seven days.<br />Seven rewards.<br />One habit.
           </h2>
           <p className="gamif-body">
-            XP stacks lesson by lesson. Badges mark real milestones.
-            Streaks hold you accountable. Your dashboard doesn't soften
-            where you've been or what's still left to do.
+            Learning sticks when you keep turning up. LunX pays you for it —
+            a reward waiting every day you return, climbing across a seven-day
+            track to a Streak Shield that protects the run you have built.
           </p>
 
           <ul className="feature-list">
-            {[
-              'Tiered XP — level up from Curious to Architect',
-              'Badges tied to real content, not just completion',
-              'Daily learning streaks',
-              'Weekly module leaderboards',
-              'Dashboard that shows gaps, not just wins',
-            ].map((f, i) => (
+            {FACTS.map((f, i) => (
               <li className="feature-item" key={i}>
                 <span className="feature-dot" aria-hidden="true" />
                 {f}
@@ -35,55 +74,30 @@ export default function Gamification() {
             ))}
           </ul>
 
-          <a href="#" className="btn btn-outline section-cta" style={{ marginTop: '2rem' }}>
-            Open Dashboard →
-          </a>
+          <button
+            type="button"
+            className="btn btn-outline section-cta"
+            style={{ marginTop: '2rem' }}
+            onClick={onStartLearning}
+          >
+            Claim your first reward →
+          </button>
         </div>
 
-        {/* Right: achievement card mockup */}
+        {/* Right: the live Daily Bonus, framed as the product surface it is */}
         <div className="reveal d2">
-          <div className="ach-card" aria-label="Sample achievement dashboard">
-
-            <div className="ach-header">
-              <span className="ach-rank-badge">🎓 AI Explorer</span>
-              <span className="ach-level-tag">Level 5</span>
+          <figure className="gamif-shot">
+            <div className="gamif-shot-bar" aria-hidden="true">
+              <span className="gamif-shot-dots"><i /><i /><i /></span>
+              <span className="gamif-shot-title">LunX · Daily Bonus</span>
             </div>
-
-            <div className="ach-xp-val" aria-label="1,240 experience points">1,240 XP</div>
-            <div className="ach-xp-track" role="progressbar" aria-valuenow={62} aria-valuemin={0} aria-valuemax={100} aria-label="62% to next level">
-              <div className="ach-xp-fill" />
+            <div className="gamif-shot-body">
+              <DailyBonusTrack view={view} variant="showcase" showHeader={false} />
             </div>
-            <p className="ach-xp-sub">620 XP to Level 6 — AI Analyst</p>
-
-            <p className="ach-badges-eyebrow">Badges Earned</p>
-            <div className="ach-badge-grid" aria-label="Earned and locked badges">
-              {BADGES_ON.map((b, i) => (
-                <div className="ach-badge on" key={i} title={['First Lesson', 'Speed Learner', '7-Day Streak', 'Bullseye', 'Ethics Hero'][i]}>
-                  {b}
-                </div>
-              ))}
-              {BADGES_OFF.map((b, i) => (
-                <div className="ach-badge off" key={i} aria-label="Locked badge">
-                  {b}
-                </div>
-              ))}
-            </div>
-
-            <div className="ach-streak-row" aria-label="14-day learning streak">
-              <span className="ach-streak-icon" aria-hidden="true">🔥</span>
-              <div>
-                <div className="ach-streak-num">14</div>
-                <div className="ach-streak-label">day streak</div>
-              </div>
-              {/* 7 days, last 5 lit */}
-              <div className="streak-pips" aria-hidden="true">
-                {[false, false, true, true, true, true, true].map((lit, i) => (
-                  <span className={`streak-pip${lit ? ' lit' : ''}`} key={i} />
-                ))}
-              </div>
-            </div>
-
-          </div>
+            <figcaption className="gamif-shot-caption">
+              The daily bonus panel, exactly as it appears in the app.
+            </figcaption>
+          </figure>
         </div>
 
       </div>

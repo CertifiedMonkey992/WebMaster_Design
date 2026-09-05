@@ -86,6 +86,10 @@ export default function DevPanel() {
     ['Day key', state.daily.dateKey],
     ['Today', getLocalDateKey()],
     ['Last streak day', state.streak.lastStreakDate ?? '—'],
+    ['Shields', `${vm.shields}/${vm.maxShields}`],
+    ['Bonus day', `${vm.dailyBonus.currentDay}/${vm.dailyBonus.cycleLength}`],
+    ['Bonus ready', vm.dailyBonus.available ? 'yes' : 'claimed today'],
+    ['Last bonus claim', state.dailyBonus.lastClaimDate ?? '—'],
   ]
 
   return (
@@ -140,6 +144,27 @@ export default function DevPanel() {
               <button onClick={() => actions.dev.shiftDays(2)}>Advance 2 days (break streak)</button>
               <button onClick={() => actions.dev.resetDailyQuests()}>Reset daily quests</button>
               <button onClick={() => actions.dev.resetWeeklyQuests()}>Reset weekly quests</button>
+            </div>
+          </div>
+
+          <div className="dev-group">
+            <div className="dev-group-label">Daily bonus</div>
+            <div className="dev-buttons">
+              <button onClick={() => actions.claimDailyBonus()} disabled={!vm.dailyBonus.available}>
+                Claim today
+              </button>
+              <button onClick={() => actions.dev.setBonusDay(vm.dailyBonus.nextDay)}>
+                Simulate next day
+              </button>
+              <button onClick={() => actions.dev.completeBonusCycle()}>Complete cycle</button>
+              <button onClick={() => actions.dev.resetDailyBonus()}>Reset bonus</button>
+            </div>
+            <div className="dev-buttons">
+              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                <button key={day} onClick={() => actions.dev.setBonusDay(day)}>
+                  Day {day}
+                </button>
+              ))}
             </div>
           </div>
 

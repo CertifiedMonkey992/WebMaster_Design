@@ -165,6 +165,10 @@ export function ProgressionProvider({ children }) {
      *  the same purchase is refused rather than charged twice. */
     purchaseItem:   (itemId, txnId) => dispatch(ACTIONS.PURCHASE_ITEM, { itemId, txnId }),
 
+    /** Claim today's daily bonus. Safe to call twice — the second call is
+     *  refused by the stored claim date rather than paying again. */
+    claimDailyBonus: () => dispatch(ACTIONS.CLAIM_DAILY_BONUS),
+
     claimQuest:     (questId) => dispatch(ACTIONS.CLAIM_QUEST, { questId }),
     claimAllQuests: () => dispatch(ACTIONS.CLAIM_ALL_QUESTS),
     claimTeamReward: () => dispatch(ACTIONS.CLAIM_TEAM_REWARD),
@@ -178,6 +182,19 @@ export function ProgressionProvider({ children }) {
       set: (patch) => dispatch(ACTIONS.DEV_SET, patch),
       resetDailyQuests: () => dispatch(ACTIONS.DEV_RESET_DAILY),
       resetWeeklyQuests: () => dispatch(ACTIONS.DEV_RESET_WEEKLY),
+      setBonusDay: (day) => dispatch(ACTIONS.DEV_SET_BONUS_DAY, { day }),
+      resetDailyBonus: () => dispatch(ACTIONS.DEV_RESET_BONUS),
+      /** Claim every remaining day of the current track in one go. Each pass
+       *  clears the claim anchor first, which is exactly what a new calendar
+       *  day would do — so this exercises the real claim path seven times. */
+      completeBonusCycle: () => {
+        for (let i = 0; i < 8; i++) {
+          const bonus = stateRef.current.dailyBonus
+          dispatch(ACTIONS.DEV_SET_BONUS_DAY, { day: bonus.cycleDay })
+          const events = dispatch(ACTIONS.CLAIM_DAILY_BONUS)
+          if (events.some((e) => e.type === 'DAILY_CYCLE_COMPLETE')) break
+        }
+      },
       /** Rewind stored dates by N days to simulate time passing. */
       shiftDays: (days) => {
         const s = stateRef.current
@@ -204,6 +221,11 @@ export function ProgressionProvider({ children }) {
           },
           daily: { ...s.daily, dateKey: shift(s.daily.dateKey) },
           weekly: { ...s.weekly, weekKey: shiftWeek(s.weekly.weekKey) },
+          dailyBonus: {
+            ...s.dailyBonus,
+            lastClaimDate: shift(s.dailyBonus.lastClaimDate),
+            cycleStartDate: shift(s.dailyBonus.cycleStartDate),
+          },
           quests: {
             ...s.quests,
             dailyKey: shift(s.quests.dailyKey),
@@ -290,7 +312,7 @@ const VISIBLE = new Set([
   'STREAK_UPDATED', 'STREAK_MILESTONE', 'STREAK_LOST', 'HEART_LOST',
   'HEARTS_EMPTY', 'HEARTS_RESTORED', 'SECTION_COMPLETE', 'PERFECT_LESSON',
   'DAILY_GOAL_MET', 'TEAM_MISSION_COMPLETE', 'TEAM_MISSION_CLAIMED',
-  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED',
+  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED', 'DAILY_CYCLE_COMPLETE',
 ])
 
 function isVisibleReward(event) {

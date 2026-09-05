@@ -22,7 +22,13 @@ import * as learn from '../data/learnData'
 import * as cfg from '../config/progressionConfig'
 import * as shop from '../config/shopConfig'
 import * as shopSvc from '../services/shopService'
+import * as bonusSvc from '../services/dailyBonusService'
+import * as dbCfg from '../config/dailyBonusConfig'
 import * as putils from '../utils/progressionUtils'
+import { getLocalDateKey } from '../utils/dateUtils'
+
+/** The local date key for an injected timestamp — used all over the bonus tests. */
+const putils_today = (t) => getLocalDateKey(new Date(t))
 
 export async function runProgressionTests() {
 
@@ -558,6 +564,241 @@ export async function runProgressionTests() {
     ok('T23 unknown item is refused',
       run(fresh(), A.PURCHASE_ITEM, { itemId: 'nope', txnId: 'x' }, T0)
         .events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === shopSvc.REASONS.UNKNOWN_ITEM))
+  }
+
+  /* ═════════════════════════════════════════════════════════════════════════
+     DAILY LOGIN BONUS
+     ═════════════════════════════════════════════════════════════════════════ */
+
+  /* ── TEST 24: a brand-new learner is offered Day 1 ── */
+  {
+    const s = fresh()
+    const v = bonusSvc.getBonusView(s, T0)
+    ok('T24 new user is on day 1', v.currentDay === 1, v.currentDay)
+    ok('T24 new user has a reward waiting', v.available === true)
+    ok('T24 nothing claimed yet', s.dailyBonus.totalClaimed === 0 && s.dailyBonus.lastClaimDate === null)
+    ok('T24 day 1 card reads "today"', v.days[0].status === 'today', v.days[0].status)
+    ok('T24 every other day is locked',
+      v.days.slice(1).every(d => d.status === 'locked'),
+      JSON.stringify(v.days.map(d => d.status)))
+    ok('T24 opening the app claims nothing',
+      prog.reconcile(s, T0).state.dailyBonus.totalClaimed === 0)
+    ok('T24 cycle length matches the configured track',
+      dbCfg.CYCLE.length === dbCfg.DAILY_BONUS.CYCLE_LENGTH, dbCfg.CYCLE.length)
+    ok('T24 every reward has a type the service can apply',
+      dbCfg.CYCLE.every(r => Object.values(dbCfg.REWARD_TYPES).includes(r.type)))
+    ok('T24 track days are 1..7 in order',
+      dbCfg.CYCLE.every((r, i) => r.day === i + 1))
+  }
+
+  /* ── TEST 25: claiming pays exactly once, through the central systems ── */
+  {
+    const s = fresh()
+    const r = run(s, A.CLAIM_DAILY_BONUS, {}, T0)
+    ok('T25 day 1 pays 20 gems', r.state.gems === s.gems + 20, `${s.gems} -> ${r.state.gems}`)
+    ok('T25 claim is recorded', r.state.dailyBonus.lastClaimDate === putils_today(T0), r.state.dailyBonus.lastClaimDate)
+    ok('T25 cycle advances to day 2', r.state.dailyBonus.cycleDay === 2, r.state.dailyBonus.cycleDay)
+    ok('T25 totalClaimed increments', r.state.dailyBonus.totalClaimed === 1)
+    ok('T25 emits DAILY_BONUS_CLAIMED', r.events.some(e => e.type === 'DAILY_BONUS_CLAIMED'))
+    ok('T25 gems land in the ledger',
+      r.state.ledger.some(e => e.reason === 'daily-bonus-day-1' && e.amount === 20),
+      JSON.stringify(r.state.ledger[0]))
+    ok('T25 counts toward lifetime gem stats',
+      r.state.stats.totalGemsEarned === s.stats.totalGemsEarned + 20)
+
+    /* Clicking again in the same instant must not pay again. */
+    const again = run(r.state, A.CLAIM_DAILY_BONUS, {}, T0)
+    ok('T25 second claim pays nothing', again.state.gems === r.state.gems, again.state.gems)
+    ok('T25 second claim is refused', again.events.some(e => e.type === 'DAILY_BONUS_ALREADY_CLAIMED'))
+    ok('T25 second claim does not advance the cycle', again.state.dailyBonus.cycleDay === 2)
+
+    /* Ten rapid clicks — the reducer always sees the latest state. */
+    let spam = r.state
+    for (let i = 0; i < 10; i++) spam = run(spam, A.CLAIM_DAILY_BONUS, {}, T0).state
+    ok('T25 ten rapid clicks pay nothing extra', spam.gems === r.state.gems, spam.gems)
+    ok('T25 ten rapid clicks claim once', spam.dailyBonus.totalClaimed === 1, spam.dailyBonus.totalClaimed)
+
+    /* A refresh reloads the anchor, so the guard survives it. */
+    const revived = store.sanitizeState(JSON.parse(JSON.stringify(r.state)), T0)
+    ok('T25 claim survives a save/load round trip',
+      revived.dailyBonus.lastClaimDate === r.state.dailyBonus.lastClaimDate &&
+      revived.dailyBonus.cycleDay === 2 && revived.dailyBonus.totalClaimed === 1,
+      JSON.stringify(revived.dailyBonus))
+    ok('T25 replay after a reload is refused',
+      run(revived, A.CLAIM_DAILY_BONUS, {}, T0).state.gems === revived.gems)
+    ok('T25 view reports claimed for today', bonusSvc.getBonusView(r.state, T0).available === false)
+  }
+
+  /* ── TEST 26: the calendar drives availability, not elapsed hours ── */
+  {
+    const s = run(fresh(), A.CLAIM_DAILY_BONUS, {}, T0).state
+
+    /* Eleven hours later is still the same calendar day. */
+    ok('T26 same day 11h later is still claimed',
+      bonusSvc.getBonusView(s, T0 + 11 * 3600000).available === false)
+
+    /* The next calendar day opens Day 2. */
+    const d2 = bonusSvc.getBonusView(s, T0 + DAY)
+    ok('T26 next day is available', d2.available === true)
+    ok('T26 next day offers day 2', d2.nextDay === 2, d2.nextDay)
+
+    const r2 = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + DAY)
+    ok('T26 day 2 pays 30 XP', r2.state.xp === s.xp + 30, `${s.xp} -> ${r2.state.xp}`)
+    ok('T26 day 2 XP lands in the ledger',
+      r2.state.ledger.some(e => e.kind === 'xp' && e.reason === 'daily-bonus-day-2'))
+    ok('T26 day 2 advances to day 3', r2.state.dailyBonus.cycleDay === 3)
+
+    /* Crossing midnight is one day even when only minutes have passed. */
+    const lateNight = new Date(T0); lateNight.setHours(23, 55, 0, 0)
+    const justAfter = new Date(T0 + DAY); justAfter.setHours(0, 5, 0, 0)
+    const late = run(fresh(lateNight.getTime()), A.CLAIM_DAILY_BONUS, {}, lateNight.getTime()).state
+    ok('T26 ten minutes across midnight is a new day',
+      bonusSvc.getBonusView(late, justAfter.getTime()).available === true)
+  }
+
+  /* ── TEST 27: a missed day does not reset the track ── */
+  {
+    /* Claim day 1 on Monday, skip Tuesday, return Wednesday. */
+    const mon = run(fresh(), A.CLAIM_DAILY_BONUS, {}, T0).state
+    const wed = bonusSvc.getBonusView(mon, T0 + 2 * DAY)
+    ok('T27 a reward is waiting after a missed day', wed.available === true)
+    ok('T27 the track resumes at day 2', wed.nextDay === 2, wed.nextDay)
+    ok('T27 the miss is reported', wed.missedDays === 1, wed.missedDays)
+
+    const claimed = run(mon, A.CLAIM_DAILY_BONUS, {}, T0 + 2 * DAY)
+    ok('T27 day 2 is what actually pays out',
+      claimed.events.some(e => e.type === 'DAILY_BONUS_CLAIMED' && e.day === 2))
+    ok('T27 cycle continues to day 3', claimed.state.dailyBonus.cycleDay === 3)
+
+    /* A long absence behaves the same way under the shipped CONTINUE rule. */
+    const muchLater = bonusSvc.getBonusView(mon, T0 + 40 * DAY)
+    ok('T27 a 40-day absence still resumes at day 2', muchLater.nextDay === 2, muchLater.nextDay)
+    ok('T27 shipped policy is CONTINUE',
+      dbCfg.DAILY_BONUS.ON_MISSED_DAY === dbCfg.MISSED_DAY_POLICY.CONTINUE)
+  }
+
+  /* ── TEST 28: a full seven-day cycle, then a clean restart ── */
+  {
+    let s = fresh()
+    const before = { gems: s.gems, xp: s.xp }
+    const claimedDays = []
+
+    for (let day = 0; day < 7; day++) {
+      const r = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + day * DAY)
+      s = r.state
+      const event = r.events.find(e => e.type === 'DAILY_BONUS_CLAIMED')
+      claimedDays.push(event?.day)
+    }
+
+    ok('T28 the seven claims were days 1..7',
+      JSON.stringify(claimedDays) === JSON.stringify([1, 2, 3, 4, 5, 6, 7]),
+      JSON.stringify(claimedDays))
+    ok('T28 day 7 grants a streak shield', s.streak.shields === 1, s.streak.shields)
+    ok('T28 cycle counted as complete', s.dailyBonus.cyclesCompleted === 1, s.dailyBonus.cyclesCompleted)
+    ok('T28 pointer wraps back to day 1', s.dailyBonus.cycleDay === 1, s.dailyBonus.cycleDay)
+    ok('T28 seven claims recorded', s.dailyBonus.totalClaimed === 7, s.dailyBonus.totalClaimed)
+
+    /* Gems: 20 + 30 + 50 = 100 across days 1, 3 and 5. XP: 30 + 75 = 105. */
+    ok('T28 gem rewards all landed', s.gems >= before.gems + 100, `${before.gems} -> ${s.gems}`)
+    ok('T28 xp rewards all landed', s.xp >= before.xp + 105, `${before.xp} -> ${s.xp}`)
+
+    /* Finishing the track resets ONLY the bonus cycle. */
+    const view = bonusSvc.getBonusView(s, T0 + 6 * DAY)
+    ok('T28 completion is flagged for the UI', view.cycleJustCompleted === true)
+    ok('T28 all seven cards read claimed',
+      view.days.every(d => d.status === 'claimed'),
+      JSON.stringify(view.days.map(d => d.status)))
+
+    const day8 = bonusSvc.getBonusView(s, T0 + 7 * DAY)
+    ok('T28 the new cycle opens at day 1', day8.nextDay === 1 && day8.available === true, day8.nextDay)
+    const r8 = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + 7 * DAY)
+    ok('T28 day 1 of cycle 2 pays 20 gems again', r8.state.gems === s.gems + 20)
+    ok('T28 progression is untouched by the reset',
+      r8.state.xp === s.xp && r8.state.streak.shields === s.streak.shields &&
+      r8.state.stats.totalGemsEarned > 0,
+      `xp ${r8.state.xp} shields ${r8.state.streak.shields}`)
+  }
+
+  /* ── TEST 29: rewards that would land on a full resource pay the fallback ── */
+  {
+    /* Day 4 is hearts. A learner returning the next day is almost always at
+       full hearts, so without a fallback that day would pay nothing. */
+    const full = { ...fresh(), hearts: 5, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } }
+    const r = run(full, A.CLAIM_DAILY_BONUS, {}, T0)
+    ok('T29 hearts stay capped at max', r.state.hearts === 5, r.state.hearts)
+    ok('T29 full hearts pay gems instead', r.state.gems === full.gems + 15, `${full.gems} -> ${r.state.gems}`)
+    ok('T29 the substitution is reported',
+      r.events.some(e => e.type === 'DAILY_BONUS_CLAIMED' && e.substituted === true))
+
+    /* With room to spare, the hearts themselves are what land. */
+    const hurt = { ...fresh(), hearts: 2, heartAnchor: T0, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } }
+    const r2 = run(hurt, A.CLAIM_DAILY_BONUS, {}, T0)
+    ok('T29 missing hearts are restored', r2.state.hearts === 4, r2.state.hearts)
+    ok('T29 no gem substitution when hearts land', r2.state.gems === hurt.gems, r2.state.gems)
+    ok('T29 hearts never exceed the maximum',
+      run({ ...fresh(), hearts: 4, heartAnchor: T0, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } },
+        A.CLAIM_DAILY_BONUS, {}, T0).state.hearts === 5)
+
+    /* Same rule for a full shield bank on day 7. */
+    const maxed = {
+      ...fresh(),
+      streak: { ...fresh().streak, shields: shop.SHIELD.MAX_OWNED },
+      dailyBonus: { ...fresh().dailyBonus, cycleDay: 7 },
+    }
+    const r3 = run(maxed, A.CLAIM_DAILY_BONUS, {}, T0)
+    ok('T29 shields stay capped', r3.state.streak.shields === shop.SHIELD.MAX_OWNED, r3.state.streak.shields)
+    ok('T29 a full shield bank pays gems instead', r3.state.gems === maxed.gems + 60, r3.state.gems)
+  }
+
+  /* ── TEST 30: bonus rewards feed the rest of the progression system ── */
+  {
+    /* A day-7 shield must be a REAL shield: it has to rescue a streak. */
+    let s = { ...fresh(), dailyBonus: { ...fresh().dailyBonus, cycleDay: 7 } }
+    s = run(s, A.CLAIM_DAILY_BONUS, {}, T0).state
+    ok('T30 the bonus shield is in the bank', s.streak.shields === 1, s.streak.shields)
+
+    s = {
+      ...s,
+      streak: { ...s.streak, current: 9, longest: 9, lastActivityDate: putils_today(T0), lastStreakDate: putils_today(T0) },
+    }
+    const missed = prog.reconcile(s, T0 + 2 * DAY)
+    ok('T30 the bonus shield rescues a real streak', missed.state.streak.current === 9, missed.state.streak.current)
+    ok('T30 the bonus shield is consumed once', missed.state.streak.shields === 0, missed.state.streak.shields)
+
+    /* Gems from the bonus are spendable in the shop like any others. */
+    const rich = run({ ...fresh(), gems: 90, dailyBonus: { ...fresh().dailyBonus, cycleDay: 5 } },
+      A.CLAIM_DAILY_BONUS, {}, T0).state
+    ok('T30 shop sees the new balance', rich.gems === 140, rich.gems)
+    ok('T30 bonus gems can buy a shield',
+      shopSvc.getAvailability(rich, 'streak_shield').ok === true)
+    const bought = run(rich, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'db1' }, T0)
+    ok('T30 the purchase settles', bought.state.gems === 40 && bought.state.streak.shields === 1,
+      `${bought.state.gems} gems, ${bought.state.streak.shields} shields`)
+
+    /* XP from the bonus levels the learner up through the normal path. */
+    const xpDay = run({ ...fresh(), xp: 95, level: 1, dailyBonus: { ...fresh().dailyBonus, cycleDay: 6 } },
+      A.CLAIM_DAILY_BONUS, {}, T0)
+    ok('T30 bonus XP triggers a level up', xpDay.events.some(e => e.type === 'LEVEL_UP'))
+    ok('T30 bonus XP counts toward the daily goal', xpDay.state.daily.xp >= 75, xpDay.state.daily.xp)
+  }
+
+  /* ── TEST 31: corrupted or absent bonus state degrades safely ── */
+  {
+    ok('T31 missing block falls back to day 1',
+      store.sanitizeState({ xp: 10 }, T0).dailyBonus.cycleDay === 1)
+    ok('T31 a garbage day is normalised into range',
+      store.sanitizeState({ dailyBonus: { cycleDay: 99 } }, T0).dailyBonus.cycleDay >= 1 &&
+      store.sanitizeState({ dailyBonus: { cycleDay: 99 } }, T0).dailyBonus.cycleDay <= 7,
+      store.sanitizeState({ dailyBonus: { cycleDay: 99 } }, T0).dailyBonus.cycleDay)
+    ok('T31 a negative day is normalised',
+      store.sanitizeState({ dailyBonus: { cycleDay: -4 } }, T0).dailyBonus.cycleDay === 1)
+    ok('T31 a non-string claim date is dropped',
+      store.sanitizeState({ dailyBonus: { lastClaimDate: 42 } }, T0).dailyBonus.lastClaimDate === null)
+    ok('T31 negative counters are floored at zero',
+      store.sanitizeState({ dailyBonus: { totalClaimed: -9 } }, T0).dailyBonus.totalClaimed === 0)
+    /* A save written before the daily bonus existed must still open. */
+    ok('T31 a pre-bonus save still loads',
+      store.sanitizeState({ xp: 500, gems: 300, streak: { current: 4 } }, T0).dailyBonus.totalClaimed === 0)
   }
 
   const passed = results.filter((r) => r.pass).length

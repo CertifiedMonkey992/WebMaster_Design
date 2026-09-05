@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import LearnSidebar from '../components/learn/LearnSidebar'
 import ModuleList   from '../components/learn/ModuleList'
 import RightSidebar from '../components/learn/RightSidebar'
@@ -11,6 +11,10 @@ import PlayerStatusBar from '../components/progression/PlayerStatusBar'
 import RewardToaster   from '../components/progression/RewardToaster'
 import QuestPanel, { QuestBoard } from '../components/progression/QuestPanel'
 import DevPanel        from '../components/progression/DevPanel'
+import DailyBonusIndicator from '../components/daily/DailyBonusIndicator'
+import DailyBonusModal     from '../components/daily/DailyBonusModal'
+
+import { useProgression } from '../state/ProgressionContext'
 
 import './LearnPage.css'
 import '../components/progression/progression.css'
@@ -34,9 +38,21 @@ function PlaceholderView({ viewId }) {
 }
 
 export default function LearnPage({ onGoHome, onLoginClick }) {
+  const { vm } = useProgression()
   const [activeNav, setActiveNav] = useState('learn')
   const [activeLessonId, setActiveLessonId] = useState(null)
   const [questPanelOpen, setQuestPanelOpen] = useState(false)
+  const [bonusOpen, setBonusOpen] = useState(false)
+
+  /* Show the waiting reward once per visit — never claim it. Guarded by a ref
+     so moving between tabs, or dismissing it, does not pop it open again. */
+  const bonusShown = useRef(false)
+  const bonusReady = vm.dailyBonus.available
+  useEffect(() => {
+    if (bonusShown.current || !bonusReady) return
+    bonusShown.current = true
+    setBonusOpen(true)
+  }, [bonusReady])
 
   return (
     <div className="learn-app">
@@ -52,7 +68,10 @@ export default function LearnPage({ onGoHome, onLoginClick }) {
           </span>
           LunX
         </button>
-        <PlayerStatusBar onOpenShop={() => setActiveNav('shop')} />
+        <div className="lt-actions">
+          <DailyBonusIndicator onOpen={() => setBonusOpen(true)} />
+          <PlayerStatusBar onOpenShop={() => setActiveNav('shop')} />
+        </div>
       </header>
 
       <main className="learn-main" id="learn-content">
@@ -77,6 +96,7 @@ export default function LearnPage({ onGoHome, onLoginClick }) {
       )}
 
       <QuestPanel open={questPanelOpen} onClose={() => setQuestPanelOpen(false)} />
+      <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />
 
       {/* Reward animation layer + developer console (dev builds / ?dev=1 only) */}
       <RewardToaster />

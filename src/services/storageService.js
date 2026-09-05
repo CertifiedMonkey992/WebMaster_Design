@@ -14,6 +14,7 @@
 
 import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS } from '../config/progressionConfig'
 import { SHIELD } from '../config/shopConfig'
+import { normalizeDay } from '../config/dailyBonusConfig'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
 
 /** How many recent purchase ids are remembered for the duplicate guard. */
@@ -83,6 +84,18 @@ export function createDefaultState(now = Date.now()) {
 
     /* Achievements — id -> unlockedAt timestamp */
     achievements: {},
+
+    /* Daily login bonus.
+       `lastClaimDate` is the idempotency anchor: while it reads today, every
+       further claim today is refused — including after a refresh, because it
+       persists with everything else. */
+    dailyBonus: {
+      cycleDay: 1,            // the cycle day on offer NEXT (1..CYCLE_LENGTH)
+      lastClaimDate: null,    // "YYYY-MM-DD" of the last claim
+      cycleStartDate: null,   // "YYYY-MM-DD" the current cycle began
+      cyclesCompleted: 0,     // full 7-day tracks finished
+      totalClaimed: 0,        // lifetime claims
+    },
 
     /* Shop
        `seenTxnIds` is the idempotency guard: every confirmed purchase carries
@@ -230,6 +243,16 @@ export function sanitizeState(raw, now = Date.now()) {
 
   if (isObj(raw.sectionsCompleted)) s.sectionsCompleted = { ...raw.sectionsCompleted }
   if (isObj(raw.achievements)) s.achievements = { ...raw.achievements }
+
+  if (isObj(raw.dailyBonus)) {
+    s.dailyBonus = {
+      cycleDay: normalizeDay(raw.dailyBonus.cycleDay),
+      lastClaimDate: typeof raw.dailyBonus.lastClaimDate === 'string' ? raw.dailyBonus.lastClaimDate : null,
+      cycleStartDate: typeof raw.dailyBonus.cycleStartDate === 'string' ? raw.dailyBonus.cycleStartDate : null,
+      cyclesCompleted: Math.max(0, Math.floor(num(raw.dailyBonus.cyclesCompleted, 0))),
+      totalClaimed: Math.max(0, Math.floor(num(raw.dailyBonus.totalClaimed, 0))),
+    }
+  }
 
   if (isObj(raw.shop)) {
     s.shop = {

@@ -38,7 +38,7 @@ export default function App() {
         <Hero onStartLearning={() => setCurrentPage('learn')} />
         <ToolsStrip />
         <Modules />
-        <Gamification />
+        <Gamification onStartLearning={() => setCurrentPage('learn')} />
       </main>
 
       <footer className="footer" role="contentinfo">

@@ -60,6 +60,24 @@ html:has(.learn-app) body {
 
 .learn-topbar > * { pointer-events: auto; }
 
+/* Daily bonus sits beside the player stats, separated by a hairline so it
+   reads as an action rather than a fourth statistic. */
+.lt-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lt-actions .db-indicator::after {
+  content: '';
+  position: absolute;
+  right: -0.4rem;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: rgba(23, 21, 43, 0.1);
+}
+
 .lt-brand {
   display: none;
   align-items: center;
