@@ -1,0 +1,237 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   showcase.css — REAL PRODUCT UI ON THE MARKETING PAGE
+   ---------------------------------------------------------------------------
+   Two jobs only:
+
+     1. Pin the app's light palette inside the frame. The landing page is dark;
+        the product is light. Declaring the tokens here means the real
+        components render in their own theme rather than inheriting the page's.
+
+     2. Present the frame — chrome bar, radius, shadow, optional crop fade.
+
+   Nothing here restyles the product's own components. If a card looks
+   different on this page than it does in the app, that is a bug.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.pf {
+  /* The app's light theme, pinned so the real components look like themselves. */
+  --lx-accent:        #06B6D4;
+  --lx-accent-rgb:    6, 182, 212;
+  --lx-accent-bright: #22D3EE;
+  --lx-accent-soft:   #67E8F9;
+  --lx-accent-wash:   #ECFEFF;
+  --lx-accent-strong: #0891A8;
+  --lx-accent-ink:    #0A6C7C;
+  --lx-accent-deep:   #075E6B;
+  --lx-on-accent:     #05303A;
+  --lx-navy:          #0F2A3F;
+  --lx-navy-soft:     #1E3A52;
+  --lx-gold:          #F59E0B;
+  --lx-gold-ink:      #B45309;
+  --lx-streak:        #F97316;
+  --lx-streak-ink:    #C2410C;
+  --lx-success:       #16A34A;
+  --lx-success-ink:   #15803D;
+  --lx-heart:         #F43F5E;
+  --lx-heart-ink:     #BE123C;
+
+  margin: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #F6F6FB;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  /* The product is a light surface; text inside must not inherit dark-page
+     colour or font stack. */
+  font-family: var(--font-body, system-ui, sans-serif);
+  color: #17152B;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.pf-chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.85rem;
+  background: #EDEFF5;
+  border-bottom: 1px solid rgba(23, 21, 43, 0.08);
+}
+
+.pf-dots { display: flex; gap: 0.3rem; flex-shrink: 0; }
+
+.pf-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(23, 21, 43, 0.16);
+}
+
+.pf-path {
+  overflow: hidden;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.66rem;
+  color: #8A8FA3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pf-body {
+  padding: 1.1rem;
+  overflow: hidden;
+}
+
+/* A cropped surface fades out rather than ending on a hard cut. */
+.pf-body.is-cropped {
+  position: relative;
+  padding-bottom: 2.5rem;
+  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+
+.pf-caption {
+  padding: 0.7rem 1.1rem 0.9rem;
+  font-size: 0.7rem;
+  color: #8A8FA3;
+  border-top: 1px solid rgba(23, 21, 43, 0.07);
+}
+
+/* ── Section scaffolding ──────────────────────────────────────────────────── */
+
+.sc-section {
+  border-top: 1px solid var(--border);
+  padding: 6rem 5%;
+  background: var(--bg);
+}
+
+.sc-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+/* Alternating sides keep three stacked sections from reading as one column. */
+.sc-wrap.flip { direction: rtl; }
+.sc-wrap.flip > * { direction: ltr; }
+
+.section-eyebrow {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 0.75rem;
+}
+
+.sc-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.2vw, 2.9rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: var(--text);
+  text-wrap: balance;
+  margin-bottom: 1rem;
+}
+
+.sc-body {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--muted);
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+  max-width: 34rem;
+}
+
+.sc-body strong { color: var(--text); font-weight: 600; }
+
+/* ── Player-stat strip (the streak section's own composition) ─────────────── */
+
+.sc-stats-frame { display: flex; flex-direction: column; gap: 1rem; }
+
+/* The top bar is normally a sticky strip in the app; here it sits on the same
+   off-white ground it uses there, so it reads in context. */
+.sc-topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.6rem 0.9rem;
+  background: #F6F6FB;
+  border: 1px solid rgba(23, 21, 43, 0.08);
+  border-radius: 14px;
+}
+
+.sc-panel-host {
+  padding: 0.9rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 21, 43, 0.08);
+  border-radius: 16px;
+}
+
+/* ── Quest + shop pairing ─────────────────────────────────────────────────── */
+
+.sc-stack { display: flex; flex-direction: column; gap: 0.7rem; }
+
+.sc-stack-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8A8FA3;
+}
+
+/* Compact shop row — the three real catalogue items and their real prices. */
+.sc-shop-mini { display: flex; flex-direction: column; gap: 0.4rem; list-style: none; }
+
+.sc-shop-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.7rem 0.4rem 0.4rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 21, 43, 0.09);
+  border-radius: 12px;
+}
+
+.sc-shop-mini-art { display: grid; place-items: center; flex-shrink: 0; }
+
+.sc-shop-mini-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: #17152B;
+}
+
+.sc-shop-mini-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--lx-gold-ink);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 1060px) {
+  .sc-wrap {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    direction: ltr;
+  }
+  .sc-wrap.flip { direction: ltr; }
+  /* Copy always leads once stacked, whichever side the frame was on. */
+  .sc-wrap.flip > .sc-copy { order: -1; }
+  .pf { max-width: 46rem; }
+}
+
+@media (max-width: 768px) {
+  .sc-section { padding: 4rem 1.5rem; }
+  .pf-body { padding: 0.85rem; }
+}

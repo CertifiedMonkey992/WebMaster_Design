@@ -279,6 +279,60 @@ export function ProgressionProvider({ children }) {
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHOWCASE PROVIDER
+   ---------------------------------------------------------------------------
+   Serves the same three contexts from a FIXED state, so the real dashboard
+   components can be mounted outside the app — on the marketing page — without
+   a second set of presentational copies to keep in sync.
+
+   What renders inside is genuinely the product: the same components, reading
+   the same view model, built by the same services. Only two things differ —
+   the state is a seeded demo learner instead of the visitor's own, and every
+   action is a no-op, because a landing page must never write to progression.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const NOOP = () => []
+const NOOP_ACTIONS = {
+  awardXP: NOOP, awardGems: NOOP, spendGems: NOOP,
+  loseHeart: NOOP, restoreHeart: NOOP, restoreAllHearts: NOOP, refillHeartsWithGems: NOOP,
+  recordAnswer: NOOP, completeLesson: NOOP, completePractice: NOOP, addPracticeTime: NOOP,
+  purchaseItem: NOOP, claimDailyBonus: NOOP,
+  claimQuest: NOOP, claimAllQuests: NOOP, claimTeamReward: NOOP, rerollTeamMission: NOOP,
+  setDailyGoal: NOOP, reconcileNow: NOOP,
+  dev: { set: NOOP, resetDailyQuests: NOOP, resetWeeklyQuests: NOOP, setBonusDay: NOOP,
+         resetDailyBonus: NOOP, completeBonusCycle: NOOP, shiftDays: NOOP, reset: NOOP, raw: () => null },
+}
+const NOOP_REWARDS = { rewards: [], dismissReward: NOOP, pushRewards: NOOP }
+
+export function ProgressionShowcase({ state, children }) {
+  /* One timestamp for the whole subtree: a marketing panel has no countdown
+     worth ticking, and a frozen clock keeps the section from re-rendering. */
+  const [now] = useState(() => Date.now())
+
+  const value = useMemo(() => ({
+    state,
+    vm: buildViewModel(state, now),
+    dispatch: NOOP,
+    actions: NOOP_ACTIONS,
+    isNewUser: false,
+    recoveredFromCorruption: false,
+    devMode: false,
+    /* Lets a component opt out of interactive affordances if it ever needs to. */
+    showcase: true,
+  }), [state, now])
+
+  return (
+    <ProgressionContext.Provider value={value}>
+      <RewardContext.Provider value={NOOP_REWARDS}>
+        <ClockContext.Provider value={now}>
+          {children}
+        </ClockContext.Provider>
+      </RewardContext.Provider>
+    </ProgressionContext.Provider>
+  )
+}
+
 /* ── Hooks ───────────────────────────────────────────────────────────────── */
 
 export function useProgression() {

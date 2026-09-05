@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-export default function Navbar({ onLoginClick, onStartLearning }) {
+export default function Navbar({ onStartLearning }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -22,26 +22,22 @@ export default function Navbar({ onLoginClick, onStartLearning }) {
       </a>
 
       <ul className="nav-links" role="list">
-        <li><a href="#modules">Modules</a></li>
-        <li><a href="#tools">Tools</a></li>
-        <li><a href="#progress">Progress</a></li>
-        <li><a href="#">About</a></li>
+        <li><a href="#learn">Course</a></li>
+        <li><a href="#streak">Streaks</a></li>
+        <li><a href="#daily-bonus">Rewards</a></li>
+        <li><a href="#quests">Quests</a></li>
       </ul>
 
+      {/* No sign-in button: the login form has no backend, so offering it here
+          would promise an account the product cannot create. Progress persists
+          in the browser instead, which is what the closing CTA says. */}
       <div className="nav-actions">
-        <button
-          className="btn btn-ghost"
-          onClick={onLoginClick}
-          aria-label="Sign in to LunX"
-        >
-          Sign In
-        </button>
         <button
           className="btn btn-primary"
           onClick={onStartLearning}
           aria-label="Start learning for free"
         >
-          Start Free
+          Start learning
         </button>
       </div>
     </nav>

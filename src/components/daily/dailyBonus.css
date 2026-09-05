@@ -488,7 +488,15 @@
   .db-days { grid-template-columns: repeat(4, 1fr); }
   /* Day 7 spans the full width of the second row so the payoff still reads
      as the biggest thing on the track. */
-  .db-day--final { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 0.6rem; }
+  .db-day--final {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .db-day--final .db-day-num { white-space: nowrap; }
+  .db-day--final .db-day-art { width: auto; }
   .db-day--final .db-day-label { margin-bottom: 0; }
 }
 

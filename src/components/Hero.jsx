@@ -5,10 +5,13 @@ export default function Hero({ onStartLearning }) {
   return (
     <>
       {/* Announcement bar */}
+      {/* No "join" link: there are no accounts, so the bar states what is
+          actually true — the course is open and progress saves locally. */}
       <div className="ann-bar" role="banner">
         <span className="ann-pill">Beta</span>
-        <span className="ann-text-hide">LunX is live — AI literacy for everyone</span>
-        <a href="#">Join for free <span aria-hidden="true">→</span></a>
+        <span className="ann-text-hide">
+          LunX is in beta — 22 lessons are live, no account needed
+        </span>
       </div>
 
       <section className="hero" aria-labelledby="hero-heading">
@@ -16,14 +19,14 @@ export default function Hero({ onStartLearning }) {
         <div className="hero-left">
           <h1 className="hero-heading" id="hero-heading">
             Understand AI.<br />
-            Think Critically.<br />
-            Lead the Future.
+            Think critically.<br />
+            Use it well.
           </h1>
 
           <p className="hero-sub">
-            LunX is the AI learning portal built for curious minds at every level.
-            Go from zero to confident — understanding how AI works,
-            how to use it, and how to use it responsibly.
+            22 interactive lessons on how AI actually works — from machine
+            learning to the ethics of using it. Free, no account, and it
+            remembers where you left off.
           </p>
 
           <div className="hero-ctas">
@@ -34,8 +37,8 @@ export default function Hero({ onStartLearning }) {
             >
               Start Learning →
             </button>
-            <a href="#modules" className="btn btn-ghost btn-lg">
-              Explore Modules
+            <a href="#learn" className="btn btn-ghost btn-lg">
+              See the course
             </a>
           </div>
         </div>

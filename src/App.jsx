@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import './App.css'
 
-import Navbar       from './components/Navbar'
-import Hero         from './components/Hero'
-import ToolsStrip   from './components/ToolsStrip'
-import Modules      from './components/Modules'
-import Gamification from './components/Gamification'
-import LoginModal   from './components/LoginModal'
-import LearnPage    from './pages/LearnPage'
+import Navbar          from './components/Navbar'
+import Hero            from './components/Hero'
+import ProductSections from './components/showcase/ProductSections'
+import ClosingCTA      from './components/ClosingCTA'
+import LoginModal      from './components/LoginModal'
+import LearnPage       from './pages/LearnPage'
 
 import { ProgressionProvider } from './state/ProgressionContext'
 
@@ -29,16 +28,12 @@ export default function App() {
 
   return (
     <div className="app">
-      <Navbar
-        onLoginClick={() => setLoginOpen(true)}
-        onStartLearning={() => setCurrentPage('learn')}
-      />
+      <Navbar onStartLearning={() => setCurrentPage('learn')} />
 
       <main>
         <Hero onStartLearning={() => setCurrentPage('learn')} />
-        <ToolsStrip />
-        <Modules />
-        <Gamification onStartLearning={() => setCurrentPage('learn')} />
+        <ProductSections />
+        <ClosingCTA onStartLearning={() => setCurrentPage('learn')} />
       </main>
 
       <footer className="footer" role="contentinfo">
