@@ -1,101 +1,150 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LearnSidebar.jsx — PRIMARY APP NAVIGATION
+   ---------------------------------------------------------------------------
+   One icon family, drawn to a single spec so the strip reads as a set rather
+   than as eight separately-sourced pictures:
+
+     · 24×24 box, currentColor strokes, 2.1px weight, round caps and joins
+     · shapes built from large simple forms — no detail below ~2px, because
+       none of it survives at the 20px the sidebar actually renders
+     · fills used only for small solid accents (a pupil, a flame core), never
+       for a whole shape, so no icon reads as "the filled one"
+
+   The nav is grouped by how often a destination is used rather than by
+   category: what you do daily, then what you check occasionally, then who
+   you are. Profile and More are pinned to the bottom, which is where an app
+   of this shape trains people to look for them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const ico = {
+  width: 22,
+  height: 22,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2.1,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+}
+
+const HomeIcon = () => (
+  <svg {...ico}>
+    <path d="M3.5 10.5 12 3.5l8.5 7" />
+    <path d="M5.5 9.5V20h13V9.5" />
+    <path d="M9.75 20v-5.5h4.5V20" />
+  </svg>
+)
+
+const LearnIcon = () => (
+  <svg {...ico}>
+    <path d="M3 4.5h5a3.5 3.5 0 0 1 4 3.2 3.5 3.5 0 0 1 4-3.2h5v12h-5a3.5 3.5 0 0 0-4 2.8 3.5 3.5 0 0 0-4-2.8H3z" />
+    <path d="M12 7.7v11.6" />
+  </svg>
+)
+
+const PracticeIcon = () => (
+  <svg {...ico}>
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+const LeaderboardIcon = () => (
+  <svg {...ico}>
+    <path d="M4.5 20h15" />
+    <path d="M6 20v-6h4v6" />
+    <path d="M14 20V9h4v11" />
+    <path d="M10 20v-9" />
+  </svg>
+)
+
+const QuestIcon = () => (
+  <svg {...ico}>
+    <path d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z" />
+  </svg>
+)
+
+const ShopIcon = () => (
+  <svg {...ico}>
+    <path d="M4.5 8.5h15L18.5 20h-13z" />
+    <path d="M4.5 8.5 6.5 4.5h11l2 4" />
+    <path d="M9 12a3 3 0 0 0 6 0" />
+  </svg>
+)
+
+const ProfileIcon = () => (
+  <svg {...ico}>
+    <circle cx="12" cy="8.5" r="3.8" />
+    <path d="M5 20a7 7 0 0 1 14 0" />
+  </svg>
+)
+
+const MoreIcon = () => (
+  <svg {...ico}>
+    <circle cx="12" cy="5.5" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="18.5" r="1.5" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+/* `action: 'home'` leaves the learning app entirely; everything else swaps the
+   view. Kept as data so the markup below has one code path. */
 const NAV_GROUPS = [
   {
+    id: 'primary',
     label: 'Learn',
     items: [
-      {
-        id: 'learn',
-        label: 'Learn',
-        icon: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-        ),
-      },
-      {
-        id: 'practice',
-        label: 'Practice',
-        icon: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10"/>
-            <circle cx="12" cy="12" r="6"/>
-            <circle cx="12" cy="12" r="2" fill="currentColor"/>
-          </svg>
-        ),
-      },
+      { id: 'home',     label: 'Home',     Icon: HomeIcon, action: 'home' },
+      { id: 'learn',    label: 'Learn',    Icon: LearnIcon },
+      { id: 'practice', label: 'Practice', Icon: PracticeIcon },
     ],
   },
   {
-    label: 'Community',
+    id: 'secondary',
+    label: 'Progress',
     items: [
-      {
-        id: 'leaderboards',
-        label: 'Leaderboards',
-        icon: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M8 21h8M12 17v4M5 3H2v7c0 3.31 2.69 6 6 6h8c3.31 0 6-2.69 6-6V3h-3"/>
-            <rect x="5" y="3" width="14" height="10" rx="1"/>
-          </svg>
-        ),
-      },
-      {
-        id: 'quests',
-        label: 'Quests',
-        icon: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-          </svg>
-        ),
-      },
+      { id: 'leaderboards', label: 'Leaderboards', Icon: LeaderboardIcon },
+      { id: 'quests',       label: 'Quests',       Icon: QuestIcon },
+      { id: 'shop',         label: 'Shop',         Icon: ShopIcon },
     ],
   },
   {
-    label: 'Personal',
+    id: 'account',
+    label: 'You',
+    footer: true,
     items: [
-      {
-        id: 'shop',
-        label: 'Shop',
-        icon: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
-        ),
-      },
-      {
-        id: 'profile',
-        label: 'Profile',
-        icon: (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        ),
-      },
+      { id: 'profile', label: 'Profile', Icon: ProfileIcon },
+      { id: 'more',    label: 'More',    Icon: MoreIcon },
     ],
   },
 ]
 
-const MORE_ITEM = {
-  id: 'more',
-  label: 'More',
-  icon: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-      <circle cx="5" cy="12" r="1" fill="currentColor"/>
-      <circle cx="12" cy="12" r="1" fill="currentColor"/>
-      <circle cx="19" cy="12" r="1" fill="currentColor"/>
-    </svg>
-  ),
-}
-
 export default function LearnSidebar({ active, onChange, onGoHome }) {
+  const renderItem = (item) => {
+    const isActive = active === item.id
+    return (
+      <li key={item.id} className="ls-nav-item">
+        <button
+          type="button"
+          className={`ls-nav-btn${isActive ? ' active' : ''}`}
+          onClick={() => (item.action === 'home' ? onGoHome() : onChange(item.id))}
+          aria-current={isActive ? 'page' : undefined}
+        >
+          <span className="ls-nav-icon"><item.Icon /></span>
+          <span className="ls-nav-label">{item.label}</span>
+        </button>
+      </li>
+    )
+  }
+
   return (
     <nav className="learn-sidebar" aria-label="Learning navigation">
       <button className="ls-logo" onClick={onGoHome} aria-label="Return to LunX home">
         <span className="ls-logo-mark" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 2h2.5v8H10v2H2V2Z" fill="#fff"/>
+            <path d="M2 2h2.5v8H10v2H2V2Z" fill="#fff" />
           </svg>
         </span>
         LunX
@@ -103,34 +152,16 @@ export default function LearnSidebar({ active, onChange, onGoHome }) {
 
       <div className="ls-nav">
         {NAV_GROUPS.map((group) => (
-          <div key={group.label} className="ls-group">
+          <div
+            key={group.id}
+            className={`ls-group${group.footer ? ' ls-group--footer' : ''}`}
+          >
             <div className="ls-group-label">{group.label}</div>
-            {group.items.map((item) => (
-              <div key={item.id} className="ls-nav-item">
-                <button
-                  className={`ls-nav-btn${active === item.id ? ' active' : ''}`}
-                  onClick={() => onChange(item.id)}
-                  aria-current={active === item.id ? 'page' : undefined}
-                >
-                  <span className="ls-nav-icon">{item.icon}</span>
-                  {item.label}
-                </button>
-              </div>
-            ))}
+            <ul className="ls-group-list" role="list">
+              {group.items.map(renderItem)}
+            </ul>
           </div>
         ))}
-
-        <div className="ls-separator" />
-        <div className="ls-nav-item">
-          <button
-            className={`ls-nav-btn ls-more${active === 'more' ? ' active' : ''}`}
-            onClick={() => onChange('more')}
-            aria-current={active === 'more' ? 'page' : undefined}
-          >
-            <span className="ls-nav-icon">{MORE_ITEM.icon}</span>
-            {MORE_ITEM.label}
-          </button>
-        </div>
       </div>
     </nav>
   )

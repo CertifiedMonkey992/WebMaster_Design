@@ -92,8 +92,8 @@
   background: transparent;
   cursor: pointer;
   font-family: var(--pg-display);
-  font-size: 0.92rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: var(--fw-display);
   letter-spacing: -0.01em;
   color: var(--pg-faint);
   transition: background 0.16s ease, transform 0.12s ease;
@@ -116,21 +116,21 @@
 .pg-pill.is-dim .pg-pill-icon { color: #C5C8D6; }
 .pg-pill.is-dim .pg-pill-value { color: var(--pg-faint); }
 
+/* These three icons each had a zero-offset coloured drop-shadow, which put a
+   soft halo behind every number in the header. The icon's own colour already
+   distinguishes streak from gems from hearts; the glow only added haze. */
 .pg-pill--streak.is-active .pg-pill-icon {
   color: var(--pg-flame);
-  filter: drop-shadow(0 0 5px rgba(249, 115, 22, 0.35));
 }
 .pg-pill--streak.is-active .pg-pill-value { color: var(--pg-flame-deep); }
 
 .pg-pill--gems .pg-pill-icon {
   color: var(--pg-gem);
-  filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.35));
 }
 .pg-pill--gems .pg-pill-value { color: var(--pg-gem-deep); }
 
 .pg-pill--hearts.is-active .pg-pill-icon {
   color: var(--pg-heart);
-  filter: drop-shadow(0 0 5px rgba(244, 63, 94, 0.3));
 }
 .pg-pill--hearts.is-active .pg-pill-value { color: var(--pg-heart-deep); }
 
@@ -143,8 +143,8 @@
 .pg-pill--hearts.is-empty .pg-pill-value { color: var(--pg-heart-deep); }
 
 @keyframes pg-empty-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
-  50%      { box-shadow: 0 0 0 4px rgba(244, 63, 94, 0.12); }
+  0%, 100% { background: #FFF1F2; }
+  50%      { background: #FFE4E6; }
 }
 
 /* Value change flash */
@@ -154,19 +154,107 @@
   100% { transform: scale(1); }
 }
 
-/* A streak is the one number in this app that can only be earned by coming
-   back, so it is the one number worth acknowledging when it moves. The flame
-   swells once and settles — no loop, and nothing at all on a page load or
-   when the streak breaks (see useIncreaseFlash). */
+/* ═══════════════════════════════════════════════════════════════════════
+   THE STREAK FLAME
+   -----------------------------------------------------------------------
+   Two states, and the difference between them is the entire point.
+
+   IDLE — a real flame is never perfectly still, so neither is this one: a
+   ~0.02 scale wobble around its base over 3.4s, with the vertical and
+   horizontal axes on different periods so it never returns to exactly the
+   same shape and never reads as a loop. It is deliberately at the edge of
+   perceptible. You should notice it only if you look straight at it, and it
+   only runs when the streak is actually alive — a streak of zero is not
+   flickering, it is out.
+
+   EARNED — when the count goes up the flame swells, brightens, and throws
+   two small sparks upward, once. That asymmetry is what makes the reward
+   land: if the idle state were already busy, the reward would have nothing
+   to be louder than.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes pg-flame-idle {
+  0%   { transform: scale(1,     1)     rotate(0deg); }
+  30%  { transform: scale(0.985, 1.025) rotate(-0.6deg); }
+  55%  { transform: scale(1.015, 0.99)  rotate(0.5deg); }
+  80%  { transform: scale(0.99,  1.015) rotate(-0.3deg); }
+  100% { transform: scale(1,     1)     rotate(0deg); }
+}
+
+.pg-pill--streak.is-active .pg-pill-icon,
+.pc-stat-flame {
+  transform-origin: 50% 85%;   /* pivot at the base, the way a flame burns */
+}
+
+.pg-pill--streak.is-active .pg-pill-icon {
+  animation: pg-flame-idle 3.4s ease-in-out infinite;
+}
+
+/* The sidebar flame runs a little slower than the header one so the two
+   aren't visibly in step with each other. */
+.pc-stat .pc-stat-flame {
+  animation: pg-flame-idle 4.1s ease-in-out infinite;
+}
+
+.pc-stat.is-dim .pc-stat-flame,
+.pg-pill--streak.is-dim .pg-pill-icon {
+  animation: none;
+}
+
+/* ── Earned ── */
 @keyframes pg-streak-rise {
   0%   { transform: scale(1)    translateY(0); }
-  35%  { transform: scale(1.28) translateY(-2px); }
+  30%  { transform: scale(1.32) translateY(-3px); }
+  55%  { transform: scale(1.08) translateY(0); }
   100% { transform: scale(1)    translateY(0); }
 }
 
 .pg-pill--streak.just-rose .pg-pill-icon,
 .pc-stat.just-rose .pc-stat-flame {
-  animation: pg-streak-rise 0.6s var(--lx-ease-out);
+  /* Overrides the idle flicker for the duration of the reward, then hands
+     it straight back — no gap, because both rest at scale(1). */
+  animation: pg-streak-rise 0.62s var(--lx-ease-out);
+}
+
+/* Two sparks, drawn as pseudo-elements on the flame's container so no extra
+   DOM is created and nothing renders at all outside the reward moment. */
+.pg-status-item,
+.pc-stat { position: relative; }
+
+.pg-pill--streak.just-rose::before,
+.pg-pill--streak.just-rose::after,
+.pc-stat.just-rose::before,
+.pc-stat.just-rose::after {
+  content: '';
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--pg-flame);
+  pointer-events: none;
+  animation: pg-spark 0.62s var(--lx-ease-out) forwards;
+}
+
+.pg-pill--streak.just-rose::before,
+.pc-stat.just-rose::before { --spark-x: -9px; animation-delay: 0.04s; }
+
+.pg-pill--streak.just-rose::after,
+.pc-stat.just-rose::after  { --spark-x: 8px;  animation-delay: 0.11s; }
+
+/* The header flame sits left of its number; the sidebar one is centred over
+   a two-line stat. Nudging the origin keeps both sets of sparks over the
+   flame rather than over the digits. */
+.pg-pill--streak.just-rose::before { left: 22%; }
+.pg-pill--streak.just-rose::after  { left: 30%; }
+.pc-stat.just-rose::before { left: 34%; }
+.pc-stat.just-rose::after  { left: 44%; }
+
+@keyframes pg-spark {
+  0%   { opacity: 0;    transform: translate(0, 0) scale(0.5); }
+  25%  { opacity: 0.9; }
+  100% { opacity: 0;    transform: translate(var(--spark-x), -14px) scale(0.9); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -392,7 +480,7 @@
 .pg-heart-slot { color: #DFE3EA; display: flex; }
 .pg-heart-slot.is-filled {
   color: var(--pg-heart);
-  filter: drop-shadow(0 2px 4px rgba(240, 71, 91, 0.3));
+  filter: drop-shadow(0 2px 3px rgba(15, 42, 63, 0.14));
   animation: pg-bump 0.35s ease;
 }
 
@@ -450,7 +538,9 @@
 
 .pg-gem-hero-icon {
   color: var(--pg-gem);
-  filter: drop-shadow(0 4px 10px rgba(14, 165, 233, 0.35));
+  /* Directional and neutral: the icon casts a shadow, it doesn't emit light.
+     (The old colour here was a leftover blue, not even the gem's amber.) */
+  filter: drop-shadow(0 3px 6px rgba(15, 42, 63, 0.16));
 }
 
 .pg-gem-hero-value {
@@ -505,7 +595,7 @@
 .pg-streak-hero-icon { color: #DFE3EA; }
 .pg-streak-hero-icon.is-lit {
   color: var(--pg-flame);
-  filter: drop-shadow(0 4px 10px rgba(249, 115, 22, 0.35));
+  filter: drop-shadow(0 3px 6px rgba(15, 42, 63, 0.16));
 }
 
 .pg-streak-hero-value {
@@ -608,16 +698,13 @@
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   position: relative;
-  box-shadow: 0 6px 16px rgba(var(--lx-accent-rgb), 0.3);
+  /* Was a 16px turquoise bloom; now a plain soft drop. */
+  box-shadow: 0 4px 10px rgba(15, 42, 63, 0.14);
 }
 
-.lv-badge::after {
-  content: '';
-  position: absolute; inset: 0;
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent 55%);
-  pointer-events: none;
-}
+/* The badge carried a white-to-transparent overlay across its top half — a
+   glass "shine" that made it look lit from above and matched nothing else in
+   the interface. The gradient fill underneath is enough. */
 
 .lv-badge-num {
   font-family: var(--pg-display);
@@ -635,8 +722,8 @@
 .lv-top { display: flex; align-items: baseline; gap: 0.45rem; margin-bottom: 0.3rem; }
 .lv-label {
   font-family: var(--pg-display);
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: var(--fw-display);
   letter-spacing: -0.01em;
   color: var(--pg-text);
   font-variant-numeric: tabular-nums;
@@ -646,9 +733,9 @@
 .lv-title {
   font-size: 0.6rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-label);
   color: var(--pg-accent-deep);
-  font-weight: 700;
+  font-weight: var(--fw-display);
 }
 
 .lv-track {
@@ -681,7 +768,7 @@
   background: #fff;
   border: 2px solid var(--pg-cyan);
   transform: translate(50%, -50%);
-  box-shadow: 0 0 8px rgba(var(--lx-accent-rgb), 0.6);
+  box-shadow: 0 1px 3px rgba(15, 42, 63, 0.2);
 }
 
 .lv-meta {
@@ -713,11 +800,17 @@
 .qc-compact-body { flex: 1; min-width: 0; }
 
 .qc-compact-label {
-  font-size: 0.72rem;
-  font-weight: 500;
+  font-size: 0.715rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.35;
   color: var(--pg-text);
-  margin-bottom: 0.22rem;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 0.3rem;
+  /* Clamp to two lines rather than one: long quest descriptions stay
+     readable, and the card still can't grow without limit. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .qc-compact-track {
@@ -778,9 +871,13 @@
 .qc-compact-claim:active { transform: scale(0.94); }
 .qc-compact-claim:disabled { opacity: 0.5; cursor: default; animation: none; }
 
+/* Was a 4px ring of coloured light pulsing outward forever. It still needs
+   to pull the eye — a claimable reward is genuinely the most important thing
+   on screen — so the pulse survives, but as a shift in the button's own
+   background rather than a halo escaping its edges. */
 @keyframes pg-glow {
-  0%, 100% { box-shadow: 0 0 0 rgba(14, 165, 233, 0); }
-  50%      { box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.14); }
+  0%, 100% { background: rgba(14, 165, 233, 0.1); }
+  50%      { background: rgba(14, 165, 233, 0.22); }
 }
 
 /* ── Full card ── */
@@ -822,9 +919,12 @@
   transform: translateY(-2px);
 }
 .qc-card.is-complete { background: linear-gradient(180deg, rgba(23, 163, 74, 0.05), var(--pg-card) 60%); }
+/* The border alone says "ready to claim" — the extra 0 0 0 1px ring was a
+   second outline sitting directly on top of it, which is what made these
+   cards look outlined-in-light rather than simply highlighted. */
 .qc-card.is-claimable {
-  border-color: rgba(14, 165, 233, 0.28);
-  box-shadow: 0 0 0 1px rgba(14, 165, 233, 0.06), var(--pg-shadow-2);
+  border-color: rgba(14, 165, 233, 0.34);
+  box-shadow: var(--pg-shadow-2);
 }
 .qc-card.is-claimed { opacity: 0.68; }
 
@@ -843,6 +943,7 @@
 .qc-card-titles { flex: 1; min-width: 0; }
 
 .qc-card-title {
+  font-weight: var(--fw-display);
   font-family: var(--pg-display);
   font-size: 0.85rem;
   font-weight: 700;
@@ -1485,7 +1586,7 @@
   font-size: 2rem;
   font-weight: 700;
   color: #fff;
-  box-shadow: 0 14px 34px rgba(var(--lx-accent-rgb), 0.38);
+  box-shadow: 0 8px 20px rgba(15, 42, 63, 0.15);
 }
 
 .rt-levelup-label {
@@ -1566,10 +1667,10 @@
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 24px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 6px 14px rgba(15, 42, 63, 0.14);
   transition: transform 0.14s, box-shadow 0.2s;
 }
-.ps-start:hover { transform: translateY(-1px); box-shadow: 0 14px 30px rgba(var(--lx-accent-rgb), 0.36); }
+.ps-start:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(15, 42, 63, 0.15); }
 .ps-start:active { transform: translateY(0); }
 
 .ps-stats { display: flex; gap: 1.5rem; margin-top: 1rem; }
@@ -1627,7 +1728,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #fff;
-  box-shadow: 0 10px 26px rgba(var(--lx-accent-rgb), 0.32);
+  box-shadow: 0 6px 16px rgba(15, 42, 63, 0.14);
 }
 
 .pv-name { font-family: var(--pg-display); font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--pg-text); }
@@ -1817,6 +1918,23 @@
     animation: none !important;
   }
   .rt-chip { opacity: 1; }
+
+  /* An idle flicker is ambience, which is exactly the category of motion
+     reduced-motion users are asking not to receive. The reward animation
+     goes too — the class still lands, so nothing depends on it visually. */
+  .pg-pill--streak.is-active .pg-pill-icon,
+  .pc-stat .pc-stat-flame,
+  .pg-pill--streak.just-rose .pg-pill-icon,
+  .pc-stat.just-rose .pc-stat-flame {
+    animation: none !important;
+  }
+
+  .pg-pill--streak.just-rose::before,
+  .pg-pill--streak.just-rose::after,
+  .pc-stat.just-rose::before,
+  .pc-stat.just-rose::after {
+    display: none;
+  }
   .lv-fill, .qc-card-fill, .qc-compact-fill, .tm-fill, .pg-milestone-fill,
   .ac-fill, .ac-ring-fill, .sc-progress-fill, .pc-goal-fill, .pc-xp-fill {
     transition: none;

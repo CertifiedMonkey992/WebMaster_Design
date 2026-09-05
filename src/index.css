@@ -1,4 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;600&display=swap');
+/* Nunito carries the whole interface. A learning app is read by people who
+   are already spending effort on the material, so the type should feel warm
+   and low-friction rather than technical — Nunito's rounded terminals and
+   tall x-height do that while staying completely legible at 12px.
+
+   One family, not two. The previous Space Grotesk / DM Sans pairing split
+   headings from body text by TYPEFACE, which meant hierarchy depended on
+   noticing two designs; with a single family carrying weights 400–800 the
+   hierarchy comes from weight and size, which reads faster and is much
+   harder to get subtly wrong. JetBrains Mono stays for code. */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;600&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -27,9 +37,27 @@
   --radius-sm:    4px;
   --radius-lg:    12px;
   --radius-xl:    16px;
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
+  /* Both tokens resolve to Nunito so nothing has to be hunted down later;
+     they stay separate names because the codebase uses them to mean
+     "heading voice" and "reading voice", and that distinction still drives
+     weight and tracking even when the family is shared. */
+  --font-display: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  --font-body:    'Nunito', 'Segoe UI', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* Weight ladder — named so a component asks for a ROLE, not a number, and
+     the whole app can be re-weighted from one place. Nunito's 400 is light
+     enough on white that body copy sits at 500. */
+  --fw-body:      500;
+  --fw-medium:    600;
+  --fw-strong:    700;
+  --fw-display:   800;   /* page + hero titles only */
+
+  /* Rounded faces need slightly tighter tracking at display sizes and
+     slightly looser at caption sizes than a grotesque does. */
+  --tracking-display: -0.02em;
+  --tracking-title:   -0.01em;
+  --tracking-label:    0.06em;   /* uppercase micro-labels */
 
   /* Type scale */
   --text-xs:   0.6875rem;   /* 11px — micro labels */
@@ -116,8 +144,16 @@
   --lx-shadow-3: 0 16px 34px rgba(15, 42, 63, 0.10), 0 3px 8px rgba(15, 42, 63, 0.05);
   --lx-shadow-pop: 0 26px 56px rgba(15, 42, 63, 0.16), 0 6px 18px rgba(15, 42, 63, 0.07);
 
-  --lx-shadow-accent:      0 10px 25px rgba(var(--lx-accent-rgb), 0.15), 0 1px 3px rgba(15, 42, 63, 0.05);
-  --lx-shadow-accent-lift: 0 18px 36px rgba(var(--lx-accent-rgb), 0.22), 0 4px 10px rgba(15, 42, 63, 0.06);
+  /* These two used to be mostly turquoise at 0.15–0.22 alpha over 25–36px of
+     blur. On a near-white ground that stops reading as a shadow and starts
+     reading as a halo — the card looks lit from behind rather than raised.
+     They are now navy-led with only a trace of the accent left in the wide
+     blur, which keeps the cards feeling like they belong to the brand
+     without any of them appearing to glow. */
+  --lx-shadow-accent:      0 6px 16px rgba(15, 42, 63, 0.07),
+                           0 1px 3px rgba(15, 42, 63, 0.05);
+  --lx-shadow-accent-lift: 0 14px 28px rgba(15, 42, 63, 0.10),
+                           0 3px 8px rgba(var(--lx-accent-rgb), 0.07);
 
   /* Motion — one easing for "something settled into place", one for
      "something responded to you". Shared so timings can't drift apart. */
@@ -161,6 +197,7 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
+  font-weight: var(--fw-body);
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;

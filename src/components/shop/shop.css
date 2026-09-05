@@ -309,18 +309,18 @@
 .sh-btn--buy {
   background: var(--lx-accent);
   color: var(--lx-on-accent);
-  box-shadow: 0 6px 16px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 3px 10px rgba(15, 42, 63, 0.12);
 }
 
 .sh-btn--buy:hover:not(:disabled) {
   background: var(--lx-accent-bright);
   transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(var(--lx-accent-rgb), 0.38);
+  box-shadow: 0 6px 13px rgba(15, 42, 63, 0.14);
 }
 
 .sh-btn--buy:active:not(:disabled) {
   transform: none;
-  box-shadow: 0 3px 8px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 2px 5px rgba(15, 42, 63, 0.11);
 }
 
 .sh-btn--buy:disabled {

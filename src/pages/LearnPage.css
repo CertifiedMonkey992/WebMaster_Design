@@ -32,9 +32,13 @@ html:has(.learn-app) body {
   pointer-events: none;
   /* Two washes, not three. The amber one across the bottom sat below the
      threshold of being seen and only muddied the ground it lay on. */
+  /* Halved again. Two large coloured washes sitting behind a page of white
+     cards tinted the space immediately around every card, which contributed
+     to the backlit look. What remains only keeps the ground from reading as
+     flat grey. */
   background:
-    radial-gradient(760px 480px at 8% -8%, rgba(var(--lx-accent-rgb), 0.07), transparent 60%),
-    radial-gradient(620px 460px at 96% 18%, rgba(15, 42, 63, 0.045), transparent 62%);
+    radial-gradient(760px 480px at 8% -8%, rgba(var(--lx-accent-rgb), 0.035), transparent 60%),
+    radial-gradient(620px 460px at 96% 18%, rgba(15, 42, 63, 0.022), transparent 62%);
 }
 
 /* ── Player status bar ────────────────────────────────────────
@@ -103,7 +107,7 @@ html:has(.learn-app) body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 8px rgba(var(--lx-accent-rgb), 0.35);
+  box-shadow: 0 2px 5px rgba(15, 42, 63, 0.11);
 }
 
 /* ── Left Sidebar ─────────────────────────────────────────── */
@@ -118,7 +122,7 @@ html:has(.learn-app) body {
   border-right: 1px solid rgba(23, 20, 46, 0.07);
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 0 1rem;
+  padding: 1.5rem 0 1.25rem;
   overflow-y: auto;
   z-index: 10;
 }
@@ -154,14 +158,18 @@ html:has(.learn-app) body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(var(--lx-accent-rgb), 0.35);
+  box-shadow: 0 2px 6px rgba(15, 42, 63, 0.11);
 }
 
 /* Nav structure */
+/* The whole nav is one column; the account group is pushed to the foot of it
+   so the reading order is "what you do" → "how you're doing" → "you", with
+   the last pair parked where people reach for account controls. */
 .ls-nav {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.25rem;
 }
 
 .ls-group {
@@ -169,13 +177,28 @@ html:has(.learn-app) body {
   flex-direction: column;
 }
 
+/* margin-top:auto rather than a fixed offset, so the account group sits at the
+   bottom on a tall screen and simply follows the others on a short one
+   instead of being pushed off. */
+.ls-group--footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(23, 20, 46, 0.06);
+}
+
+.ls-group-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .ls-group-label {
-  font-size: 0.6rem;
-  font-weight: 600;
+  font-size: 0.58rem;
+  font-weight: var(--fw-display);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #B7BACB;
-  padding: 0.875rem 1.5rem 0.35rem;
+  letter-spacing: var(--tracking-label);
+  color: #A9AEC2;
+  padding: 0.9rem 1.5rem 0.4rem;
 }
 
 .ls-group:first-child .ls-group-label {
@@ -184,74 +207,118 @@ html:has(.learn-app) body {
 
 .ls-nav-item {
   padding: 0 0.65rem;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 .ls-nav-btn {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.8rem;
   width: 100%;
-  padding: 0.55rem 0.75rem;
+  padding: 0.58rem 0.75rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
   cursor: pointer;
-  font-family: var(--font-body, 'DM Sans', sans-serif);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: var(--fw-strong);
+  letter-spacing: -0.005em;
   color: #6B7086;
-  transition: background 0.15s, color 0.15s;
+  /* Named properties and one short duration: the item should feel like it
+     answers instantly, not like it plays an animation. */
+  transition: background-color 150ms ease,
+              color 150ms ease,
+              transform 150ms var(--lx-ease-out);
   text-align: left;
 }
 
 .ls-nav-btn:hover {
-  background: rgba(23, 20, 46, 0.04);
+  background: rgba(23, 20, 46, 0.045);
   color: #17152B;
 }
 
-/* Icons stay quiet at rest — color is reserved for the active state so the
-   sidebar doesn't read as a rainbow of unrelated hues. */
+/* A 1px press is the whole click feedback — enough to feel mechanical,
+   too small to be read as an animation. */
+.ls-nav-btn:active {
+  transform: translateY(1px);
+}
+
+.ls-nav-btn:focus-visible {
+  outline: 2px solid var(--lx-accent);
+  outline-offset: -2px;
+}
+
+.ls-nav-label { flex: 1; min-width: 0; }
+
+/* Icons stay grey at rest — colour is reserved for the active item, so the
+   sidebar never reads as a rainbow of unrelated hues. */
 .ls-nav-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #B7BACB;
-  transition: color 0.15s, filter 0.2s;
+  color: #A9AEC2;
+  transition: color 150ms ease, transform 150ms var(--lx-ease-out);
 }
 
+/* The icon leads the row by a pixel on hover — a hint of direction toward
+   the label, not a bounce. */
 .ls-nav-btn:hover .ls-nav-icon {
   color: var(--lx-accent-ink);
+  transform: translateX(1px);
 }
 
-/* One brand colour marks "you are here" — not a per-item hue. The label uses
-   the ink shade rather than the raw turquoise, which is too light to read as
-   13px text on the tinted ground. */
-.ls-nav-btn.active {
-  background: color-mix(in srgb, var(--lx-accent) 12%, white);
+/* One brand colour marks "you are here" — never a per-item hue. Three quiet
+   signals stacked (tinted ground, brand-ink label, coloured icon) beat one
+   loud one: the row stays obvious when you scan for it and disappears when
+   you aren't looking for it. The label uses the ink shade because raw
+   turquoise is too light to carry 13px text on a tinted ground.
+
+   The old inset 3px rail is gone — a hard bar butted against the pill's
+   rounded corner, and the tint alone already holds the row. */
+.ls-nav-btn.active,
+.ls-nav-btn.active:hover {
+  background: color-mix(in srgb, var(--lx-accent) 13%, white);
   color: var(--lx-accent-ink);
-  font-weight: 700;
-  box-shadow: inset 3px 0 0 var(--lx-accent);
+  font-weight: var(--fw-display);
 }
 
+.ls-nav-btn.active .ls-nav-icon,
+.ls-nav-btn.active:hover .ls-nav-icon {
+  color: var(--lx-accent-ink);
+  /* Sits a touch larger than its neighbours. Transitioned, so moving between
+     sections settles rather than cuts. */
+  transform: scale(1.06);
+}
+
+/* A small brand dot on the trailing edge — the one piece of pure decoration
+   in the sidebar, and it earns its place by making the active row findable
+   at a glance in the collapsed mobile strip where the tint is subtler. */
+.ls-nav-btn.active::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lx-accent);
+  flex-shrink: 0;
+}
+
+/* The active icon sat inside a 5px turquoise drop-shadow — the most visible
+   "glowing outline" in the interface. The active row already carries a tinted
+   background, a heavier label and a coloured icon; a fourth signal made of
+   light was redundant, and it was the part that looked artificial. */
 .ls-nav-btn.active .ls-nav-icon {
-  color: var(--lx-accent);
-  filter: drop-shadow(0 0 5px rgba(var(--lx-accent-rgb), 0.45));
+  color: var(--lx-accent-ink);
 }
 
-.ls-separator {
-  height: 1px;
-  background: rgba(23, 20, 46, 0.07);
-  margin: 0.4rem 1.25rem;
-}
-
-.ls-nav-btn.ls-more {
-  font-size: 0.78rem;
-  color: #6E7389;
-}
+/* .ls-separator and .ls-nav-btn.ls-more used to live here. The separator is
+   now the border on .ls-group--footer, and "More" is an ordinary item in the
+   account group rather than a differently-sized special case — it was the one
+   nav row set two sizes smaller than its neighbours for no reason a reader
+   could see. */
 
 /* ── Main Content ─────────────────────────────────────────── */
 
@@ -321,9 +388,9 @@ html:has(.learn-app) body {
 
 .cl-label {
   font-size: 0.625rem;
-  font-weight: 700;
+  font-weight: var(--fw-display);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-label);
   color: #0E7490;
   margin-bottom: 0.875rem;
 }
@@ -363,17 +430,22 @@ html:has(.learn-app) body {
 }
 
 .cl-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-family: var(--font-display);
   font-size: 1.0625rem;
-  font-weight: 700;
+  font-weight: var(--fw-display);
   line-height: 1.25;
-  letter-spacing: -0.015em;
+  letter-spacing: var(--tracking-title);
   color: #17152B;
   margin-bottom: 0.3rem;
 }
 
+/* text-wrap: pretty keeps a description from ending on a single orphaned
+   word, which Nunito wide setting made common in these narrow columns.
+   Ignored by browsers that do not support it. */
 .cl-desc {
+  text-wrap: pretty;
   font-size: 0.8125rem;
+  font-weight: var(--fw-body);
   color: #6B7086;
   line-height: 1.55;
   margin-bottom: 0.4rem;
@@ -401,15 +473,15 @@ html:has(.learn-app) body {
   cursor: pointer;
   letter-spacing: 0.01em;
   transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.32);
+  box-shadow: 0 4px 11px rgba(15, 42, 63, 0.12);
 }
 
 .cl-btn svg { transition: transform 0.18s var(--lx-ease-out); }
 
 .cl-btn:hover {
-  opacity: 0.94;
+  opacity: 1;
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(var(--lx-accent-rgb), 0.4);
+  box-shadow: 0 6px 14px rgba(15, 42, 63, 0.14);
 }
 
 /* The arrow leads the way out of the card — one small piece of direction,
@@ -418,7 +490,7 @@ html:has(.learn-app) body {
 
 .cl-btn:active {
   transform: none;
-  box-shadow: 0 4px 12px rgba(var(--lx-accent-rgb), 0.32);
+  box-shadow: 0 2px 7px rgba(15, 42, 63, 0.11);
 }
 
 /* ── Section Card ─────────────────────────────────────────── */
@@ -489,19 +561,19 @@ html:has(.learn-app) body {
 }
 
 .sc-level {
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: 0.63rem;
+  font-weight: var(--fw-display);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6E7389;
+  letter-spacing: var(--tracking-label);
+  color: #7C8194;
 }
 
 .sc-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-family: var(--font-display);
   font-size: 1.0625rem;
-  font-weight: 700;
+  font-weight: var(--fw-display);
   line-height: 1.3;
-  letter-spacing: -0.012em;
+  letter-spacing: var(--tracking-title);
   color: #17152B;
   margin: 0 0 0.3rem;
 }
@@ -510,21 +582,25 @@ html:has(.learn-app) body {
    competing with its own lesson rows. Size carries the hierarchy here;
    the weight stays where it is. */
 .sc-header.sc-hero .sc-title {
-  font-size: 1.4375rem;
-  line-height: 1.18;
-  letter-spacing: -0.025em;
+  font-size: 1.5rem;
+  font-weight: var(--fw-display);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-display);
   margin-bottom: 0.4rem;
   text-wrap: balance;
 }
 
 .sc-header.sc-hero .sc-desc {
+  text-wrap: pretty;
   font-size: 0.8125rem;
+  font-weight: var(--fw-body);
   line-height: 1.6;
-  max-width: 30rem;
+  max-width: 34rem;
 }
 
 .sc-desc {
   font-size: 0.8125rem;
+  font-weight: var(--fw-body);
   color: #6B7086;
   line-height: 1.55;
   margin: 0 0 0.75rem;
@@ -570,7 +646,9 @@ html:has(.learn-app) body {
   background: #fff;
   border: 2px solid var(--lx-accent);
   transform: translate(50%, -50%);
-  box-shadow: 0 0 0 3px rgba(var(--lx-accent-rgb), 0.14), 0 2px 6px rgba(var(--lx-accent-rgb), 0.35);
+  /* Was a 3px translucent ring plus a coloured drop — a lit bead. It only
+     needs to mark where the fill has reached. */
+  box-shadow: 0 1px 3px rgba(15, 42, 63, 0.22);
 }
 
 .sc-completed .sc-progress-fill {
@@ -578,13 +656,13 @@ html:has(.learn-app) body {
 }
 .sc-completed .sc-progress-fill::after {
   border-color: var(--lx-success);
-  box-shadow: 0 0 0 3px rgba(23, 163, 74, 0.14), 0 2px 6px rgba(23, 163, 74, 0.3);
+  box-shadow: 0 1px 3px rgba(15, 42, 63, 0.22);
 }
 
 .sc-progress-text {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: var(--fw-display);
   color: #4A5064;
   min-width: 2.25rem;
   text-align: right;
@@ -641,7 +719,7 @@ html:has(.learn-app) body {
      teal-accented card it read as a grey-purple smudge. Now mixed toward the
      brand navy and accent, so the card floats in its own colour family. */
   box-shadow: 0 20px 40px rgba(15, 42, 63, 0.10),
-              0 4px 14px rgba(var(--lx-accent-rgb), 0.10);
+              0 2px 8px rgba(15, 42, 63, 0.11);
   position: relative;
   overflow: hidden;
 }
@@ -650,7 +728,7 @@ html:has(.learn-app) body {
    full 4px lift the quieter sections don't. */
 .sc-header.sc-hero:hover {
   box-shadow: 0 28px 52px rgba(15, 42, 63, 0.13),
-              0 6px 18px rgba(var(--lx-accent-rgb), 0.16);
+              0 3px 11px rgba(15, 42, 63, 0.12);
   transform: translateY(-4px);
 }
 
@@ -781,18 +859,17 @@ html:has(.learn-app) body {
 }
 
 .ln-label {
-  font-size: 0.66rem;
-  font-weight: 600;
+  font-size: 0.68rem;
+  font-weight: var(--fw-medium);
   color: #7C8194;
-  letter-spacing: 0.005em;
   font-variant-numeric: tabular-nums;
 }
 
 .ln-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-family: var(--font-display);
   font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: -0.008em;
+  font-weight: var(--fw-strong);
+  letter-spacing: -0.005em;
   color: #17152B;
   white-space: nowrap;
   overflow: hidden;
@@ -926,7 +1003,7 @@ html:has(.learn-app) body {
 .ln-row.ln-current .ln-icon-box {
   background: linear-gradient(140deg, var(--lx-accent), var(--lx-accent-bright));
   color: var(--lx-on-accent);
-  box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.38);
+  box-shadow: 0 4px 11px rgba(15, 42, 63, 0.12);
 }
 
 .ln-row.ln-current .ln-label {
@@ -987,22 +1064,22 @@ html:has(.learn-app) body {
   border-radius: 11px;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.32);
+  box-shadow: 0 4px 11px rgba(15, 42, 63, 0.12);
 }
 
 .ln-start-btn svg { transition: transform 0.18s var(--lx-ease-out); }
 
 .ln-start-btn:hover {
-  opacity: 0.94;
+  opacity: 1;
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(var(--lx-accent-rgb), 0.4);
+  box-shadow: 0 6px 14px rgba(15, 42, 63, 0.14);
 }
 
 .ln-start-btn:hover svg { transform: translateX(3px); }
 
 .ln-start-btn:active {
   transform: none;
-  box-shadow: 0 4px 12px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 2px 7px rgba(15, 42, 63, 0.11);
 }
 
 /* ── Lesson Popup (available / completed lessons — quick preview flyout) ── */
@@ -1079,18 +1156,18 @@ html:has(.learn-app) body {
   border-radius: 10px;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 6px 14px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 3px 8px rgba(15, 42, 63, 0.12);
 }
 
 .ln-popup-btn:hover {
-  opacity: 0.94;
+  opacity: 1;
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.36);
+  box-shadow: 0 4px 11px rgba(15, 42, 63, 0.12);
 }
 
 .ln-popup-btn:active {
   transform: none;
-  box-shadow: 0 3px 8px rgba(var(--lx-accent-rgb), 0.28);
+  box-shadow: 0 2px 5px rgba(15, 42, 63, 0.11);
 }
 
 /* ── Right Sidebar ────────────────────────────────────────── */
@@ -1124,9 +1201,9 @@ html:has(.learn-app) body {
 }
 
 .pc-header {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: var(--fw-display);
   letter-spacing: -0.005em;
   color: #17152B;
   margin-bottom: 0.75rem;
@@ -1148,7 +1225,7 @@ html:has(.learn-app) body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 3px 10px rgba(15, 42, 63, 0.12);
 }
 
 .pc-level-num {
@@ -1204,10 +1281,12 @@ html:has(.learn-app) body {
   background: rgba(23, 20, 46, 0.08);
 }
 
+/* Streak and lessons-done are the two figures this card exists to show, so
+   they get display weight — the one place in the sidebar that does. */
 .pc-stat-value {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1.0625rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: var(--fw-display);
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: #17152B;
@@ -1269,13 +1348,13 @@ html:has(.learn-app) body {
   white-space: nowrap;
   transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
   flex-shrink: 0;
-  box-shadow: 0 6px 14px rgba(var(--lx-accent-rgb), 0.3);
+  box-shadow: 0 3px 8px rgba(15, 42, 63, 0.12);
 }
 
 .signup-card-btn:hover {
-  opacity: 0.94;
+  opacity: 1;
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(var(--lx-accent-rgb), 0.36);
+  box-shadow: 0 4px 11px rgba(15, 42, 63, 0.12);
 }
 
 /* ── Quest Widget ─────────────────────────────────────────── */
@@ -1296,9 +1375,9 @@ html:has(.learn-app) body {
 }
 
 .qw-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: var(--fw-display);
   letter-spacing: -0.005em;
   color: #17152B;
 }
@@ -1337,9 +1416,9 @@ html:has(.learn-app) body {
    files it with the other structural labels instead of the card titles. */
 .qw-weekly-label {
   font-size: 0.6rem;
-  font-weight: 700;
+  font-weight: var(--fw-display);
   text-transform: uppercase;
-  letter-spacing: 0.09em;
+  letter-spacing: var(--tracking-label);
   color: #8A8FA3;
   margin-bottom: 0.55rem;
 }
@@ -1499,17 +1578,30 @@ html:has(.learn-app) body {
 
   .ls-logo { display: none; }
   .ls-group-label { display: none; }
-  .ls-separator { display: none; }
 
   .ls-nav {
     display: flex;
     flex-direction: row;
-    gap: 0.2rem;
+    gap: 0.15rem;
     flex: 1;
   }
 
+  /* display:contents dissolves the group wrappers so every item becomes a
+     direct flex child of the strip and the three groups read as one row.
+     The footer group's bottom-pinning and divider only make sense in a
+     column, so both are dropped here. */
   .ls-group {
     display: contents;
+  }
+
+  .ls-group-list {
+    display: contents;
+  }
+
+  .ls-group--footer {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
 
   .ls-nav-item {
@@ -1520,15 +1612,22 @@ html:has(.learn-app) body {
 
   .ls-nav-btn {
     flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.45rem 0.7rem;
+    gap: 0.25rem;
+    padding: 0.45rem 0.65rem;
     font-size: 0.58rem;
-    border-radius: 8px;
+    border-radius: 10px;
   }
 
-  .ls-nav-btn.ls-more {
-    font-size: 0.58rem;
-  }
+  /* Stacked icon-over-label, so the hover nudge would push the icon out of
+     alignment with its own caption. */
+  .ls-nav-btn:hover .ls-nav-icon { transform: none; }
+  .ls-nav-btn.active .ls-nav-icon { transform: none; }
+
+  .ls-nav-label { flex: none; }
+
+  /* The trailing dot has nowhere to sit in a stacked item — the tint and the
+     icon colour carry the active state on this layout. */
+  .ls-nav-btn.active::after { display: none; }
 
   .learn-main {
     grid-column: 1;
@@ -1643,11 +1742,11 @@ html:has(.learn-app) body {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: var(--fw-display);
   letter-spacing: -0.01em;
-  color: #4A5064;
+  color: #3F4557;
   font-variant-numeric: tabular-nums;
 }
 

@@ -183,7 +183,7 @@
   background: linear-gradient(150deg, #FFFFFF 55%, var(--lx-accent-wash));
   border-color: rgba(var(--lx-accent-rgb), 0.42);
   box-shadow:
-    0 14px 34px rgba(var(--lx-accent-rgb), 0.16),
+    0 8px 20px rgba(15, 42, 63, 0.15),
     0 1px 3px rgba(23, 20, 46, 0.06);
 }
 
@@ -248,14 +248,14 @@
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 5px 14px rgba(var(--lx-accent-rgb), 0.34);
+  box-shadow: 0 3px 8px rgba(15, 42, 63, 0.12);
   transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
 
 .db-claim-btn:hover {
   background: linear-gradient(140deg, var(--lx-accent), var(--lx-accent-strong));
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(var(--lx-accent-rgb), 0.4);
+  box-shadow: 0 4px 12px rgba(15, 42, 63, 0.12);
 }
 
 .db-claim-btn:active { transform: translateY(0); }
@@ -328,9 +328,13 @@
 }
 
 .db-pip.is-claimed { background: var(--lx-success); }
+/* Today's pip was ringed by a 3px translucent halo. It is a 7px dot in a
+   row of 7px dots — widening it slightly says "you are here" just as clearly,
+   without a second glowing circle around it. */
 .db-pip.is-today {
   background: var(--lx-accent);
-  box-shadow: 0 0 0 3px rgba(var(--lx-accent-rgb), 0.22);
+  width: 16px;
+  border-radius: 99px;
 }
 
 /* Seven cards across on desktop; the final day gets no extra column so the
@@ -427,7 +431,7 @@
   border-color: var(--lx-accent);
   border-width: 1.5px;
   transform: translateY(-3px);
-  box-shadow: 0 12px 26px rgba(var(--lx-accent-rgb), 0.22);
+  box-shadow: 0 7px 16px rgba(15, 42, 63, 0.14);
 }
 
 .db-day.is-today .db-day-num { color: var(--lx-accent-ink); }
@@ -468,7 +472,7 @@
 
 @keyframes db-pop {
   0%   { transform: scale(1); }
-  28%  { transform: scale(1.11); box-shadow: 0 16px 34px rgba(var(--lx-accent-rgb), 0.36); }
+  28%  { transform: scale(1.11); box-shadow: 0 9px 20px rgba(15, 42, 63, 0.15); }
   100% { transform: scale(1); }
 }
 

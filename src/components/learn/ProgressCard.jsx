@@ -33,7 +33,8 @@ export default function ProgressCard() {
       </div>
 
       <div className="pc-stats">
-        <div className={`pc-stat${streakRose ? ' just-rose' : ''}`}>
+        {/* is-dim stops the idle flicker: a streak of zero isn't burning. */}
+        <div className={`pc-stat${streakRose ? ' just-rose' : ''}${vm.streak === 0 ? ' is-dim' : ''}`}>
           <span className="pc-stat-value">
             <FlameIcon size={16} dim={vm.streak === 0} className="pc-stat-flame" />
             {vm.streak}
