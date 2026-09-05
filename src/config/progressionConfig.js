@@ -16,12 +16,12 @@ export const HEARTS = {
   MAX: 5,
   /** Minutes of real time to regenerate a single heart. */
   RECOVERY_MINUTES: 30,
-  /** Gem cost to instantly refill every heart. */
-  REFILL_GEM_COST: 60,
   /** Hearts required to begin a graded lesson. */
   COST_TO_START_LESSON: 1,
   /** Practice/review mode never consumes hearts — it is the 0-heart fallback. */
   PRACTICE_REQUIRES_HEART: false,
+  /* Gem prices for refills and extra hearts live in shopConfig.js, so the
+     shop and the hearts popover can never quote different numbers. */
 }
 
 /* ── Currency ────────────────────────────────────────────────────────────── */
@@ -115,11 +115,8 @@ export const STREAK = {
   MILESTONES: [3, 7, 14, 30, 60, 100, 365],
   /** Gems awarded when a milestone day is reached. */
   MILESTONE_GEMS: { 3: 10, 7: 25, 14: 50, 30: 100, 60: 200, 100: 400, 365: 1000 },
-  /** Architecture hook for a future "streak freeze" item. Freezes are stored
-   *  and consumed by the streak engine already — this only gates purchase. */
-  FREEZE_ENABLED: false,
-  FREEZE_GEM_COST: 200,
-  MAX_FREEZES: 2,
+  /* Streak Shields (price, stock limit, how far one shield reaches) are
+     defined in shopConfig.js — the streak engine reads them from there. */
   /** Days of activity history retained for the calendar UI. */
   HISTORY_DAYS: 120,
 }

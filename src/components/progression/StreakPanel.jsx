@@ -14,7 +14,7 @@ import {
   msUntilEndOfDay, formatDuration,
 } from '../../utils/dateUtils'
 
-export default function StreakPanel() {
+export default function StreakPanel({ onOpenShop }) {
   const { state, vm } = useProgression()
   const now = useClock()
 
@@ -102,6 +102,30 @@ export default function StreakPanel() {
           </div>
         </div>
       )}
+
+      {/* ── Shields ──
+          Lives here rather than in the top bar: it is streak context, and the
+          navigation stays a clean row of three numbers. */}
+      <div className={`pg-shields${vm.shields > 0 ? ' is-stocked' : ''}`}>
+        <span className="pg-shields-icon" aria-hidden="true">
+          <Icon name="shield" size={17} strokeWidth={2.2} />
+        </span>
+        <div className="pg-shields-text">
+          <span className="pg-shields-count">
+            {vm.shields} Streak Shield{vm.shields === 1 ? '' : 's'}
+          </span>
+          <span className="pg-shields-note">
+            {vm.shields > 0
+              ? 'One is spent automatically if you miss a day.'
+              : `Buy one in the shop to cover a missed day.`}
+          </span>
+        </div>
+        {onOpenShop && (
+          <button type="button" className="pg-shields-link" onClick={onOpenShop}>
+            {vm.shields > 0 ? 'Shop' : 'Get one'}
+          </button>
+        )}
+      </div>
 
       <div className="pg-panel-facts">
         <div className="pg-fact">

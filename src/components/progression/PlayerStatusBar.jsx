@@ -17,11 +17,17 @@ import GemsPanel from './GemsPanel'
 import StreakPanel from './StreakPanel'
 import { formatNumber } from '../../utils/progressionUtils'
 
-export default function PlayerStatusBar({ compact = false }) {
+export default function PlayerStatusBar({ compact = false, onOpenShop }) {
   const { vm } = useProgression()
   const [openPanel, setOpenPanel] = useState(null)
   const close = useCallback(() => setOpenPanel(null), [])
   const toggle = (id) => setOpenPanel((prev) => (prev === id ? null : id))
+
+  /* Panels that link to the shop close themselves on the way there. */
+  const goToShop = useCallback(() => {
+    setOpenPanel(null)
+    onOpenShop?.()
+  }, [onOpenShop])
 
   /* The clock is only read here so the "next heart in mm:ss" label stays live
      without re-rendering the whole dashboard every second. */
@@ -46,7 +52,7 @@ export default function PlayerStatusBar({ compact = false }) {
           <span className="pg-pill-value">{vm.streak}</span>
         </button>
         <Popover open={openPanel === 'streak'} onClose={close} title="Your streak">
-          <StreakPanel />
+          <StreakPanel onOpenShop={onOpenShop ? goToShop : undefined} />
         </Popover>
       </div>
 
@@ -82,7 +88,7 @@ export default function PlayerStatusBar({ compact = false }) {
           <span className="pg-pill-value">{vm.hearts}</span>
         </button>
         <Popover open={openPanel === 'hearts'} onClose={close} title="Hearts">
-          <HeartsPanel onClose={close} />
+          <HeartsPanel onClose={close} onOpenShop={onOpenShop ? goToShop : undefined} />
         </Popover>
       </div>
     </div>

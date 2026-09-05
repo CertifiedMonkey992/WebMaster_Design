@@ -161,6 +161,10 @@ export function ProgressionProvider({ children }) {
     completePractice: (payload) => dispatch(ACTIONS.COMPLETE_PRACTICE, payload),
     addPracticeTime: (seconds) => dispatch(ACTIONS.ADD_PRACTICE_TIME, { seconds }),
 
+    /** Buy a shop item. `txnId` is minted per confirmation dialog, so replaying
+     *  the same purchase is refused rather than charged twice. */
+    purchaseItem:   (itemId, txnId) => dispatch(ACTIONS.PURCHASE_ITEM, { itemId, txnId }),
+
     claimQuest:     (questId) => dispatch(ACTIONS.CLAIM_QUEST, { questId }),
     claimAllQuests: () => dispatch(ACTIONS.CLAIM_ALL_QUESTS),
     claimTeamReward: () => dispatch(ACTIONS.CLAIM_TEAM_REWARD),
@@ -195,6 +199,7 @@ export function ProgressionProvider({ children }) {
             ...s.streak,
             lastActivityDate: shift(s.streak.lastActivityDate),
             lastStreakDate: shift(s.streak.lastStreakDate),
+            lastShieldDate: shift(s.streak.lastShieldDate),
             history,
           },
           daily: { ...s.daily, dateKey: shift(s.daily.dateKey) },
@@ -285,6 +290,7 @@ const VISIBLE = new Set([
   'STREAK_UPDATED', 'STREAK_MILESTONE', 'STREAK_LOST', 'HEART_LOST',
   'HEARTS_EMPTY', 'HEARTS_RESTORED', 'SECTION_COMPLETE', 'PERFECT_LESSON',
   'DAILY_GOAL_MET', 'TEAM_MISSION_COMPLETE', 'TEAM_MISSION_CLAIMED',
+  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED',
 ])
 
 function isVisibleReward(event) {

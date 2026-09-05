@@ -7,7 +7,8 @@
 
 import { useProgression } from '../../state/ProgressionContext'
 import { GemIcon, Icon } from './Icons'
-import { CURRENCY, QUESTS, HEARTS } from '../../config/progressionConfig'
+import { CURRENCY, QUESTS } from '../../config/progressionConfig'
+import { HEART_REFILL_COST, STREAK_SHIELD_COST } from '../../config/shopConfig'
 import { formatNumber } from '../../utils/progressionUtils'
 
 const REASON_LABELS = {
@@ -68,8 +69,8 @@ export default function GemsPanel({ onClose }) {
       <div className="pg-earn-list">
         <div className="pg-subhead">Where they go</div>
         <ul>
-          <li><Icon name="clock" size={13} /> Instant heart refill <b>−{HEARTS.REFILL_GEM_COST}</b></li>
-          <li className="pg-muted-li"><Icon name="shield" size={13} /> Streak freeze <b>coming soon</b></li>
+          <li><Icon name="clock" size={13} /> Instant heart refill <b>−{HEART_REFILL_COST}</b></li>
+          <li><Icon name="shield" size={13} /> Streak Shield <b>−{STREAK_SHIELD_COST}</b></li>
         </ul>
       </div>
 

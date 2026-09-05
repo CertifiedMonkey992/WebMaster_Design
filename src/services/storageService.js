@@ -13,7 +13,11 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS } from '../config/progressionConfig'
+import { SHIELD } from '../config/shopConfig'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
+
+/** How many recent purchase ids are remembered for the duplicate guard. */
+export const TXN_HISTORY = 40
 
 /* ── Default state ───────────────────────────────────────────────────────── */
 
@@ -45,7 +49,10 @@ export function createDefaultState(now = Date.now()) {
       longest: 0,
       lastActivityDate: null,   // "YYYY-MM-DD" of the last qualifying activity
       lastStreakDate: null,     // "YYYY-MM-DD" the streak counter last advanced
-      freezes: 0,               // architecture hook for a future freeze item
+      shields: 0,               // Streak Shields owned (bought in the shop)
+      lastShieldDate: null,     // "YYYY-MM-DD" a shield last rescued — guards
+                                // against draining the stock over a long absence
+      shieldsUsed: 0,           // lifetime count, for the streak panel
       history: {},              // dateKey -> { xp, lessons, seconds }
     },
 
@@ -76,6 +83,16 @@ export function createDefaultState(now = Date.now()) {
 
     /* Achievements — id -> unlockedAt timestamp */
     achievements: {},
+
+    /* Shop
+       `seenTxnIds` is the idempotency guard: every confirmed purchase carries
+       a one-shot id, and replaying one (double-click, a retried dispatch, a
+       restored tab) is refused instead of charged twice. */
+    shop: {
+      purchaseCount: 0,
+      itemsBought: {},        // itemId -> times purchased
+      seenTxnIds: [],         // newest first, bounded
+    },
 
     /* Collaborative team mission (locally simulated until there is a backend) */
     team: null,
@@ -167,7 +184,13 @@ export function sanitizeState(raw, now = Date.now()) {
       longest: Math.max(0, Math.floor(num(raw.streak.longest, 0))),
       lastActivityDate: typeof raw.streak.lastActivityDate === 'string' ? raw.streak.lastActivityDate : null,
       lastStreakDate: typeof raw.streak.lastStreakDate === 'string' ? raw.streak.lastStreakDate : null,
-      freezes: Math.max(0, Math.floor(num(raw.streak.freezes, 0))),
+      /* `freezes` is the pre-shop name for the same stock. */
+      shields: Math.min(
+        SHIELD.MAX_OWNED,
+        Math.max(0, Math.floor(num(raw.streak.shields, num(raw.streak.freezes, 0)))),
+      ),
+      lastShieldDate: typeof raw.streak.lastShieldDate === 'string' ? raw.streak.lastShieldDate : null,
+      shieldsUsed: Math.max(0, Math.floor(num(raw.streak.shieldsUsed, 0))),
       history: isObj(raw.streak.history) ? raw.streak.history : {},
     }
     s.streak.longest = Math.max(s.streak.longest, s.streak.current)
@@ -207,6 +230,16 @@ export function sanitizeState(raw, now = Date.now()) {
 
   if (isObj(raw.sectionsCompleted)) s.sectionsCompleted = { ...raw.sectionsCompleted }
   if (isObj(raw.achievements)) s.achievements = { ...raw.achievements }
+
+  if (isObj(raw.shop)) {
+    s.shop = {
+      purchaseCount: Math.max(0, Math.floor(num(raw.shop.purchaseCount, 0))),
+      itemsBought: isObj(raw.shop.itemsBought) ? { ...raw.shop.itemsBought } : {},
+      seenTxnIds: Array.isArray(raw.shop.seenTxnIds)
+        ? raw.shop.seenTxnIds.filter((id) => typeof id === 'string').slice(0, TXN_HISTORY)
+        : [],
+    }
+  }
 
   if (isObj(raw.answerXP)) {
     s.answerXP = {}

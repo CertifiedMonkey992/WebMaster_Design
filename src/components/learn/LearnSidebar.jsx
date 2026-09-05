@@ -5,7 +5,6 @@ const NAV_GROUPS = [
       {
         id: 'learn',
         label: 'Learn',
-        color: '#6D4CF1',
         icon: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -16,7 +15,6 @@ const NAV_GROUPS = [
       {
         id: 'practice',
         label: 'Practice',
-        color: '#0EA5E9',
         icon: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10"/>
@@ -33,7 +31,6 @@ const NAV_GROUPS = [
       {
         id: 'leaderboards',
         label: 'Leaderboards',
-        color: '#D97706',
         icon: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M8 21h8M12 17v4M5 3H2v7c0 3.31 2.69 6 6 6h8c3.31 0 6-2.69 6-6V3h-3"/>
@@ -44,7 +41,6 @@ const NAV_GROUPS = [
       {
         id: 'quests',
         label: 'Quests',
-        color: '#F97316',
         icon: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
@@ -59,7 +55,6 @@ const NAV_GROUPS = [
       {
         id: 'shop',
         label: 'Shop',
-        color: '#8567F5',
         icon: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
@@ -71,7 +66,6 @@ const NAV_GROUPS = [
       {
         id: 'profile',
         label: 'Profile',
-        color: '#6B7086',
         icon: (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -86,7 +80,6 @@ const NAV_GROUPS = [
 const MORE_ITEM = {
   id: 'more',
   label: 'More',
-  color: '#6B7086',
   icon: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
       <circle cx="5" cy="12" r="1" fill="currentColor"/>
@@ -118,7 +111,6 @@ export default function LearnSidebar({ active, onChange, onGoHome }) {
                   className={`ls-nav-btn${active === item.id ? ' active' : ''}`}
                   onClick={() => onChange(item.id)}
                   aria-current={active === item.id ? 'page' : undefined}
-                  style={{ '--nav-color': item.color }}
                 >
                   <span className="ls-nav-icon">{item.icon}</span>
                   {item.label}
@@ -134,7 +126,6 @@ export default function LearnSidebar({ active, onChange, onGoHome }) {
             className={`ls-nav-btn ls-more${active === 'more' ? ' active' : ''}`}
             onClick={() => onChange('more')}
             aria-current={active === 'more' ? 'page' : undefined}
-            style={{ '--nav-color': MORE_ITEM.color }}
           >
             <span className="ls-nav-icon">{MORE_ITEM.icon}</span>
             {MORE_ITEM.label}

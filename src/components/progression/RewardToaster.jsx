@@ -26,6 +26,8 @@ const LIFETIME = {
   STREAK_UPDATED: 2400,
   STREAK_MILESTONE: 3200,
   STREAK_LOST: 3200,
+  STREAK_SHIELD_USED: 4600,
+  PURCHASE_COMPLETE: 2600,
   QUEST_COMPLETED: 3400,
   QUEST_CLAIMED: 2000,
   ACHIEVEMENT_UNLOCKED: 4000,
@@ -128,6 +130,30 @@ function Toast({ reward }) {
         <div className="rt-toast rt-toast--muted">
           <FlameIcon size={18} dim />
           <span>Your {reward.previous}-day streak ended. Start a new one today.</span>
+        </div>
+      )
+
+    /* A shield is spent silently by the reconciler, so this toast is the only
+       thing that tells the learner their streak was rescued. */
+    case 'STREAK_SHIELD_USED':
+      return (
+        <div className="rt-toast rt-toast--shield">
+          <Icon name="shield" size={20} strokeWidth={2.2} />
+          <span>
+            <b>Streak Shield used — your {reward.streak}-day streak is safe.</b>
+            <em>{reward.remaining} shield{reward.remaining === 1 ? '' : 's'} left</em>
+          </span>
+        </div>
+      )
+
+    case 'PURCHASE_COMPLETE':
+      return (
+        <div className="rt-toast rt-toast--quest">
+          <Icon name="check-circle" size={18} />
+          <span>
+            <b>{reward.name} added</b>
+            <em>Balance: {reward.balance} gems</em>
+          </span>
         </div>
       )
 

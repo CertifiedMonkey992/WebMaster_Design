@@ -20,6 +20,8 @@ import * as quests from '../services/questService'
 import * as currency from '../services/currencyService'
 import * as learn from '../data/learnData'
 import * as cfg from '../config/progressionConfig'
+import * as shop from '../config/shopConfig'
+import * as shopSvc from '../services/shopService'
 import * as putils from '../utils/progressionUtils'
 
 export async function runProgressionTests() {
@@ -356,6 +358,206 @@ export async function runProgressionTests() {
     const r2 = run(r1.state, A.CLAIM_ALL_QUESTS, {}, T0)
     ok('T17 something was claimable', claimable > 0, claimable)
     ok('T17 second claim-all is a no-op', r2.state.gems === gemsAfter, `${gemsAfter} -> ${r2.state.gems}`)
+  }
+
+  /* ── TEST 18: shop — heart refill ── */
+  {
+    const base = fresh()
+    /* Hurt the learner three times so a refill has something to restore. */
+    let s = { ...base, hearts: 2, heartAnchor: T0, gems: 200 }
+
+    const r = run(s, A.PURCHASE_ITEM, { itemId: 'heart_refill', txnId: 'a1' }, T0)
+    ok('T18 refill restores to max', r.state.hearts === r.state.maxHearts, r.state.hearts)
+    ok('T18 refill charges exactly the price',
+      r.state.gems === 200 - shop.HEART_REFILL_COST, r.state.gems)
+    ok('T18 refill clears the regen anchor', r.state.heartAnchor === null, r.state.heartAnchor)
+    ok('T18 refill emits completion', r.events.some(e => e.type === 'PURCHASE_COMPLETE'))
+
+    /* Already full → refused, and NOT charged. */
+    const full = run(r.state, A.PURCHASE_ITEM, { itemId: 'heart_refill', txnId: 'a2' }, T0)
+    ok('T18 refill refused when full',
+      full.events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === shopSvc.REASONS.HEARTS_FULL))
+    ok('T18 refill when full costs nothing', full.state.gems === r.state.gems, full.state.gems)
+
+    /* Cannot afford → refused, and NOT applied. */
+    const poor = run({ ...base, hearts: 1, heartAnchor: T0, gems: 10 },
+      A.PURCHASE_ITEM, { itemId: 'heart_refill', txnId: 'a3' }, T0)
+    ok('T18 refill refused when broke',
+      poor.events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === shopSvc.REASONS.INSUFFICIENT_GEMS))
+    ok('T18 broke refill leaves hearts alone', poor.state.hearts === 1, poor.state.hearts)
+    ok('T18 broke refill leaves gems alone', poor.state.gems === 10, poor.state.gems)
+  }
+
+  /* ── TEST 19: shop — +1 heart ── */
+  {
+    const base = fresh()
+    let s = { ...base, hearts: 3, heartAnchor: T0, gems: 100 }
+
+    const r = run(s, A.PURCHASE_ITEM, { itemId: 'extra_heart', txnId: 'b1' }, T0)
+    ok('T19 +1 heart adds exactly one', r.state.hearts === 4, r.state.hearts)
+    ok('T19 +1 heart charges the price',
+      r.state.gems === 100 - shop.EXTRA_HEART_COST, r.state.gems)
+
+    /* Buying up to the cap is fine; buying past it is refused. */
+    const r2 = run(r.state, A.PURCHASE_ITEM, { itemId: 'extra_heart', txnId: 'b2' }, T0)
+    ok('T19 +1 heart reaches max', r2.state.hearts === r2.state.maxHearts, r2.state.hearts)
+
+    const r3 = run(r2.state, A.PURCHASE_ITEM, { itemId: 'extra_heart', txnId: 'b3' }, T0)
+    ok('T19 +1 heart refused at max',
+      r3.events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === shopSvc.REASONS.HEARTS_FULL))
+    ok('T19 hearts never exceed max', r3.state.hearts === r3.state.maxHearts, r3.state.hearts)
+    ok('T19 refused +1 heart costs nothing', r3.state.gems === r2.state.gems, r3.state.gems)
+  }
+
+  /* ── TEST 20: shop — duplicate transactions ── */
+  {
+    let s = { ...fresh(), gems: 500 }
+    const r1 = run(s, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'dup' }, T0)
+    const r2 = run(r1.state, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'dup' }, T0)
+    ok('T20 first purchase settles', r1.state.streak.shields === 1, r1.state.streak.shields)
+    ok('T20 replayed txn is refused', r2.events.some(e => e.type === 'PURCHASE_DUPLICATE'))
+    ok('T20 replayed txn is not charged', r2.state.gems === r1.state.gems, `${r1.state.gems} -> ${r2.state.gems}`)
+    ok('T20 replayed txn grants nothing', r2.state.streak.shields === 1, r2.state.streak.shields)
+    ok('T20 replayed txn returns same state object', r2.state === r1.state)
+
+    /* A DIFFERENT id is a genuine second purchase. */
+    const r3 = run(r1.state, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'other' }, T0)
+    ok('T20 distinct txn buys again', r3.state.streak.shields === 2, r3.state.streak.shields)
+
+    /* Stock cap. */
+    let capped = r3.state
+    for (let i = 0; i < 5; i++) {
+      capped = run(capped, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: `cap${i}` }, T0).state
+    }
+    ok('T20 shields capped at MAX_OWNED',
+      capped.streak.shields === shop.SHIELD.MAX_OWNED, capped.streak.shields)
+    const overCap = run(capped, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'over' }, T0)
+    ok('T20 purchase refused at cap',
+      overCap.events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === shopSvc.REASONS.MAX_OWNED))
+    ok('T20 refused at cap costs nothing', overCap.state.gems === capped.gems, overCap.state.gems)
+  }
+
+  /* ── TEST 21: streak shield consumption ─────────────────────────────────────
+     A streak is built on day 0, then the clock is moved forward to model
+     coming back after a gap. Each case checks BOTH the streak and how many
+     shields were actually spent. */
+  {
+    /* Build a real 1-day streak, then hand-set it to 12 so the assertions read
+       clearly. lastStreakDate/lastActivityDate stay honest (both = day 0). */
+    const withStreak = (shields) => {
+      let s = fresh()
+      s = run(s, A.COMPLETE_LESSON, { lessonId: learn.SECTIONS[0].lessons[0].id, seconds: 60 }, T0).state
+      return {
+        ...s,
+        streak: { ...s.streak, current: 12, longest: 12, shields, lastShieldDate: null },
+      }
+    }
+
+    /* CASE 1: no shield, one missed day → streak resets. */
+    {
+      const r = prog.reconcile(withStreak(0), T0 + 2 * DAY)
+      ok('T21 case1 no shield → streak lost', r.state.streak.current === 0, r.state.streak.current)
+      ok('T21 case1 emits STREAK_LOST', r.events.some(e => e.type === 'STREAK_LOST'))
+    }
+
+    /* CASE 2: one shield, one missed day → shield spent, streak survives. */
+    {
+      const r = prog.reconcile(withStreak(1), T0 + 2 * DAY)
+      ok('T21 case2 streak survives', r.state.streak.current === 12, r.state.streak.current)
+      ok('T21 case2 shield consumed exactly once', r.state.streak.shields === 0, r.state.streak.shields)
+      ok('T21 case2 emits STREAK_SHIELD_USED', r.events.some(e => e.type === 'STREAK_SHIELD_USED'))
+      ok('T21 case2 records lifetime use', r.state.streak.shieldsUsed === 1, r.state.streak.shieldsUsed)
+      /* Reconciling again the same day must not spend a second one. */
+      const again = prog.reconcile(r.state, T0 + 2 * DAY)
+      ok('T21 case2 reconcile is idempotent', again.state.streak.shields === 0, again.state.streak.shields)
+    }
+
+    /* CASE 3: two shields, one missed day → one spent, one kept. */
+    {
+      const r = prog.reconcile(withStreak(2), T0 + 2 * DAY)
+      ok('T21 case3 streak survives', r.state.streak.current === 12, r.state.streak.current)
+      ok('T21 case3 one shield remains', r.state.streak.shields === 1, r.state.streak.shields)
+    }
+
+    /* CASE 4a: several missed days at once → NOT covered, no shield spent. */
+    {
+      const r = prog.reconcile(withStreak(3), T0 + 4 * DAY)
+      ok('T21 case4a long gap breaks the streak', r.state.streak.current === 0, r.state.streak.current)
+      ok('T21 case4a long gap spends no shields', r.state.streak.shields === 3, r.state.streak.shields)
+    }
+
+    /* CASE 4b: the drain case. The app is left open across consecutive missed
+       days, so each midnight looks like a fresh single-day gap. Only the FIRST
+       may be covered — after that the learner has not come back, so the streak
+       breaks instead of eating the whole stock. */
+    {
+      const day2 = prog.reconcile(withStreak(3), T0 + 2 * DAY)
+      ok('T21 case4b first miss is covered', day2.state.streak.shields === 2, day2.state.streak.shields)
+      const day3 = prog.reconcile(day2.state, T0 + 3 * DAY)
+      ok('T21 case4b second miss is NOT covered', day3.state.streak.shields === 2, day3.state.streak.shields)
+      ok('T21 case4b streak breaks on the second miss', day3.state.streak.current === 0, day3.state.streak.current)
+    }
+
+    /* CASE 5: after a rescue the learner comes back and learns, which re-arms
+       shield protection for the next gap. */
+    {
+      const rescued = prog.reconcile(withStreak(2), T0 + 2 * DAY).state
+      const back = run(rescued, A.COMPLETE_LESSON,
+        { lessonId: learn.SECTIONS[0].lessons[1].id, seconds: 60 }, T0 + 2 * DAY)
+      ok('T21 case5 returning extends the streak', back.state.streak.current === 13, back.state.streak.current)
+      ok('T21 case5 returning spends no extra shield', back.state.streak.shields === 1, back.state.streak.shields)
+
+      /* Miss one more day — the remaining shield is now eligible again. */
+      const later = prog.reconcile(back.state, T0 + 4 * DAY)
+      ok('T21 case5 later miss is covered again', later.state.streak.current === 13, later.state.streak.current)
+      ok('T21 case5 second shield spent', later.state.streak.shields === 0, later.state.streak.shields)
+    }
+
+    /* CASE 6: activity after a gap goes through updateStreak rather than
+       reconcile — it must reach the same verdict, not double-spend. */
+    {
+      const s = withStreak(1)
+      const back = run(s, A.COMPLETE_LESSON,
+        { lessonId: learn.SECTIONS[0].lessons[1].id, seconds: 60 }, T0 + 2 * DAY)
+      ok('T21 case6 lesson after a gap keeps the streak', back.state.streak.current === 13, back.state.streak.current)
+      ok('T21 case6 exactly one shield spent', back.state.streak.shields === 0, back.state.streak.shields)
+    }
+  }
+
+  /* ── TEST 22: shop state survives a save/load round trip ── */
+  {
+    let s = { ...fresh(), gems: 400, hearts: 2, heartAnchor: T0 }
+    s = run(s, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'p1' }, T0).state
+    s = run(s, A.PURCHASE_ITEM, { itemId: 'heart_refill', txnId: 'p2' }, T0).state
+
+    const revived = store.sanitizeState(JSON.parse(JSON.stringify(s)), T0)
+    ok('T22 gems persist', revived.gems === s.gems, `${s.gems} -> ${revived.gems}`)
+    ok('T22 hearts persist', revived.hearts === s.hearts, `${s.hearts} -> ${revived.hearts}`)
+    ok('T22 shields persist', revived.streak.shields === s.streak.shields, revived.streak.shields)
+    ok('T22 purchase count persists', revived.shop.purchaseCount === 2, revived.shop.purchaseCount)
+    ok('T22 txn ids persist (duplicate guard survives a refresh)',
+      revived.shop.seenTxnIds.includes('p1') && revived.shop.seenTxnIds.includes('p2'),
+      JSON.stringify(revived.shop.seenTxnIds))
+    /* The guard must still hold on the revived state. */
+    const replay = run(revived, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'p1' }, T0)
+    ok('T22 replay after reload is refused', replay.state.gems === revived.gems, replay.state.gems)
+
+    /* Legacy saves called the stock "freezes". */
+    const legacy = store.sanitizeState({ streak: { current: 3, longest: 3, freezes: 2 } }, T0)
+    ok('T22 legacy freezes migrate to shields', legacy.streak.shields === 2, legacy.streak.shields)
+  }
+
+  /* ── TEST 23: shop prices are single-sourced ── */
+  {
+    ok('T23 catalogue prices match the constants',
+      shop.getShopItem('heart_refill').price === shop.HEART_REFILL_COST &&
+      shop.getShopItem('extra_heart').price === shop.EXTRA_HEART_COST &&
+      shop.getShopItem('streak_shield').price === shop.STREAK_SHIELD_COST)
+    ok('T23 every catalogue item has an effect',
+      shop.SHOP_ITEMS.every(i => Object.values(shop.ITEM_TYPES).includes(i.type)))
+    ok('T23 unknown item is refused',
+      run(fresh(), A.PURCHASE_ITEM, { itemId: 'nope', txnId: 'x' }, T0)
+        .events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === shopSvc.REASONS.UNKNOWN_ITEM))
   }
 
   const passed = results.filter((r) => r.pass).length

@@ -12,6 +12,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { STREAK } from '../config/progressionConfig'
+import { SHIELD } from '../config/shopConfig'
 import { getLocalDateKey, getDaysBetween, addDays } from '../utils/dateUtils'
 
 /** Activities that count toward a streak. Opening the site does NOT. */
@@ -21,14 +22,57 @@ export function isQualifyingActivity(kind) {
   return QUALIFYING_ACTIVITIES.includes(kind)
 }
 
+/* ── Streak shields ──────────────────────────────────────────────────────────
+   A shield bridges a missed day so the streak survives. Two rules keep a long
+   absence from quietly draining the whole stock:
+
+     1. The gap must be small enough for ONE shield to cover it
+        (SHIELD.COVERS_MISSED_DAYS). A three-day disappearance is a real
+        break, not something to spend three shields on.
+
+     2. A shield may only be spent once the learner has actually come back
+        since the last one was spent. Without this, an app left open across a
+        week would burn a shield every midnight: each rescue advances the
+        streak marker by a day, which makes the NEXT day look like a fresh
+        single-day gap. Comparing the last recorded activity against the last
+        rescued day is what tells the two situations apart.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/** Can one shield rescue this gap right now? Pure predicate, no side effects. */
+export function canConsumeShield(streak, gapDays) {
+  if ((streak.shields ?? 0) <= 0) return false
+  /* gap counts days since the last streak day, so a gap of N leaves N-1 missed days. */
+  if (gapDays - 1 > SHIELD.COVERS_MISSED_DAYS) return false
+  if (SHIELD.ALLOW_CONSECUTIVE_USE) return true
+
+  const lastRescued = streak.lastShieldDate
+  if (!lastRescued) return true
+  /* The learner must have logged activity on or after the day we last rescued. */
+  return Boolean(streak.lastActivityDate) && streak.lastActivityDate >= lastRescued
+}
+
+/**
+ * Spend one shield to cover the day after `lastStreakDate`, advancing the
+ * streak marker across it so the streak reads as unbroken.
+ */
+function consumeShield(streak) {
+  const rescuedDay = addDays(streak.lastStreakDate, 1)
+  return {
+    ...streak,
+    shields: streak.shields - 1,
+    lastStreakDate: rescuedDay,
+    lastShieldDate: rescuedDay,
+    shieldsUsed: (streak.shieldsUsed ?? 0) + 1,
+  }
+}
+
 /**
  * Reconcile a stored streak against today's date, WITHOUT recording activity.
  * Run on every load and at every midnight rollover so a broken streak shows
  * as broken the moment the learner returns.
  *
  * A streak survives while the last counted day is today or yesterday. One
- * fully missed day ends it — unless a streak freeze is available (feature
- * flagged off by default, but the machinery is live).
+ * fully missed day ends it — unless a Streak Shield is available and eligible.
  */
 export function reconcileStreak(state, now = Date.now()) {
   const today = getLocalDateKey(new Date(now))
@@ -40,15 +84,14 @@ export function reconcileStreak(state, now = Date.now()) {
   const gap = getDaysBetween(last, today)
   if (gap === null || gap <= 1) return { state, events }   // today or yesterday → alive
 
-  /* Exactly one missed day and a freeze in the bank → spend it and keep the
-     streak alive by advancing the marker over the missed day. */
-  if (STREAK.FREEZE_ENABLED && gap === 2 && state.streak.freezes > 0) {
-    const streak = {
-      ...state.streak,
-      freezes: state.streak.freezes - 1,
-      lastStreakDate: addDays(last, 1),
-    }
-    events.push({ type: 'STREAK_FROZEN', remaining: streak.freezes })
+  if (canConsumeShield(state.streak, gap)) {
+    const streak = consumeShield(state.streak)
+    events.push({
+      type: 'STREAK_SHIELD_USED',
+      remaining: streak.shields,
+      streak: streak.current,
+      rescuedDate: streak.lastShieldDate,
+    })
     return { state: { ...state, streak }, events }
   }
 
@@ -70,7 +113,7 @@ export function reconcileStreak(state, now = Date.now()) {
 export function updateStreak(state, now = Date.now()) {
   const today = getLocalDateKey(new Date(now))
   const events = []
-  const prev = state.streak
+  let prev = state.streak
   const wasStreak = prev.current
 
   /* Already counted today — record the activity date but never double-count. */
@@ -82,22 +125,29 @@ export function updateStreak(state, now = Date.now()) {
     }
   }
 
+  /* Returning after a gap: give a shield its one chance to bridge the missed
+     day before the streak is evaluated. reconcileStreak usually gets here
+     first, in which case the marker is already advanced and this is a no-op. */
+  const gap = prev.lastStreakDate ? getDaysBetween(prev.lastStreakDate, today) : null
+  if (gap !== null && gap > 1 && prev.current > 0 && canConsumeShield(prev, gap)) {
+    prev = consumeShield(prev)
+    events.push({
+      type: 'STREAK_SHIELD_USED',
+      remaining: prev.shields,
+      streak: prev.current,
+      rescuedDate: prev.lastShieldDate,
+    })
+  }
+
   let next
   if (!prev.lastStreakDate || prev.current === 0) {
     next = 1
   } else {
-    const gap = getDaysBetween(prev.lastStreakDate, today)
-    if (gap === 1) next = prev.current + 1
-    else if (gap === 0) next = prev.current          // defensive: same day
-    else if (STREAK.FREEZE_ENABLED && gap === 2 && prev.freezes > 0) next = prev.current + 1
+    const settled = getDaysBetween(prev.lastStreakDate, today)
+    if (settled === 1) next = prev.current + 1
+    else if (settled === 0) next = prev.current      // defensive: same day
     else next = 1
   }
-
-  const usedFreeze =
-    STREAK.FREEZE_ENABLED &&
-    prev.lastStreakDate &&
-    getDaysBetween(prev.lastStreakDate, today) === 2 &&
-    prev.freezes > 0
 
   const streak = {
     ...prev,
@@ -105,7 +155,6 @@ export function updateStreak(state, now = Date.now()) {
     longest: Math.max(prev.longest, next),
     lastActivityDate: today,
     lastStreakDate: today,
-    freezes: usedFreeze ? prev.freezes - 1 : prev.freezes,
   }
 
   const isNewDay = next !== wasStreak || wasStreak === 0
@@ -180,14 +229,20 @@ export function getActivityMap(state, dateKeys) {
   })
 }
 
-/** Grant a streak freeze (future shop item). Kept here so the shop never has
- *  to know how the streak engine stores things. */
-export function grantFreeze(state, count = 1) {
-  const freezes = Math.min(STREAK.MAX_FREEZES, state.streak.freezes + count)
-  return { ...state, streak: { ...state.streak, freezes } }
+/** Add shields to the bank, capped at the stock limit. The shop calls this so
+ *  it never has to know how the streak engine stores things. */
+export function grantShield(state, count = 1) {
+  const shields = Math.min(SHIELD.MAX_OWNED, state.streak.shields + Math.max(1, Math.floor(count)))
+  return { ...state, streak: { ...state.streak, shields } }
+}
+
+/** True when the bank is full — the shop disables the buy button on this. */
+export function hasMaxShields(state) {
+  return state.streak.shields >= SHIELD.MAX_OWNED
 }
 
 export default {
   updateStreak, reconcileStreak, recordHistory, hasActivityToday,
-  getNextMilestone, getActivityMap, grantFreeze, isQualifyingActivity,
+  getNextMilestone, getActivityMap, grantShield, hasMaxShields,
+  canConsumeShield, isQualifyingActivity,
 }

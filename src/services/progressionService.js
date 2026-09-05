@@ -24,6 +24,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { XP, CURRENCY, HEARTS } from '../config/progressionConfig'
+import { SHIELD, SHOP_ITEMS } from '../config/shopConfig'
 import { getLevelFromXP, getXPProgress, getLevelTitle, clamp } from '../utils/progressionUtils'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
 import { emptyDaily, emptyWeekly } from './storageService'
@@ -32,6 +33,7 @@ import streakService from './streakService'
 import questService from './questService'
 import achievementService from './achievementService'
 import teamService from './teamQuestService'
+import shopService from './shopService'
 import { deriveCourse, getSectionById, getLessonById } from '../data/learnData'
 
 /* ── Action names ────────────────────────────────────────────────────────── */
@@ -48,6 +50,7 @@ export const ACTIONS = {
   COMPLETE_LESSON:    'COMPLETE_LESSON',
   COMPLETE_PRACTICE:  'COMPLETE_PRACTICE',
   ADD_PRACTICE_TIME:  'ADD_PRACTICE_TIME',
+  PURCHASE_ITEM:      'PURCHASE_ITEM',
   CLAIM_QUEST:        'CLAIM_QUEST',
   CLAIM_ALL_QUESTS:   'CLAIM_ALL_QUESTS',
   CLAIM_TEAM_REWARD:  'CLAIM_TEAM_REWARD',
@@ -485,6 +488,16 @@ export function reduce(state, action, now = Date.now()) {
     case ACTIONS.ADD_PRACTICE_TIME:
       return addPracticeTime(state, payload.seconds ?? 0, now)
 
+    case ACTIONS.PURCHASE_ITEM: {
+      const result = shopService.purchaseItem(acc.state, payload, now)
+      acc.state = result.state
+      acc.events.push(...result.events)
+      /* Spending gems can complete a quest or an achievement, so a successful
+         purchase runs the same pipeline as any other progression event. */
+      if (result.ok) merge(acc, runPipeline(acc.state, now))
+      return acc
+    }
+
     case ACTIONS.CLAIM_QUEST: {
       const result = questService.claimQuest(acc.state, payload.questId, now)
       acc.state = result.state
@@ -579,6 +592,9 @@ export function buildViewModel(state, now = Date.now()) {
     longestStreak: state.streak.longest,
     activeToday: streakService.hasActivityToday(state, now),
     nextMilestone: streakService.getNextMilestone(state.streak.current),
+    shields: state.streak.shields,
+    shieldsUsed: state.streak.shieldsUsed,
+    maxShields: SHIELD.MAX_OWNED,
 
     daily: state.daily,
     weekly: state.weekly,
@@ -594,6 +610,16 @@ export function buildViewModel(state, now = Date.now()) {
       claimableCount: questService.getClaimableCount(state),
     },
     team: teamService.getMissionView(state, now),
+    /* One availability verdict per item, derived from the same function the
+       reducer uses to accept or refuse the purchase — so a card can never
+       offer something the engine would reject. */
+    shop: {
+      items: SHOP_ITEMS.map((item) => {
+        const { ok, reason, shortfall } = shopService.getAvailability(state, item.id)
+        return { ...item, ok, reason, shortfall, owned: shopService.getOwnedCount(state, item.id) }
+      }),
+      purchaseCount: state.shop.purchaseCount,
+    },
     achievements: achievementService.listAchievements(state),
     achievementsUnlocked: achievementService.getUnlockedCount(state),
     stats: state.stats,

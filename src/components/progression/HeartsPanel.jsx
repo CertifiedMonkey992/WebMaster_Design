@@ -9,16 +9,17 @@
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { HeartIcon, GemIcon, Icon } from './Icons'
 import { HEARTS } from '../../config/progressionConfig'
+import { HEART_REFILL_COST } from '../../config/shopConfig'
 import { formatClock, formatDuration } from '../../utils/dateUtils'
 import { getHeartRecoveryTime } from '../../services/currencyService'
 
-export default function HeartsPanel({ onClose }) {
+export default function HeartsPanel({ onClose, onOpenShop }) {
   const { state, vm, actions } = useProgression()
   const now = useClock()
 
   /* Recompute against the live clock so the countdown ticks every second. */
   const recovery = getHeartRecoveryTime(state, now)
-  const canAfford = vm.gems >= HEARTS.REFILL_GEM_COST
+  const canAfford = vm.gems >= HEART_REFILL_COST
   const isFull = vm.hearts >= vm.maxHearts
 
   return (
@@ -81,8 +82,11 @@ export default function HeartsPanel({ onClose }) {
           onClick={() => { actions.refillHeartsWithGems(); }}
         >
           <GemIcon size={15} />
-          Refill for {HEARTS.REFILL_GEM_COST}
+          Refill for {HEART_REFILL_COST}
         </button>
+        {onOpenShop && (
+          <button className="pg-btn pg-btn--ghost" onClick={onOpenShop}>Shop</button>
+        )}
         {onClose && (
           <button className="pg-btn pg-btn--ghost" onClick={onClose}>Close</button>
         )}
@@ -90,7 +94,7 @@ export default function HeartsPanel({ onClose }) {
 
       {!isFull && !canAfford && (
         <p className="pg-panel-warn">
-          You need {HEARTS.REFILL_GEM_COST - vm.gems} more gems for an instant refill.
+          You need {HEART_REFILL_COST - vm.gems} more gems for an instant refill.
         </p>
       )}
     </div>

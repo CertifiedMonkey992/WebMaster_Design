@@ -1,0 +1,540 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   shop.css — LunX Shop (light / premium 2.5D)
+   ---------------------------------------------------------------------------
+   Same surface language as the learning dashboard: off-white ground, white
+   cards, hairline borders, soft large-radius shadows. Turquoise appears only
+   on the things you can act on — prices, buy buttons, the balance panel.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sh-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  animation: sh-fade-in 0.28s ease;
+}
+
+@keyframes sh-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Header + balance ─────────────────────────────────────────────────────── */
+
+.sh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.sh-header-text { min-width: 15rem; flex: 1; }
+
+.sh-eyebrow {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lx-accent-ink);
+  margin-bottom: 0.35rem;
+}
+
+.sh-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #17152B;
+  margin-bottom: 0.4rem;
+}
+
+.sh-lead {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #6B7086;
+  max-width: 30rem;
+}
+
+.sh-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 0.75rem 0.75rem;
+  background: linear-gradient(140deg, #FFFFFF, #FFFBEB);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(180, 83, 9, 0.1), 0 1px 3px rgba(23, 20, 46, 0.05);
+}
+
+.sh-balance-text { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.sh-balance-label {
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lx-gold-ink);
+}
+
+.sh-balance-value {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #17152B;
+  line-height: 1;
+}
+
+.sh-balance-value svg { color: var(--lx-gold); }
+
+/* ── Purchase receipt ─────────────────────────────────────────────────────── */
+
+.sh-receipt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  background: #F0FDF4;
+  border: 1px solid rgba(22, 163, 74, 0.28);
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: var(--lx-success-ink);
+  animation: sh-receipt-in 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes sh-receipt-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.sh-receipt-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--lx-success);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sh-receipt-text { flex: 1; }
+.sh-receipt-text strong { font-weight: 700; }
+
+.sh-receipt-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  color: var(--lx-gold-ink);
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────────── */
+
+.sh-section { display: flex; flex-direction: column; gap: 0.9rem; }
+
+.sh-section-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #17152B;
+  margin-bottom: 0.2rem;
+}
+
+.sh-section-blurb { font-size: 0.78rem; color: #6B7086; }
+
+.sh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+/* ── Item card ────────────────────────────────────────────────────────────── */
+
+.sh-card {
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 20, 46, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  box-shadow: 0 1px 2px rgba(23, 20, 46, 0.04);
+}
+
+.sh-card:hover:not(.is-disabled) {
+  border-color: rgba(var(--lx-accent-rgb), 0.4);
+  box-shadow: 0 14px 32px rgba(23, 20, 46, 0.09);
+  transform: translateY(-2px);
+}
+
+/* A featured item takes the full row and puts the art beside the copy. */
+.sh-card--featured { grid-column: 1 / -1; }
+
+@media (min-width: 620px) {
+  .sh-card--featured { flex-direction: row; align-items: stretch; }
+  .sh-card--featured .sh-card-art { width: 11rem; flex-shrink: 0; }
+  .sh-card--featured .sh-card-body { padding: 1.35rem 1.5rem; }
+}
+
+.sh-card-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  position: relative;
+}
+
+/* The art sits on a faint tint of its own semantic colour, which is the only
+   place a non-brand hue covers any area. */
+.sh-art--heart  { background: linear-gradient(150deg, #FFF1F2, #FFFFFF 78%); }
+.sh-art--streak { background: linear-gradient(150deg, var(--lx-accent-wash), #FFFFFF 78%); }
+
+.sh-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+  flex: 1;
+}
+
+.sh-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.sh-card-name {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #17152B;
+}
+
+.sh-owned-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--lx-accent-wash);
+  border: 1px solid rgba(var(--lx-accent-rgb), 0.3);
+  color: var(--lx-accent-ink);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sh-card-tagline {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--lx-accent-ink);
+}
+
+.sh-card-desc {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #6B7086;
+  margin-bottom: 0.35rem;
+}
+
+.sh-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.55rem;
+}
+
+.sh-price {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #17152B;
+}
+
+.sh-price svg { color: var(--lx-gold); }
+
+.sh-card-why {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: #7A7F95;
+  padding-top: 0.5rem;
+}
+
+.sh-card-why svg { flex-shrink: 0; color: #A0A5B8; }
+
+.sh-card.is-disabled { background: #FCFCFD; }
+.sh-card.is-disabled .sh-card-art { filter: grayscale(0.45); opacity: 0.65; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.sh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.2rem;
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: background 0.16s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+/* Bright turquoise is too light for white text, so the label is deep navy —
+   which is also what makes the button read as LunX rather than generic. */
+.sh-btn--buy {
+  background: var(--lx-accent);
+  color: var(--lx-on-accent);
+  box-shadow: 0 6px 16px rgba(var(--lx-accent-rgb), 0.3);
+}
+
+.sh-btn--buy:hover:not(:disabled) {
+  background: var(--lx-accent-bright);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(var(--lx-accent-rgb), 0.38);
+}
+
+.sh-btn--buy:active:not(:disabled) {
+  transform: none;
+  box-shadow: 0 3px 8px rgba(var(--lx-accent-rgb), 0.3);
+}
+
+.sh-btn--buy:disabled {
+  background: #EDEFF4;
+  color: #A0A5B8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.sh-btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(23, 20, 46, 0.14);
+  color: #6B7086;
+}
+
+.sh-btn--ghost:hover { background: rgba(23, 20, 46, 0.04); color: #17152B; }
+
+.sh-footnote {
+  font-size: 0.75rem;
+  color: #8B90A6;
+  text-align: center;
+  padding-top: 0.5rem;
+}
+
+/* ── Confirmation dialog ──────────────────────────────────────────────────── */
+
+.sh-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.sh-dialog-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 42, 63, 0.42);
+  backdrop-filter: blur(2px);
+  animation: sh-fade 0.2s ease;
+}
+
+@keyframes sh-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.sh-dialog {
+  position: relative;
+  width: min(24rem, 100%);
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 20, 46, 0.08);
+  border-radius: 22px;
+  padding: 1.5rem 1.5rem 1.35rem;
+  text-align: center;
+  box-shadow: 0 32px 70px rgba(15, 42, 63, 0.26), 0 6px 18px rgba(23, 20, 46, 0.08);
+  animation: sh-dialog-in 0.24s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes sh-dialog-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+.sh-dialog-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8B90A6;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sh-dialog-close:hover { background: rgba(23, 20, 46, 0.06); color: #17152B; }
+
+.sh-dialog-art { display: flex; justify-content: center; margin-bottom: 0.4rem; }
+
+.sh-dialog-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #17152B;
+  margin-bottom: 0.35rem;
+}
+
+.sh-dialog-desc {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #6B7086;
+  margin-bottom: 0.9rem;
+}
+
+.sh-dialog-owned {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--lx-accent-wash);
+  border: 1px solid rgba(var(--lx-accent-rgb), 0.28);
+  color: var(--lx-accent-ink);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-bottom: 0.9rem;
+}
+
+.sh-dialog-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  background: #F8FAFC;
+  border: 1px solid rgba(23, 20, 46, 0.06);
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.9rem;
+  text-align: left;
+}
+
+.sh-ledger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.28rem 0;
+  font-size: 0.8rem;
+}
+
+.sh-ledger-row dt { color: #6B7086; }
+
+.sh-ledger-row dd {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-weight: 700;
+  color: #17152B;
+}
+
+.sh-ledger-row dd svg { color: var(--lx-gold); }
+.sh-ledger-row dd.is-cost { color: var(--lx-heart-ink); }
+
+.sh-ledger-row--total {
+  border-top: 1px solid rgba(23, 20, 46, 0.08);
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.sh-dialog-warn {
+  font-size: 0.76rem;
+  color: var(--lx-heart-ink);
+  background: #FFF1F2;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
+  margin-bottom: 0.9rem;
+}
+
+.sh-dialog-actions { display: flex; gap: 0.6rem; }
+.sh-dialog-actions .sh-btn { flex: 1; padding: 0.7rem 1rem; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .sh-title { font-size: 1.35rem; }
+  .sh-balance { padding: 0.6rem 1rem 0.6rem 0.5rem; }
+  .sh-balance-value { font-size: 1.25rem; }
+}
+
+/* Below the featured-card breakpoint every card is a single column, and the
+   dialog becomes a bottom sheet so the buttons sit under the thumb. */
+@media (max-width: 619px) {
+  .sh-page { gap: 1.5rem; }
+  .sh-grid { grid-template-columns: 1fr; }
+  .sh-header { gap: 1rem; }
+  .sh-balance { width: 100%; }
+
+  .sh-dialog-layer { align-items: flex-end; padding: 0; }
+
+  .sh-dialog {
+    width: 100%;
+    border-radius: 22px 22px 0 0;
+    padding: 1.4rem 1.25rem calc(1.4rem + env(safe-area-inset-bottom, 0px));
+    animation: sh-sheet-in 0.26s cubic-bezier(0.32, 1.2, 0.5, 1);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  @keyframes sh-sheet-in {
+    from { transform: translateY(100%); }
+    to   { transform: none; }
+  }
+
+  /* A grab handle so the sheet reads as a sheet. */
+  .sh-dialog::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(23, 20, 46, 0.14);
+    margin: -0.4rem auto 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sh-page, .sh-dialog, .sh-dialog-scrim, .sh-receipt { animation: none; }
+  .sh-card, .sh-btn { transition: none; }
+  .sh-card:hover:not(.is-disabled), .sh-btn--buy:hover:not(:disabled) { transform: none; }
+}

@@ -62,6 +62,39 @@
   --z-nav:     100;
   --z-modal:   200;
   --z-overlay: 10000;
+
+  /* ── LunX brand palette ───────────────────────────────────────────────────
+     Turquoise carries the brand; everything else stays neutral so the accent
+     only appears where it means something (active nav, current lesson, CTAs,
+     progress, selection). Declared on :root rather than .learn-app so
+     portalled modals and toasts resolve the same values.
+
+     Contrast note: bright cyan is too light to carry white label text, so
+     solid accent surfaces pair with --lx-on-accent (deep navy, 6.3:1) and
+     accent-coloured TEXT on white uses --lx-accent-ink (6.1:1). */
+  --lx-accent:        #06B6D4;   /* brand turquoise — the LunX signature */
+  --lx-accent-rgb:    6, 182, 212;
+  --lx-accent-bright: #22D3EE;   /* highlight / gradient end / glow */
+  --lx-accent-soft:   #67E8F9;   /* light tint */
+  --lx-accent-wash:   #ECFEFF;   /* tinted surface */
+  --lx-accent-strong: #0891A8;   /* hover state for solid accent surfaces */
+  --lx-accent-ink:    #0A6C7C;   /* accent text on a light ground */
+  --lx-accent-deep:   #075E6B;   /* deepest accent — pressed states */
+  --lx-on-accent:     #05303A;   /* label colour placed ON the turquoise */
+
+  /* Secondary — deep navy */
+  --lx-navy:          #0F2A3F;
+  --lx-navy-soft:     #1E3A52;
+
+  /* Semantic (unchanged roles, retuned to sit beside turquoise) */
+  --lx-gold:          #F59E0B;   /* rewards / XP */
+  --lx-gold-ink:      #B45309;
+  --lx-streak:        #F97316;   /* orange */
+  --lx-streak-ink:    #C2410C;
+  --lx-success:       #16A34A;   /* green */
+  --lx-success-ink:   #15803D;
+  --lx-heart:         #F43F5E;   /* coral */
+  --lx-heart-ink:     #BE123C;
 }
 
 /* Dark via OS */

@@ -12,11 +12,23 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { HEARTS, HEART_RECOVERY_MS, MISC } from '../config/progressionConfig'
+import { HEART_REFILL_COST } from '../config/shopConfig'
 
-/* ── Ledger ──────────────────────────────────────────────────────────────── */
+/* ── Ledger ──────────────────────────────────────────────────────────────────
+   Every resource movement — earned or spent — lands here as one entry:
+
+       { id, ts, kind, amount, reason, …meta }
+
+   `amount` is signed (negative = spent) and `reason` says why, which is all a
+   transaction-history screen would need. Nothing renders it yet; the point is
+   that the data already exists when something does.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+let ledgerSeq = 0
 
 export function pushLedger(state, entry) {
-  const ledger = [{ ts: Date.now(), ...entry }, ...state.ledger].slice(0, MISC.LEDGER_LIMIT)
+  const record = { id: `t${Date.now().toString(36)}${(++ledgerSeq).toString(36)}`, ts: Date.now(), ...entry }
+  const ledger = [record, ...state.ledger].slice(0, MISC.LEDGER_LIMIT)
   return { ...state, ledger }
 }
 
@@ -179,7 +191,7 @@ export function refillHeartsWithGems(state, now = Date.now()) {
   if (state.hearts >= state.maxHearts) {
     return { state, events: [{ type: 'HEARTS_ALREADY_FULL' }], ok: false }
   }
-  const spend = spendGems(state, HEARTS.REFILL_GEM_COST, 'heart-refill')
+  const spend = spendGems(state, HEART_REFILL_COST, 'heart-refill')
   if (!spend.ok) return { state, events: spend.events, ok: false }
 
   const refill = restoreAllHearts(spend.state, 'gem-refill', now)

@@ -5,6 +5,7 @@ import RightSidebar from '../components/learn/RightSidebar'
 import LessonModal  from '../components/learn/LessonModal'
 import PracticeSession from '../components/learn/PracticeSession'
 import ProfileView  from '../components/learn/ProfileView'
+import ShopView     from '../components/shop/ShopView'
 
 import PlayerStatusBar from '../components/progression/PlayerStatusBar'
 import RewardToaster   from '../components/progression/RewardToaster'
@@ -16,7 +17,6 @@ import '../components/progression/progression.css'
 
 const PLACEHOLDER_VIEWS = {
   leaderboards: { icon: '🏆', title: 'Leaderboards', desc: 'See how you rank against learners from around the world.' },
-  shop:         { icon: '🛍️', title: 'Shop',         desc: 'Spend your hard-earned gems on rewards and power-ups.' },
   more:         { icon: '⚙️', title: 'More',         desc: 'Settings, help centre, and additional options.' },
 }
 
@@ -52,13 +52,14 @@ export default function LearnPage({ onGoHome, onLoginClick }) {
           </span>
           LunX
         </button>
-        <PlayerStatusBar />
+        <PlayerStatusBar onOpenShop={() => setActiveNav('shop')} />
       </header>
 
       <main className="learn-main" id="learn-content">
         {activeNav === 'learn'    && <ModuleList onStartLesson={setActiveLessonId} />}
         {activeNav === 'practice' && <PracticeSession />}
         {activeNav === 'quests'   && <QuestBoard />}
+        {activeNav === 'shop'     && <ShopView />}
         {activeNav === 'profile'  && <ProfileView />}
         {PLACEHOLDER_VIEWS[activeNav] && <PlaceholderView viewId={activeNav} />}
       </main>
