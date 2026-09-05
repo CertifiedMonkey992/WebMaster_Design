@@ -1,12 +1,12 @@
 /* ═══════════════════════════════════════════════════════════
-   LearnPage.css — LunX Learning Dashboard
+   LearnPage.css — LunX Learning Dashboard (light / premium 2.5D)
    ═══════════════════════════════════════════════════════════ */
 
 /* ── Layout ───────────────────────────────────────────────── */
 
 html:has(.learn-app),
 html:has(.learn-app) body {
-  background: #0f0f13;
+  background: #F6F6FB;
 }
 
 .learn-app {
@@ -14,9 +14,25 @@ html:has(.learn-app) body {
   grid-template-columns: 230px 1fr 310px;
   grid-template-rows: 58px 1fr;
   min-height: 100vh;
-  background: #0f0f13;
+  background: #F6F6FB;
   font-family: var(--font-body, 'DM Sans', sans-serif);
-  color: #F8FAFC;
+  color: #17152B;
+  position: relative;
+}
+
+/* Page atmosphere — extremely restrained radial glows behind everything.
+   Fixed + z-index:0 so it never participates in the grid flow; every real
+   grid child gets z-index:1+ (via its own rules) to sit above it. */
+.learn-app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(760px 480px at 8% -8%, rgba(109, 76, 241, 0.07), transparent 60%),
+    radial-gradient(620px 460px at 96% 18%, rgba(6, 174, 212, 0.06), transparent 62%),
+    radial-gradient(900px 520px at 50% 115%, rgba(245, 165, 36, 0.035), transparent 65%);
 }
 
 /* ── Player status bar ────────────────────────────────────────
@@ -39,7 +55,7 @@ html:has(.learn-app) body {
   gap: 1rem;
   padding: 0 1.25rem;
   pointer-events: none;
-  background: linear-gradient(to bottom, #0f0f13 68%, rgba(15, 15, 19, 0.86) 88%, rgba(15, 15, 19, 0));
+  background: linear-gradient(to bottom, #F6F6FB 68%, rgba(246, 246, 251, 0.88) 88%, rgba(246, 246, 251, 0));
 }
 
 .learn-topbar > * { pointer-events: auto; }
@@ -55,7 +71,7 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: #17152B;
   padding: 0;
 }
 
@@ -63,10 +79,11 @@ html:has(.learn-app) body {
   width: 24px;
   height: 24px;
   border-radius: 7px;
-  background: linear-gradient(135deg, #6366F1, #818CF8);
+  background: linear-gradient(135deg, #6D4CF1, #8567F5);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 3px 8px rgba(109, 76, 241, 0.35);
 }
 
 /* ── Left Sidebar ─────────────────────────────────────────── */
@@ -77,8 +94,8 @@ html:has(.learn-app) body {
   position: sticky;
   top: 0;
   height: 100vh;
-  background: #0f0f13;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  background: #FFFFFF;
+  border-right: 1px solid rgba(23, 20, 46, 0.07);
   display: flex;
   flex-direction: column;
   padding: 1.5rem 0 1rem;
@@ -98,8 +115,8 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 1.2rem;
   font-weight: 700;
-  color: #fff;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: #17152B;
+  border-bottom: 1px solid rgba(23, 20, 46, 0.07);
   text-align: left;
   width: 100%;
   transition: opacity 0.15s;
@@ -111,12 +128,13 @@ html:has(.learn-app) body {
 .ls-logo-mark {
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, #6366F1, #818CF8);
+  background: linear-gradient(135deg, #6D4CF1, #8567F5);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(109, 76, 241, 0.35);
 }
 
 /* Nav structure */
@@ -136,7 +154,7 @@ html:has(.learn-app) body {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.18);
+  color: #B7BACB;
   padding: 0.875rem 1.5rem 0.35rem;
 }
 
@@ -162,31 +180,18 @@ html:has(.learn-app) body {
   font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 0.82rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.4);
+  color: #6B7086;
   transition: background 0.15s, color 0.15s;
   text-align: left;
 }
 
 .ls-nav-btn:hover {
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.75);
+  background: rgba(23, 20, 46, 0.04);
+  color: #17152B;
 }
 
-.ls-nav-btn:hover .ls-nav-icon {
-  color: var(--nav-color, #fff);
-  filter: brightness(1.15);
-}
-
-.ls-nav-btn.active {
-  background: color-mix(in srgb, var(--nav-color, #6366F1) 14%, transparent);
-  color: var(--nav-color, #6366F1);
-}
-
-.ls-nav-btn.active .ls-nav-icon {
-  color: var(--nav-color, #6366F1);
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--nav-color, #6366F1) 40%, transparent));
-}
-
+/* Icons stay quiet at rest — color is reserved for the active state so the
+   sidebar doesn't read as a rainbow of unrelated hues. */
 .ls-nav-icon {
   width: 20px;
   height: 20px;
@@ -194,19 +199,37 @@ html:has(.learn-app) body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--nav-color, rgba(255,255,255,0.3));
+  color: #B7BACB;
   transition: color 0.15s, filter 0.2s;
+}
+
+.ls-nav-btn:hover .ls-nav-icon {
+  color: var(--nav-color, #6D4CF1);
+}
+
+.ls-nav-btn.active {
+  background: color-mix(in srgb, var(--nav-color, #6D4CF1) 12%, white);
+  color: color-mix(in srgb, var(--nav-color, #6D4CF1) 80%, black);
+  font-weight: 700;
+  /* A left accent bar reads as "selected" even for the deliberately muted
+     Profile/More items, where a background tint alone is too subtle. */
+  box-shadow: inset 3px 0 0 var(--nav-color, #6D4CF1);
+}
+
+.ls-nav-btn.active .ls-nav-icon {
+  color: var(--nav-color, #6D4CF1);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--nav-color, #6D4CF1) 35%, transparent));
 }
 
 .ls-separator {
   height: 1px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(23, 20, 46, 0.07);
   margin: 0.4rem 1.25rem;
 }
 
 .ls-nav-btn.ls-more {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.28);
+  color: #6E7389;
 }
 
 /* ── Main Content ─────────────────────────────────────────── */
@@ -220,6 +243,8 @@ html:has(.learn-app) body {
   width: 100%;
   box-sizing: border-box;
   overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Module list ──────────────────────────────────────────── */
@@ -230,16 +255,17 @@ html:has(.learn-app) body {
   gap: 0;
 }
 
-/* ── Continue Learning Card ──────────────────────────────── */
+/* ── Continue Learning Card (level 2 — quick jump-back-in banner) ───────── */
 
 .cl-card {
-  background: #16161e;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  border-radius: 14px;
-  padding: 1.25rem 1.375rem;
-  margin-bottom: 2rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 20, 46, 0.07);
+  border-radius: 16px;
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 1.5rem;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 22px rgba(23, 20, 46, 0.06), 0 1px 3px rgba(23, 20, 46, 0.04);
 }
 
 .cl-card::before {
@@ -248,8 +274,8 @@ html:has(.learn-app) body {
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, #6366F1, #06B6D4);
+  height: 3px;
+  background: linear-gradient(90deg, #6D4CF1, #06AED4);
 }
 
 .cl-label {
@@ -257,7 +283,7 @@ html:has(.learn-app) body {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #06B6D4;
+  color: #0E7490;
   margin-bottom: 0.875rem;
 }
 
@@ -272,8 +298,9 @@ html:has(.learn-app) body {
   width: 46px;
   height: 46px;
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.12);
-  color: #818CF8;
+  background: linear-gradient(140deg, rgba(109, 76, 241, 0.12), rgba(6, 174, 212, 0.08));
+  border: 1px solid rgba(109, 76, 241, 0.15);
+  color: #6D4CF1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,27 +316,27 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: #17152B;
   margin-bottom: 0.25rem;
 }
 
 .cl-desc {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.42);
+  color: #6B7086;
   line-height: 1.5;
   margin-bottom: 0.35rem;
 }
 
 .cl-meta {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.28);
+  color: #6E7389;
 }
 
 .cl-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #6366F1;
+  background: #6D4CF1;
   color: #fff;
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.82rem;
@@ -317,22 +344,22 @@ html:has(.learn-app) body {
   padding: 0.6rem 1.25rem;
   width: 100%;
   border: none;
-  border-radius: 10px;
+  border-radius: 11px;
   cursor: pointer;
   letter-spacing: 0.01em;
   transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 2px 0 #4338CA;
+  box-shadow: 0 8px 18px rgba(109, 76, 241, 0.32);
 }
 
 .cl-btn:hover {
-  opacity: 0.92;
+  opacity: 0.94;
   transform: translateY(-1px);
-  box-shadow: 0 3px 0 #4338CA, 0 0 16px rgba(99,102,241,0.2);
+  box-shadow: 0 10px 24px rgba(109, 76, 241, 0.4);
 }
 
 .cl-btn:active {
   transform: none;
-  box-shadow: 0 1px 0 #4338CA;
+  box-shadow: 0 4px 12px rgba(109, 76, 241, 0.32);
 }
 
 /* ── Section Card ─────────────────────────────────────────── */
@@ -345,42 +372,45 @@ html:has(.learn-app) body {
 .sc-wrapper + .sc-wrapper::before {
   content: '';
   display: block;
-  width: 1.5px;
+  width: 2px;
   height: 18px;
   margin: 0 auto 0.5rem;
-  background: rgba(255,255,255,0.06);
+  background: rgba(23, 20, 46, 0.08);
   border-radius: 1px;
 }
 
 .sc-header {
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
+  border: 1px solid rgba(23, 20, 46, 0.07);
+  border-radius: 16px;
   padding: 1.125rem 1.25rem;
-  background: #16161e;
-  transition: border-color 0.2s;
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(23, 20, 46, 0.04);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .sc-header:hover {
-  border-color: rgba(255,255,255,0.1);
+  border-color: rgba(23, 20, 46, 0.12);
+  box-shadow: 0 8px 20px rgba(23, 20, 46, 0.07);
 }
 
 .sc-completed {
-  background: repeating-linear-gradient(
-    -45deg,
-    #16161e,
-    #16161e 8px,
-    rgba(255,255,255,0.015) 8px,
-    rgba(255,255,255,0.015) 16px
-  );
-  border-left: 3px solid rgba(34, 197, 94, 0.35);
+  background: linear-gradient(180deg, rgba(23, 163, 74, 0.035), #FFFFFF 40%);
+  border-left: 3px solid rgba(23, 163, 74, 0.4);
 }
 
 .sc-in-progress {
-  border-left: 3px solid #6366F1;
+  border-left: 3px solid #6D4CF1;
 }
 
 .sc-locked {
-  opacity: 0.42;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.sc-locked:hover {
+  border-color: rgba(23, 20, 46, 0.07);
+  box-shadow: none;
+  transform: none;
 }
 
 .sc-header-top {
@@ -392,23 +422,23 @@ html:has(.learn-app) body {
 
 .sc-level {
   font-size: 0.62rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.3);
+  color: #6E7389;
 }
 
 .sc-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 1.1rem;
   font-weight: 700;
-  color: #fff;
+  color: #17152B;
   margin: 0 0 0.3rem;
 }
 
 .sc-desc {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.38);
+  color: #6B7086;
   line-height: 1.5;
   margin: 0 0 0.75rem;
 }
@@ -422,34 +452,54 @@ html:has(.learn-app) body {
 
 .sc-progress-bar {
   flex: 1;
-  height: 4px;
-  background: rgba(255,255,255,0.06);
+  height: 6px;
+  background: rgba(23, 20, 46, 0.07);
   border-radius: 99px;
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
 }
 
 .sc-progress-fill {
   height: 100%;
   border-radius: 99px;
-  background: #6366F1;
-  transition: width 0.6s ease;
+  background: linear-gradient(90deg, #6D4CF1, #06AED4);
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
+  position: relative;
+}
+
+/* Glowing leading-edge node — the "distinctive" progress indicator asked
+   for: a small lit marker traveling the journey, not a generic loading bar. */
+.sc-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 50%; right: 0;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #6D4CF1;
+  transform: translate(50%, -50%);
+  box-shadow: 0 0 0 3px rgba(109, 76, 241, 0.14), 0 2px 6px rgba(109, 76, 241, 0.35);
 }
 
 .sc-completed .sc-progress-fill {
-  background: #22C55E;
+  background: linear-gradient(90deg, #17A34A, #22C55E);
+}
+.sc-completed .sc-progress-fill::after {
+  border-color: #17A34A;
+  box-shadow: 0 0 0 3px rgba(23, 163, 74, 0.14), 0 2px 6px rgba(23, 163, 74, 0.3);
 }
 
 .sc-progress-text {
   font-size: 0.68rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.3);
+  font-weight: 700;
+  color: #6E7389;
   min-width: 2rem;
   text-align: right;
 }
 
 .sc-meta {
   font-size: 0.68rem;
-  color: rgba(255,255,255,0.22);
+  color: #6E7389;
 }
 
 .sc-badge {
@@ -457,26 +507,69 @@ html:has(.learn-app) body {
   align-items: center;
   gap: 0.25rem;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
   padding: 0.2rem 0.55rem;
   border-radius: 99px;
 }
 
 .sc-badge-done {
-  color: #4ade80;
-  background: rgba(34, 197, 94, 0.1);
+  color: #15803D;
+  background: rgba(23, 163, 74, 0.1);
 }
 
 .sc-badge-progress {
-  color: #818CF8;
-  background: rgba(99, 102, 241, 0.1);
+  color: #5B3EDB;
+  background: rgba(109, 76, 241, 0.1);
 }
 
 .sc-badge-locked {
-  color: rgba(255,255,255,0.28);
-  background: rgba(255,255,255,0.04);
+  color: #6E7389;
+  background: rgba(23, 20, 46, 0.04);
 }
+
+/* ── Hero variant: the currently active section becomes the visual
+   centerpiece — a two-column composition (copy left, 2.5D visual right)
+   with a stronger elevated surface and a section-tinted glow. ─────────── */
+
+.sc-header.sc-hero {
+  background: linear-gradient(155deg, #FBFAFF 0%, #FFFFFF 55%);
+  border: 1px solid rgba(109, 76, 241, 0.14);
+  border-left: 3px solid #6D4CF1;
+  border-radius: 20px;
+  padding: 1.5rem 1.5rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 24px 48px rgba(76, 47, 196, 0.12), 0 4px 14px rgba(23, 20, 46, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.sc-header.sc-hero:hover {
+  box-shadow: 0 28px 56px rgba(76, 47, 196, 0.16), 0 6px 16px rgba(23, 20, 46, 0.07);
+  transform: none;
+}
+
+.sc-hero-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.sc-hero-visual {
+  flex-shrink: 0;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+}
+
+/* Per-theme accent (from section.moduleTheme) tints the left rail only —
+   the rest of the card stays neutral, so color still reads as intentional. */
+.sc-header.sc-hero[data-theme="green"] { border-left-color: #17A34A; }
+.sc-header.sc-hero[data-theme="blue"]  { border-left-color: #0EA5E9; }
+.sc-header.sc-hero[data-theme="purple"]{ border-left-color: #6D4CF1; }
 
 /* ── Lesson List with Path ──────────────────────────────── */
 
@@ -487,15 +580,26 @@ html:has(.learn-app) body {
   position: relative;
 }
 
-.sc-lessons::before {
-  content: '';
-  position: absolute;
-  left: calc(0.875rem + 20px);
-  top: 0.75rem;
-  bottom: 0.75rem;
-  width: 1.5px;
-  background: rgba(255,255,255,0.05);
-  z-index: 0;
+/* ── Path connectors between lesson stops ─────────────────────────────────
+   Replaces one continuous line with per-gap segments so the path can fill
+   in green exactly as far as real progress reaches — a travelled path,
+   not a static line — and animates the moment a lesson completes. */
+.sc-connector {
+  display: flex;
+  padding-left: calc(0.875rem + 20px - 1px);
+  height: 14px;
+}
+
+.sc-connector-fill {
+  width: 2px;
+  height: 100%;
+  border-radius: 1px;
+  background: rgba(23, 20, 46, 0.09);
+  transition: background 0.4s ease;
+}
+
+.sc-connector-fill.is-filled {
+  background: linear-gradient(180deg, #17A34A, #22C55E);
 }
 
 /* ── Lesson Row ──────────────────────────────────────────── */
@@ -508,8 +612,8 @@ html:has(.learn-app) body {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding: 0.6rem 0.875rem;
-  border-radius: 10px;
+  padding: 0.65rem 0.875rem;
+  border-radius: 12px;
   cursor: pointer;
   transition: background 0.15s;
   outline: none;
@@ -517,21 +621,21 @@ html:has(.learn-app) body {
 }
 
 .ln-row:hover {
-  background: rgba(255,255,255,0.03);
+  background: rgba(23, 20, 46, 0.03);
 }
 
 .ln-row:focus-visible {
-  outline: 2px solid #6366F1;
+  outline: 2px solid #6D4CF1;
   outline-offset: -2px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .ln-icon-box {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  background: rgba(99, 102, 241, 0.1);
-  color: #818CF8;
+  border-radius: 11px;
+  background: rgba(109, 76, 241, 0.08);
+  color: #6D4CF1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -542,7 +646,7 @@ html:has(.learn-app) body {
 }
 
 .ln-row:hover .ln-icon-box {
-  background: rgba(99, 102, 241, 0.16);
+  background: rgba(109, 76, 241, 0.14);
 }
 
 .ln-info {
@@ -555,15 +659,15 @@ html:has(.learn-app) body {
 
 .ln-label {
   font-size: 0.67rem;
-  font-weight: 500;
-  color: rgba(255,255,255,0.28);
+  font-weight: 600;
+  color: #6E7389;
 }
 
 .ln-title {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.85rem;
   font-weight: 600;
-  color: #F8FAFC;
+  color: #17152B;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -575,51 +679,69 @@ html:has(.learn-app) body {
 }
 
 .ln-check {
-  color: #4ade80;
-  width: 22px;
-  height: 22px;
+  color: #17A34A;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(23, 163, 74, 0.1);
   border-radius: 50%;
 }
 
-.ln-current-badge {
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #818CF8;
-  background: rgba(99, 102, 241, 0.12);
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+.ln-current-arrow {
+  color: #6D4CF1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(109, 76, 241, 0.1);
+  animation: ln-arrow-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes ln-arrow-nudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(2px); }
 }
 
 .ln-lock {
-  color: rgba(255,255,255,0.15);
+  color: #CBCEDB;
 }
 
 /* Completed lessons */
 .ln-row.ln-completed .ln-icon-box {
-  background: rgba(34, 197, 94, 0.08);
-  color: #4ade80;
+  background: rgba(23, 163, 74, 0.09);
+  color: #17A34A;
 }
 
-/* Current lesson */
+/* Current lesson — the obvious next action: stronger surface, not just a badge */
 .ln-row.ln-current {
-  background: rgba(99, 102, 241, 0.05);
+  background: linear-gradient(90deg, rgba(109, 76, 241, 0.06), rgba(6, 174, 212, 0.03));
+  cursor: pointer;
+}
+
+.ln-row.ln-current:hover {
+  background: linear-gradient(90deg, rgba(109, 76, 241, 0.09), rgba(6, 174, 212, 0.045));
 }
 
 .ln-row.ln-current .ln-icon-box {
-  background: rgba(99, 102, 241, 0.18);
-  box-shadow: 0 0 14px rgba(99, 102, 241, 0.2);
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(140deg, #6D4CF1, #8567F5);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(109, 76, 241, 0.38);
+}
+
+.ln-row.ln-current .ln-title {
+  font-size: 0.9rem;
 }
 
 /* Locked lessons */
 .ln-row.ln-locked {
   cursor: default;
-  opacity: 0.35;
+  opacity: 0.5;
 }
 
 .ln-row.ln-locked:hover {
@@ -627,25 +749,84 @@ html:has(.learn-app) body {
 }
 
 .ln-row.ln-locked .ln-icon-box {
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.2);
+  background: rgba(23, 20, 46, 0.04);
+  color: #C5C8D6;
 }
 
-/* ── Lesson Popup ─────────────────────────────────────────── */
+/* ── Current-lesson panel ─────────────────────────────────────────────────
+   Always visible (never a click-to-reveal popup) — the entire row plus this
+   panel communicate "start here", with a real in-flow CTA instead of a tiny
+   pill. Sits in normal document flow so it never overlaps neighboring rows. */
+.ln-current-panel {
+  margin: 0.1rem 0.5rem 0.5rem calc(0.875rem + 40px + 0.875rem);
+  padding: 0.75rem 0 0;
+}
+
+.ln-current-desc {
+  font-size: 0.78rem;
+  color: #6B7086;
+  line-height: 1.5;
+  margin-bottom: 0.7rem;
+  max-width: 34rem;
+}
+
+.ln-current-warn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: #C81E3A;
+  background: rgba(240, 71, 91, 0.08);
+  border: 1px solid rgba(240, 71, 91, 0.18);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  margin-bottom: 0.6rem;
+  width: fit-content;
+}
+
+.ln-start-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #6D4CF1;
+  color: #fff;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.6rem 1.35rem;
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 8px 18px rgba(109, 76, 241, 0.32);
+}
+
+.ln-start-btn:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(109, 76, 241, 0.4);
+}
+
+.ln-start-btn:active {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(109, 76, 241, 0.3);
+}
+
+/* ── Lesson Popup (available / completed lessons — quick preview flyout) ── */
 
 .ln-popup {
   position: absolute;
   top: 100%;
   left: 1rem;
   right: 1rem;
-  background: #1a1a24;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 20, 46, 0.08);
+  color: #17152B;
   border-radius: 14px;
   padding: 1rem 1.125rem;
   text-align: center;
   z-index: 9999;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
+  box-shadow: 0 20px 48px rgba(23, 20, 46, 0.16), 0 2px 8px rgba(23, 20, 46, 0.06);
   animation: popupIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -655,7 +836,8 @@ html:has(.learn-app) body {
   top: -8px;
   left: 2rem;
   border: 5px solid transparent;
-  border-bottom-color: rgba(255,255,255,0.1);
+  border-bottom-color: #FFFFFF;
+  filter: drop-shadow(0 -2px 2px rgba(23, 20, 46, 0.05));
 }
 
 @keyframes popupIn {
@@ -673,13 +855,27 @@ html:has(.learn-app) body {
 
 .ln-popup-desc {
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.45);
+  color: #6B7086;
   margin-bottom: 0.875rem;
   line-height: 1.5;
 }
 
+.ln-popup-warn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  color: #C81E3A;
+  background: rgba(240, 71, 91, 0.08);
+  border: 1px solid rgba(240, 71, 91, 0.18);
+  border-radius: 8px;
+  padding: 0.35rem 0.5rem;
+  margin-bottom: 0.6rem;
+  text-align: left;
+}
+
 .ln-popup-btn {
-  background: #6366F1;
+  background: #6D4CF1;
   color: #fff;
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.8rem;
@@ -690,18 +886,18 @@ html:has(.learn-app) body {
   border-radius: 10px;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
-  box-shadow: 0 2px 0 #4338CA;
+  box-shadow: 0 6px 14px rgba(109, 76, 241, 0.3);
 }
 
 .ln-popup-btn:hover {
-  opacity: 0.92;
+  opacity: 0.94;
   transform: translateY(-1px);
-  box-shadow: 0 3px 0 #4338CA;
+  box-shadow: 0 8px 18px rgba(109, 76, 241, 0.36);
 }
 
 .ln-popup-btn:active {
   transform: none;
-  box-shadow: 0 1px 0 #4338CA;
+  box-shadow: 0 3px 8px rgba(109, 76, 241, 0.28);
 }
 
 /* ── Right Sidebar ────────────────────────────────────────── */
@@ -709,9 +905,11 @@ html:has(.learn-app) body {
 .learn-right {
   grid-column: 3;
   grid-row: 2;
-  border-left: 1px solid rgba(255,255,255,0.06);
+  border-left: 1px solid rgba(23, 20, 46, 0.07);
   padding: 0.5rem 1rem 1.5rem;
   background: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .learn-right-sticky {
@@ -725,17 +923,18 @@ html:has(.learn-app) body {
 /* ── Progress Card ────────────────────────────────────────── */
 
 .progress-card {
-  background: #16161e;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 20, 46, 0.07);
+  border-radius: 16px;
   padding: 1rem;
+  box-shadow: 0 1px 2px rgba(23, 20, 46, 0.04);
 }
 
 .pc-header {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.82rem;
   font-weight: 700;
-  color: #F8FAFC;
+  color: #17152B;
   margin-bottom: 0.75rem;
 }
 
@@ -749,13 +948,13 @@ html:has(.learn-app) body {
 .pc-level-badge {
   width: 42px;
   height: 42px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(6,182,212,0.12));
-  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 12px;
+  background: linear-gradient(140deg, #6D4CF1, #06AED4);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 6px 16px rgba(109, 76, 241, 0.3);
 }
 
 .pc-level-num {
@@ -771,8 +970,8 @@ html:has(.learn-app) body {
 }
 
 .pc-xp-bar {
-  height: 5px;
-  background: rgba(255,255,255,0.06);
+  height: 6px;
+  background: rgba(23, 20, 46, 0.07);
   border-radius: 99px;
   overflow: hidden;
   margin-bottom: 0.3rem;
@@ -780,21 +979,21 @@ html:has(.learn-app) body {
 
 .pc-xp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366F1, #06B6D4);
+  background: linear-gradient(90deg, #6D4CF1, #06AED4);
   border-radius: 99px;
   transition: width 0.5s ease;
 }
 
 .pc-xp-text {
   font-size: 0.65rem;
-  color: rgba(255,255,255,0.3);
+  color: #6E7389;
 }
 
 .pc-stats {
   display: flex;
   align-items: center;
   padding-top: 0.7rem;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(23, 20, 46, 0.07);
 }
 
 .pc-stat {
@@ -808,27 +1007,27 @@ html:has(.learn-app) body {
 .pc-stat-divider {
   width: 1px;
   height: 26px;
-  background: rgba(255,255,255,0.06);
+  background: rgba(23, 20, 46, 0.08);
 }
 
 .pc-stat-value {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
+  color: #17152B;
 }
 
 .pc-stat-label {
   font-size: 0.62rem;
-  color: rgba(255,255,255,0.28);
+  color: #6E7389;
 }
 
 /* ── Signup Card (compact) ────────────────────────────────── */
 
 .signup-card {
-  background: #16161e;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
+  background: linear-gradient(155deg, #FBFAFF, #FFFFFF);
+  border: 1px solid rgba(109, 76, 241, 0.14);
+  border-radius: 16px;
   padding: 0.875rem 1rem;
 }
 
@@ -847,44 +1046,47 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #F8FAFC;
+  color: #17152B;
   margin: 0 0 0.15rem;
 }
 
 .signup-card-body {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.32);
+  color: #6B7086;
   line-height: 1.45;
   margin: 0;
 }
 
 .signup-card-btn {
-  background: rgba(99, 102, 241, 0.1);
-  color: #818CF8;
+  background: #6D4CF1;
+  color: #fff;
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.72rem;
   font-weight: 700;
-  padding: 0.45rem 0.75rem;
-  border-radius: 8px;
-  border: 1px solid rgba(99, 102, 241, 0.18);
+  padding: 0.5rem 0.85rem;
+  border-radius: 9px;
+  border: none;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
   flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(109, 76, 241, 0.3);
 }
 
 .signup-card-btn:hover {
-  background: rgba(99, 102, 241, 0.18);
-  border-color: rgba(99, 102, 241, 0.3);
+  opacity: 0.94;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(109, 76, 241, 0.36);
 }
 
 /* ── Quest Widget ─────────────────────────────────────────── */
 
 .quest-widget {
-  background: #16161e;
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 14px;
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 20, 46, 0.07);
+  border-radius: 16px;
   padding: 1rem;
+  box-shadow: 0 1px 2px rgba(23, 20, 46, 0.04);
 }
 
 .qw-header {
@@ -898,13 +1100,13 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.82rem;
   font-weight: 700;
-  color: #F8FAFC;
+  color: #17152B;
 }
 
 .qw-view-all {
   font-size: 0.65rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.3);
+  font-weight: 700;
+  color: #6D4CF1;
   background: none;
   border: none;
   cursor: pointer;
@@ -912,7 +1114,7 @@ html:has(.learn-app) body {
   transition: color 0.15s;
 }
 
-.qw-view-all:hover { color: rgba(255,255,255,0.65); }
+.qw-view-all:hover { color: #4C2FC4; }
 
 .qw-list {
   display: flex;
@@ -922,76 +1124,15 @@ html:has(.learn-app) body {
 }
 
 .qw-weekly {
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(23, 20, 46, 0.07);
   padding-top: 0.7rem;
 }
 
 .qw-weekly-label {
   font-size: 0.62rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.22);
+  font-weight: 700;
+  color: #6E7389;
   margin-bottom: 0.5rem;
-}
-
-.qw-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.qw-icon {
-  font-size: 1rem;
-  width: 22px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.qw-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.qw-label {
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: rgba(255,255,255,0.65);
-  margin-bottom: 0.2rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.qw-track {
-  height: 4px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 99px;
-  overflow: hidden;
-}
-
-.qw-fill {
-  height: 100%;
-  background: #6366F1;
-  border-radius: 99px;
-  transition: width 0.5s ease;
-}
-
-.qw-fill-done {
-  background: #22C55E;
-}
-
-.qw-count {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.28);
-  white-space: nowrap;
-  min-width: 24px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-.qw-count.done {
-  color: #22C55E;
-  font-size: 0.85rem;
 }
 
 /* ── Placeholder views ────────────────────────────────────── */
@@ -1015,27 +1156,86 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 1.5rem;
   font-weight: 700;
-  color: #fff;
+  color: #17152B;
   margin: 0 0 0.5rem;
 }
 
 .lp-placeholder-desc {
   font-size: 0.9rem;
-  color: rgba(255,255,255,0.38);
+  color: #6B7086;
   margin: 0 0 1.5rem;
   max-width: 320px;
   line-height: 1.55;
 }
 
 .lp-placeholder-badge {
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.28);
+  background: rgba(23, 20, 46, 0.04);
+  color: #6E7389;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   padding: 0.35rem 0.875rem;
   border-radius: 99px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(23, 20, 46, 0.07);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2.5D COURSE HERO VISUAL — motion only, colors come from JSX gradients
+   ═══════════════════════════════════════════════════════════ */
+
+.chv-svg {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+  overflow: visible;
+}
+
+.chv-shadow {
+  animation: chv-shadow-breathe 4.5s ease-in-out infinite;
+  transform-origin: 150px 184px;
+}
+
+@keyframes chv-shadow-breathe {
+  0%, 100% { transform: scaleX(1); opacity: 0.16; }
+  50%      { transform: scaleX(0.88); opacity: 0.1; }
+}
+
+.chv-orbit {
+  animation: chv-spin linear infinite;
+}
+.chv-orbit--slow { animation-duration: 22s; }
+.chv-orbit--fast { animation-duration: 15s; animation-direction: reverse; }
+
+@keyframes chv-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.chv-node {
+  animation: chv-pulse 3s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.chv-node--1 { animation-delay: 0s; }
+.chv-node--2 { animation-delay: 0.6s; }
+.chv-node--3 { animation-delay: 1.2s; }
+.chv-node--4 { animation-delay: 1.8s; }
+.chv-node--5 { animation-delay: 2.4s; }
+
+@keyframes chv-pulse {
+  0%, 100% { transform: scale(1);   opacity: 0.85; }
+  50%      { transform: scale(1.35); opacity: 1; }
+}
+
+.chv-chip {
+  animation: chv-float 4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes chv-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-6px) rotate(-3deg); }
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
@@ -1047,6 +1247,7 @@ html:has(.learn-app) body {
   .learn-main {
     padding: 1.5rem 2rem;
   }
+  .sc-hero-visual { width: 160px; }
 }
 
 @media (max-width: 900px) {
@@ -1060,8 +1261,8 @@ html:has(.learn-app) body {
     grid-row: 1 / -1;
     height: 54px;
     padding: 0 1rem;
-    background: #0f0f13;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: #FFFFFF;
+    border-bottom: 1px solid rgba(23, 20, 46, 0.07);
   }
 
   .lt-brand { display: flex; }
@@ -1073,7 +1274,7 @@ html:has(.learn-app) body {
     height: auto;
     flex-direction: row;
     border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(23, 20, 46, 0.07);
     padding: 0.5rem;
     overflow-x: auto;
     overflow-y: hidden;
@@ -1127,7 +1328,7 @@ html:has(.learn-app) body {
     grid-column: 1;
     grid-row: 4;
     border-left: none;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(23, 20, 46, 0.07);
     padding: 1.25rem;
   }
 
@@ -1147,9 +1348,11 @@ html:has(.learn-app) body {
     flex: 1 1 100%;
   }
 
-  .sc-lessons::before {
-    display: none;
+  .sc-header.sc-hero {
+    flex-direction: column;
+    text-align: left;
   }
+  .sc-hero-visual { width: 100%; max-width: 220px; margin: 0.5rem 0 0; }
 }
 
 @media (max-width: 540px) {
@@ -1171,11 +1374,8 @@ html:has(.learn-app) body {
     width: 40px;
     height: 40px;
   }
-  .sc-lessons {
-    padding-left: 0;
-  }
-  .sc-lessons::before {
-    display: none;
+  .ln-current-panel {
+    margin-left: 0.5rem;
   }
 }
 
@@ -1186,9 +1386,9 @@ html:has(.learn-app) body {
 .qw-title { display: inline-flex; align-items: center; gap: 0.4rem; }
 
 .qw-badge {
-  background: rgba(41, 182, 246, 0.18);
-  border: 1px solid rgba(41, 182, 246, 0.3);
-  color: #7FD3F7;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.28);
+  color: #0369A1;
   border-radius: 99px;
   font-size: 0.58rem;
   font-weight: 700;
@@ -1201,19 +1401,19 @@ html:has(.learn-app) body {
   align-items: center;
   gap: 0.3rem;
   font-size: 0.62rem;
-  color: rgba(255,255,255,0.24);
+  color: #6E7389;
   margin-bottom: 0.7rem;
 }
 
 .qw-reset-count { margin-left: auto; }
 
-.qw-empty { font-size: 0.7rem; color: rgba(255,255,255,0.3); margin: 0.3rem 0; }
+.qw-empty { font-size: 0.7rem; color: #6E7389; margin: 0.3rem 0; }
 
 /* Daily goal bar inside the progress card */
 .pc-goal {
   margin: 0.85rem 0 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid rgba(23, 20, 46, 0.07);
 }
 
 .pc-goal-top {
@@ -1223,7 +1423,7 @@ html:has(.learn-app) body {
   margin-bottom: 0.35rem;
 }
 
-.pc-goal-label { font-size: 0.65rem; color: rgba(255,255,255,0.3); }
+.pc-goal-label { font-size: 0.65rem; color: #6E7389; }
 
 .pc-goal-value {
   display: inline-flex;
@@ -1232,53 +1432,39 @@ html:has(.learn-app) body {
   font-family: var(--font-display, 'Space Grotesk', sans-serif);
   font-size: 0.7rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.6);
+  color: #6B7086;
 }
 
-.pc-goal-value.is-met { color: #4ADE80; }
+.pc-goal-value.is-met { color: #17A34A; }
 
 .pc-goal-track {
-  height: 4px;
-  background: rgba(255,255,255,0.06);
+  height: 5px;
+  background: rgba(23, 20, 46, 0.07);
   border-radius: 99px;
   overflow: hidden;
 }
 
 .pc-goal-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366F1, #06B6D4);
+  background: linear-gradient(90deg, #6D4CF1, #06AED4);
   border-radius: 99px;
   transition: width 0.6s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
-.pc-goal-fill.is-met { background: linear-gradient(90deg, #22C55E, #4ADE80); }
+.pc-goal-fill.is-met { background: linear-gradient(90deg, #17A34A, #22C55E); }
 
 .pc-stat-value { display: inline-flex; align-items: center; gap: 0.3rem; }
-.pc-stat-flame { color: #FF8A3D; }
+.pc-stat-flame { color: #F97316; }
 
 /* Locked section hint */
 .sc-locked-hint {
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.24);
+  color: #6E7389;
   padding: 0.6rem 0 0.2rem 1.1rem;
 }
 
-/* Lesson popup warning when hearts are empty */
-.ln-popup-warn {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.68rem;
-  color: #FF8A96;
-  background: rgba(255, 75, 92, 0.09);
-  border: 1px solid rgba(255, 75, 92, 0.2);
-  border-radius: 8px;
-  padding: 0.35rem 0.5rem;
-  margin-bottom: 0.6rem;
-}
-
 /* Course-complete state of the Continue card */
-.cl-card--done { opacity: 0.9; }
+.cl-card--done { opacity: 0.94; }
 .cl-card--done .cl-content { margin-bottom: 0; }
 
 @media (max-width: 900px) {

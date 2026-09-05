@@ -115,7 +115,7 @@ export function createMission(state, now = Date.now()) {
     simulated: true,
     rate: 0.35 + random() * 0.9,      // share of goalPerMember earned per day
     offsetHours: Math.floor(random() * 10),
-    accent: ['#6366F1', '#06B6D4', '#F59E0B', '#22C55E', '#EC4899'][i % 5],
+    accent: ['#6D4CF1', '#0EA5E9', '#D97706', '#17A34A', '#EC4899'][i % 5],
   }))
 
   return {
@@ -164,7 +164,7 @@ export function getMissionView(state, now = Date.now()) {
     name: 'You',
     simulated: false,
     isYou: true,
-    accent: '#818CF8',
+    accent: '#6D4CF1',
     contribution: record.contribution,
   }
 
