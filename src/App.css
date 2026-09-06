@@ -117,9 +117,9 @@
 }
 
 .nav-logo-text {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
   font-size: 1.0625rem;
-  font-weight: 700;
   color: #fff;
   letter-spacing: -0.035em;
 }
@@ -215,9 +215,9 @@
 }
 
 .hero-heading {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
   font-size: clamp(2.75rem, 5.2vw, 4.875rem);
-  font-weight: 700;
   line-height: 1.055;
   letter-spacing: -0.045em;
   text-wrap: balance;
@@ -577,9 +577,9 @@
 }
 
 .footer-logo-text {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
   font-size: 0.9375rem;
-  font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--text);
 }

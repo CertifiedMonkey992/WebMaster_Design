@@ -145,10 +145,10 @@
 }
 
 .db-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  letter-spacing: var(--tracking-heading);
   font-size: 1.45rem;
-  font-weight: 700;
-  letter-spacing: -0.022em;
   color: #17152B;
   line-height: 1.15;
 }

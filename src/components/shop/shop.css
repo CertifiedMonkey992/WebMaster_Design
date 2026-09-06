@@ -42,10 +42,10 @@
 }
 
 .sh-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  letter-spacing: var(--tracking-heading);
   font-size: 1.6rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
   color: #17152B;
   margin-bottom: 0.4rem;
 }
@@ -215,10 +215,11 @@
   flex-wrap: wrap;
 }
 
+/* A shop item's name is a card title, same as a lesson's — heading face. */
 .sh-card-name {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+  font-weight: var(--fw-heading);
   letter-spacing: -0.015em;
   color: #17152B;
 }

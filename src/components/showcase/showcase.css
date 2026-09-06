@@ -129,10 +129,10 @@
 }
 
 .sc-heading {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  letter-spacing: var(--tracking-heading);
   font-size: clamp(1.75rem, 3.2vw, 2.9rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
   line-height: 1.1;
   color: var(--text);
   text-wrap: balance;

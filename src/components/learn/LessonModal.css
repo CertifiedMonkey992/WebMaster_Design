@@ -370,7 +370,7 @@
   60%  { transform: scale(1.12); }
   100% { transform: scale(1);    opacity: 1; }
 }
-.lm-welcome-title { font-size: 1.75rem; font-weight: 700; color: #17152B; margin: 0 0 0.5rem; }
+.lm-welcome-title { font-family: var(--font-heading); letter-spacing: var(--tracking-heading); font-size: 1.8rem; font-weight: var(--fw-heading); color: #17152B; margin: 0 0 0.5rem; }
 .lm-welcome-sub   { font-size: 1rem; color: #6B7086; margin: 0 0 1.5rem; }
 .lm-welcome-bonus {
   background: #FEF3E2; border: 1.5px solid #F5CB84; border-radius: 12px;
@@ -406,7 +406,7 @@
   background: linear-gradient(135deg, #F1FBF3 0%, #EEF9FC 100%);
 }
 .lm-complete-trophy { font-size: 5rem; margin-bottom: 0.75rem; animation: bounceIn 0.6s ease; }
-.lm-complete-title  { font-size: 2rem; font-weight: 700; color: #17152B; margin: 0 0 0.75rem; }
+.lm-complete-title  { font-family: var(--font-heading); letter-spacing: var(--tracking-heading); font-size: 2.05rem; font-weight: var(--fw-heading); color: #17152B; margin: 0 0 0.75rem; }
 .lm-perfect-badge {
   background: #FEF3E2; border: 1.5px solid #F5CB84; border-radius: 999px;
   padding: 0.4rem 1.25rem; font-size: 0.9rem; font-weight: 700; color: #B45309;

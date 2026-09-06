@@ -8,7 +8,7 @@
    noticing two designs; with a single family carrying weights 400–800 the
    hierarchy comes from weight and size, which reads faster and is much
    harder to get subtly wrong. JetBrains Mono stays for code. */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=JetBrains+Mono:wght@400;600&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -41,6 +41,14 @@
      they stay separate names because the codebase uses them to mean
      "heading voice" and "reading voice", and that distinction still drives
      weight and tracking even when the family is shared. */
+  /* Headlines, section titles and the wordmark — the type people read as
+     the product's voice. Falls back to Nunito, so a failed webfont degrades
+     to the companion face rather than to a system grotesque. */
+  --font-heading: 'Fredoka', 'Nunito', 'Segoe UI', system-ui, sans-serif;
+
+  /* Emphasis inside the interface: buttons, nav labels, statistics, card
+     metadata. Named "display" for the ~80 existing call sites that mean
+     exactly this — the loud end of the UI face, not a headline face. */
   --font-display: 'Nunito', 'Segoe UI', system-ui, sans-serif;
   --font-body:    'Nunito', 'Segoe UI', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Courier New', monospace;
@@ -51,10 +59,16 @@
   --fw-body:      500;
   --fw-medium:    600;
   --fw-strong:    700;
-  --fw-display:   800;   /* page + hero titles only */
+  --fw-display:   800;   /* Nunito's heaviest — UI emphasis */
+  /* Fredoka has no 800. Asking for one makes the browser synthesise a fake
+     bold, which smears exactly the rounded joins the face is chosen for. */
+  --fw-heading:   600;
 
   /* Rounded faces need slightly tighter tracking at display sizes and
      slightly looser at caption sizes than a grotesque does. */
+  /* Fredoka sets wider and rounder than Nunito, so headings want to be
+     pulled in a little harder than the UI face does. */
+  --tracking-heading: -0.025em;
   --tracking-display: -0.02em;
   --tracking-title:   -0.01em;
   --tracking-label:    0.06em;   /* uppercase micro-labels */

@@ -294,7 +294,8 @@
 }
 
 .pg-popover-title {
-  font-family: var(--pg-display);
+  font-family: var(--font-heading);
+  letter-spacing: -0.015em;
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--pg-text);
@@ -943,10 +944,10 @@
 .qc-card-titles { flex: 1; min-width: 0; }
 
 .qc-card-title {
-  font-weight: var(--fw-display);
-  font-family: var(--pg-display);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.015em;
   font-size: 0.85rem;
-  font-weight: 700;
   color: var(--pg-text);
   margin: 0 0 0.15rem;
 }
@@ -1252,9 +1253,10 @@
 }
 
 .tm-title {
-  font-family: var(--pg-display);
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.015em;
   font-size: 0.92rem;
-  font-weight: 700;
   color: var(--pg-text);
   margin: 0;
 }
@@ -1341,7 +1343,7 @@
 .ac-wrap { display: flex; flex-direction: column; gap: 0.9rem; }
 
 .ac-head { display: flex; align-items: center; justify-content: space-between; }
-.ac-title { font-family: var(--pg-display); font-size: 1rem; font-weight: 700; margin: 0; color: var(--pg-text); }
+.ac-title { font-family: var(--font-heading); font-size: 1.05rem; font-weight: var(--fw-heading); letter-spacing: var(--tracking-heading); margin: 0; color: var(--pg-text); }
 .ac-sub { font-size: 0.7rem; color: var(--pg-faint); margin: 0.15rem 0 0; }
 
 /* This was a complete circle with a percentage printed inside it — the ring
@@ -1421,7 +1423,7 @@
 .ac-card.is-unlocked .ac-icon { color: var(--pg-gold); background: rgba(217, 119, 6, 0.1); border-color: rgba(217,119,6,0.2); }
 
 .ac-body { flex: 1; min-width: 0; }
-.ac-name { font-family: var(--pg-display); font-size: 0.78rem; font-weight: 700; color: var(--pg-text); }
+.ac-name { font-family: var(--font-heading); font-size: 0.82rem; font-weight: var(--fw-heading); letter-spacing: -0.015em; color: var(--pg-text); }
 .ac-desc { font-size: 0.66rem; color: var(--pg-faint); line-height: 1.4; margin-top: 0.1rem; }
 
 .ac-progress { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.45rem; }
@@ -1634,7 +1636,7 @@
 }
 .ps-intro-icon.ps-done { color: var(--pg-green); border-color: rgba(23,163,74,0.25); background: rgba(23,163,74,0.1); }
 
-.ps-title { font-family: var(--pg-display); font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--pg-text); }
+.ps-title { font-family: var(--font-heading); font-size: 1.55rem; font-weight: var(--fw-heading); letter-spacing: var(--tracking-heading); margin: 0; color: var(--pg-text); }
 .ps-sub { font-size: 0.85rem; color: var(--pg-muted); margin: 0; line-height: 1.55; }
 
 .ps-facts {
@@ -1731,7 +1733,7 @@
   box-shadow: 0 6px 16px rgba(15, 42, 63, 0.14);
 }
 
-.pv-name { font-family: var(--pg-display); font-size: 1.3rem; font-weight: 700; margin: 0; color: var(--pg-text); }
+.pv-name { font-family: var(--font-heading); font-size: 1.35rem; font-weight: var(--fw-heading); letter-spacing: var(--tracking-heading); margin: 0; color: var(--pg-text); }
 .pv-since { font-size: 0.7rem; color: var(--pg-faint); margin: 0.1rem 0 0; }
 
 .pv-headline { display: flex; gap: 1.2rem; }

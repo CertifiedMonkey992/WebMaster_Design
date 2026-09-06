@@ -92,9 +92,10 @@ html:has(.learn-app) body {
   border: none;
   background: none;
   cursor: pointer;
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.02em;
   color: #17152B;
   padding: 0;
 }
@@ -136,9 +137,9 @@ html:has(.learn-app) body {
   border: none;
   background: none;
   cursor: pointer;
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: var(--fw-heading);
   color: #17152B;
   border-bottom: 1px solid rgba(23, 20, 46, 0.07);
   text-align: left;
@@ -424,11 +425,11 @@ html:has(.learn-app) body {
 }
 
 .cl-title {
-  font-family: var(--font-display);
-  font-size: 1.0625rem;
-  font-weight: var(--fw-display);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: var(--fw-heading);
   line-height: 1.25;
-  letter-spacing: var(--tracking-title);
+  letter-spacing: var(--tracking-heading);
   color: #17152B;
   margin-bottom: 0.3rem;
 }
@@ -562,11 +563,11 @@ html:has(.learn-app) body {
 }
 
 .sc-title {
-  font-family: var(--font-display);
-  font-size: 1.0625rem;
-  font-weight: var(--fw-display);
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: var(--fw-heading);
   line-height: 1.3;
-  letter-spacing: var(--tracking-title);
+  letter-spacing: var(--tracking-heading);
   color: #17152B;
   margin: 0 0 0.3rem;
 }
@@ -575,10 +576,11 @@ html:has(.learn-app) body {
    competing with its own lesson rows. Size carries the hierarchy here;
    the weight stays where it is. */
 .sc-header.sc-hero .sc-title {
-  font-size: 1.5rem;
-  font-weight: var(--fw-display);
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: var(--fw-heading);
   line-height: 1.15;
-  letter-spacing: var(--tracking-display);
+  letter-spacing: var(--tracking-heading);
   margin-bottom: 0.4rem;
   text-wrap: balance;
 }
@@ -860,11 +862,14 @@ html:has(.learn-app) body {
   font-variant-numeric: tabular-nums;
 }
 
+/* A lesson's name is a lesson's name — it takes the heading face whether
+   it appears in the Continue card or as a row in the path below, so the same
+   piece of content doesn't change voice depending on where you meet it. */
 .ln-title {
-  font-family: var(--font-display);
-  font-size: 0.875rem;
-  font-weight: var(--fw-strong);
-  letter-spacing: -0.005em;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.015em;
   color: #17152B;
   white-space: nowrap;
   overflow: hidden;
@@ -1189,10 +1194,10 @@ html:has(.learn-app) body {
 }
 
 .pc-header {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  font-weight: var(--fw-display);
-  letter-spacing: -0.005em;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.015em;
   color: #17152B;
   margin-bottom: 0.75rem;
 }
@@ -1309,9 +1314,10 @@ html:has(.learn-app) body {
 }
 
 .signup-card-heading {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.015em;
   color: #17152B;
   margin: 0 0 0.15rem;
 }
@@ -1363,10 +1369,10 @@ html:has(.learn-app) body {
 }
 
 .qw-title {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  font-weight: var(--fw-display);
-  letter-spacing: -0.005em;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: var(--fw-heading);
+  letter-spacing: -0.015em;
   color: #17152B;
 }
 
@@ -1429,9 +1435,10 @@ html:has(.learn-app) body {
 }
 
 .lp-placeholder-title {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: var(--fw-heading);
+  letter-spacing: var(--tracking-heading);
   color: #17152B;
   margin: 0 0 0.5rem;
 }
