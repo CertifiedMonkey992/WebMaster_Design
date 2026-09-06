@@ -376,15 +376,9 @@ html:has(.learn-app) body {
   box-shadow: var(--lx-shadow-accent);
 }
 
-.cl-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--lx-accent), var(--lx-accent-bright));
-}
+/* The 3px turquoise bar that used to sit across the top of this card is
+   gone. The CONTINUE LEARNING eyebrow already names the card, in the same
+   brand colour, one line below where the bar was. */
 
 .cl-label {
   font-size: 0.625rem;
@@ -532,13 +526,12 @@ html:has(.learn-app) body {
   transform: translateY(-2px);
 }
 
+/* Status is carried by the badge, the progress bar and — for a finished
+   section — the faint green wash below. The 3px rails these two used to
+   have were a fourth statement of the same fact, in the loudest form
+   available: a saturated line on the card's own edge. */
 .sc-completed {
   background: linear-gradient(180deg, rgba(23, 163, 74, 0.035), #FFFFFF 40%);
-  border-left: 3px solid rgba(23, 163, 74, 0.4);
-}
-
-.sc-in-progress {
-  border-left: 3px solid var(--lx-accent);
 }
 
 .sc-locked {
@@ -708,8 +701,10 @@ html:has(.learn-app) body {
 
 .sc-header.sc-hero {
   background: linear-gradient(155deg, #FAFBFD 0%, #FFFFFF 55%);
+  /* One even hairline the whole way round — no 3px accent rail on the left
+     edge. The card is the page's centrepiece by size, position and the
+     illustration beside it; it does not also need a coloured margin. */
   border: 1px solid rgba(var(--lx-accent-rgb), 0.14);
-  border-left: 3px solid var(--lx-accent);
   border-radius: 20px;
   padding: 1.5rem 1.5rem 1.4rem;
   display: flex;
@@ -746,11 +741,11 @@ html:has(.learn-app) body {
   align-self: stretch;
 }
 
-/* Per-theme accent (from section.moduleTheme) tints the left rail only —
-   the rest of the card stays neutral, so color still reads as intentional. */
-.sc-header.sc-hero[data-theme="green"] { border-left-color: var(--lx-success); }
-.sc-header.sc-hero[data-theme="blue"]  { border-left-color: #0EA5E9; }
-.sc-header.sc-hero[data-theme="purple"]{ border-left-color: var(--lx-accent); }
+/* The per-module theme (section.moduleTheme) used to colour that left rail —
+   which is why the AI Foundations card carried a green edge on an otherwise
+   turquoise page, one of the competing accents this pass set out to settle.
+   The theme still drives the illustration beside the copy, where a module's
+   colour belongs; the card's own frame stays neutral. */
 
 /* ── Lesson List with Path ──────────────────────────────── */
 
@@ -973,17 +968,10 @@ html:has(.learn-app) body {
   transform: translateY(-3px);
 }
 
-/* A turquoise cap across the top marks the active card at a glance. */
-.ln-row-wrapper[data-status='current']::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 16px 16px 0 0;
-  background: linear-gradient(90deg, var(--lx-accent), var(--lx-accent-bright));
-}
+/* The turquoise cap across the top of the active card is gone too. Between
+   the accent border, the LESSON N eyebrow in brand ink, the filled icon tile
+   and the Start button, this card was never going to be mistaken for an
+   inactive one. */
 
 /* Horizontal padding matches a normal row so the icon stays centred on the
    path line; the extra room is taken vertically instead. */
