@@ -26,8 +26,10 @@ export default function ProductFrame({
 }) {
   return (
     <figure className={`pf${align === 'right' ? ' pf--right' : ''}`}>
+      {/* The strip used to carry three macOS traffic-light dots — a picture of
+          someone else's window chrome, and a template signal in its own right.
+          What a reader needs is the name of the screen they are looking at. */}
       <div className="pf-chrome" aria-hidden="true">
-        <span className="pf-dots"><i /><i /><i /></span>
         {path && <span className="pf-path">{path}</span>}
       </div>
 

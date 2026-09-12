@@ -26,8 +26,8 @@ function Ground({ id, cy = 104, rx = 32, ry = 7 }) {
     <>
       <defs>
         <radialGradient id={id}>
-          <stop offset="0%" stopColor="#0F2A3F" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#0F2A3F" stopOpacity="0" />
+          <stop offset="0%" stopColor="#2B2119" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#2B2119" stopOpacity="0" />
         </radialGradient>
       </defs>
       <ellipse cx="60" cy={cy} rx={rx} ry={ry} fill={`url(#${id})`} />
@@ -40,33 +40,33 @@ function Gems({ uid }) {
   return (
     <>
       <Ground id={`${uid}-g`} rx={31} />
-      <circle cx="60" cy="55" r="31" fill="#F59E0B" opacity="0.13" />
+      <circle cx="60" cy="55" r="31" fill="#C08A1E" opacity="0.13" />
 
       <g transform="translate(19 57) scale(0.31)">
-        <path d={GEM_PATH} fill="#FBBF24" />
-        <path d="M22 6h56l14 26H8Z" fill="#FFFFFF" opacity="0.32" />
+        <path d={GEM_PATH} fill="#D9A93E" />
+        <path d="M22 6h56l14 26H8Z" fill="#FFFDF8" opacity="0.32" />
       </g>
       <g transform="translate(75 61) scale(0.27)">
-        <path d={GEM_PATH} fill="#D97706" />
-        <path d="M22 6h56l14 26H8Z" fill="#FFFFFF" opacity="0.22" />
+        <path d={GEM_PATH} fill="#7F5C11" />
+        <path d="M22 6h56l14 26H8Z" fill="#FFFDF8" opacity="0.22" />
       </g>
 
       <g transform="translate(31 21) scale(0.57)">
         <g transform="translate(0 9)">
-          <path d={GEM_PATH} fill="#B45309" opacity="0.55" />
+          <path d={GEM_PATH} fill="#7F5C11" opacity="0.55" />
         </g>
         <path d={GEM_PATH} fill={`url(#${uid}-gem)`} />
-        <path d="M22 6h56l14 26H8Z" fill="#FFFFFF" opacity="0.34" />
-        <g stroke="#7C2D12" strokeOpacity="0.24" strokeWidth="3" fill="none" strokeLinejoin="round">
+        <path d="M22 6h56l14 26H8Z" fill="#FFFDF8" opacity="0.34" />
+        <g stroke="#5E2A16" strokeOpacity="0.24" strokeWidth="3" fill="none" strokeLinejoin="round">
           <path d="M0 32h100M8 32l42 62 42-62M38 6 30 32M62 6l8 26" />
         </g>
-        <path d="M30 40 50 88" stroke="#FFFFFF" strokeOpacity="0.45" strokeWidth="4" strokeLinecap="round" fill="none" />
+        <path d="M30 40 50 88" stroke="#FFFDF8" strokeOpacity="0.45" strokeWidth="4" strokeLinecap="round" fill="none" />
       </g>
 
       <defs>
         <linearGradient id={`${uid}-gem`} x1="0" y1="6" x2="100" y2="94" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FCD34D" />
-          <stop offset="100%" stopColor="#D97706" />
+          <stop offset="0%" stopColor="#E8C879" />
+          <stop offset="100%" stopColor="#7F5C11" />
         </linearGradient>
       </defs>
     </>
@@ -78,31 +78,31 @@ function Xp({ uid }) {
   return (
     <>
       <Ground id={`${uid}-g`} rx={30} />
-      <circle cx="60" cy="54" r="32" fill="#06B6D4" opacity="0.12" />
+      <circle cx="60" cy="54" r="32" fill="#2E4736" opacity="0.12" />
 
       {/* Disc the bolt stands on, drawn as a squashed cylinder */}
-      <ellipse cx="60" cy="82" rx="27" ry="9" fill="#0891A8" opacity="0.3" />
+      <ellipse cx="60" cy="82" rx="27" ry="9" fill="#2E4736" opacity="0.3" />
       <ellipse cx="60" cy="78" rx="27" ry="9" fill={`url(#${uid}-disc)`} />
 
       <g transform="translate(29 12) scale(0.62)">
         <g transform="translate(0 10)">
-          <path d={BOLT_PATH} fill="#B45309" />
+          <path d={BOLT_PATH} fill="#7F5C11" />
         </g>
         <path d={BOLT_PATH} fill={`url(#${uid}-bolt)`} />
         <path
           d="M52 14 26 52"
-          fill="none" stroke="#FEF3C7" strokeOpacity="0.75" strokeWidth="6" strokeLinecap="round"
+          fill="none" stroke="#F3E4C0" strokeOpacity="0.75" strokeWidth="6" strokeLinecap="round"
         />
       </g>
 
       <defs>
         <linearGradient id={`${uid}-bolt`} x1="20" y1="4" x2="86" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FCD34D" />
-          <stop offset="100%" stopColor="#F59E0B" />
+          <stop offset="0%" stopColor="#E8C879" />
+          <stop offset="100%" stopColor="#C08A1E" />
         </linearGradient>
         <linearGradient id={`${uid}-disc`} x1="33" y1="69" x2="87" y2="87" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#67E8F9" />
-          <stop offset="100%" stopColor="#06B6D4" />
+          <stop offset="0%" stopColor="#6E8C76" />
+          <stop offset="100%" stopColor="#2E4736" />
         </linearGradient>
       </defs>
     </>
@@ -114,29 +114,29 @@ function Hearts({ uid }) {
   return (
     <>
       <Ground id={`${uid}-g`} rx={30} />
-      <circle cx="60" cy="54" r="32" fill="#F43F5E" opacity="0.11" />
+      <circle cx="60" cy="54" r="32" fill="#A02B37" opacity="0.11" />
 
       {/* Companion heart tucked behind on the right */}
       <g transform="translate(58 22) scale(0.42)">
-        <path d={HEART_PATH} fill="#FDA4AF" />
-        <path d={HEART_PATH} fill="#FB7185" opacity="0.6" />
+        <path d={HEART_PATH} fill="#DCA0A8" />
+        <path d={HEART_PATH} fill="#C05464" opacity="0.6" />
       </g>
 
       <g transform="translate(14 20) scale(0.66)">
         <g transform="translate(0 10)">
-          <path d={HEART_PATH} fill="#9F1239" />
+          <path d={HEART_PATH} fill="#6E1A24" />
         </g>
         <path d={HEART_PATH} fill={`url(#${uid}-face)`} />
         <path
           d="M22 20c-5 3-8 9-8 15 0 3 .6 6 1.7 8.6"
-          fill="none" stroke="#FFFFFF" strokeOpacity="0.5" strokeWidth="7" strokeLinecap="round"
+          fill="none" stroke="#FFFDF8" strokeOpacity="0.5" strokeWidth="7" strokeLinecap="round"
         />
       </g>
 
       <defs>
         <linearGradient id={`${uid}-face`} x1="8" y1="8" x2="92" y2="88" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FB7185" />
-          <stop offset="100%" stopColor="#E11D48" />
+          <stop offset="0%" stopColor="#C05464" />
+          <stop offset="100%" stopColor="#8A2230" />
         </linearGradient>
       </defs>
     </>
@@ -150,38 +150,38 @@ function Shield({ uid }) {
   return (
     <>
       <Ground id={`${uid}-g`} rx={32} />
-      <circle cx="60" cy="54" r="33" fill="#06B6D4" opacity="0.12" />
+      <circle cx="60" cy="54" r="33" fill="#2E4736" opacity="0.12" />
 
       <g transform="translate(12 6) scale(0.8)">
         <g transform="translate(0 10)">
-          <path d={SHIELD_PATH} fill="#075E6B" />
+          <path d={SHIELD_PATH} fill="#1F3325" />
         </g>
         <path d={SHIELD_PATH} fill={`url(#${uid}-plate)`} />
-        <path d="M50 15 78 25v27c0 17-12 29-28 35-16-6-28-18-28-35V25Z" fill="#05303A" opacity="0.16" />
+        <path d="M50 15 78 25v27c0 17-12 29-28 35-16-6-28-18-28-35V25Z" fill="#2B2119" opacity="0.16" />
 
         <g transform="translate(26 24) scale(0.5)">
           <path d={FLAME_PATH} fill={`url(#${uid}-flame)`} />
           <path
             d="M52 62c1 7-2 11-6 15-3 3-6 7-6 12 0 8 7 14 15 14s16-6 16-14c0-7-4-11-9-15-1 3-2 5-4 6 1-6-2-12-6-18Z"
-            fill="#FEF3C7" opacity="0.85"
+            fill="#F3E4C0" opacity="0.85"
           />
         </g>
 
         <path
           d="M50 8 16 20v14"
-          fill="none" stroke="#A5F3FC" strokeOpacity="0.75" strokeWidth="5" strokeLinecap="round"
+          fill="none" stroke="#C6D2C8" strokeOpacity="0.75" strokeWidth="5" strokeLinecap="round"
         />
       </g>
 
       <defs>
         <linearGradient id={`${uid}-plate`} x1="12" y1="5" x2="88" y2="97" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#22D3EE" />
-          <stop offset="55%" stopColor="#06B6D4" />
-          <stop offset="100%" stopColor="#0891A8" />
+          <stop offset="0%" stopColor="#3D5C48" />
+          <stop offset="55%" stopColor="#2E4736" />
+          <stop offset="100%" stopColor="#2E4736" />
         </linearGradient>
         <linearGradient id={`${uid}-flame`} x1="27" y1="24" x2="80" y2="106" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FDBA74" />
-          <stop offset="100%" stopColor="#F97316" />
+          <stop offset="0%" stopColor="#E0BE85" />
+          <stop offset="100%" stopColor="#B5502C" />
         </linearGradient>
       </defs>
     </>
@@ -193,36 +193,36 @@ function Gift({ uid }) {
   return (
     <>
       <Ground id={`${uid}-g`} rx={33} />
-      <circle cx="60" cy="54" r="34" fill="#06B6D4" opacity="0.12" />
+      <circle cx="60" cy="54" r="34" fill="#2E4736" opacity="0.12" />
 
       {/* Box body: front face plus a darker right side for depth */}
       <path d="M26 52h68v34a8 8 0 0 1-8 8H34a8 8 0 0 1-8-8Z" fill={`url(#${uid}-body)`} />
-      <path d="M78 52h16v34a8 8 0 0 1-8 8h-8Z" fill="#05303A" opacity="0.16" />
+      <path d="M78 52h16v34a8 8 0 0 1-8 8h-8Z" fill="#2B2119" opacity="0.16" />
 
       {/* Lid, sitting slightly proud of the body */}
       <path d="M20 36h80v18H20Z" fill={`url(#${uid}-lid)`} />
-      <path d="M84 36h16v18H84Z" fill="#05303A" opacity="0.14" />
+      <path d="M84 36h16v18H84Z" fill="#2B2119" opacity="0.14" />
 
       {/* Ribbon down the front and across the lid */}
-      <path d="M53 36h14v58H53Z" fill="#F59E0B" />
-      <path d="M53 36h14v18H53Z" fill="#FCD34D" />
+      <path d="M53 36h14v58H53Z" fill="#C08A1E" />
+      <path d="M53 36h14v18H53Z" fill="#E8C879" />
 
       {/* Bow */}
-      <path d="M60 36c-8 0-16-3-16-9s7-7 11-3 5 8 5 12Z" fill="#FBBF24" />
-      <path d="M60 36c8 0 16-3 16-9s-7-7-11-3-5 8-5 12Z" fill="#F59E0B" />
-      <circle cx="60" cy="33" r="4.5" fill="#FCD34D" />
+      <path d="M60 36c-8 0-16-3-16-9s7-7 11-3 5 8 5 12Z" fill="#D9A93E" />
+      <path d="M60 36c8 0 16-3 16-9s-7-7-11-3-5 8-5 12Z" fill="#C08A1E" />
+      <circle cx="60" cy="33" r="4.5" fill="#E8C879" />
 
       {/* Rim light along the top-left edge of the lid */}
-      <path d="M22 38h24" stroke="#A5F3FC" strokeOpacity="0.8" strokeWidth="4" strokeLinecap="round" fill="none" />
+      <path d="M22 38h24" stroke="#C6D2C8" strokeOpacity="0.8" strokeWidth="4" strokeLinecap="round" fill="none" />
 
       <defs>
         <linearGradient id={`${uid}-lid`} x1="20" y1="36" x2="100" y2="54" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#22D3EE" />
-          <stop offset="100%" stopColor="#0891A8" />
+          <stop offset="0%" stopColor="#3D5C48" />
+          <stop offset="100%" stopColor="#2E4736" />
         </linearGradient>
         <linearGradient id={`${uid}-body`} x1="26" y1="52" x2="94" y2="94" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#06B6D4" />
-          <stop offset="100%" stopColor="#075E6B" />
+          <stop offset="0%" stopColor="#2E4736" />
+          <stop offset="100%" stopColor="#1F3325" />
         </linearGradient>
       </defs>
     </>

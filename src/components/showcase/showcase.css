@@ -14,207 +14,196 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .pf {
-  /* The app's light theme, pinned so the real components look like themselves. */
-  --lx-accent:        #06B6D4;
-  --lx-accent-rgb:    6, 182, 212;
-  --lx-accent-bright: #22D3EE;
-  --lx-accent-soft:   #67E8F9;
-  --lx-accent-wash:   #ECFEFF;
-  --lx-accent-strong: #0891A8;
-  --lx-accent-ink:    #0A6C7C;
-  --lx-accent-deep:   #075E6B;
-  --lx-on-accent:     #05303A;
-  --lx-navy:          #0F2A3F;
-  --lx-navy-soft:     #1E3A52;
-  --lx-gold:          #F59E0B;
-  --lx-gold-ink:      #B45309;
-  --lx-streak:        #F97316;
-  --lx-streak-ink:    #C2410C;
-  --lx-success:       #16A34A;
-  --lx-success-ink:   #15803D;
-  --lx-heart:         #F43F5E;
-  --lx-heart-ink:     #BE123C;
-
+  /* The token-pinning block that used to live here is gone. It existed only
+     because the landing page was near-black while the product was light —
+     two products wearing different clothes. Both are now the one warm
+     palette, so the real components simply inherit it. */
   margin: 0;
-  border-radius: 18px;
+  border-radius: var(--r-lg);
   overflow: hidden;
-  background: #F6F6FB;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
-  /* The product is a light surface; text inside must not inherit dark-page
-     colour or font stack. */
-  font-family: var(--font-body, system-ui, sans-serif);
-  color: #17152B;
-  line-height: 1.6;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  /* The frame depicts a screen standing in front of the page, which is one of
+     the few things in this system that genuinely earns a shadow. */
+  box-shadow: var(--shadow-float);
+  font-family: var(--font-ui);
+  color: var(--ink);
+  line-height: var(--lh-normal);
   text-align: left;
 }
 
+/* The macOS traffic-light bar that used to sit here was itself a template
+   signal — a picture of someone else's window chrome. What a reader needs is
+   the name of the screen they are looking at, so that is all the strip says. */
 .pf-chrome {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.55rem 0.85rem;
-  background: #EDEFF5;
-  border-bottom: 1px solid rgba(23, 21, 43, 0.08);
-}
-
-.pf-dots { display: flex; gap: 0.3rem; flex-shrink: 0; }
-
-.pf-dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(23, 21, 43, 0.16);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface-sunk);
+  border-bottom: 1px solid var(--line);
 }
 
 .pf-path {
   overflow: hidden;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.66rem;
-  color: #8A8FA3;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .pf-body {
-  padding: 1.1rem;
+  padding: var(--sp-4);
   overflow: hidden;
 }
 
 /* A cropped surface fades out rather than ending on a hard cut. */
 .pf-body.is-cropped {
   position: relative;
-  padding-bottom: 2.5rem;
+  padding-bottom: var(--sp-10);
   -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
 }
 
 .pf-caption {
-  padding: 0.7rem 1.1rem 0.9rem;
-  font-size: 0.7rem;
-  color: #8A8FA3;
-  border-top: 1px solid rgba(23, 21, 43, 0.07);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+  border-top: 1px solid var(--line-faint);
 }
 
-/* ── Section scaffolding ──────────────────────────────────────────────────── */
+/* ── Section scaffolding ──────────────────────────────────────────────────────
+   A 7/5 split rather than 1fr 1fr: a dominant side reads as a decision, equal
+   halves read as a default grid. The flip still alternates, but the copy
+   column keeps the wider share on both sides, so the rhythm is asymmetric in
+   the same direction the hero is. */
 
 .sc-section {
-  border-top: 1px solid var(--border);
-  padding: 6rem 5%;
-  background: var(--bg);
+  border-top: 1px solid var(--line);
+  padding: var(--sp-24) var(--sp-8);
+  background: var(--paper);
 }
 
 .sc-wrap {
-  max-width: 1200px;
+  max-width: 76rem;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
+  grid-template-columns: 6fr 6fr;
+  gap: var(--sp-12);
   align-items: center;
 }
 
-/* Alternating sides keep three stacked sections from reading as one column. */
 .sc-wrap.flip { direction: rtl; }
 .sc-wrap.flip > * { direction: ltr; }
 
 .section-eyebrow {
   display: block;
-  font-family: var(--font-display);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--cyan);
-  margin-bottom: 0.75rem;
+  color: var(--clay-ink);
+  margin-bottom: var(--sp-3);
 }
 
 .sc-heading {
-  font-family: var(--font-heading);
-  font-weight: var(--fw-heading);
-  letter-spacing: var(--tracking-heading);
-  font-size: clamp(1.75rem, 3.2vw, 2.9rem);
-  line-height: 1.1;
-  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  font-size: var(--fs-section);
+  line-height: var(--lh-tight);
+  color: var(--ink);
   text-wrap: balance;
-  margin-bottom: 1rem;
+  margin-bottom: var(--sp-4);
 }
 
 .sc-body {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  color: var(--muted);
-  line-height: 1.75;
-  margin-bottom: 1.5rem;
-  max-width: 34rem;
+  font-size: var(--fs-body);
+  color: var(--ink-muted);
+  line-height: var(--lh-relaxed);
+  margin-bottom: var(--sp-4);
+  max-width: 32rem;
+  text-wrap: pretty;
 }
 
-.sc-body strong { color: var(--text); font-weight: 600; }
+.sc-body strong { color: var(--ink); font-weight: var(--fw-bold); }
 
 /* ── Player-stat strip (the streak section's own composition) ─────────────── */
 
-.sc-stats-frame { display: flex; flex-direction: column; gap: 1rem; }
+.sc-stats-frame { display: flex; flex-direction: column; gap: var(--sp-4); }
 
 /* The top bar is normally a sticky strip in the app; here it sits on the same
-   off-white ground it uses there, so it reads in context. */
+   ground it uses there, so it reads in context. */
 .sc-topbar {
   display: flex;
   justify-content: flex-end;
-  padding: 0.6rem 0.9rem;
-  background: #F6F6FB;
-  border: 1px solid rgba(23, 21, 43, 0.08);
-  border-radius: 14px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
 }
 
 .sc-panel-host {
-  padding: 0.9rem;
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 21, 43, 0.08);
-  border-radius: 16px;
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
 }
 
 /* ── Quest + shop pairing ─────────────────────────────────────────────────── */
 
-.sc-stack { display: flex; flex-direction: column; gap: 0.7rem; }
+.sc-stack { display: flex; flex-direction: column; gap: var(--sp-2); }
 
 .sc-stack-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: #8A8FA3;
+  color: var(--ink-faint);
 }
 
-/* Compact shop row — the three real catalogue items and their real prices. */
-.sc-shop-mini { display: flex; flex-direction: column; gap: 0.4rem; list-style: none; }
+/* The three real catalogue items at their real prices — a list, not a grid of
+   three pricing cards. */
+.sc-shop-mini {
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
 
 .sc-shop-mini-item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.7rem 0.4rem 0.4rem;
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 21, 43, 0.09);
-  border-radius: 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
 }
+
+.sc-shop-mini-item + .sc-shop-mini-item { border-top: 1px solid var(--line-faint); }
 
 .sc-shop-mini-art { display: grid; place-items: center; flex-shrink: 0; }
 
 .sc-shop-mini-name {
   flex: 1;
   min-width: 0;
-  font-size: 0.8rem;
-  font-weight: 650;
-  color: #17152B;
+  font-family: var(--font-display);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
 }
 
 .sc-shop-mini-price {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--sp-1);
   flex-shrink: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--lx-gold-ink);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--ochre-ink);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
@@ -222,7 +211,7 @@
 @media (max-width: 1060px) {
   .sc-wrap {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    gap: var(--sp-8);
     direction: ltr;
   }
   .sc-wrap.flip { direction: ltr; }
@@ -231,7 +220,7 @@
   .pf { max-width: 46rem; }
 }
 
-@media (max-width: 768px) {
-  .sc-section { padding: 4rem 1.5rem; }
-  .pf-body { padding: 0.85rem; }
+@media (max-width: 820px) {
+  .sc-section { padding: var(--sp-16) var(--sp-5); }
+  .pf-body { padding: var(--sp-3); }
 }

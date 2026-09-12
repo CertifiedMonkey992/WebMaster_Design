@@ -43,6 +43,10 @@ function ShopCard({ item, onBuy }) {
         <ShopArt name={item.art} size={item.featured ? 104 : 84} />
       </div>
 
+      {/* Body and foot are siblings, so the row reads left-to-right: what it
+          is, then what it costs and the control. They used to be nested, which
+          stacked the price under the description and turned every item into a
+          tall card. */}
       <div className="sh-card-body">
         <div className="sh-card-head">
           <h3 className="sh-card-name">{item.name}</h3>
@@ -54,22 +58,6 @@ function ShopCard({ item, onBuy }) {
           )}
         </div>
         <p className="sh-card-tagline">{item.tagline}</p>
-        <p className="sh-card-desc">{item.description}</p>
-
-        <div className="sh-card-foot">
-          <span className="sh-price">
-            <GemIcon size={17} />
-            {item.price}
-          </span>
-          <button
-            className="sh-btn sh-btn--buy"
-            onClick={() => onBuy(item)}
-            disabled={disabled}
-            aria-describedby={disabled ? `${item.id}-why` : undefined}
-          >
-            {item.cta}
-          </button>
-        </div>
 
         {disabled && (
           <p className="sh-card-why" id={`${item.id}-why`}>
@@ -77,6 +65,21 @@ function ShopCard({ item, onBuy }) {
             {unavailableLabel(item)}
           </p>
         )}
+      </div>
+
+      <div className="sh-card-foot">
+        <span className="sh-price">
+          <GemIcon size={16} />
+          {item.price}
+        </span>
+        <button
+          className="btn btn-outline btn-sm"
+          onClick={() => onBuy(item)}
+          disabled={disabled}
+          aria-describedby={disabled ? `${item.id}-why` : undefined}
+        >
+          {item.cta}
+        </button>
       </div>
     </article>
   )
@@ -164,8 +167,12 @@ export default function ShopView() {
         )
       })}
 
+      {/* This used to promise "XP boosts, lesson themes and mascot gear". None
+          of those exist, and there is no mascot. The catalogue is three items
+          on purpose; saying so is better than implying a roadmap. */}
       <p className="sh-footnote">
-        More items are on the way — XP boosts, lesson themes and mascot gear.
+        Three items, and that is the whole shop. Gems buy time back in a
+        lesson, never progress through one.
       </p>
 
       {pendingLive && (

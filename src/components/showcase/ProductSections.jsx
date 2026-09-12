@@ -28,6 +28,7 @@ import ShopArt from '../shop/ShopArt'
 import { GemIcon } from '../progression/Icons'
 
 import ProductFrame from './ProductFrame'
+import useReveal from '../../hooks/useReveal'
 import './showcase.css'
 
 const noop = () => {}
@@ -35,15 +36,24 @@ const noop = () => {}
 /* ── Section shell ───────────────────────────────────────────────────────── */
 
 function Section({ id, eyebrow, heading, children, frame, flip = false }) {
+  /* One observer on the whole section. The previous markup put .reveal on the
+     copy and .reveal.d2 on the frame, which is the staggered-entrance pattern
+     the design system prohibits — and neither ever fired, because nothing
+     added the class that runs the animation. */
+  const [ref, animate] = useReveal()
+
   return (
     <section className="sc-section" id={id} aria-labelledby={`${id}-heading`}>
-      <div className={`sc-wrap${flip ? ' flip' : ''}`}>
-        <div className="sc-copy reveal">
+      <div
+        className={`sc-wrap reveal${animate ? ' animate-in' : ''}${flip ? ' flip' : ''}`}
+        ref={ref}
+      >
+        <div className="sc-copy">
           <span className="section-eyebrow">{eyebrow}</span>
           <h2 className="sc-heading" id={`${id}-heading`}>{heading}</h2>
           {children}
         </div>
-        <div className="reveal d2">{frame}</div>
+        <div>{frame}</div>
       </div>
     </section>
   )
@@ -54,7 +64,7 @@ function Section({ id, eyebrow, heading, children, frame, flip = false }) {
 function LearnFrame() {
   return (
     <ProductFrame
-      path="lunx.app/learn"
+      path="Learn"
       caption="The Learn tab. Lessons unlock in order and the next one is always waiting at the top."
       maxHeight="30rem"
     >
@@ -91,7 +101,7 @@ function LearnSection() {
 function StreakFrame() {
   return (
     <ProductFrame
-      path="lunx.app/learn"
+      path="Streak"
       caption="The live top bar, and the streak panel behind it."
       align="right"
     >
@@ -136,7 +146,7 @@ function BonusFrame() {
   const { vm } = useProgression()
   return (
     <ProductFrame
-      path="lunx.app/learn · daily bonus"
+      path="Daily bonus"
       caption="The bonus panel, mid-track. Day 4 is today's."
     >
       <DailyBonusTrack view={vm.dailyBonus} variant="showcase" showHeader={false} />
@@ -174,7 +184,7 @@ function QuestFrame() {
 
   return (
     <ProductFrame
-      path="lunx.app/quests"
+      path="Quests"
       caption="Daily quests, generated fresh each morning. Gems are the payout."
       align="right"
     >

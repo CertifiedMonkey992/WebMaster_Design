@@ -54,7 +54,7 @@ export default function LoginModal({ onClose }) {
         <div className="modal-logo" aria-hidden="true">
           <span className="modal-logo-mark">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 2h2.5v8H10v2H2V2Z" fill="#000"/>
+              <path d="M2 2h2.5v8H10v2H2V2Z" fill="#FBF7F0"/>
             </svg>
           </span>
           <span className="modal-logo-text">LunX</span>

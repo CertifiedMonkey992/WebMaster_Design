@@ -19,9 +19,19 @@ import { useProgression } from '../state/ProgressionContext'
 import './LearnPage.css'
 import '../components/progression/progression.css'
 
+/* These two destinations are not built. The old placeholder centred a 3.5rem
+   emoji in a 60vh void beside a "Coming Soon" pill — an emoji and a line-icon
+   set must never share an interface, and an empty state that says nothing is
+   worse than one that explains itself. These say what is actually true. */
 const PLACEHOLDER_VIEWS = {
-  leaderboards: { icon: '🏆', title: 'Leaderboards', desc: 'See how you rank against learners from around the world.' },
-  more:         { icon: '⚙️', title: 'More',         desc: 'Settings, help centre, and additional options.' },
+  leaderboards: {
+    title: 'No leaderboards yet',
+    desc: 'Ranking needs accounts, and LunX does not have them. Your progress lives in this browser and is not sent anywhere.',
+  },
+  more: {
+    title: 'Nothing to set yet',
+    desc: 'There are no preferences to change. The one thing that persists is your course progress, and the dev panel can reset it.',
+  },
 }
 
 function PlaceholderView({ viewId }) {
@@ -29,10 +39,9 @@ function PlaceholderView({ viewId }) {
   if (!v) return null
   return (
     <div className="lp-placeholder">
-      <div className="lp-placeholder-icon" aria-hidden="true">{v.icon}</div>
       <h2 className="lp-placeholder-title">{v.title}</h2>
       <p className="lp-placeholder-desc">{v.desc}</p>
-      <span className="lp-placeholder-badge">Coming Soon</span>
+      <span className="lp-placeholder-badge">Not built</span>
     </div>
   )
 }
@@ -63,7 +72,7 @@ export default function LearnPage({ onGoHome, onLoginClick }) {
         <button className="lt-brand" onClick={onGoHome} aria-label="Return to LunX home">
           <span className="lt-brand-mark" aria-hidden="true">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-              <path d="M2 2h2.5v8H10v2H2V2Z" fill="#fff" />
+              <path d="M2 2h2.5v8H10v2H2V2Z" fill="#FBF7F0" />
             </svg>
           </span>
           LunX

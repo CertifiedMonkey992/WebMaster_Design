@@ -16,18 +16,18 @@
   gap: 0.4rem;
   padding: 0.4rem 0.7rem;
   font: inherit;
-  font-size: 0.75rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  color: #6B7086;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
+  color: var(--ink-muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   cursor: pointer;
   transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
 
-.db-indicator:hover { background: rgba(23, 21, 43, 0.05); color: #17152B; }
+.db-indicator:hover { background: rgba(var(--ink-rgb), 0.05); color: var(--ink); }
 
 .db-indicator:focus-visible {
   outline: 2px solid var(--lx-accent);
@@ -35,13 +35,13 @@
 }
 
 .db-indicator.is-ready {
-  color: var(--lx-accent-ink);
+  color: var(--clay-ink);
   background: var(--lx-accent-wash);
   border-color: rgba(var(--lx-accent-rgb), 0.3);
 }
 
 .db-indicator.is-ready:hover {
-  background: #D9FAFE;
+  background: var(--evergreen-tint);
   border-color: rgba(var(--lx-accent-rgb), 0.5);
 }
 
@@ -55,8 +55,8 @@
   height: 8px;
   border-radius: 50%;
   background: var(--lx-streak);
-  border: 2px solid #FFFFFF;
-  animation: db-pulse 2s ease-in-out infinite;
+  border: 2px solid var(--surface);
+  /* A dot that pulses forever stops meaning "ready" after ten seconds. */
 }
 
 @keyframes db-pulse {
@@ -73,7 +73,7 @@
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  background: rgba(15, 42, 63, 0.42);
+  background: rgba(var(--ink-rgb), 0.42);
   backdrop-filter: blur(3px);
   animation: db-fade 0.2s ease;
   overflow-y: auto;
@@ -85,10 +85,10 @@
   max-height: calc(100vh - 2.5rem);
   overflow-y: auto;
   padding: 1.75rem;
-  background: #F7F8FB;
-  border: 1px solid rgba(23, 21, 43, 0.08);
-  border-radius: 24px;
-  box-shadow: 0 30px 70px rgba(15, 42, 63, 0.26);
+  background: var(--surface);
+  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-modal);
   animation: db-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -101,15 +101,15 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  color: #6B7086;
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 21, 43, 0.1);
+  color: var(--ink-muted);
+  background: var(--surface);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
   border-radius: 50%;
   cursor: pointer;
   transition: color 0.16s ease, border-color 0.16s ease;
 }
 
-.db-close:hover { color: #17152B; border-color: rgba(23, 21, 43, 0.25); }
+.db-close:hover { color: var(--ink); border-color: rgba(var(--ink-rgb), 0.25); }
 .db-close:focus-visible { outline: 2px solid var(--lx-accent); outline-offset: 2px; }
 
 @keyframes db-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -136,11 +136,11 @@
 
 .db-eyebrow {
   display: block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--lx-accent-ink);
+  color: var(--clay-ink);
   margin-bottom: 0.3rem;
 }
 
@@ -148,20 +148,20 @@
   font-family: var(--font-heading);
   font-weight: var(--fw-heading);
   letter-spacing: var(--tracking-heading);
-  font-size: 1.45rem;
-  color: #17152B;
+  font-size: var(--fs-title);
+  color: var(--ink);
   line-height: 1.15;
 }
 
 .db-progress-tag {
   flex-shrink: 0;
   padding: 0.3rem 0.7rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #4A4F63;
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 21, 43, 0.1);
-  border-radius: 999px;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  color: var(--ink-muted);
+  background: var(--surface);
+  border: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--r-pill);
   white-space: nowrap;
 }
 
@@ -172,19 +172,19 @@
   align-items: center;
   gap: 1.25rem;
   padding: 1.35rem 1.5rem;
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 21, 43, 0.09);
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(23, 20, 46, 0.05);
+  background: var(--surface);
+  border: 1px solid rgba(var(--ink-rgb), 0.09);
+  border-radius: var(--r-lg);
+  box-shadow: none;
 }
 
-/* Ready: the one accent-bordered, elevated surface on the panel. */
+/* Ready: a claimable reward is "do this now", so it takes the clay accent
+   rather than the structural evergreen — and it takes no shadow, because it
+   sits flat inside a panel that is already floating. */
 .db-hero.is-ready {
-  background: linear-gradient(150deg, #FFFFFF 55%, var(--lx-accent-wash));
-  border-color: rgba(var(--lx-accent-rgb), 0.42);
-  box-shadow:
-    0 8px 20px rgba(15, 42, 63, 0.15),
-    0 1px 3px rgba(23, 20, 46, 0.06);
+  background: var(--surface);
+  border-color: var(--clay);
+  border-width: 1.5px;
 }
 
 .db-hero-art {
@@ -193,46 +193,40 @@
   place-items: center;
   width: 116px;
   height: 116px;
-  border-radius: 20px;
-  background: #F7F8FB;
+  border-radius: var(--r-lg);
+  background: var(--surface);
 }
 
-.db-hero.is-ready .db-hero-art { background: rgba(var(--lx-accent-rgb), 0.07); }
-.db-hero.is-ready .db-hero-art > svg { animation: db-float 3.4s ease-in-out infinite; }
-
-@keyframes db-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
-}
+.db-hero.is-ready .db-hero-art { background: var(--clay-tint); }
 
 .db-hero-body { min-width: 0; flex: 1; }
 
 .db-hero-eyebrow {
   display: block;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--lx-accent-ink);
+  color: var(--clay-ink);
   margin-bottom: 0.3rem;
 }
 
 .db-hero.is-done .db-hero-eyebrow { color: var(--lx-success-ink); }
 
 .db-hero-reward {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  color: #17152B;
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  color: var(--ink);
   line-height: 1.1;
   margin-bottom: 0.35rem;
 }
 
 .db-hero-note {
-  font-size: 0.82rem;
+  font-size: var(--fs-small);
   line-height: 1.5;
-  color: #6B7086;
+  color: var(--ink-muted);
   margin-bottom: 0.9rem;
 }
 
@@ -240,25 +234,21 @@
   display: inline-block;
   padding: 0.62rem 1.5rem;
   font: inherit;
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--lx-on-accent);
-  background: linear-gradient(140deg, var(--lx-accent-bright), var(--lx-accent));
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-title);
+  color: var(--surface-raised);
+  background: var(--clay);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   cursor: pointer;
-  box-shadow: 0 3px 8px rgba(15, 42, 63, 0.12);
+  box-shadow: none;
   transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
 }
 
-.db-claim-btn:hover {
-  background: linear-gradient(140deg, var(--lx-accent), var(--lx-accent-strong));
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(15, 42, 63, 0.12);
-}
+.db-claim-btn:hover { background: var(--clay-deep); }
 
-.db-claim-btn:active { transform: translateY(0); }
+.db-claim-btn:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
 .db-claim-btn:focus-visible { outline: 2px solid var(--lx-accent-deep); outline-offset: 2px; }
 .db-claim-btn--static { cursor: default; }
 
@@ -266,9 +256,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: #6B7086;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--ink-muted);
 }
 
 /* ── Claim receipt ────────────────────────────────────────────────────────── */
@@ -278,9 +268,9 @@
   align-items: flex-start;
   gap: 0.6rem;
   padding: 0.7rem 1rem;
-  background: #F0FDF4;
-  border: 1px solid rgba(22, 163, 74, 0.28);
-  border-radius: 14px;
+  background: var(--moss-tint);
+  border: 1px solid rgba(63, 107, 69, 0.28);
+  border-radius: var(--r-md);
   animation: db-rise 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -291,14 +281,14 @@
   width: 20px;
   height: 20px;
   margin-top: 0.05rem;
-  color: #FFFFFF;
+  color: var(--surface-raised);
   background: var(--lx-success);
   border-radius: 50%;
 }
 
-.db-receipt-text { font-size: 0.82rem; color: var(--lx-success-ink); }
-.db-receipt-text b { display: block; font-weight: 700; }
-.db-receipt-text em { display: block; margin-top: 0.15rem; font-style: normal; color: #4A6B52; font-size: 0.76rem; }
+.db-receipt-text { font-size: var(--fs-small); color: var(--lx-success-ink); }
+.db-receipt-text b { display: block; font-weight: var(--fw-bold); }
+.db-receipt-text em { display: block; margin-top: 0.15rem; font-style: normal; color: var(--moss); font-size: var(--fs-caption); }
 
 /* ── The path ─────────────────────────────────────────────────────────────── */
 
@@ -311,11 +301,11 @@
 }
 
 .db-path-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: #6B7086;
+  color: var(--ink-muted);
 }
 
 .db-pips { display: flex; gap: 0.3rem; list-style: none; }
@@ -324,7 +314,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #D8DCE6;
+  background: var(--paper-deep);
 }
 
 .db-pip.is-claimed { background: var(--lx-success); }
@@ -334,7 +324,7 @@
 .db-pip.is-today {
   background: var(--lx-accent);
   width: 16px;
-  border-radius: 99px;
+  border-radius: var(--r-pill);
 }
 
 /* Seven cards across on desktop; the final day gets no extra column so the
@@ -357,18 +347,18 @@
   gap: 0.15rem;
   padding: 0.7rem 0.4rem 0.6rem;
   text-align: center;
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 21, 43, 0.09);
-  border-radius: 15px;
+  background: var(--surface);
+  border: 1px solid rgba(var(--ink-rgb), 0.09);
+  border-radius: var(--r-md);
   transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 
 .db-day-num {
-  font-size: 0.63rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: #8A8FA3;
+  color: var(--ink-faint);
 }
 
 .db-day-art {
@@ -383,18 +373,18 @@
 .db-day--final .db-day-art > svg { max-width: 62px; }
 
 .db-day-amount {
-  font-family: var(--font-display, 'Space Grotesk', sans-serif);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #17152B;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  color: var(--ink);
   line-height: 1.1;
 }
 
 .db-day-label {
-  font-size: 0.63rem;
+  font-size: var(--fs-micro);
   line-height: 1.3;
-  color: #8A8FA3;
+  color: var(--ink-faint);
   margin-bottom: 0.3rem;
 }
 
@@ -403,63 +393,61 @@
   align-items: center;
   gap: 0.2rem;
   padding: 0.15rem 0.42rem;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  border-radius: 999px;
-  color: #8A8FA3;
-  background: #F2F4F8;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  border-radius: var(--r-pill);
+  color: var(--ink-faint);
+  background: var(--surface);
 }
 
-.db-day-status.is-claimed { color: var(--lx-success-ink); background: #DCFCE7; }
-.db-day-status.is-today   { color: var(--lx-on-accent);   background: var(--lx-accent-soft); }
+.db-day-status.is-claimed { color: var(--lx-success-ink); background: var(--moss-tint); }
+.db-day-status.is-today   { color: var(--surface-raised); background: var(--clay); }
 .db-day-status.is-next    { color: var(--lx-accent-ink);  background: var(--lx-accent-wash); }
 
 /* ── Card states ── */
 
 /* CLAIMED — quiet, green-tinted, art dimmed back. */
 .db-day.is-claimed {
-  background: #FBFDFC;
-  border-color: rgba(22, 163, 74, 0.26);
+  background: var(--surface);
+  border-color: rgba(63, 107, 69, 0.26);
 }
 .db-day.is-claimed .db-day-art { opacity: 0.5; }
-.db-day.is-claimed .db-day-amount { color: #4A6B52; }
+.db-day.is-claimed .db-day-amount { color: var(--moss); }
 
 /* TODAY — the loud one: accent border, lift, tinted ground. */
 .db-day.is-today {
-  background: linear-gradient(170deg, #FFFFFF, var(--lx-accent-wash));
-  border-color: var(--lx-accent);
+  background: var(--surface);
+  border-color: var(--clay);
   border-width: 1.5px;
-  transform: translateY(-3px);
-  box-shadow: 0 7px 16px rgba(15, 42, 63, 0.14);
 }
 
-.db-day.is-today .db-day-num { color: var(--lx-accent-ink); }
+.db-day.is-today .db-day-num { color: var(--clay-ink); }
 
 /* NEXT — a hint of accent, no lift. */
 .db-day.is-next { border-color: rgba(var(--lx-accent-rgb), 0.35); }
 
 /* LOCKED — muted, but never invisible. */
-.db-day.is-locked { background: #FAFBFD; }
+.db-day.is-locked { background: var(--surface); }
 .db-day.is-locked .db-day-art { opacity: 0.62; filter: saturate(0.62); }
-.db-day.is-locked .db-day-amount { color: #8A8FA3; }
+.db-day.is-locked .db-day-amount { color: var(--ink-faint); }
 
 /* FINAL DAY — gold rim so Day 7 reads as the payoff even while locked. */
-.db-day--final { border-color: rgba(245, 158, 11, 0.4); }
+.db-day--final { border-color: rgba(192, 138, 30, 0.4); }
 .db-day--final .db-day-amount { color: var(--lx-gold-ink); }
-.db-day--final.is-locked { background: linear-gradient(175deg, #FFFFFF, #FFFBEB); }
-.db-day--final.is-claimed { border-color: rgba(22, 163, 74, 0.3); }
+.db-day--final.is-locked { background: var(--ochre-tint); }
+.db-day--final.is-claimed { border-color: rgba(63, 107, 69, 0.3); }
 
 .db-day-claim {
   margin-top: 0.3rem;
   padding: 0.28rem 0.7rem;
   font: inherit;
-  font-size: 0.66rem;
-  font-weight: 700;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
   color: var(--lx-on-accent);
   background: var(--lx-accent);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   cursor: pointer;
   transition: background 0.14s ease;
 }
@@ -472,7 +460,7 @@
 
 @keyframes db-pop {
   0%   { transform: scale(1); }
-  28%  { transform: scale(1.11); box-shadow: 0 9px 20px rgba(15, 42, 63, 0.15); }
+  28%  { transform: scale(1.11); box-shadow: var(--shadow-float); }
   100% { transform: scale(1); }
 }
 
@@ -481,9 +469,9 @@
 .db-track--showcase { gap: 1rem; }
 .db-track--showcase .db-hero { padding: 1.1rem 1.2rem; gap: 1rem; }
 .db-track--showcase .db-hero-art { width: 96px; height: 96px; }
-.db-track--showcase .db-hero-reward { font-size: 1.25rem; }
+.db-track--showcase .db-hero-reward { font-size: var(--fs-title); }
 .db-track--showcase .db-days { gap: 0.4rem; }
-.db-track--showcase .db-day { padding: 0.55rem 0.25rem 0.5rem; border-radius: 13px; }
+.db-track--showcase .db-day { padding: 0.55rem 0.25rem 0.5rem; border-radius: var(--r-md); }
 .db-track--showcase .db-day-label { display: none; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
@@ -505,13 +493,13 @@
 }
 
 @media (max-width: 560px) {
-  .db-modal { padding: 1.25rem 1rem; border-radius: 20px; }
+  .db-modal { padding: 1.25rem 1rem; border-radius: var(--r-lg); }
   .db-head { padding-right: 2rem; }
-  .db-title { font-size: 1.2rem; }
+  .db-title { font-size: var(--fs-lead); }
 
   .db-hero { flex-direction: column; align-items: flex-start; padding: 1.1rem; }
   .db-hero-art { width: 88px; height: 88px; }
-  .db-hero-reward { font-size: 1.25rem; }
+  .db-hero-reward { font-size: var(--fs-title); }
   .db-claim-btn { width: 100%; text-align: center; }
 
   .db-days { grid-template-columns: repeat(3, 1fr); }

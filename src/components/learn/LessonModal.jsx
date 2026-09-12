@@ -24,6 +24,7 @@ import { XP, HEARTS } from '../../config/progressionConfig'
 import { HeartIcon, GemIcon, FlameIcon, Icon } from '../progression/Icons'
 import { formatClock } from '../../utils/dateUtils'
 import StepBody, { correctLabel, isAnswerCorrect, canCheckStep } from './StepRenderer'
+import { getLessonIcon } from './LessonIcons'
 
 export default function LessonModal({ lessonId, onClose }) {
   const { state, vm, actions } = useProgression()
@@ -204,7 +205,11 @@ export default function LessonModal({ lessonId, onClose }) {
       <div className="lm-overlay">
         <div className="lm-welcome">
           <button className="lm-close lm-close--abs" onClick={onClose} aria-label="Close">✕</button>
-          <div className="lm-welcome-emoji">🧠</div>
+          {/* Was a 5rem 🧠. An emoji and a line-icon set must never share an
+              interface, and the lesson already owns a drawn icon — using it
+              here means the card you clicked and the screen you landed on
+              show the same mark. */}
+          <div className="lm-welcome-mark">{getLessonIcon(lessonId)}</div>
           <h2 className="lm-welcome-title">{meta?.title ?? lesson.title}</h2>
           <p className="lm-welcome-sub">{lesson.subtitle}</p>
           <div className="lm-welcome-bonus">
@@ -237,9 +242,17 @@ export default function LessonModal({ lessonId, onClose }) {
       <div className="lm-overlay">
         <div className="lm-complete">
           <button className="lm-close lm-close--abs" onClick={onClose} aria-label="Close">✕</button>
-          <div className="lm-complete-trophy">🏆</div>
-          <h2 className="lm-complete-title">{isReplay ? 'Review Complete!' : 'Lesson Complete!'}</h2>
-          {perfect && <div className="lm-perfect-badge">🌟 Perfect Run!</div>}
+          {/* A stamp, not a firework. It overshoots in ROTATION rather than
+              scale, which is what makes it read as something pressed onto the
+              page instead of something that popped. */}
+          <div className="lm-stamp" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h2 className="lm-complete-title">{isReplay ? 'Review complete' : 'Lesson complete'}</h2>
+          {perfect && <div className="lm-perfect-badge">Perfect run</div>}
           <div className="lm-complete-rewards">
             <div className="lm-reward">
               <span className="lm-reward-icon"><GemIcon size={22} /></span>
