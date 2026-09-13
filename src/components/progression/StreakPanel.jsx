@@ -1,18 +1,36 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   StreakPanel.jsx — STREAK DETAIL, WEEK CALENDAR AND NEXT MILESTONE
+   StreakPanel.jsx — STREAK DETAIL, WEEK CALENDAR AND MILESTONE PATH
    ---------------------------------------------------------------------------
-   The calendar reads the real per-day activity history recorded by
-   streakService, so a tick mark means the learner genuinely did something
-   that day — not that the app happened to be open.
+   The calendar reads the real per-day activity history, so a tick means the
+   learner genuinely did something that day.
+
+   Revision 2:
+     · the flame is alive, and the number rolls
+     · the week's days are dealt in; today, unfinished, pings; each day's
+       tooltip gives what was earned
+     · milestones are a PATH — stones at 3 / 7 / 14 / 30… with a flame marker
+       standing at today's streak and the next stone's reward in its tooltip
+     · a banked Streak Shield stands guard with its count shown as pips
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useProgression, useClock } from '../../state/ProgressionContext'
-import { FlameIcon, Icon } from './Icons'
+import { FlameIcon, ShieldIcon, Icon } from './Icons'
+import { LiveFlame } from './LiveIcons'
+import RollingNumber from '../../motion/RollingNumber'
 import { getActivityMap } from '../../services/streakService'
+import { STREAK } from '../../config/progressionConfig'
 import {
-  getWeekDays, getWeekDayLabels, getLocalDateKey,
+  getWeekDays, getWeekDayLabels, getLocalDateKey, getShortDate,
   msUntilEndOfDay, formatDuration,
 } from '../../utils/dateUtils'
+
+function milestoneWindow(streak) {
+  const all = STREAK.MILESTONES
+  const nextIdx = all.findIndex((m) => m > streak)
+  if (nextIdx === -1) return all.slice(-4)
+  const start = Math.max(0, nextIdx - 1)
+  return all.slice(start, start + 4)
+}
 
 export default function StreakPanel({ onOpenShop }) {
   const { state, vm } = useProgression()
@@ -24,13 +42,29 @@ export default function StreakPanel({ onOpenShop }) {
   const activity = getActivityMap(state, week)
   const milestone = vm.nextMilestone
 
+  /* Stones sit evenly along the path (a path of stops, not a ruler), and a
+     streak between two stones is placed proportionally between them. */
+  const stones = milestoneWindow(vm.streak)
+  const stops = [stones[0] > 3 ? Math.max(0, stones[0] - (stones[1] - stones[0])) : 0, ...stones]
+  const at = (v) => {
+    const last = stops.length - 1
+    if (v <= stops[0]) return '0%'
+    if (v >= stops[last]) return '100%'
+    let k = 0
+    while (k < last - 1 && v > stops[k + 1]) k++
+    const t = (v - stops[k]) / (stops[k + 1] - stops[k])
+    return `${(((k + t) / last) * 100).toFixed(2)}%`
+  }
+
   return (
     <div className="pg-panel">
-      <div className="pg-streak-hero">
-        <FlameIcon size={40} className={`pg-streak-hero-icon${vm.streak > 0 ? ' is-lit' : ''}`} dim={vm.streak === 0} />
+      <div className={`pg-streak-hero${vm.streak > 0 ? ' is-lit' : ''}`}>
+        <span className="pg-streak-hero-icon fx-flare-host" tabIndex={-1}>
+          <LiveFlame streak={vm.streak} activeToday={vm.activeToday} shields={0} size={44} showShield={false} />
+        </span>
         <div>
           <div className="pg-streak-hero-value">
-            {vm.streak} <span>day{vm.streak === 1 ? '' : 's'}</span>
+            <RollingNumber value={vm.streak} /> <span>day{vm.streak === 1 ? '' : 's'}</span>
           </div>
           <div className="pg-streak-hero-label">
             {vm.streak === 0
@@ -57,6 +91,13 @@ export default function StreakPanel({ onOpenShop }) {
             const day = activity[i]
             const isToday = dateKey === today
             const isFuture = dateKey > today
+            const tip = isFuture
+              ? `${getShortDate(dateKey)} · still to come`
+              : day.active
+                ? `${getShortDate(dateKey)} · ${day.xp} XP earned`
+                : isToday
+                  ? `Today · finish a lesson to tick it`
+                  : `${getShortDate(dateKey)} · no activity`
             return (
               <div
                 key={dateKey}
@@ -66,10 +107,11 @@ export default function StreakPanel({ onOpenShop }) {
                   isToday ? 'is-today' : '',
                   isFuture ? 'is-future' : '',
                 ].join(' ')}
-                title={`${dateKey}${day.active ? ` — ${day.xp} XP` : ''}`}
+                style={{ '--i': i }}
+                data-tip={tip}
               >
                 <span className="pg-day-label">{labels[i]}</span>
-                <span className="pg-day-dot">
+                <span className={`pg-day-dot${isToday && !day.active ? ' fx-ping' : ''}${day.active ? ' is-drawing' : ''}`}>
                   {day.active
                     ? <Icon name="check" size={12} strokeWidth={3} />
                     : <span className="pg-day-empty" />}
@@ -80,61 +122,71 @@ export default function StreakPanel({ onOpenShop }) {
         </div>
       </div>
 
-      {/* ── Milestone ── */}
+      {/* ── Milestone path ── */}
       {milestone && (
         <div className="pg-milestone">
           <div className="pg-milestone-head">
             <span className="pg-subhead">Next milestone</span>
-            <span className="pg-milestone-reward">+{milestone.gems} gems</span>
-          </div>
-          <div className="pg-milestone-row">
-            <FlameIcon size={16} />
-            <strong>{milestone.target} days</strong>
-            <span className="pg-milestone-remaining">
-              {milestone.remaining} day{milestone.remaining === 1 ? '' : 's'} to go
+            <span className="pg-milestone-reward">
+              {milestone.remaining} day{milestone.remaining === 1 ? '' : 's'} to +{milestone.gems} gems
             </span>
           </div>
-          <div className="pg-milestone-track">
-            <div
-              className="pg-milestone-fill"
-              style={{ width: `${Math.round((vm.streak / milestone.target) * 100)}%` }}
-            />
+          <div className="pg-path" role="img" aria-label={`${vm.streak} days, next milestone at ${milestone.target}`}>
+            <span className="pg-path-track" />
+            <span className="pg-path-fill" style={{ width: at(vm.streak) }} />
+            {stones.map((m) => (
+              <span
+                key={m}
+                className={`pg-stone${vm.streak >= m ? ' is-reached' : ''}${m === milestone.target ? ' is-next' : ''}`}
+                style={{ left: at(m) }}
+                data-tip={`${m} days · +${STREAK.MILESTONE_GEMS[m]} gems${vm.streak >= m ? ' · reached' : ''}`}
+              >
+                <span className="pg-stone-dot" />
+                <span className="pg-stone-label">{m}</span>
+              </span>
+            ))}
+            <span className="pg-path-marker" style={{ left: at(vm.streak) }} aria-hidden="true">
+              <FlameIcon size={16} dim={vm.streak === 0} />
+            </span>
           </div>
         </div>
       )}
 
-      {/* ── Shields ──
-          Lives here rather than in the top bar: it is streak context, and the
-          navigation stays a clean row of three numbers. */}
+      {/* ── Shields ── */}
       <div className={`pg-shields${vm.shields > 0 ? ' is-stocked' : ''}`}>
         <span className="pg-shields-icon" aria-hidden="true">
-          <Icon name="shield" size={17} strokeWidth={2.2} />
+          <ShieldIcon size={26} />
         </span>
         <div className="pg-shields-text">
           <span className="pg-shields-count">
-            {vm.shields} Streak Shield{vm.shields === 1 ? '' : 's'}
+            <RollingNumber value={vm.shields} /> Streak Shield{vm.shields === 1 ? '' : 's'}
+            <span className="pg-shield-pips" aria-hidden="true">
+              {Array.from({ length: vm.maxShields }, (_, i) => (
+                <i key={i} className={i < vm.shields ? 'is-on' : ''} />
+              ))}
+            </span>
           </span>
           <span className="pg-shields-note">
             {vm.shields > 0
               ? 'One is spent automatically if you miss a day.'
-              : `Buy one in the shop to cover a missed day.`}
+              : 'Buy one in the shop to cover a missed day.'}
           </span>
         </div>
         {onOpenShop && (
-          <button type="button" className="pg-shields-link" onClick={onOpenShop}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={onOpenShop}>
             {vm.shields > 0 ? 'Shop' : 'Get one'}
           </button>
         )}
       </div>
 
       <div className="pg-panel-facts">
-        <div className="pg-fact">
+        <div className="pg-fact" data-tip="Your best run so far">
           <span className="pg-fact-label">Longest streak</span>
           <span className="pg-fact-value">
             {vm.longestStreak} day{vm.longestStreak === 1 ? '' : 's'}
           </span>
         </div>
-        <div className="pg-fact">
+        <div className="pg-fact" data-tip="Every day you finished something">
           <span className="pg-fact-label">Days active</span>
           <span className="pg-fact-value">{state.stats.daysActive}</span>
         </div>

@@ -6,19 +6,30 @@ import Hero            from './components/Hero'
 import ProductSections from './components/showcase/ProductSections'
 import ClosingCTA      from './components/ClosingCTA'
 import LoginModal      from './components/LoginModal'
+import Footer          from './components/Footer'
 import LearnPage       from './pages/LearnPage'
 
 import { ProgressionProvider } from './state/ProgressionContext'
+import FxLayer from './motion/FxLayer'
+/* Last, so the shared verbs (magnet, press, reveal) sit on top of the
+   component stylesheets imported above rather than being overridden by them. */
+import './motion/motion.css'
 
 export default function App() {
   const [loginOpen,    setLoginOpen]    = useState(false)
   const [currentPage,  setCurrentPage]  = useState('landing')
 
+  const goLearn = () => {
+    setCurrentPage('learn')
+    window.scrollTo({ top: 0 })
+  }
+
   if (currentPage === 'learn') {
     return (
       <ProgressionProvider>
+        <FxLayer />
         <LearnPage
-          onGoHome={() => setCurrentPage('landing')}
+          onGoHome={() => { setCurrentPage('landing'); window.scrollTo({ top: 0 }) }}
           onLoginClick={() => setLoginOpen(true)}
         />
         {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
@@ -28,26 +39,16 @@ export default function App() {
 
   return (
     <div className="app">
-      <Navbar onStartLearning={() => setCurrentPage('learn')} />
+      <FxLayer />
+      <Navbar onStartLearning={goLearn} />
 
       <main>
-        <Hero onStartLearning={() => setCurrentPage('learn')} />
+        <Hero onStartLearning={goLearn} />
         <ProductSections />
-        <ClosingCTA onStartLearning={() => setCurrentPage('learn')} />
+        <ClosingCTA onStartLearning={goLearn} />
       </main>
 
-      <footer className="footer" role="contentinfo">
-        <div className="footer-left">
-          <span className="footer-logo-text">LunX</span>
-          <span className="footer-copy">© 2025 LunX. Built for curious minds.</span>
-        </div>
-        <ul className="footer-links" role="list">
-          <li><a href="#">About</a></li>
-          <li><a href="#">Privacy</a></li>
-          <li><a href="#">Terms</a></li>
-          <li><a href="#">GitHub</a></li>
-        </ul>
-      </footer>
+      <Footer onStartLearning={goLearn} />
 
       {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
     </div>

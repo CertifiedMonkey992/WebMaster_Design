@@ -2,15 +2,14 @@
    ProductSections.jsx — THE MARKETING STORY, TOLD WITH THE REAL PRODUCT
    ---------------------------------------------------------------------------
    Every panel on this page is the app's own component, mounted through
-   ProgressionShowcase against a demo learner built by the real reducer. There
-   are no mockups here and no re-drawn interfaces: if the course map changes,
-   this page changes with it.
+   ProgressionShowcase against a demo learner built by the real reducer.
 
-   The claims are deliberately narrow. Everything stated below is something the
-   current build actually does — 22 lessons across 5 modules, a calendar-day
-   streak, a 7-day bonus track, generated daily quests, and a 3-item shop.
-   Features that exist only as placeholders (leaderboards, team missions,
-   accounts) are not mentioned.
+   Revision 2 choreography, per section:
+     · the eyebrow's index number and rule draw in
+     · the heading assembles word by word
+     · the paragraphs rise in sequence; each bold term gets a highlighter
+       stroke laid under it as it comes into view
+     · the frame stands up out of a tilt and follows the pointer
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useMemo } from 'react'
@@ -28,32 +27,42 @@ import ShopArt from '../shop/ShopArt'
 import { GemIcon } from '../progression/Icons'
 
 import ProductFrame from './ProductFrame'
-import useReveal from '../../hooks/useReveal'
+import SplitText from '../../motion/SplitText'
+import Reveal from '../../motion/Reveal'
+import useInView from '../../motion/useInView'
 import './showcase.css'
 
 const noop = () => {}
 
+/* A bold term that gets a highlighter stroke when it is read. */
+function Mark({ children, tone = 'ochre' }) {
+  const [ref, inView] = useInView({ threshold: 0.9, rootMargin: '0px 0px -12% 0px' })
+  return (
+    <strong ref={ref} className={`mark mark--${tone}${inView ? ' is-in' : ''}`}>
+      {children}
+    </strong>
+  )
+}
+
 /* ── Section shell ───────────────────────────────────────────────────────── */
 
-function Section({ id, eyebrow, heading, children, frame, flip = false }) {
-  /* One observer on the whole section. The previous markup put .reveal on the
-     copy and .reveal.d2 on the frame, which is the staggered-entrance pattern
-     the design system prohibits — and neither ever fired, because nothing
-     added the class that runs the animation. */
-  const [ref, animate] = useReveal()
-
+function Section({ id, index, eyebrow, heading, children, frame, flip = false }) {
+  const [ref, inView] = useInView({ threshold: 0.2 })
   return (
     <section className="sc-section" id={id} aria-labelledby={`${id}-heading`}>
-      <div
-        className={`sc-wrap reveal${animate ? ' animate-in' : ''}${flip ? ' flip' : ''}`}
-        ref={ref}
-      >
+      <div className={`sc-wrap${flip ? ' flip' : ''}`}>
         <div className="sc-copy">
-          <span className="section-eyebrow">{eyebrow}</span>
-          <h2 className="sc-heading" id={`${id}-heading`}>{heading}</h2>
-          {children}
+          <span ref={ref} className={`sc-eyebrow${inView ? ' is-in' : ''}`}>
+            <span className="sc-eyebrow-num">{String(index).padStart(2, '0')}</span>
+            <span className="sc-eyebrow-rule" aria-hidden="true" />
+            <span className="sc-eyebrow-text">{eyebrow}</span>
+          </span>
+          <SplitText as="h2" className="sc-heading" id={`${id}-heading`} stagger={48}>
+            {heading}
+          </SplitText>
+          <Reveal stagger delay={220}>{children}</Reveal>
         </div>
-        <div>{frame}</div>
+        <div className="sc-frame">{frame}</div>
       </div>
     </section>
   )
@@ -61,35 +70,33 @@ function Section({ id, eyebrow, heading, children, frame, flip = false }) {
 
 /* ── 1. Learn ─────────────────────────────────────────────────────────────── */
 
-function LearnFrame() {
-  return (
-    <ProductFrame
-      path="Learn"
-      caption="The Learn tab. Lessons unlock in order and the next one is always waiting at the top."
-      maxHeight="30rem"
-    >
-      <ModuleList onStartLesson={noop} />
-    </ProductFrame>
-  )
-}
-
 function LearnSection() {
   return (
     <Section
       id="learn"
+      index={1}
       eyebrow="The course"
       heading={<>{TOTAL_LESSONS} lessons.<br />One path through AI.</>}
-      frame={<LearnFrame />}
+      frame={
+        <ProductFrame
+          path="Learn"
+          caption="The Learn tab. Scroll — the frame scrolls the real course with you."
+          maxHeight="30rem"
+          scrub
+        >
+          <ModuleList onStartLesson={noop} />
+        </ProductFrame>
+      }
     >
       <p className="sc-body">
         {TOTAL_SECTIONS} modules, from what AI actually is through to the ethics
-        of using it. Lessons run 4–8 minutes and <strong>unlock in order</strong>,
+        of using it. Lessons run 4–8 minutes and <Mark>unlock in order</Mark>,
         so there is never a question about what to do next — and the map tracks
         exactly how far you have got.
       </p>
       <p className="sc-body">
         Lessons are interactive rather than video: fill in the blank, judge a
-        scenario, pick the right call. A wrong answer <strong>costs a heart</strong>,
+        scenario, pick the right call. A wrong answer <Mark tone="berry">costs a heart</Mark>,
         so there is no clicking through on autopilot.
       </p>
     </Section>
@@ -98,42 +105,35 @@ function LearnSection() {
 
 /* ── 2. Streak ────────────────────────────────────────────────────────────── */
 
-function StreakFrame() {
-  return (
-    <ProductFrame
-      path="Streak"
-      caption="The live top bar, and the streak panel behind it."
-      align="right"
-    >
-      <div className="sc-stats-frame">
-        <div className="sc-topbar">
-          <PlayerStatusBar />
-        </div>
-        <div className="sc-panel-host">
-          <StreakPanel />
-        </div>
-      </div>
-    </ProductFrame>
-  )
-}
-
 function StreakSection() {
   return (
     <Section
       id="streak"
+      index={2}
       eyebrow="Streaks"
       heading={<>Miss a day and<br />you start over.</>}
       flip
-      frame={<StreakFrame />}
+      frame={
+        <ProductFrame path="Streak" caption="The live top bar — hover the figures, click the flame." align="right">
+          <div className="sc-stats-frame">
+            <div className="sc-topbar">
+              <PlayerStatusBar />
+            </div>
+            <div className="sc-panel-host">
+              <StreakPanel />
+            </div>
+          </div>
+        </ProductFrame>
+      }
     >
       <p className="sc-body">
         A day only counts once you finish something. The streak tracks
-        <strong> calendar days</strong>, not 24-hour gaps, so a late-night
+        <Mark tone="clay"> calendar days</Mark>, not 24-hour gaps, so a late-night
         session and a morning one are two days — exactly as you would expect.
       </p>
       <p className="sc-body">
         Milestones at 3, 7, 14 and 30 days pay gems. Miss one day and a
-        <strong> Streak Shield</strong> covers it, if you have one banked. Miss
+        <Mark tone="moss"> Streak Shield</Mark> covers it, if you have one banked. Miss
         two, and you start again.
       </p>
     </Section>
@@ -145,10 +145,7 @@ function StreakSection() {
 function BonusFrame() {
   const { vm } = useProgression()
   return (
-    <ProductFrame
-      path="Daily bonus"
-      caption="The bonus panel, mid-track. Day 4 is today's."
-    >
+    <ProductFrame path="Daily bonus" caption="The bonus panel, mid-track. Day 4 is today's.">
       <DailyBonusTrack view={vm.dailyBonus} variant="showcase" showHeader={false} />
     </ProductFrame>
   )
@@ -158,13 +155,14 @@ function BonusSection() {
   return (
     <Section
       id="daily-bonus"
+      index={3}
       eyebrow="Daily bonus"
       heading={<>Come back.<br />Get paid.</>}
       frame={<BonusFrame />}
     >
       <p className="sc-body">
         A seven-day track with a reward waiting on each one: gems, XP, hearts,
-        and a <strong>Streak Shield on day 7</strong>. Claim it, and tomorrow the
+        and a <Mark>Streak Shield on day 7</Mark>. Claim it, and tomorrow the
         next day unlocks.
       </p>
       <p className="sc-body">
@@ -183,11 +181,7 @@ function QuestFrame() {
   const quests = vm.quests.daily.slice(0, 3)
 
   return (
-    <ProductFrame
-      path="Quests"
-      caption="Daily quests, generated fresh each morning. Gems are the payout."
-      align="right"
-    >
+    <ProductFrame path="Quests" caption="Daily quests, generated fresh each morning. Gems are the payout." align="right">
       <div className="sc-stack">
         <span className="sc-stack-label">Today&apos;s quests</span>
         {quests.map((quest) => (
@@ -199,7 +193,7 @@ function QuestFrame() {
         </span>
         <ul className="sc-shop-mini">
           {SHOP_ITEMS.map((item) => (
-            <li className="sc-shop-mini-item" key={item.id}>
+            <li className="sc-shop-mini-item" key={item.id} data-tip={item.description}>
               <span className="sc-shop-mini-art"><ShopArt name={item.art} size={40} /></span>
               <span className="sc-shop-mini-name">{item.name}</span>
               <span className="sc-shop-mini-price">
@@ -218,6 +212,7 @@ function QuestSection() {
   return (
     <Section
       id="quests"
+      index={4}
       eyebrow="Quests & shop"
       heading={<>Always something<br />to work toward.</>}
       flip
@@ -229,8 +224,8 @@ function QuestSection() {
         run alongside for the longer haul.
       </p>
       <p className="sc-body">
-        Gems buy exactly three things: <strong>refill your hearts</strong>, add a
-        single heart, or bank a <strong>Streak Shield</strong>. That is the whole
+        Gems buy exactly three things: <Mark tone="berry">refill your hearts</Mark>, add a
+        single heart, or bank a <Mark tone="moss">Streak Shield</Mark>. That is the whole
         shop — no cosmetics, no filler.
       </p>
     </Section>
@@ -240,8 +235,6 @@ function QuestSection() {
 /* ── Root ─────────────────────────────────────────────────────────────────── */
 
 export default function ProductSections() {
-  /* Built once. Every section reads the same demo learner, so the streak in the
-     top bar and the progress on the course map belong to the same person. */
   const state = useMemo(() => getShowcaseState(), [])
 
   return (

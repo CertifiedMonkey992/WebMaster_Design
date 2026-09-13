@@ -1,52 +1,72 @@
-/* Your Progress card — every number comes from the progression view model. */
+/* Your Progress card — every number comes from the progression view model.
+
+   Revision 2: the level block is the XP landing site; the daily goal track
+   carries a marker that walks with the day's XP and stamps a check when the
+   goal is met; the streak flame is alive and both figures roll. */
 
 import { useProgression } from '../../state/ProgressionContext'
 import LevelProgress from '../progression/LevelProgress'
-import { FlameIcon, Icon } from '../progression/Icons'
+import { LiveFlame } from '../progression/LiveIcons'
+import { Icon } from '../progression/Icons'
 import useProgressWidth from '../../hooks/useProgressWidth'
-import useIncreaseFlash from '../../hooks/useIncreaseFlash'
+import RollingNumber from '../../motion/RollingNumber'
+import { useLandedValue } from '../../motion/flight'
+import Reveal from '../../motion/Reveal'
 
-export default function ProgressCard() {
+export default function ProgressCard({ style, className = '' }) {
   const { vm } = useProgression()
   const goalPct = vm.dailyGoalPercent
   const goalWidth = useProgressWidth(goalPct)
-  const streakRose = useIncreaseFlash(vm.streak)
+  const streak = useLandedValue('streak', vm.streak)
+  const met = goalPct >= 100
 
   return (
-    <div className="progress-card">
-      <div className="pc-header">Your Progress</div>
+    <div className={`progress-card ${className}`.trim()} style={style}>
+      <div className="pc-header">
+        Your Progress
+        <span className="pc-header-tag" data-tip="Levels come from total XP">
+          {vm.levelTitle}
+        </span>
+      </div>
 
-      <LevelProgress size="md" />
+      <LevelProgress size="md" showTitle={false} />
 
-      {/* Daily goal — the ring the whole day is measured against */}
       <div className="pc-goal">
         <div className="pc-goal-top">
           <span className="pc-goal-label">Daily goal</span>
-          <span className={`pc-goal-value${goalPct >= 100 ? ' is-met' : ''}`}>
-            {vm.daily.xp} / {vm.goals.dailyXP} XP
-            {goalPct >= 100 && <Icon name="check" size={11} strokeWidth={3} />}
+          <span className={`pc-goal-value${met ? ' is-met' : ''}`}>
+            <RollingNumber value={vm.daily.xp} /> / {vm.goals.dailyXP} XP
+            {met && <Icon name="check" size={11} strokeWidth={3} />}
           </span>
         </div>
-        <div className="pc-goal-track">
-          <div className={`pc-goal-fill${goalPct >= 100 ? ' is-met' : ''}`} style={{ width: `${goalWidth}%` }} />
+        <div
+          className="pc-goal-track"
+          data-tip={met ? 'Goal met for today' : `${Math.max(0, vm.goals.dailyXP - vm.daily.xp)} XP to today's goal`}
+        >
+          <div className={`pc-goal-fill${met ? ' is-met' : ''}`} style={{ width: `${goalWidth}%` }} />
+          <span className="pc-goal-marker" style={{ left: `${goalWidth}%` }} aria-hidden="true" />
         </div>
       </div>
 
-      <div className="pc-stats">
-        {/* is-dim stops the idle flicker: a streak of zero isn't burning. */}
-        <div className={`pc-stat${streakRose ? ' just-rose' : ''}${vm.streak === 0 ? ' is-dim' : ''}`}>
+      <Reveal className="pc-stats" variant="scale" stagger delay={200}>
+        <div
+          className="pc-stat fx-flare-host"
+          data-tip={vm.streak === 0 ? 'Finish a lesson to start a streak' : vm.activeToday ? 'Today is done' : 'Learn today to keep it'}
+        >
           <span className="pc-stat-value">
-            <FlameIcon size={16} dim={vm.streak === 0} className="pc-stat-flame" />
-            {vm.streak}
+            <LiveFlame streak={streak} activeToday={vm.activeToday} size={17} showShield={false} />
+            <RollingNumber value={streak} />
           </span>
           <span className="pc-stat-label">day streak</span>
         </div>
         <div className="pc-stat-divider" />
-        <div className="pc-stat">
-          <span className="pc-stat-value">{vm.course.completedCount}/{vm.course.totalLessons}</span>
+        <div className="pc-stat" data-tip={`${vm.course.totalLessons - vm.course.completedCount} lessons still to go`}>
+          <span className="pc-stat-value">
+            <RollingNumber value={vm.course.completedCount} />/{vm.course.totalLessons}
+          </span>
           <span className="pc-stat-label">lessons done</span>
         </div>
-      </div>
+      </Reveal>
     </div>
   )
 }

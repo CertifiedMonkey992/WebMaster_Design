@@ -1,24 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    PracticeSession.jsx — FREE REVIEW MODE
    ---------------------------------------------------------------------------
-   The answer to "what do I do with zero hearts?". Practice never costs a
-   heart, still awards XP, still counts as a qualifying activity for the
-   streak, and feeds the SPEND_TIME / COMPLETE_PRACTICE quests with genuinely
-   measured seconds.
+   Practice never costs a heart, still awards XP, counts toward the streak,
+   and feeds the practice quests with genuinely measured seconds.
+
+   Revision 2: the intro's target draws its rings in and follows the pointer;
+   the facts arrive in sequence; the lifetime figures count up; questions
+   slide in with the same keyboard shortcuts as a lesson; finishing stamps a
+   check and throws a burst.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import { buildPracticeDeck } from '../../data/lessonContent'
 import { XP } from '../../config/progressionConfig'
-import { Icon, HeartIcon, GemIcon, FlameIcon } from '../progression/Icons'
+import { Icon, HeartIcon, GemIcon, FlameIcon, BoltIcon } from '../progression/Icons'
 import StepBody, { correctLabel, isAnswerCorrect, canCheckStep } from './StepRenderer'
+import SplitText from '../../motion/SplitText'
+import Reveal from '../../motion/Reveal'
+import CountUp from '../../motion/CountUp'
+import RollingNumber from '../../motion/RollingNumber'
+import { burst, ring, shake } from '../../motion/burst'
+import './LessonModal.css'
 
 const DECK_SIZE = 5
 
 export default function PracticeSession() {
   const { vm, actions } = useProgression()
-  const [phase, setPhase] = useState('intro')   // intro | running | done
+  const [phase, setPhase] = useState('intro')
   const [deck, setDeck] = useState([])
   const [idx, setIdx] = useState(0)
   const [stepPhase, setStepPhase] = useState('answering')
@@ -30,6 +39,8 @@ export default function PracticeSession() {
 
   const startedAt = useRef(null)
   const committed = useRef(false)
+  const bodyRef = useRef(null)
+  const doneRef = useRef(null)
 
   const completedIds = useMemo(
     () => vm.course.sections.flatMap((s) => s.lessons).filter((l) => l.status === 'completed').map((l) => l.id),
@@ -48,6 +59,7 @@ export default function PracticeSession() {
   }
 
   function check() {
+    if (!canCheckStep(step, { filled, selected })) return
     const ok = isAnswerCorrect(step, { filled, selected })
     if (ok) setCorrect((c) => c + 1)
     setStepPhase(ok ? 'correct' : 'wrong')
@@ -74,30 +86,84 @@ export default function PracticeSession() {
     setPhase('done')
   }
 
+  const placeChip = (chip) => {
+    if (stepPhase !== 'answering') return
+    const arr = [...filled]
+    for (let i = 0; i < step.answers.length; i++) { if (!arr[i]) { arr[i] = chip; break } }
+    setFilled(arr)
+  }
+
+  useLayoutEffect(() => {
+    const body = bodyRef.current
+    if (!body || phase !== 'running') return
+    if (stepPhase === 'correct') {
+      const t = body.querySelector('.lm-opt--correct') || body.querySelector('.lm-sentence')
+      ring(t, { color: '--moss', size: 110 })
+      burst(t, { palette: 'moss', count: 12, spread: 70 })
+    }
+    if (stepPhase === 'wrong') shake(body.querySelector('.lm-opt--wrong') || body.querySelector('.lm-sentence'), { distance: 6 })
+  }, [stepPhase, phase])
+
+  useEffect(() => {
+    if (phase !== 'done') return undefined
+    const t = window.setTimeout(() => {
+      ring(doneRef.current, { color: '--moss', size: 130 })
+      burst(doneRef.current, { palette: 'reward', count: 20, spread: 120, gravity: 40 })
+    }, 240)
+    return () => clearTimeout(t)
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'running') return undefined
+    const onKey = (e) => {
+      if (e.key === 'Enter') {
+        if (e.target instanceof HTMLElement && e.target.matches('button') && !e.target.matches('.lm-btn-check, .lm-btn-continue')) return
+        e.preventDefault()
+        if (stepPhase === 'answering') check(); else next()
+        return
+      }
+      if (stepPhase !== 'answering' || !step) return
+      const n = Number(e.key)
+      if (!Number.isInteger(n) || n < 1) return
+      if (step.type === 'binary' && step.options[n - 1]) setSelected(step.options[n - 1].value)
+      if (step.type === 'mcq' && step.options[n - 1]) setSelected(step.options[n - 1].id)
+      if (step.type === 'fill-blank' && step.choices[n - 1] && !filled.includes(step.choices[n - 1])) placeChip(step.choices[n - 1])
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   /* ── Intro ── */
   if (phase === 'intro') {
     return (
       <div className="ps-intro">
-        <div className="ps-intro-icon"><Icon name="target" size={30} strokeWidth={1.8} /></div>
-        <h2 className="ps-title">Practice</h2>
-        <p className="ps-sub">
+        <div className="ps-intro-icon" data-tilt>
+          <Icon name="target" size={34} strokeWidth={1.8} />
+        </div>
+        <SplitText as="h2" className="ps-title" immediate delay={120}>Practice</SplitText>
+        <Reveal as="p" className="ps-sub" variant="fade" immediate delay={300}>
           A quick review drawn from everything you’ve covered so far.
           {completedIds.length === 0 && ' Starting with the fundamentals until you finish your first lesson.'}
-        </p>
+        </Reveal>
 
-        <ul className="ps-facts">
-          <li><HeartIcon size={15} /> Never costs a heart</li>
-          <li><Icon name="bolt" size={15} /> +{XP.PRACTICE} XP per session</li>
-          <li><FlameIcon size={15} /> Counts toward your streak</li>
-          <li><Icon name="clock" size={15} /> {DECK_SIZE} questions, about 3 minutes</li>
-        </ul>
+        <Reveal as="ul" className="ps-facts" variant="scale" stagger immediate delay={380}>
+          <li data-tip="Wrong answers here are free"><HeartIcon size={16} /> Never costs a heart</li>
+          <li data-tip="Paid once per finished session"><BoltIcon size={16} /> +{XP.PRACTICE} XP per session</li>
+          <li data-tip="A finished session counts as today's activity"><FlameIcon size={16} /> Counts toward your streak</li>
+          <li data-tip="Drawn from lessons you've completed"><Icon name="clock" size={16} /> {DECK_SIZE} questions, about 3 minutes</li>
+        </Reveal>
 
-        <button className="ps-start" onClick={start}>Start review session</button>
+        <Reveal variant="scale" immediate delay={620}>
+          <button className="btn btn-primary btn-lg ps-start fx-shine" onClick={start} data-magnetic="8">
+            Start review session
+            <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+          </button>
+        </Reveal>
 
         <div className="ps-stats">
-          <div><b>{vm.stats.totalPracticeSessions}</b><span>sessions</span></div>
-          <div><b>{Math.floor(vm.stats.totalPracticeSeconds / 60)}</b><span>minutes practised</span></div>
-          <div><b>{vm.daily.practiceSessions}</b><span>today</span></div>
+          <div><b><CountUp value={vm.stats.totalPracticeSessions} immediate delay={700} /></b><span>sessions</span></div>
+          <div><b><CountUp value={Math.floor(vm.stats.totalPracticeSeconds / 60)} immediate delay={780} /></b><span>minutes practised</span></div>
+          <div><b><CountUp value={vm.daily.practiceSessions} immediate delay={860} /></b><span>today</span></div>
         </div>
       </div>
     )
@@ -107,17 +173,21 @@ export default function PracticeSession() {
   if (phase === 'done') {
     return (
       <div className="ps-intro">
-        <div className="ps-intro-icon ps-done"><Icon name="check-circle" size={30} strokeWidth={1.8} /></div>
-        <h2 className="ps-title">Session complete</h2>
-        <p className="ps-sub">{correct} of {deck.length} correct</p>
+        <div className="ps-intro-icon ps-done" ref={doneRef}>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <SplitText as="h2" className="ps-title" immediate delay={200}>Session complete</SplitText>
+        <p className="ps-sub"><CountUp value={correct} immediate delay={400} duration={600} /> of {deck.length} correct</p>
 
         <div className="ps-rewards">
-          <span><Icon name="bolt" size={16} /> +{earned.xp} XP</span>
-          {earned.gems > 0 && <span><GemIcon size={16} /> +{earned.gems}</span>}
-          <span><FlameIcon size={16} dim={vm.streak === 0} /> {vm.streak}-day streak</span>
+          <span style={{ '--i': 0 }}><BoltIcon size={17} /> +<CountUp value={earned.xp} immediate delay={600} /> XP</span>
+          {earned.gems > 0 && <span style={{ '--i': 1 }}><GemIcon size={17} /> +<CountUp value={earned.gems} immediate delay={700} /></span>}
+          <span style={{ '--i': 2 }}><FlameIcon size={17} dim={vm.streak === 0} /> {vm.streak}-day streak</span>
         </div>
 
-        <button className="ps-start" onClick={start}>Practice again</button>
+        <button className="btn btn-primary btn-lg ps-start fx-shine" onClick={start}>Practice again</button>
       </div>
     )
   }
@@ -126,62 +196,67 @@ export default function PracticeSession() {
   return (
     <div className="ps-runner">
       <div className="ps-runner-head">
-        <span className="ps-runner-label">Practice · no hearts at risk</span>
-        <span className="ps-runner-count">{idx + 1} / {deck.length}</span>
+        <span className="ps-runner-label"><HeartIcon size={13} /> Practice · no hearts at risk</span>
+        <span className="ps-runner-count"><RollingNumber value={idx + 1} /> / {deck.length}</span>
       </div>
       <div className="ps-runner-track">
-        <div className="ps-runner-fill" style={{ width: `${(idx / deck.length) * 100}%` }} />
+        <div key={idx} className={`ps-runner-fill${idx ? ' fx-fill-shine' : ''}`} style={{ width: `${(idx / deck.length) * 100}%` }} />
       </div>
 
-      <div className="ps-runner-body">
-        <StepBody
-          step={step}
-          phase={stepPhase}
-          filled={filled}
-          selected={selected}
-          draggedChip={draggedChip}
-          onChipClick={(chip) => {
-            if (stepPhase !== 'answering') return
-            const arr = [...filled]
-            for (let i = 0; i < step.answers.length; i++) { if (!arr[i]) { arr[i] = chip; break } }
-            setFilled(arr)
-          }}
-          onBlankClick={(i) => {
-            if (stepPhase !== 'answering') return
-            const arr = [...filled]; arr[i] = null; setFilled(arr)
-          }}
-          onSelect={setSelected}
-          onDropChip={(i) => {
-            if (!draggedChip) return
-            const arr = [...filled]; arr[i] = draggedChip; setFilled(arr); setDraggedChip(null)
-          }}
-          onDragChip={setDraggedChip}
-        />
+      <div className="ps-runner-body" ref={bodyRef}>
+        <div className="lm-step" key={idx}>
+          <StepBody
+            step={step}
+            phase={stepPhase}
+            filled={filled}
+            selected={selected}
+            draggedChip={draggedChip}
+            onChipClick={(chip) => placeChip(chip)}
+            onBlankClick={(i) => {
+              if (stepPhase !== 'answering') return
+              const arr = [...filled]; arr[i] = null; setFilled(arr)
+            }}
+            onSelect={setSelected}
+            onDropChip={(i) => {
+              if (!draggedChip) return
+              const arr = [...filled]; arr[i] = draggedChip; setFilled(arr); setDraggedChip(null)
+            }}
+            onDragChip={setDraggedChip}
+          />
+        </div>
       </div>
 
       {stepPhase === 'answering' && (
-        <div className="lm-action lm-action--neutral ps-action">
-          <button className="lm-btn-check" disabled={!canCheckStep(step, { filled, selected })} onClick={check}>
+        <div className="lm-action lm-action--neutral ps-action" key="a">
+          <span className="lm-key-hint" aria-hidden="true"><kbd>Enter</kbd> to check</span>
+          <button className="btn btn-primary btn-lg lm-btn-check" disabled={!canCheckStep(step, { filled, selected })} onClick={check}>
             Check
           </button>
         </div>
       )}
       {stepPhase === 'correct' && (
-        <div className="lm-action lm-action--correct ps-action">
-          <div className="lm-feedback"><span className="lm-fb-icon">✓</span><div className="lm-fb-title">Correct</div></div>
-          <button className="lm-btn-continue lm-btn-continue--correct" onClick={next}>Continue</button>
+        <div className="lm-action lm-action--correct ps-action" key="c">
+          <div className="lm-feedback">
+            <span className="lm-fb-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" /></svg>
+            </span>
+            <div className="lm-fb-title">Correct</div>
+          </div>
+          <button className="btn btn-lg lm-btn-continue lm-btn-continue--correct" onClick={next}>Continue</button>
         </div>
       )}
       {stepPhase === 'wrong' && (
-        <div className="lm-action lm-action--wrong ps-action">
+        <div className="lm-action lm-action--wrong ps-action" key="w">
           <div className="lm-feedback">
-            <span className="lm-fb-icon lm-fb-icon--wrong">✗</span>
+            <span className="lm-fb-icon lm-fb-icon--wrong">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </span>
             <div>
-              <div className="lm-fb-title lm-fb-title--wrong">Not quite</div>
+              <div className="lm-fb-title lm-fb-title--wrong">Not quite — no heart lost</div>
               <div className="lm-fb-correct">Answer: <strong>{correctLabel(step)}</strong></div>
             </div>
           </div>
-          <button className="lm-btn-continue lm-btn-continue--wrong" onClick={next}>Continue</button>
+          <button className="btn btn-lg lm-btn-continue lm-btn-continue--wrong" onClick={next}>Continue</button>
         </div>
       )}
     </div>

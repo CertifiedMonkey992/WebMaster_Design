@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   dailyBonus.css — Daily Bonus (light / premium 2.5D)
+   dailyBonus.css — THE DAILY BONUS
    ---------------------------------------------------------------------------
-   Same surface language as the shop and the learning dashboard: off-white
-   ground, white cards, hairline borders, soft large-radius shadows. Turquoise
-   is reserved for the one thing that matters here — today's reward and the
-   button that claims it. Claimed days go green, locked days go quiet.
+   Revision 2: an Invitation while waiting (the gift shakes, today's art
+   bobs, the claim button shines) and a sequence when claimed (charge →
+   burst → fly → the day card turns over → the pips fill). See
+   DailyBonusTrack.jsx for the timeline.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Top-bar indicator ────────────────────────────────────────────────────── */
@@ -13,8 +13,8 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.7rem;
+  gap: var(--sp-2);
+  padding: 5px var(--sp-3);
   font: inherit;
   font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
@@ -22,116 +22,146 @@
   color: var(--ink-muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+  transition:
+    background-color var(--dur-hover) ease,
+    color var(--dur-hover) ease,
+    border-color var(--dur-hover) ease,
+    transform 300ms var(--ease-spring);
 }
 
 .db-indicator:hover { background: rgba(var(--ink-rgb), 0.05); color: var(--ink); }
-
-.db-indicator:focus-visible {
-  outline: 2px solid var(--lx-accent);
-  outline-offset: 2px;
-}
+.db-indicator:active { transform: translateY(1px) scale(0.96); transition-duration: 90ms; }
 
 .db-indicator.is-ready {
   color: var(--clay-ink);
-  background: var(--lx-accent-wash);
-  border-color: rgba(var(--lx-accent-rgb), 0.3);
+  background: var(--clay-tint);
+  border-color: rgba(var(--clay-rgb), 0.3);
 }
 
-.db-indicator.is-ready:hover {
-  background: var(--evergreen-tint);
-  border-color: rgba(var(--lx-accent-rgb), 0.5);
-}
+.db-indicator.is-ready:hover { border-color: var(--clay); }
 
 .db-indicator-icon { display: grid; place-items: center; }
 
-.db-indicator-dot {
-  position: absolute;
-  top: 0.15rem;
-  right: 0.15rem;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--lx-streak);
-  border: 2px solid var(--surface);
-  /* A dot that pulses forever stops meaning "ready" after ten seconds. */
+/* Waiting: the gift gives a small shake every few seconds. */
+.db-indicator.is-ready .db-indicator-icon svg {
+  transform-origin: 50% 90%;
+  animation: db-gift-shake 4.2s var(--ease-out) 1.5s infinite;
 }
 
-@keyframes db-pulse {
-  0%, 100% { transform: scale(1);    opacity: 1; }
-  50%      { transform: scale(1.28); opacity: 0.75; }
+@keyframes db-gift-shake {
+  0%, 16%, 100% { transform: rotate(0deg); }
+  3%  { transform: rotate(-14deg) scale(1.1); }
+  6%  { transform: rotate(12deg) scale(1.1); }
+  9%  { transform: rotate(-8deg); }
+  12% { transform: rotate(4deg); }
 }
+
+/* Hover lifts the lid. */
+.db-indicator:hover .ico-lid { transform: translateY(-3px) rotate(-12deg); }
+
+.db-indicator-pips { display: inline-flex; gap: 2px; margin-left: 2px; }
+.db-indicator-pips i {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(var(--ink-rgb), 0.16);
+  transition: background-color 300ms ease, transform 300ms var(--ease-spring);
+}
+.db-indicator-pips i.is-on { background: var(--moss); }
+.db-indicator-pips i.is-today { background: var(--clay); transform: scale(1.4); }
+
+.db-indicator-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--clay);
+  border: 2px solid var(--paper);
+}
+
+.db-indicator-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--clay);
+  animation: fx-ping 2.6s var(--ease-out) infinite;
+}
+
+/* During a claim the top bar is lifted above the scrim, so the reward's
+   destination is lit while everything else is dimmed. */
+.fx-lift-topbar .learn-topbar { z-index: calc(var(--z-modal) + 1); }
 
 /* ── Modal shell ──────────────────────────────────────────────────────────── */
 
 .db-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal, 200);
+  z-index: var(--z-modal);
   display: grid;
   place-items: center;
-  padding: 1.25rem;
+  padding: var(--sp-5);
   background: rgba(var(--ink-rgb), 0.42);
-  backdrop-filter: blur(3px);
-  animation: db-fade 0.2s ease;
+  animation: fx-fade-in 260ms ease both;
   overflow-y: auto;
 }
+
+.db-overlay.is-leaving { animation: db-fade-out 220ms var(--ease-in) both; }
+.db-overlay.is-leaving .db-modal { animation: db-sink 220ms var(--ease-in) both; }
+
+@keyframes db-fade-out { to { opacity: 0; } }
+@keyframes db-sink { to { opacity: 0; transform: translateY(16px) scale(0.97); } }
 
 .db-modal {
   position: relative;
   width: min(50rem, 100%);
   max-height: calc(100vh - 2.5rem);
   overflow-y: auto;
-  padding: 1.75rem;
-  background: var(--surface);
-  border: 1px solid rgba(var(--ink-rgb), 0.08);
+  padding: var(--sp-6);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-modal);
-  animation: db-rise 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: db-rise 620ms var(--ease-spring) both;
+}
+
+@keyframes db-rise {
+  from { opacity: 0; transform: translateY(40px) scale(0.92); }
+  to   { opacity: 1; transform: none; }
 }
 
 .db-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 2;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  z-index: 3;
   display: grid;
   place-items: center;
   width: 30px;
   height: 30px;
   color: var(--ink-muted);
   background: var(--surface);
-  border: 1px solid rgba(var(--ink-rgb), 0.1);
-  border-radius: 50%;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   cursor: pointer;
-  transition: color 0.16s ease, border-color 0.16s ease;
+  transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease, transform 380ms var(--ease-spring);
 }
 
-.db-close:hover { color: var(--ink); border-color: rgba(var(--ink-rgb), 0.25); }
-.db-close:focus-visible { outline: 2px solid var(--lx-accent); outline-offset: 2px; }
-
-@keyframes db-fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes db-rise {
-  from { opacity: 0; transform: translateY(14px) scale(0.985); }
-  to   { opacity: 1; transform: none; }
-}
+.db-close:hover { color: var(--ink); border-color: var(--line-strong); transform: rotate(90deg); }
 
 /* ── Track container ──────────────────────────────────────────────────────── */
 
-.db-track {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
+.db-track { display: flex; flex-direction: column; gap: var(--sp-5); }
 
 .db-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  padding-right: 2.25rem;
+  gap: var(--sp-4);
+  padding-right: var(--sp-10);
 }
 
 .db-eyebrow {
@@ -141,28 +171,30 @@
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--clay-ink);
-  margin-bottom: 0.3rem;
+  margin-bottom: var(--sp-1);
 }
 
 .db-title {
-  font-family: var(--font-heading);
-  font-weight: var(--fw-heading);
-  letter-spacing: var(--tracking-heading);
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
   font-size: var(--fs-title);
   color: var(--ink);
   line-height: 1.15;
+  animation: fx-slide-up 520ms var(--ease-spring) both;
 }
 
 .db-progress-tag {
   flex-shrink: 0;
-  padding: 0.3rem 0.7rem;
+  padding: 3px var(--sp-2);
   font-size: var(--fs-caption);
   font-weight: var(--fw-bold);
   color: var(--ink-muted);
-  background: var(--surface);
-  border: 1px solid rgba(var(--ink-rgb), 0.1);
-  border-radius: var(--r-pill);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xs);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Hero: today's reward ─────────────────────────────────────────────────── */
@@ -170,36 +202,80 @@
 .db-hero {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  padding: 1.35rem 1.5rem;
+  gap: var(--sp-5);
+  padding: var(--sp-5) var(--sp-6);
   background: var(--surface);
-  border: 1px solid rgba(var(--ink-rgb), 0.09);
+  border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  box-shadow: none;
+  animation: fx-slide-up 560ms var(--ease-settle) 80ms backwards;
 }
 
-/* Ready: a claimable reward is "do this now", so it takes the clay accent
-   rather than the structural evergreen — and it takes no shadow, because it
-   sits flat inside a panel that is already floating. */
 .db-hero.is-ready {
-  background: var(--surface);
   border-color: var(--clay);
   border-width: 1.5px;
 }
 
 .db-hero-art {
+  --tilt-max: 12deg;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 116px;
-  height: 116px;
+  width: 124px;
+  height: 124px;
   border-radius: var(--r-lg);
-  background: var(--surface);
+  background: var(--paper);
+  transform:
+    perspective(500px)
+    rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max)))
+    rotateY(calc(var(--tilt-x, 0) * var(--tilt-max)));
+  transition: transform 600ms var(--ease-settle), background-color 400ms ease;
 }
 
-.db-hero.is-ready .db-hero-art { background: var(--clay-tint); }
+.db-hero-art.is-tilting { transition-duration: 140ms; }
+
+.db-hero.is-ready .db-hero-art { background: var(--clay-tint); cursor: pointer; }
+
+/* Waiting: today's art bobs in its tile. */
+.db-hero.is-ready:not(.is-charging):not(.is-bursting) .db-hero-art > svg {
+  animation: db-bob 3s ease-in-out infinite;
+}
+
+@keyframes db-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-6px) rotate(-3deg); }
+}
+
+.db-hero-art > svg { transition: transform 500ms var(--ease-spring); }
+.db-hero.is-ready .db-hero-art:hover > svg { transform: scale(1.1) rotate(-4deg); }
+
+/* Claim — charge… */
+.db-hero.is-charging .db-hero-art > svg { animation: db-charge 300ms linear both; }
+
+@keyframes db-charge {
+  0%   { transform: scale(1) rotate(0); }
+  20%  { transform: scale(0.94) rotate(-5deg) translateX(-2px); }
+  40%  { transform: scale(0.92) rotate(5deg) translateX(2px); }
+  60%  { transform: scale(0.9) rotate(-6deg) translateX(-2px); }
+  80%  { transform: scale(0.88) rotate(6deg) translateX(2px); }
+  100% { transform: scale(0.86) rotate(0); }
+}
+
+/* …then burst. */
+.db-hero.is-bursting .db-hero-art > svg { animation: db-burst 900ms var(--ease-spring) both; }
+
+@keyframes db-burst {
+  0%   { transform: scale(0.86); }
+  30%  { transform: scale(1.32) rotate(-8deg); }
+  60%  { transform: scale(0.9) rotate(4deg); opacity: 0.6; }
+  100% { transform: scale(0.7) rotate(0); opacity: 0; }
+}
 
 .db-hero-body { min-width: 0; flex: 1; }
+
+.db-hero-body > * { animation: fx-slide-up 520ms var(--ease-settle) backwards; }
+.db-hero-body > :nth-child(2) { animation-delay: 80ms; }
+.db-hero-body > :nth-child(3) { animation-delay: 140ms; }
+.db-hero-body > :nth-child(4) { animation-delay: 200ms; }
 
 .db-hero-eyebrow {
   display: block;
@@ -208,33 +284,35 @@
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--clay-ink);
-  margin-bottom: 0.3rem;
+  margin-bottom: var(--sp-1);
 }
 
-.db-hero.is-done .db-hero-eyebrow { color: var(--lx-success-ink); }
+.db-hero.is-done .db-hero-eyebrow { color: var(--moss); }
 
 .db-hero-reward {
   font-family: var(--font-display);
-  font-size: var(--fs-title);
+  font-size: var(--fs-section);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-display);
   color: var(--ink);
-  line-height: 1.1;
-  margin-bottom: 0.35rem;
+  line-height: 1.05;
+  margin-bottom: var(--sp-1);
 }
 
 .db-hero-note {
   font-size: var(--fs-small);
-  line-height: 1.5;
+  line-height: var(--lh-normal);
   color: var(--ink-muted);
-  margin-bottom: 0.9rem;
+  margin-bottom: var(--sp-4);
 }
 
 .db-claim-btn {
-  display: inline-block;
-  padding: 0.62rem 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-6);
   font: inherit;
-  font-size: var(--fs-small);
+  font-size: var(--fs-body);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-title);
   color: var(--surface-raised);
@@ -242,36 +320,60 @@
   border: none;
   border-radius: var(--r-sm);
   cursor: pointer;
-  box-shadow: none;
-  transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+  translate: var(--mag-x, 0px) var(--mag-y, 0px);
+  transition:
+    transform 320ms var(--ease-spring),
+    translate 420ms var(--ease-spring),
+    box-shadow var(--dur-press) ease,
+    background-color var(--dur-hover) ease;
 }
 
 .db-claim-btn:hover { background: var(--clay-deep); }
-
-.db-claim-btn:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
-.db-claim-btn:focus-visible { outline: 2px solid var(--lx-accent-deep); outline-offset: 2px; }
+.db-claim-btn:active { transform: translateY(1px) scale(0.95); box-shadow: var(--shadow-press); transition-duration: 90ms; }
 .db-claim-btn--static { cursor: default; }
+
+.db-claim-btn.is-claiming {
+  background: var(--moss);
+  cursor: default;
+  animation: db-claim-squash 460ms var(--ease-spring);
+}
+
+@keyframes db-claim-squash {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.9, 0.84); }
+  100% { transform: scale(1); }
+}
+
+.db-claim-check { display: inline-grid; }
 
 .db-countdown {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--sp-1);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
   color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
 }
+
+.db-countdown .ico-hand { animation: pg-tick 60s steps(60) infinite; }
 
 /* ── Claim receipt ────────────────────────────────────────────────────────── */
 
 .db-receipt {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.7rem 1rem;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
   background: var(--moss-tint);
-  border: 1px solid rgba(63, 107, 69, 0.28);
+  border: 1px solid rgba(var(--moss-rgb), 0.28);
   border-radius: var(--r-md);
-  animation: db-rise 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: db-receipt-in 560ms var(--ease-spring) both;
+}
+
+@keyframes db-receipt-in {
+  from { opacity: 0; transform: translateY(-10px) scale(0.97); clip-path: inset(0 0 100% 0); }
+  to   { opacity: 1; transform: none; clip-path: inset(0); }
 }
 
 .db-receipt-check {
@@ -280,15 +382,16 @@
   place-items: center;
   width: 20px;
   height: 20px;
-  margin-top: 0.05rem;
+  margin-top: 1px;
   color: var(--surface-raised);
-  background: var(--lx-success);
+  background: var(--moss);
   border-radius: 50%;
+  animation: fx-stamp 600ms var(--ease-settle) 120ms backwards;
 }
 
-.db-receipt-text { font-size: var(--fs-small); color: var(--lx-success-ink); }
+.db-receipt-text { font-size: var(--fs-small); color: var(--moss); }
 .db-receipt-text b { display: block; font-weight: var(--fw-bold); }
-.db-receipt-text em { display: block; margin-top: 0.15rem; font-style: normal; color: var(--moss); font-size: var(--fs-caption); }
+.db-receipt-text em { display: block; margin-top: 2px; font-style: normal; font-size: var(--fs-caption); }
 
 /* ── The path ─────────────────────────────────────────────────────────────── */
 
@@ -296,11 +399,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.7rem;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 
 .db-path-title {
+  font-family: var(--font-ui);
   font-size: var(--fs-caption);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
@@ -308,50 +412,88 @@
   color: var(--ink-muted);
 }
 
-.db-pips { display: flex; gap: 0.3rem; list-style: none; }
+.db-pips { display: flex; gap: 4px; list-style: none; }
 
 .db-pip {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--paper-deep);
+  transition: background-color 400ms ease, width 500ms var(--ease-spring);
+  transition-delay: calc(var(--i) * 60ms);
 }
 
-.db-pip.is-claimed { background: var(--lx-success); }
-/* Today's pip was ringed by a 3px translucent halo. It is a 7px dot in a
-   row of 7px dots — widening it slightly says "you are here" just as clearly,
-   without a second glowing circle around it. */
+.db-pip.is-claimed { background: var(--moss); }
 .db-pip.is-today {
-  background: var(--lx-accent);
-  width: 16px;
+  background: var(--clay);
+  width: 18px;
   border-radius: var(--r-pill);
 }
 
-/* Seven cards across on desktop; the final day gets no extra column so the
-   grid stays even — it earns its emphasis from colour and scale instead. */
-/* minmax(0, …) lets the columns shrink past their art, so the track stays
-   seven-across in any container it is dropped into — the modal, the landing
-   showcase frame — without overflowing. */
 .db-days {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.55rem;
+  gap: var(--sp-2);
   list-style: none;
+}
+
+/* A thread behind the cards, walked as far as you have claimed. */
+.db-days::before,
+.db-days::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: calc(100% / 14);
+  height: 2px;
+  border-radius: var(--r-pill);
+  pointer-events: none;
+}
+
+.db-days::before {
+  right: calc(100% / 14);
+  background-image: repeating-linear-gradient(90deg, var(--line-strong) 0 5px, transparent 5px 10px);
+}
+
+.db-days::after {
+  width: calc((100% - 100% / 7) * var(--path, 0));
+  background: var(--moss);
+  transition: width 900ms var(--ease-settle);
 }
 
 .db-day {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.7rem 0.4rem 0.6rem;
+  gap: 2px;
+  padding: var(--sp-3) var(--sp-1) var(--sp-2);
   text-align: center;
   background: var(--surface);
-  border: 1px solid rgba(var(--ink-rgb), 0.09);
+  border: 1px solid var(--line);
   border-radius: var(--r-md);
-  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+  cursor: default;
+  animation: db-deal 620ms var(--ease-spring) backwards;
+  animation-delay: calc(160ms + var(--i) * 55ms);
+  transition:
+    border-color var(--dur-hover) ease,
+    box-shadow 400ms var(--ease-out),
+    transform 460ms var(--ease-spring);
 }
+
+@keyframes db-deal {
+  from { opacity: 0; transform: translateY(24px) rotate(calc((var(--i) - 3) * 3deg)) scale(0.9); }
+}
+
+.db-day:hover {
+  transform: translateY(-6px) rotate(-1.5deg);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--line-strong);
+  z-index: 2;
+}
+
+.db-day:nth-child(even):hover { transform: translateY(-6px) rotate(1.5deg); }
 
 .db-day-num {
   font-size: var(--fs-micro);
@@ -365,11 +507,17 @@
   display: grid;
   place-items: center;
   width: 100%;
-  margin: 0.1rem 0;
+  margin: 2px 0;
 }
 
-/* The illustration scales with its column rather than setting a hard floor. */
-.db-day-art > svg { width: 100%; height: auto; max-width: 54px; }
+.db-day-art > svg {
+  width: 100%;
+  height: auto;
+  max-width: 54px;
+  transition: transform 500ms var(--ease-spring);
+}
+
+.db-day:hover .db-day-art > svg { transform: translateY(-3px) scale(1.14) rotate(-6deg); }
 .db-day--final .db-day-art > svg { max-width: 62px; }
 
 .db-day-amount {
@@ -385,107 +533,119 @@
   font-size: var(--fs-micro);
   line-height: 1.3;
   color: var(--ink-faint);
-  margin-bottom: 0.3rem;
+  margin-bottom: var(--sp-1);
 }
 
 .db-day-status {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.15rem 0.42rem;
+  gap: 3px;
+  padding: 2px 6px;
   font-size: var(--fs-micro);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-xs);
   color: var(--ink-faint);
-  background: var(--surface);
+  background: var(--paper);
 }
 
-.db-day-status.is-claimed { color: var(--lx-success-ink); background: var(--moss-tint); }
+.db-day-check { display: inline-grid; }
+
+.db-day-status.is-claimed { color: var(--moss); background: var(--moss-tint); }
 .db-day-status.is-today   { color: var(--surface-raised); background: var(--clay); }
-.db-day-status.is-next    { color: var(--lx-accent-ink);  background: var(--lx-accent-wash); }
+.db-day-status.is-next    { color: var(--evergreen); background: var(--evergreen-tint); }
 
 /* ── Card states ── */
 
-/* CLAIMED — quiet, green-tinted, art dimmed back. */
-.db-day.is-claimed {
-  background: var(--surface);
-  border-color: rgba(63, 107, 69, 0.26);
-}
+.db-day.is-claimed { border-color: rgba(var(--moss-rgb), 0.26); }
 .db-day.is-claimed .db-day-art { opacity: 0.5; }
 .db-day.is-claimed .db-day-amount { color: var(--moss); }
 
-/* TODAY — the loud one: accent border, lift, tinted ground. */
 .db-day.is-today {
-  background: var(--surface);
   border-color: var(--clay);
   border-width: 1.5px;
+  background: var(--surface-raised);
 }
 
 .db-day.is-today .db-day-num { color: var(--clay-ink); }
+.db-day.is-today .db-day-art > svg { animation: db-bob 3s ease-in-out infinite; }
 
-/* NEXT — a hint of accent, no lift. */
-.db-day.is-next { border-color: rgba(var(--lx-accent-rgb), 0.35); }
+.db-day.is-next { border-color: rgba(var(--evergreen-rgb), 0.35); }
 
-/* LOCKED — muted, but never invisible. */
-.db-day.is-locked { background: var(--surface); }
-.db-day.is-locked .db-day-art { opacity: 0.62; filter: saturate(0.62); }
+.db-day.is-locked .db-day-art { opacity: 0.62; filter: saturate(0.62); transition: opacity 300ms, filter 300ms; }
+.db-day.is-locked:hover .db-day-art { opacity: 1; filter: none; }
 .db-day.is-locked .db-day-amount { color: var(--ink-faint); }
 
-/* FINAL DAY — gold rim so Day 7 reads as the payoff even while locked. */
-.db-day--final { border-color: rgba(192, 138, 30, 0.4); }
-.db-day--final .db-day-amount { color: var(--lx-gold-ink); }
+/* Day 7 — the payoff. Gold rim, and a foil sheen crosses it on hover. */
+.db-day--final { border-color: rgba(var(--ochre-rgb), 0.45); overflow: hidden; }
+.db-day--final .db-day-amount { color: var(--ochre-ink); }
 .db-day--final.is-locked { background: var(--ochre-tint); }
-.db-day--final.is-claimed { border-color: rgba(63, 107, 69, 0.3); }
+.db-day--final.is-claimed { border-color: rgba(var(--moss-rgb), 0.3); }
+
+.db-day--final::after {
+  content: '';
+  position: absolute;
+  top: -20%; bottom: -20%;
+  left: -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(var(--sheen-rgb), 0.7), transparent);
+  transform: translateX(0) skewX(-16deg);
+  pointer-events: none;
+}
+
+.db-day--final:hover::after { animation: db-foil 900ms var(--ease-settle); }
+
+@keyframes db-foil { to { transform: translateX(460%) skewX(-16deg); } }
 
 .db-day-claim {
-  margin-top: 0.3rem;
-  padding: 0.28rem 0.7rem;
+  margin-top: var(--sp-1);
+  padding: 3px var(--sp-3);
   font: inherit;
   font-size: var(--fs-micro);
   font-weight: var(--fw-bold);
-  color: var(--lx-on-accent);
-  background: var(--lx-accent);
+  color: var(--surface-raised);
+  background: var(--clay);
   border: none;
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition: background-color var(--dur-hover) ease, transform 300ms var(--ease-spring);
 }
 
-.db-day-claim:hover { background: var(--lx-accent-strong); }
-.db-day-claim:focus-visible { outline: 2px solid var(--lx-accent-deep); outline-offset: 2px; }
+.db-day-claim:hover { background: var(--clay-deep); transform: scale(1.06); }
+.db-day-claim:active { transform: scale(0.94); }
 
-/* One-shot pop on the card that just paid out. */
-.db-day.is-flashing { animation: db-pop 0.85s cubic-bezier(0.22, 1, 0.36, 1); }
+/* The card that just paid out turns over to its claimed face. */
+.db-day.is-flashing { animation: db-turn 900ms var(--ease-spring) both; }
 
-@keyframes db-pop {
-  0%   { transform: scale(1); }
-  28%  { transform: scale(1.11); box-shadow: var(--shadow-float); }
-  100% { transform: scale(1); }
+@keyframes db-turn {
+  0%   { transform: perspective(500px) rotateY(0deg); }
+  45%  { transform: perspective(500px) rotateY(90deg) scale(1.08); }
+  100% { transform: perspective(500px) rotateY(0deg); }
 }
+
+.db-day.is-flashing .db-day-status { animation: fx-stamp 600ms var(--ease-settle) 400ms backwards; }
 
 /* ── Landing-page showcase variant ────────────────────────────────────────── */
 
-.db-track--showcase { gap: 1rem; }
-.db-track--showcase .db-hero { padding: 1.1rem 1.2rem; gap: 1rem; }
-.db-track--showcase .db-hero-art { width: 96px; height: 96px; }
+.db-track--showcase { gap: var(--sp-4); }
+.db-track--showcase .db-hero { padding: var(--sp-4) var(--sp-5); gap: var(--sp-4); }
+.db-track--showcase .db-hero-art { width: 100px; height: 100px; }
 .db-track--showcase .db-hero-reward { font-size: var(--fs-title); }
-.db-track--showcase .db-days { gap: 0.4rem; }
-.db-track--showcase .db-day { padding: 0.55rem 0.25rem 0.5rem; border-radius: var(--r-md); }
+.db-track--showcase .db-days { gap: 6px; }
+.db-track--showcase .db-day { padding: var(--sp-2) 4px; }
 .db-track--showcase .db-day-label { display: none; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 780px) {
   .db-days { grid-template-columns: repeat(4, 1fr); }
-  /* Day 7 spans the full width of the second row so the payoff still reads
-     as the biggest thing on the track. */
+  .db-days::before, .db-days::after { display: none; }
   .db-day--final {
     grid-column: 1 / -1;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--sp-3);
   }
   .db-day--final .db-day-num { white-space: nowrap; }
   .db-day--final .db-day-art { width: auto; }
@@ -493,32 +653,31 @@
 }
 
 @media (max-width: 560px) {
-  .db-modal { padding: 1.25rem 1rem; border-radius: var(--r-lg); }
-  .db-head { padding-right: 2rem; }
+  .db-overlay { padding: 0; align-items: end; }
+  .db-modal {
+    padding: var(--sp-5) var(--sp-4);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    max-height: 92vh;
+    animation-name: fx-rise-sheet;
+  }
+  .db-head { padding-right: var(--sp-8); }
   .db-title { font-size: var(--fs-lead); }
 
-  .db-hero { flex-direction: column; align-items: flex-start; padding: 1.1rem; }
-  .db-hero-art { width: 88px; height: 88px; }
+  .db-hero { flex-direction: column; align-items: flex-start; padding: var(--sp-4); }
+  .db-hero-art { width: 96px; height: 96px; }
   .db-hero-reward { font-size: var(--fs-title); }
-  .db-claim-btn { width: 100%; text-align: center; }
+  .db-claim-btn { width: 100%; justify-content: center; }
 
   .db-days { grid-template-columns: repeat(3, 1fr); }
   .db-day-label { display: none; }
 
-  .db-indicator-text { display: none; }
-  .db-indicator { padding: 0.4rem; }
+  .db-indicator-text, .db-indicator-pips { display: none; }
+  .db-indicator { padding: 6px; }
 }
 
-/* ── Reduced motion ───────────────────────────────────────────────────────── */
-
 @media (prefers-reduced-motion: reduce) {
-  .db-overlay,
-  .db-modal,
-  .db-receipt { animation: none; }
-
-  .db-indicator-dot,
-  .db-hero.is-ready .db-hero-art > svg,
-  .db-day.is-flashing { animation: none; }
-
-  .db-claim-btn:hover { transform: none; }
+  .db-indicator.is-ready .db-indicator-icon svg,
+  .db-indicator-dot::after,
+  .db-hero-art > svg,
+  .db-day.is-today .db-day-art > svg { animation: none !important; }
 }

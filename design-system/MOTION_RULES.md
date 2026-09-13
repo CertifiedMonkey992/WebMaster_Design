@@ -1,54 +1,131 @@
 # Motion Rules
 
+> **Revision 2 — the living interface (2026-09).** The first revision of this
+> file treated motion as a cost to be minimised: five verbs, nothing loops,
+> nothing lifts. It produced a correct, calm interface that read as *static* —
+> a printed page that happened to keep score. This revision was requested
+> deliberately: LunX should feel like an object you handle. The palette, type,
+> geometry and "no glow, no cool hues" rules are unchanged. What changed is
+> how much the page is allowed to answer you, and how.
+
 ## The test
 
-Before writing an animation, answer: **what event is this a response to?**
+Before writing an animation, answer: **what is this motion telling the
+learner?**
 
-If the answer is "the page loaded", "the element scrolled into view for the
-first time", or "it looked static", the animation does not ship. If the
-answer names a user action or a real state change, continue.
+Every animation in the product belongs to one of three categories. If it fits
+none of them, it does not ship.
 
-Second test: **would removing it cost the user information?** If not, it is
-decoration, and decoration in motion is the most expensive kind.
+| Category | It says | Examples |
+|---|---|---|
+| **Response** | "I felt that." | hover, press, magnetic pull, tilt, a chip that lifts when dragged |
+| **Report** | "Something changed, and here is what." | a number rolling, a heart cracking, a reward flying to its counter, a bar settling |
+| **Invitation** | "This is waiting for you." | the current lesson's ping, a claimable reward's shine, today's bonus bobbing |
+
+Arrival choreography (a heading assembling word by word, a stack of cards
+being dealt) is a **Report** — it reports that the thing has arrived — and it
+runs **once**, never on re-render.
 
 ---
 
 ## Tokens
 
 ```css
---dur-press:  120ms   --ease-press:  cubic-bezier(0.4, 0, 0.6, 1)
---dur-hover:  180ms   --ease-out:    cubic-bezier(0.33, 1, 0.68, 1)
---dur-enter:  240ms   --ease-out
---dur-modal:  320ms   --ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1)
---dur-settle: 600ms   --ease-settle
+--dur-micro:     90ms    icon twitch, tooltip in
+--dur-press:     120ms   press / release
+--dur-hover:     180ms   hover in and out
+--dur-enter:     240ms   popover, toast, panel arriving
+--dur-modal:     320ms   a modal taking the screen
+--dur-settle:    600ms   a number or bar moving to a new value
+--dur-celebrate: 800ms   a reward landing, a stamp, a burst
+
+--ease-out:    cubic-bezier(0.33, 1, 0.68, 1)     responding to input
+--ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1)     arriving at a value
+--ease-press:  cubic-bezier(0.4, 0, 0.6, 1)       short, symmetric
+--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1)  a physical object overshooting
+--ease-in:     cubic-bezier(0.5, 0, 0.75, 0)      something leaving
+
+--stagger: 45ms   the gap between siblings arriving
 ```
 
-Five durations. If a new animation needs a sixth, it is probably the wrong
-animation.
+Seven durations. The two added in this revision exist because *micro*
+(an icon twitch) and *celebrate* (a reward landing) were being forced into
+the nearest neighbour and felt wrong in both.
 
 ---
 
 ## The vocabulary
 
-The old system had exactly one verb — `translateY(-Npx)` with a bigger
-shadow — applied to cards, rows, buttons and headers alike, at four different
-amplitudes. Four amplitudes of one verb is not a vocabulary; it is a volume
-knob. These are the five verbs, each with a fixed meaning.
+Twelve verbs, each with a fixed meaning. A component combines verbs; it does
+not invent a thirteenth.
 
 | Verb | Means | Where |
 |---|---|---|
-| **Tint** | "this is interactive" | Nav items, lesson rows, quest rows, list rows |
-| **Firm** (border to `--line-strong`) | "this whole surface is a target" | Cards that are clickable |
-| **Press** (`translateY(1px)` + `--shadow-press`) | "you clicked it" | Every button and every pressable control |
-| **Rise** (8px fade-up, 240ms) | "this arrived in front of the page" | Popovers, toasts, dropdowns, modals |
-| **Settle** (width/number over 600ms) | "this value changed" | Progress bars, counters, XP |
+| **Tint** | "this is interactive" | rows, nav items, list items |
+| **Firm** | "this whole surface is a target" | clickable cards: border to `--line-strong` |
+| **Press** | "you pressed it" | every button: `translateY(1px)` + `--shadow-press`, spring release |
+| **Magnet** | "I'm reaching for you" | solid and outline buttons drift ≤ 5px toward the pointer |
+| **Lift** | "you picked this up" | objects that are handled — index cards, reward tiles, shop art, dragged chips. Rise + `--shadow-lift`. **Not** list rows, **not** buttons. |
+| **Tilt** | "this has depth" | product frames, the module fan, reward heroes — ≤ 6° toward the pointer, with a warm sheen at the pointer position |
+| **Rise** | "this arrived in front of the page" | popovers, toasts, modals: fade + translate, scale-from-origin for anchored panels |
+| **Reveal** | "this arrived on the page" | headings assemble by word, paragraphs fade up, lists stagger at `--stagger` — once per element, on first view |
+| **Roll** | "this value changed" | every live number is an odometer: digits roll up or down |
+| **Settle** | "this bar changed" | progress fills travel over `--dur-settle`, with one shine sweep on change |
+| **Fly** | "this went there" | a reward's particles travel from where it was earned to the counter it lands in; the counter catches it |
+| **Stamp** | "this is done" | completion checks, claimed days: rotate-overshoot, never scale-bounce |
 
-No component is allowed a sixth behaviour without adding it here first.
+Plus two **living icons**, which are the only sanctioned idle animation:
 
-**Lift is retired.** Nothing translates upward on hover. It was applied to
-thirteen surfaces on one screen, which made it mean nothing, and it is the
-single most common generated-UI hover. Tint and firm carry the same
-information at a fraction of the noise.
+| Icon | Idle | Why it may move |
+|---|---|---|
+| Streak flame | three layers flicker on offset periods, only while the streak is alive | a live flame that stands still reads as a sticker; the flicker *is* the state "burning" |
+| Heart (≤ 1 left) | a lub-dub beat every ~2.4s | it is the one warning the product gives before a lesson is blocked |
+
+---
+
+## Loops
+
+Loops are allowed **only** in these named cases, and each must switch off the
+moment its state ends. This list is exhaustive — the audit command's `loops`
+count must be explainable line by line from it.
+
+**Invitations** — something is waiting for the learner:
+
+- the current lesson's ping → stops when there is no current lesson
+- a claimable reward's shine, and its gem's bob → stop when claimed
+- a primary "start" action's shine (hero, closing CTA, lesson start, practice
+  start, purchase confirm) → the button is the page's next action
+- today's daily-bonus art bob, the gift's shake, the indicator dot's ping →
+  stop when claimed
+- the next milestone stone's beckon on the streak path
+- today's day square ping in the streak week → stops once today counts
+- a blank's pulse while a chip is being dragged → stops on drop
+
+**Living icons** — the loop *is* the state:
+
+- the flame flicker → stops at streak 0; a gentler sway while at risk
+- the low-heart beat → stops above one heart
+
+**Reports of something running:**
+
+- *live* dots (moss, with a ping) beside things that are genuinely live —
+  "22 lessons live", a product frame's "Live" label, the resume strip, an
+  in-progress module's badge
+- the hand of a clock icon beside a running countdown, stepping once a
+  second-equivalent over a minute
+- the loading arc on a button that is working
+
+Every loop has a long rest inside its cycle (a ping is visible for ~30% of its
+period). Nothing loops at full intensity. Nothing loops under
+`prefers-reduced-motion`.
+
+### What counts as a handled object (Lift)
+
+Index cards in the module stack, daily-bonus day tiles, word chips, answer
+options, lesson-complete reward tiles, heart slots and streak-week squares,
+shop art (lifting out of its tile), achievement medals. **Not**: buttons,
+rows, facts, balance cards, or anything that is not itself the thing being
+picked up.
 
 ---
 
@@ -56,33 +133,27 @@ information at a fraction of the noise.
 
 ### Hover
 
-- **Rows and nav items**: background to the relevant tint. 180ms. Nothing
-  moves.
-- **Clickable cards**: border `--line` → `--line-strong`. 180ms.
-- **Buttons**: solid darkens one step; outline fills with its tint. 180ms.
-  No transform.
-- **Icons**: do not animate on hover, with one exception — a trailing arrow
-  inside a button may translate 2px, because it is depicting direction.
-- Hover transitions are symmetric: the same duration in and out. An
-  instant-on / slow-off hover feels like a bug.
+- **Rows**: tint + the row's icon twitches (scale 1.1, −6°) + the title slides
+  2–3px. Symmetric in and out.
+- **Clickable cards**: firm + `--shadow-raised`.
+- **Handled objects** (fan cards, reward tiles, shop art): lift.
+- **Buttons**: darken/fill as before, *plus* magnet and a pointer-following
+  highlight on solid buttons. The trailing arrow still slides.
+- **Nav**: a single highlight slides between hovered items rather than each
+  item tinting separately; the active rail slides to the new item on change.
+- **Icons**: each nav icon has one move that depicts its meaning — the roof
+  lifts, the book opens, the bars grow, the star turns.
 
 ### Press
 
-Every pressable thing in the product does the same thing:
-
-```css
-:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
-```
-
-120ms, `--ease-press`. It is short, symmetric, and consistent across the
-whole app, which is what makes the interface feel like one object rather than
-a set of components.
+`translateY(1px)` + `--shadow-press`, 120ms `--ease-press` down, and a
+`--ease-spring` release. Consistent everywhere.
 
 ### Focus
 
-Focus never animates. A ring that fades in is a ring that is not there when
-the keyboard user needs it. `2px solid var(--evergreen)`, `2px` offset,
-applied instantly.
+Focus never animates. `2px solid var(--evergreen)`, `2px` offset, instant.
+Anything that animates on hover also takes its *end state* on
+`:focus-visible`, so a keyboard user sees the lifted card, not the resting one.
 
 ---
 
@@ -90,96 +161,109 @@ applied instantly.
 
 ### A value changes
 
-Progress bars, XP, gem counts, streak days.
+- Numbers **roll**: each digit is a column that travels to its new value,
+  columns staggered 30ms right-to-left.
+- A number that is receiving a flight **holds its old value until the flight
+  lands**, then rolls. The counter must never update before the reward
+  visibly arrives — that is the whole point of the flight.
+- Bars settle over `--dur-settle` and fire one shine sweep.
+- Values do not roll on first render.
 
-- Bars: `width` over `--dur-settle` with `--ease-settle`. The bar arrives at
-  the new value; it does not spring past it.
-- Numbers: the old value wipes up and out while the new wipes up and in,
-  240ms, staggered by 60ms. Only for a value the user just caused to change.
-  A number that changes because a timer ticked does not animate.
-- Never animate a value on first render. The bar is already at 40% when the
-  page loads; it did not just get there.
+### A reward is earned
 
-### Something arrives
+1. Particles (the reward's own icon, 3–8 of them) leave the source on a curved
+   path, staggered 55ms.
+2. The target counter catches each one: a 1.18 scale bump.
+3. When the last lands, the number rolls.
+4. A burst of 10–14 paper shards in the reward's colour at the landing point.
 
-Popover, toast, dropdown, the daily-bonus panel.
-
-- 8px translate plus opacity, `--dur-enter`, `--ease-out`.
-- Modals: 12px plus `scale(0.98)`, `--dur-modal`.
-- Everything leaves by **fading only**, at 2/3 the entrance duration.
-  Reversing the entrance on exit makes dismissal feel slow.
-
-### A lesson is completed
-
-The one moment in the product that earns a celebration, and it still gets a
-budget:
-
-1. The lesson row's check stamps in — `scale(0.85) → 1`, 240ms,
-   `--ease-settle`, with a 4° rotation that resolves to 0. It reads as a
-   rubber stamp because it overshoots in rotation, not in scale.
-2. The module's progress bar settles to its new width, starting 120ms later
-   so the two read as cause and effect.
-3. One toast per reward earned, staggered 80ms.
-
-Total: under 1 second. No particles, no full-screen overlay, no confetti.
-
-### A streak advances
-
-- The flame icon scales to 1.15 and back over 240ms, once.
-- The day square fills `--ember` over 180ms.
-- If a milestone is crossed, one extra toast. That is the whole difference
-  between day 6 and day 7.
+Total ≤ 1.2s. If no counter is on screen, the counter updates immediately and
+nothing flies.
 
 ### A heart is lost
 
-- The heart drains from filled to outline over 240ms.
-- The counter shakes 3px horizontally, **once**, over 120ms.
-- Nothing else on the screen reacts. A wrong answer is already unpleasant;
-  the interface should not pile on.
+The heart **cracks**: the two halves part by 1.5px and rotate ±8°, a fragment
+drops, the fill level drains, the halves close, and the counter shakes 3px
+once. ~700ms.
 
-### A reward is claimed
+### A heart is gained
 
-- The tile presses, then its art scales to 1.06 and returns, 240ms.
-- The currency pill it landed in does its increase animation.
-- One toast.
+Double beat (lub-dub), the fill rises, three berry sparks.
+
+### A streak advances
+
+The flame **flares** — outer layer stretches to 1.35, core brightens — sparks
+burst upward, the number rolls. At a milestone the burst doubles and a ring
+expands from the flame.
+
+### A lesson is completed
+
+Stamp slams in with a ripple ring, paper shards burst, the reward tiles rise
+in sequence with their numbers counting up, the perfect badge flips in.
+
+### A daily bonus is claimed
+
+Press → the art charges (a 260ms shake) → pops to 1.25 with a burst → reward
+particles fly to their counter → the day card flips over to its claimed face →
+the pips fill → the receipt slides in.
 
 ---
 
 ## Scroll
 
-The landing page's scroll reveal is **retained but re-scoped**. It fires once
-per section, on the section as a whole — not on each card inside it with
-staggered d1/d2/d3 delays, which is the generated-page signature.
-
-- 16px rise plus opacity, 400ms, `--ease-out`.
-- Threshold 0.15, `once: true`.
-- Sections above the fold at load do not animate. Content the user has not
-  scrolled to is the only content that can be revealed by scrolling.
-
-The testimonial-style marquee from the references is a legitimate continuous
-motion, because it depicts overflow — there are more of these than fit. It is
-the only exception to "nothing loops", and it must pause on hover and honour
-`prefers-reduced-motion`.
+- Section headings **reveal by word** (each word rises out of a mask), once.
+- Body copy fades up; `<strong>` terms get a highlighter swipe when they enter.
+- Product frames rise out of a 12° backward tilt as they enter.
+- The course frame on the landing page **scrubs** its content with scroll, so
+  the page shows more of the course the further you read.
+- The hero's module fan spreads as the hero scrolls away.
+- A 2px clay scroll-progress rule runs along the bottom of the navbar.
 
 ---
 
 ## Prohibited outright
 
-- Any `animation-iteration-count: infinite` except the marquee above.
-- Floating, breathing, pulsing, bobbing, orbiting, shimmering.
-- Skeleton shimmer. Use a static `--paper-deep` block.
-- Parallax.
-- Staggered entrance for lists over three items.
-- Anything that animates while the user is reading.
-- Transitions longer than 600ms.
-- `transition: all`. Name the properties — it is the difference between an
-  animation and an accident.
-- Animating anything but `transform`, `opacity`, `background-color`,
-  `border-color`, `color`, `box-shadow`, and `width` on a progress track.
+These survive from revision 1 unchanged:
 
-Two infinite loops were running on the dashboard at all times before this
-pass (`chv-spin` at 34s and 24s, `chv-pulse`, `chv-float`,
-`chv-shadow-breathe`). They are removed.
+- Glow of any kind: no coloured `box-shadow` halo, no `drop-shadow` in an
+  accent colour. Sheens are warm-white and follow a light source (the
+  pointer); they are not light *emitted* by the element.
+- Cool hues, anywhere, including in particles.
+- Skeleton shimmer.
+- `transition: all`.
+- Transitions longer than `--dur-celebrate` except deliberately scroll-linked
+  or stagger-accumulated sequences.
+- Animating layout properties (`top`, `height`, `margin`). Use `transform`,
+  `opacity`, `clip-path`, `grid-template-rows` for expanders, and `width` only
+  on progress tracks.
+- A loop that is not listed under **Loops** above.
+- A `position: fixed` dialog inside an element with a *filled* transform
+  animation. Entrance animations use `animation-fill-mode: backwards`; a
+  `both` fill leaves the wrapper as the containing block and pins the dialog
+  to it.
+- Motion that depends only on `requestAnimationFrame` to reveal content.
+  A background tab renders no frames; every reveal races a timer.
+- Custom cursors, and anything that hides or replaces the system cursor.
+
+---
+
+## Implementation
+
+All shared motion lives in `src/motion/`:
+
+| Module | Job |
+|---|---|
+| `FxLayer.jsx` | one document-level listener that powers **Magnet**, **Tilt** and sheen for any `.btn`, `[data-magnetic]` or `[data-tilt]` element, plus the tooltip for any `[data-tip]` element |
+| `SplitText.jsx` | **Reveal** by word |
+| `Reveal.jsx` / `useInView.js` | once-per-element entrance, with stagger |
+| `RollingNumber.jsx` | **Roll** |
+| `CountUp.jsx` | a figure counting up the first time it is seen |
+| `flight.js` | **Fly** — `fly()`, `useFlightTarget()`, `useLandedValue()` |
+| `burst.js` | paper-shard bursts |
+| `motion.css` | the verbs as classes and keyframes |
+
+A component never hand-rolls one of these. If it needs something they cannot
+do, extend the module.
 
 ---
 
@@ -188,12 +272,10 @@ pass (`chv-spin` at 34s and 24s, `chv-pulse`, `chv-float`,
 `prefers-reduced-motion: reduce` must leave the interface **fully legible and
 fully expressive**, not merely still.
 
-- All transforms and durations collapse to 0.01ms.
-- Colour and border feedback survives. A reduced-motion user still sees the
-  tint on hover, the tinted row on a correct answer, the filled bar.
-- Progress bars jump to their value rather than animating.
-- The marquee stops and the row becomes horizontally scrollable.
-
-The existing `@media (prefers-reduced-motion: reduce)` block in `index.css`
-already does most of this correctly and its reasoning comment is right —
-keep both.
+- All transforms and durations collapse to 0.01ms (global rule in `index.css`).
+- JS motion checks `prefersReducedMotion()`: flights resolve instantly,
+  bursts do not spawn, tilt and magnet do not attach, split text renders
+  assembled.
+- Every loop stops.
+- Colour and border feedback survives: tint on hover, the berry row on a wrong
+  answer, the moss stamp colour, the filled bar.

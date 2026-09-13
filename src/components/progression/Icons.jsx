@@ -1,14 +1,27 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Icons.jsx — PROGRESSION ICON SET
+   Icons.jsx — THE ECONOMY'S ICON SET
    ---------------------------------------------------------------------------
-   Hand-drawn SVG paths rather than emoji, so hearts, gems and flames render
-   identically on every OS and inherit colour from CSS.
+   Revision 2. The hero icons — heart, flame, gem, bolt, shield — are drawn as
+   small physical objects rather than flat glyphs, all to one construction so
+   they read as one family:
 
-   Every icon is built on a 24×24 grid and coloured with `currentColor`.
-   Solid icons layer a lighter overlay path at reduced opacity to fake a
-   highlight facet — no gradients, so no <defs> id collisions when the same
-   icon appears a dozen times on one page.
+     · a BACK plate, offset 1px down in a darker mix of the icon's own colour —
+       the object's thickness
+     · the FACE in currentColor
+     · one SHADE facet on the lower right (ink at low alpha) — depth
+     · one warm SHINE mark on the upper left — where the light comes from
+
+   Every part carries a class, so CSS can colour it for a state (a dim flame,
+   an empty heart) and animate it for an event (the flame's layers flicker on
+   their own periods; the heart's halves part when it cracks) without a second
+   drawing. Clip-path ids are namespaced with useId, because the same heart
+   renders a dozen times on one screen.
+
+   The line icons below are unchanged: 24px box, 2px round strokes.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+import { useId } from 'react'
+import './icons.css'
 
 const base = (size) => ({
   width: size,
@@ -27,66 +40,132 @@ const stroke = {
   strokeLinejoin: 'round',
 }
 
-/* ── Hero icons: heart, gem, flame ───────────────────────────────────────── */
+const useUid = () => useId().replace(/:/g, '')
 
-/** Solid heart. The highlight arc reads as a glossy top-left facet. */
-export function HeartIcon({ size = 20, empty = false, className = '' }) {
-  if (empty) {
-    return (
-      <svg {...base(size)} className={className}>
-        <path
-          d="M20.5 5.1a5.1 5.1 0 0 0-7.2 0L12 6.4l-1.3-1.3a5.1 5.1 0 1 0-7.2 7.2l8.5 8.4 8.5-8.4a5.1 5.1 0 0 0 0-7.2Z"
-          fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" opacity="0.5"
-        />
-      </svg>
-    )
-  }
+/* ── Heart ───────────────────────────────────────────────────────────────────
+   `fill` (0–1) is how much of the heart is full: the top-bar heart shows the
+   ratio of hearts left, so the icon itself says "limited". The heart is drawn
+   as two halves along a zig-zag crack line; at rest they meet exactly and the
+   seam is invisible, and when a heart is lost CSS parts them. */
+
+const HEART = 'M20.5 5.1a5.1 5.1 0 0 0-7.2 0L12 6.4l-1.3-1.3a5.1 5.1 0 1 0-7.2 7.2l8.5 8.4 8.5-8.4a5.1 5.1 0 0 0 0-7.2Z'
+const HEART_SHADE = 'M12 20.7 20.5 12.3a5.1 5.1 0 0 0 1.2-5.4c-.5 2-1.8 3.8-3.5 5.4L12 18.5Z'
+const HEART_SHINE = 'M6.5 6.2c-1.3.3-2.2 1.4-2.3 2.8'
+const CRACK = '12,6.4 10.7,9.4 13,12 10.9,14.6 12.5,17.2 12,21'
+
+export function HeartIcon({ size = 20, empty = false, fill, className = '', style }) {
+  const uid = useUid()
+  const level = empty ? 0 : fill == null ? 1 : Math.max(0, Math.min(1, fill))
+  const crack = CRACK.split(' ').join(' ')
+
   return (
-    <svg {...base(size)} className={className}>
-      <path
-        d="M20.5 5.1a5.1 5.1 0 0 0-7.2 0L12 6.4l-1.3-1.3a5.1 5.1 0 1 0-7.2 7.2l8.5 8.4 8.5-8.4a5.1 5.1 0 0 0 0-7.2Z"
-        fill="currentColor"
-      />
-      <path
-        d="M6.7 5.9c-1.1.2-2 .9-2.4 1.9-.3.8-.2 1.7.2 2.4"
-        fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" opacity="0.45"
-      />
+    <svg {...base(size)} className={`hi ${className}`.trim()} style={{ ...style, '--fill': level }}>
+      <defs>
+        <clipPath id={`${uid}l`}>
+          <polygon className="hi-level" points="0,3 24,3 24,24 0,24" />
+        </clipPath>
+        <clipPath id={`${uid}a`}>
+          <polygon points={`0,0 12,0 ${crack} 12,24 0,24`} />
+        </clipPath>
+        <clipPath id={`${uid}b`}>
+          <polygon points={`24,0 12,0 ${crack} 12,24 24,24`} />
+        </clipPath>
+      </defs>
+
+      {['a', 'b'].map((side) => (
+        <g key={side} className={`hi-half hi-half--${side}`}>
+          <g clipPath={`url(#${uid}${side})`}>
+            <path className="hi-back" d={HEART} transform="translate(0 1.1)" />
+            <path className="hi-well" d={HEART} />
+            <g clipPath={`url(#${uid}l)`}>
+              <path className="hi-face" d={HEART} />
+              <path className="hi-shade" d={HEART_SHADE} />
+            </g>
+            <path className="hi-shine" d={HEART_SHINE} />
+          </g>
+        </g>
+      ))}
+      <polyline className="hi-crack" points={crack.replace(/ /g, ' ')} />
     </svg>
   )
 }
 
-/** Brilliant-cut gem: table, crown bevels and pavilion facets. */
-export function GemIcon({ size = 20, className = '' }) {
+/* ── Gem ─────────────────────────────────────────────────────────────────────
+   A cut stone: table, crown, two pavilion facets in different lights, and a
+   glint band clipped to the stone that sweeps across it when it is earned or
+   hovered. */
+
+const GEM = 'M7.4 2.6h9.2L22 9.1 12 21.6 2 9.1Z'
+
+export function GemIcon({ size = 20, className = '', style }) {
+  const uid = useUid()
   return (
-    <svg {...base(size)} className={className}>
-      {/* body */}
-      <path d="M7.4 2.6h9.2L22 9.1 12 21.6 2 9.1l5.4-6.5Z" fill="currentColor" />
-      {/* crown highlight */}
-      <path d="M7.4 2.6h9.2L18.6 9H5.4l2-6.4Z" fill="#fff" opacity="0.28" />
-      {/* facet lines */}
-      <g stroke="#000" strokeOpacity="0.22" strokeWidth="0.9" strokeLinejoin="round" fill="none">
-        <path d="M2 9.1h20M5.4 9 12 21.6 18.6 9M9.6 2.6 8 9M14.4 2.6 16 9" />
+    <svg {...base(size)} className={`gi ${className}`.trim()} style={style}>
+      <defs>
+        <clipPath id={`${uid}g`}><path d={GEM} /></clipPath>
+      </defs>
+      <path className="gi-back" d={GEM} transform="translate(0 1)" />
+      <path className="gi-body" d={GEM} />
+      <path className="gi-crown" d="M7.4 2.6h9.2L18.6 9.1H5.4Z" />
+      <path className="gi-pav-l" d="M2 9.1h3.4L12 21.6Z" />
+      <path className="gi-pav-r" d="M18.6 9.1H22L12 21.6Z" />
+      <path className="gi-facets" d="M2 9.1h20M5.4 9.1 12 21.6l6.6-12.5M9.6 2.6 8 9.1M14.4 2.6 16 9.1" />
+      <g clipPath={`url(#${uid}g)`}>
+        <rect className="gi-glint" x="-6" y="-2" width="4" height="28" />
       </g>
-      {/* sparkle */}
-      <path d="M9.1 10.6 12 18.6" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.1" strokeLinecap="round" fill="none" />
     </svg>
   )
 }
 
-/** Two-tone flame — outer body plus an inner core at higher brightness. */
-export function FlameIcon({ size = 20, className = '', dim = false }) {
+/* ── Flame ───────────────────────────────────────────────────────────────────
+   Three nested flames — ember outside, ochre in the middle, a cream core —
+   each on its own group so CSS can flicker them on different periods and
+   flare them together. `state`:
+
+     lit    the streak is alive and today is done: full flame, full core
+     risk   alive, but today is not done yet: shorter, paler, uneasy
+     out    no streak: ash-coloured, still */
+
+const FLAME = 'M13.1 1.5c.3 2.6-.7 4.3-2.2 5.8-1.7 1.7-3.8 3.2-4.4 5.9-.8 3.6 1.3 7.1 4.8 8.2 4 1.2 8.1-1.3 8.6-5.4.4-3.1-1-5.1-2.9-6.9-.3 1.1-.9 1.9-1.8 2.3.5-3.6-.5-7.1-2.1-9.9Z'
+
+export function FlameIcon({ size = 20, className = '', dim = false, state, style }) {
+  const s = state ?? (dim ? 'out' : 'lit')
   return (
-    <svg {...base(size)} className={className}>
-      <path
-        d="M13.1 1.5c.3 2.6-.7 4.3-2.2 5.8-1.7 1.7-3.8 3.2-4.4 5.9-.8 3.6 1.3 7.1 4.8 8.2 4 1.2 8.1-1.3 8.6-5.4.4-3.1-1-5.1-2.9-6.9-.3 1.1-.9 1.9-1.8 2.3.5-3.6-.5-7.1-2.1-9.9Z"
-        fill="currentColor"
-        opacity={dim ? 0.9 : 1}
-      />
-      <path
-        d="M12.3 12.4c.2 1.4-.4 2.2-1.2 3-.7.7-1.3 1.4-1.3 2.4 0 1.6 1.4 2.8 3.1 2.8 1.8 0 3.2-1.2 3.2-2.9 0-1.4-.8-2.3-1.8-3.1-.1.6-.4 1-.9 1.2.2-1.3-.4-2.5-1.1-3.4Z"
-        fill="#fff"
-        opacity={dim ? 0.18 : 0.42}
-      />
+    <svg {...base(size)} className={`fi fi--${s} ${className}`.trim()} style={style}>
+      <g className="fi-o"><path className="fi-outer" d={FLAME} /></g>
+      <g className="fi-m"><path className="fi-mid" d={FLAME} transform="matrix(.62 0 0 .62 4.7 8.2)" /></g>
+      <g className="fi-c"><path className="fi-core" d={FLAME} transform="matrix(.34 0 0 .34 8.2 14)" /></g>
+    </svg>
+  )
+}
+
+/* ── Bolt (XP) ───────────────────────────────────────────────────────────── */
+
+const BOLT = 'M13.5 1.8 4 13.6h6.8L9.6 22.2 20 9.9h-6.9Z'
+
+export function BoltIcon({ size = 20, className = '', style }) {
+  return (
+    <svg {...base(size)} className={`bi ${className}`.trim()} style={style}>
+      <path className="bi-back" d={BOLT} transform="translate(.7 1)" />
+      <path className="bi-face" d={BOLT} />
+      <path className="bi-shade" d="M13.1 9.9H20L9.6 22.2l.9-6.9Z" />
+      <path className="bi-shine" d="M12 4.9 7.3 11" />
+    </svg>
+  )
+}
+
+/* ── Shield ──────────────────────────────────────────────────────────────── */
+
+const SHIELD = 'M12 2.5 20 6v6c0 4.6-3.2 8.3-8 9.5-4.8-1.2-8-4.9-8-9.5V6Z'
+
+export function ShieldIcon({ size = 20, className = '', style, emblem = true }) {
+  return (
+    <svg {...base(size)} className={`si ${className}`.trim()} style={style}>
+      <path className="si-back" d={SHIELD} transform="translate(0 1)" />
+      <path className="si-face" d={SHIELD} />
+      <path className="si-shade" d="M12 2.5 20 6v6c0 4.6-3.2 8.3-8 9.5Z" />
+      {emblem && <path className="si-emblem" d={FLAME} transform="matrix(.42 0 0 .42 6.9 5.6)" />}
+      <path className="si-shine" d="M11.4 5.1 6.6 7.1v3" />
     </svg>
   )
 }
@@ -125,10 +204,10 @@ const LINE_ICONS = {
   'check-circle': (
     <>
       <circle cx="12" cy="12" r="9.2" />
-      <path d="m8 12.3 2.8 2.8L16.2 9.7" />
+      <path className="ico-check" pathLength="1" d="m8 12.3 2.8 2.8L16.2 9.7" />
     </>
   ),
-  check: <path d="m5 12.5 4.5 4.5L19 7" />,
+  check: <path className="ico-check" pathLength="1" d="m5 12.5 4.5 4.5L19 7" />,
   users: (
     <>
       <path d="M16 20v-1.6a3.4 3.4 0 0 0-3.4-3.4H6.4A3.4 3.4 0 0 0 3 18.4V20" />
@@ -158,10 +237,12 @@ const LINE_ICONS = {
   'chevron-up': <path d="m5.5 15 6.5-6.5 6.5 6.5" />,
   'chevron-down': <path d="m5.5 9 6.5 6.5L18.5 9" />,
   'chevron-right': <path d="m9 5.5 6.5 6.5L9 18.5" />,
+  /* The shackle is its own group so a refused lock can rattle it. */
   lock: (
     <>
+      <path className="ico-shackle" d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5" />
       <rect x="3.5" y="10.5" width="17" height="11" rx="2.4" />
-      <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5" />
+      <path d="M12 15v2.4" />
     </>
   ),
   calendar: (
@@ -188,7 +269,7 @@ const LINE_ICONS = {
   clock: (
     <>
       <circle cx="12" cy="12" r="9.2" />
-      <path d="M12 6.8V12l3.4 2" />
+      <path className="ico-hand" d="M12 6.8V12l3.4 2" />
     </>
   ),
   flag: (
@@ -197,17 +278,21 @@ const LINE_ICONS = {
     </>
   ),
   shield: <path d="M12 2.5 20 6v6c0 4.6-3.2 8.3-8 9.5-4.8-1.2-8-4.9-8-9.5V6l8-3.5Z" />,
+  /* The lid is its own group so a waiting gift can lift it. */
   gift: (
     <>
-      <rect x="3" y="8.5" width="18" height="5" rx="1.2" />
-      <path d="M4.8 13.5v6.3a1.7 1.7 0 0 0 1.7 1.7h11a1.7 1.7 0 0 0 1.7-1.7v-6.3M12 8.5v13" />
-      <path d="M12 8.5H7.8a2.65 2.65 0 1 1 0-5.3C10.6 3.2 12 8.5 12 8.5ZM12 8.5h4.2a2.65 2.65 0 1 0 0-5.3C13.4 3.2 12 8.5 12 8.5Z" />
+      <path d="M4.8 13.5v6.3a1.7 1.7 0 0 0 1.7 1.7h11a1.7 1.7 0 0 0 1.7-1.7v-6.3M12 13.5v8" />
+      <g className="ico-lid">
+        <rect x="3" y="8.5" width="18" height="5" rx="1.2" />
+        <path d="M12 8.5v5" />
+        <path d="M12 8.5H7.8a2.65 2.65 0 1 1 0-5.3C10.6 3.2 12 8.5 12 8.5ZM12 8.5h4.2a2.65 2.65 0 1 0 0-5.3C13.4 3.2 12 8.5 12 8.5Z" />
+      </g>
     </>
   ),
   gauge: (
     <>
       <path d="M4 18a9 9 0 1 1 16 0" />
-      <path d="M12 18l4-5.5" />
+      <path className="ico-hand" d="M12 18l4-5.5" />
       <circle cx="12" cy="18" r="1.4" fill="currentColor" stroke="none" />
     </>
   ),
@@ -217,6 +302,12 @@ const LINE_ICONS = {
       <path d="M14.5 3.5A3 3 0 0 1 17.3 7 3 3 0 0 1 19 9.8a3 3 0 0 1-1.2 2.4 3 3 0 0 1 .2 2.3 3 3 0 0 1-2.4 2.9A2.6 2.6 0 0 1 13 20V4.6a2.6 2.6 0 0 1 1.5-1.1Z" />
     </>
   ),
+  arrow: (
+    <>
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </>
+  ),
 }
 
 /** Generic line icon. Names come from quest templates and achievements. */
@@ -224,7 +315,7 @@ export function Icon({ name, size = 18, strokeWidth = 2, className = '', style }
   const path = LINE_ICONS[name]
   if (!path) return null
   return (
-    <svg {...base(size)} className={className} style={style} {...stroke} strokeWidth={strokeWidth}>
+    <svg {...base(size)} className={`li li--${name} ${className}`.trim()} style={style} {...stroke} strokeWidth={strokeWidth}>
       {path}
     </svg>
   )
@@ -232,13 +323,15 @@ export function Icon({ name, size = 18, strokeWidth = 2, className = '', style }
 
 /**
  * Resolve any icon id used by quests / achievements / missions, preferring the
- * solid hero icons where one exists.
+ * drawn economy icons where one exists.
  */
 export function QuestIcon({ name, size = 18, className = '' }) {
   if (name === 'flame') return <FlameIcon size={size} className={className} />
   if (name === 'gem') return <GemIcon size={size} className={className} />
   if (name === 'heart') return <HeartIcon size={size} className={className} />
+  if (name === 'bolt') return <BoltIcon size={size} className={className} />
+  if (name === 'shield') return <ShieldIcon size={size} className={className} emblem={false} />
   return <Icon name={name} size={size} className={className} />
 }
 
-export default { Icon, QuestIcon, HeartIcon, GemIcon, FlameIcon }
+export default { Icon, QuestIcon, HeartIcon, GemIcon, FlameIcon, BoltIcon, ShieldIcon }

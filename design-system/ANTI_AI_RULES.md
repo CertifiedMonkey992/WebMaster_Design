@@ -202,12 +202,16 @@ per screen should be obviously first.
 
 ## 20. Random animations
 
-**BAD** — everything fades up 24px on scroll with d1/d2/d3 stagger. Infinite
-orbit and pulse loops. A permanently nudging arrow.
+**BAD** — everything fades up 24px on scroll with the same d1/d2/d3 stagger.
+Infinite orbit and pulse loops on decorative objects. A permanently nudging
+arrow. Motion that is identical on every element, which is what makes it read
+as a template.
 
-**BETTER** — every animation is a response to a named event (see
-`MOTION_RULES.md`). Nothing loops except the marquee, which depicts overflow.
-If you cannot name the event, delete the animation.
+**BETTER** — every animation is a Response, a Report or an Invitation (see
+`MOTION_RULES.md`, revision 2). Motion is *differentiated by meaning*: a
+handled index card lifts, a row tints, a number rolls, a reward flies to the
+counter it belongs to. Loops exist only as the listed Invitations and living
+icons, and each stops when its state ends.
 
 ## 21. Components from different templates
 
@@ -239,8 +243,9 @@ Run this against any UI diff before committing.
 - [ ] No cool hue. No hex whose blue channel is the largest.
 - [ ] No new radius value outside the five-step scale.
 - [ ] No `box-shadow` on a resting surface.
-- [ ] No `transition: all`, no `animation: … infinite`.
-- [ ] No `translateY(-Npx)` on hover.
+- [ ] No `transition: all`. Every `infinite` animation is a loop listed in `MOTION_RULES.md`.
+- [ ] Lift (`translateY(-Npx)` on hover) only on handled objects — never rows or buttons.
+- [ ] Every new animation uses a `--dur-*` token and one of the named verbs.
 - [ ] Card edges on the changed screen: ≤ 4.
 - [ ] `--clay` appearances on the changed screen: 2–3.
 - [ ] The loudest element is the next action.
@@ -273,3 +278,10 @@ At the end of the redesign pass the counts were:
 
 Anything above those numbers is a regression. The two sanctioned exceptions
 are listed so a later pass does not "fix" them into something worse.
+
+> **Revision 2 (interactivity pass).** `loops` and `lifts` are no longer
+> expected to be near zero: the living-interface revision of
+> `MOTION_RULES.md` sanctions named loops (Invitations, living icons) and Lift
+> on handled objects. For those two counts the check is now *every hit is
+> named in MOTION_RULES.md*, not *the count is small*. `hex`, `size`,
+> `radius`, `weight` and `all` keep their revision-1 targets.

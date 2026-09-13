@@ -278,6 +278,11 @@ of the page.
 | Modal, lesson overlay | `--shadow-modal` |
 | The landing page's fanned card stack | `--shadow-float`, because it depicts stacked paper |
 | A pressed button | `--shadow-press` |
+| A handled object that has been picked up (a lifted index card, a dragged chip, popped shop art) | `--shadow-lift` |
+
+```css
+--shadow-lift: 0 16px 34px rgba(43,33,25,.14), 0 5px 12px rgba(43,33,25,.07);
+```
 
 Every shadow in the system is tinted with warm ink (`43, 33, 25`). A neutral
 black shadow on a bone ground turns it grey, which is precisely the look this
@@ -377,16 +382,24 @@ ground, and never on a card.
 Full rules in `MOTION_RULES.md`. The values:
 
 ```css
---dur-press:  120ms   /* button depress / release */
---dur-hover:  180ms   /* hover in and out */
---dur-enter:  240ms   /* popover, toast, panel arriving */
---dur-modal:  320ms   /* a modal taking the screen */
---dur-settle: 600ms   /* a number or bar moving to a new value */
+--dur-micro:     90ms    /* icon twitch, tooltip in */
+--dur-press:     120ms   /* button depress / release */
+--dur-hover:     180ms   /* hover in and out */
+--dur-enter:     240ms   /* popover, toast, panel arriving */
+--dur-modal:     320ms   /* a modal taking the screen */
+--dur-settle:    600ms   /* a number or bar moving to a new value */
+--dur-celebrate: 800ms   /* a reward landing, a stamp, a burst */
 
 --ease-out:    cubic-bezier(0.33, 1, 0.68, 1);     /* responding to input */
 --ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1);     /* arriving at a value */
 --ease-press:  cubic-bezier(0.4, 0, 0.6, 1);       /* short, symmetric */
+--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* a handled object overshooting */
+--ease-in:     cubic-bezier(0.5, 0, 0.75, 0);      /* something leaving */
+--stagger:     45ms                                /* siblings arriving */
 ```
+
+Revision 2 of `MOTION_RULES.md` added `--dur-micro`, `--dur-celebrate`,
+`--ease-spring`, `--ease-in` and `--stagger`.
 
 ---
 
@@ -398,6 +411,7 @@ Full rules in `MOTION_RULES.md`. The values:
 --z-popover: 60
 --z-modal:   200
 --z-toast:   300
+--z-fx:      400   /* reward flights, bursts, tooltips — above everything, never interactive */
 ```
 
 Nothing is allowed a literal z-index above 10 outside these tokens. The

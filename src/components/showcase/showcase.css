@@ -1,70 +1,124 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    showcase.css — REAL PRODUCT UI ON THE MARKETING PAGE
    ---------------------------------------------------------------------------
-   Two jobs only:
-
-     1. Pin the app's light palette inside the frame. The landing page is dark;
-        the product is light. Declaring the tokens here means the real
-        components render in their own theme rather than inheriting the page's.
-
-     2. Present the frame — chrome bar, radius, shadow, optional crop fade.
-
-   Nothing here restyles the product's own components. If a card looks
-   different on this page than it does in the app, that is a bug.
+   Presents the frame — chrome, radius, shadow, crop, tilt — and the section
+   scaffolding around it. Nothing here restyles the product's own components.
+   If a card looks different on this page than in the app, that is a bug.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .pf {
-  /* The token-pinning block that used to live here is gone. It existed only
-     because the landing page was near-black while the product was light —
-     two products wearing different clothes. Both are now the one warm
-     palette, so the real components simply inherit it. */
+  --tilt-max: 2.2deg;
   margin: 0;
   border-radius: var(--r-lg);
   overflow: hidden;
   background: var(--paper);
   border: 1px solid var(--line);
-  /* The frame depicts a screen standing in front of the page, which is one of
-     the few things in this system that genuinely earns a shadow. */
+  /* A screen standing in front of the page genuinely earns a shadow; the
+     hovered one is closer to the hand. */
   box-shadow: var(--shadow-float);
   font-family: var(--font-ui);
   color: var(--ink);
   line-height: var(--lh-normal);
   text-align: left;
+  transform:
+    perspective(1600px)
+    rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max)))
+    rotateY(calc(var(--tilt-x, 0) * var(--tilt-max)));
+  transition:
+    transform 800ms var(--ease-settle),
+    box-shadow 500ms var(--ease-out);
 }
 
-/* The macOS traffic-light bar that used to sit here was itself a template
-   signal — a picture of someone else's window chrome. What a reader needs is
-   the name of the screen they are looking at, so that is all the strip says. */
+.pf.is-tilting {
+  box-shadow: var(--shadow-lift);
+  transition-duration: 240ms, 500ms;
+  transition-timing-function: var(--ease-out), var(--ease-out);
+}
+
 .pf-chrome {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-4);
   background: var(--surface-sunk);
   border-bottom: 1px solid var(--line);
 }
 
-.pf-path {
-  overflow: hidden;
+.pf-crumbs {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
   font-size: var(--fs-micro);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+.pf-crumb-root { color: var(--evergreen); }
+.pf-crumb-sep { opacity: 0.5; }
+
+.pf-path {
+  overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: var(--ink-muted);
+  display: inline-block;
+  animation: fx-slide-up 520ms var(--ease-spring) both;
+}
+
+/* Honest labelling: this is the running component. */
+.pf-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px var(--sp-2);
+  border-radius: var(--r-xs);
+  background: var(--moss-tint);
+  color: var(--moss);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  cursor: help;
+  pointer-events: auto;
+}
+
+.pf-live-dot {
+  position: relative;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--moss);
+}
+
+.pf-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--moss);
+  animation: fx-ping 2.6s var(--ease-out) infinite;
 }
 
 .pf-body {
   padding: var(--sp-4);
   overflow: hidden;
+  position: relative;
 }
 
-/* A cropped surface fades out rather than ending on a hard cut. */
+.pf-inner { will-change: transform; }
+
 .pf-body.is-cropped {
-  position: relative;
   padding-bottom: var(--sp-10);
-  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+}
+
+.pf-body.is-scrub {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 84%, transparent 100%);
 }
 
 .pf-caption {
@@ -74,40 +128,69 @@
   border-top: 1px solid var(--line-faint);
 }
 
-/* ── Section scaffolding ──────────────────────────────────────────────────────
-   A 7/5 split rather than 1fr 1fr: a dominant side reads as a decision, equal
-   halves read as a default grid. The flip still alternates, but the copy
-   column keeps the wider share on both sides, so the rhythm is asymmetric in
-   the same direction the hero is. */
+/* ── Section scaffolding ─────────────────────────────────────────────────── */
 
 .sc-section {
   border-top: 1px solid var(--line);
   padding: var(--sp-24) var(--sp-8);
   background: var(--paper);
+  overflow: hidden;
 }
 
 .sc-wrap {
   max-width: 76rem;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 6fr 6fr;
+  grid-template-columns: 5fr 7fr;
   gap: var(--sp-12);
   align-items: center;
 }
 
-.sc-wrap.flip { direction: rtl; }
-.sc-wrap.flip > * { direction: ltr; }
+.sc-wrap.flip { grid-template-columns: 7fr 5fr; }
+.sc-wrap.flip > .sc-copy { order: 2; }
+.sc-wrap.flip > .sc-frame { order: 1; }
 
-.section-eyebrow {
-  display: block;
-  font-family: var(--font-ui);
+/* The eyebrow: a section number, a rule that draws, then the label. */
+.sc-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
   font-size: var(--fs-micro);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--clay-ink);
-  margin-bottom: var(--sp-3);
 }
+
+.sc-eyebrow-num {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  letter-spacing: 0;
+  color: var(--ink-faint);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 400ms ease, transform 600ms var(--ease-spring);
+}
+
+.sc-eyebrow-rule {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--clay);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 700ms var(--ease-settle) 120ms;
+}
+
+.sc-eyebrow-text {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 400ms ease 360ms, transform 600ms var(--ease-spring) 360ms;
+}
+
+.sc-eyebrow.is-in .sc-eyebrow-num,
+.sc-eyebrow.is-in .sc-eyebrow-text { opacity: 1; transform: none; }
+.sc-eyebrow.is-in .sc-eyebrow-rule { transform: scaleX(1); }
 
 .sc-heading {
   font-family: var(--font-display);
@@ -129,14 +212,30 @@
   text-wrap: pretty;
 }
 
-.sc-body strong { color: var(--ink); font-weight: var(--fw-bold); }
+/* The highlighter: a stroke laid under a term as it is read. */
+.mark {
+  color: var(--ink);
+  font-weight: var(--fw-bold);
+  background-repeat: no-repeat;
+  background-size: 0% 38%;
+  background-position: 0 90%;
+  transition: background-size 900ms var(--ease-settle) 300ms;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
 
-/* ── Player-stat strip (the streak section's own composition) ─────────────── */
+.mark--ochre { background-image: linear-gradient(var(--ochre-tint), var(--ochre-tint)); }
+.mark--berry { background-image: linear-gradient(var(--berry-tint), var(--berry-tint)); }
+.mark--clay  { background-image: linear-gradient(var(--clay-tint), var(--clay-tint)); }
+.mark--moss  { background-image: linear-gradient(var(--moss-tint), var(--moss-tint)); }
+
+.mark.is-in { background-size: 100% 38%; }
+.mark:hover { background-size: 100% 90%; transition-delay: 0ms; transition-duration: 300ms; }
+
+/* ── Player-stat strip ───────────────────────────────────────────────────── */
 
 .sc-stats-frame { display: flex; flex-direction: column; gap: var(--sp-4); }
 
-/* The top bar is normally a sticky strip in the app; here it sits on the same
-   ground it uses there, so it reads in context. */
 .sc-topbar {
   display: flex;
   justify-content: flex-end;
@@ -153,7 +252,7 @@
   border-radius: var(--r-md);
 }
 
-/* ── Quest + shop pairing ─────────────────────────────────────────────────── */
+/* ── Quest + shop pairing ────────────────────────────────────────────────── */
 
 .sc-stack { display: flex; flex-direction: column; gap: var(--sp-2); }
 
@@ -165,14 +264,11 @@
   color: var(--ink-faint);
 }
 
-/* The three real catalogue items at their real prices — a list, not a grid of
-   three pricing cards. */
 .sc-shop-mini {
   list-style: none;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
-  overflow: hidden;
 }
 
 .sc-shop-mini-item {
@@ -180,11 +276,23 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
+  cursor: default;
+  transition: background-color var(--dur-hover) ease;
 }
 
+.sc-shop-mini-item:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
+.sc-shop-mini-item:last-child { border-radius: 0 0 var(--r-md) var(--r-md); }
 .sc-shop-mini-item + .sc-shop-mini-item { border-top: 1px solid var(--line-faint); }
+.sc-shop-mini-item:hover { background: var(--evergreen-tint); }
 
-.sc-shop-mini-art { display: grid; place-items: center; flex-shrink: 0; }
+.sc-shop-mini-art {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: transform 460ms var(--ease-spring);
+}
+
+.sc-shop-mini-item:hover .sc-shop-mini-art { transform: translateY(-4px) scale(1.2) rotate(-8deg); }
 
 .sc-shop-mini-name {
   flex: 1;
@@ -193,7 +301,10 @@
   font-size: var(--fs-small);
   font-weight: var(--fw-semi);
   color: var(--ink);
+  transition: transform 460ms var(--ease-spring);
 }
+
+.sc-shop-mini-item:hover .sc-shop-mini-name { transform: translateX(4px); }
 
 .sc-shop-mini-price {
   display: inline-flex;
@@ -206,17 +317,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────────────── */
+/* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 1060px) {
-  .sc-wrap {
-    grid-template-columns: 1fr;
-    gap: var(--sp-8);
-    direction: ltr;
-  }
-  .sc-wrap.flip { direction: ltr; }
-  /* Copy always leads once stacked, whichever side the frame was on. */
-  .sc-wrap.flip > .sc-copy { order: -1; }
+  .sc-wrap, .sc-wrap.flip { grid-template-columns: 1fr; gap: var(--sp-8); }
+  .sc-wrap.flip > .sc-copy { order: 0; }
+  .sc-wrap.flip > .sc-frame { order: 1; }
   .pf { max-width: 46rem; }
 }
 

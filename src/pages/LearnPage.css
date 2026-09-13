@@ -2,21 +2,12 @@
    LearnPage.css — THE COURSE
    ---------------------------------------------------------------------------
    Authoritative reference: design-system/COMPONENT_RULES.md
+   Motion: design-system/MOTION_RULES.md (revision 2)
 
-   The two structural changes this pass made:
-
-   1. A MODULE IS ONE OBJECT. It used to be a card followed by five
-      free-floating lesson cards — eight card edges for one module, thirteen
-      on the first screen. The header and its lessons are one container now,
-      with hairlines between rows.
-
-   2. NOTHING AT REST HAS A SHADOW. Surfaces separate from the ground by
-      warmth. That is what the bone ground is for, and it buys back every
-      box-shadow the old design was spending to do the same job.
-
-   Also gone: the page's two radial background washes, the gradient "hero"
-   treatment on the active module, the orbiting-orb illustration beside it,
-   and the four permanent CSS animations that ran behind all of it.
+   Structure from revision 1 stands: a module is ONE object, and nothing at
+   rest has a shadow. Revision 2 adds what the page does when you touch it:
+   the sliding nav ghost and rail, collapsible modules, the lesson path, the
+   course-at-a-glance ticks, and a hover story for every lesson state.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Layout ───────────────────────────────────────────────────────────────── */
@@ -28,7 +19,6 @@ html:has(.learn-app) body {
 
 .learn-app {
   display: grid;
-  /* minmax(0, …) rather than a bare 1fr: see the note in the 900px block. */
   grid-template-columns: 232px minmax(0, 1fr) 312px;
   grid-template-rows: 60px 1fr;
   min-height: 100vh;
@@ -38,12 +28,7 @@ html:has(.learn-app) body {
   z-index: var(--z-base);
 }
 
-/* ── Top bar ──────────────────────────────────────────────────────────────────
-   A flat strip with a hairline, not a gradient fade into the page. It spans
-   the full height of its grid area so `position: sticky` has room to travel;
-   only the 60px header is painted, and pointer events are re-enabled on the
-   controls alone so the empty space below never swallows a click meant for
-   the course. */
+/* ── Top bar ──────────────────────────────────────────────────────────────── */
 
 .learn-topbar {
   grid-column: 2 / 4;
@@ -61,7 +46,10 @@ html:has(.learn-app) body {
   pointer-events: none;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
+  animation: lt-arrive 700ms var(--ease-settle) backwards;
 }
+
+@keyframes lt-arrive { from { opacity: 0; transform: translateY(-12px); } }
 
 .learn-topbar > * { pointer-events: auto; }
 
@@ -104,7 +92,10 @@ html:has(.learn-app) body {
   background: var(--evergreen);
   display: grid;
   place-items: center;
+  transition: transform 460ms var(--ease-spring);
 }
+
+.lt-brand:hover .lt-brand-mark { transform: rotate(-12deg); }
 
 /* ── Left sidebar ─────────────────────────────────────────────────────────── */
 
@@ -121,7 +112,10 @@ html:has(.learn-app) body {
   padding: var(--sp-5) 0 var(--sp-4);
   overflow-y: auto;
   z-index: var(--z-raised);
+  animation: ls-arrive 700ms var(--ease-settle) backwards;
 }
+
+@keyframes ls-arrive { from { opacity: 0; transform: translateX(-16px); } }
 
 .ls-logo {
   display: flex;
@@ -140,10 +134,11 @@ html:has(.learn-app) body {
   border-bottom: 1px solid var(--line-faint);
   text-align: left;
   width: 100%;
-  transition: opacity var(--dur-hover) ease;
 }
 
-.ls-logo:hover { opacity: 0.7; }
+.ls-logo-text { display: inline-flex; }
+.ls-logo:hover .wm-letter { transform: translateY(-3px); }
+.ls-logo:hover .wm-letter:nth-child(even) { transform: translateY(2px); }
 
 .ls-logo-mark {
   width: 28px;
@@ -153,22 +148,71 @@ html:has(.learn-app) body {
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  transition: transform 520ms var(--ease-spring), background-color var(--dur-hover) ease;
 }
 
-/* The nav is grouped by how often a destination is used: what you do daily,
-   then what you check occasionally, then who you are — with the last pair
-   parked at the foot, where an app of this shape trains people to look. */
+.ls-logo:hover .ls-logo-mark { transform: rotate(-12deg) scale(1.08); background: var(--clay); }
+
 .ls-nav {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
 }
 
-.ls-group { display: flex; flex-direction: column; }
+/* The hover ghost and the active rail: two objects that travel between
+   items, measured from the real buttons by LearnSidebar. */
+.ls-ghost,
+.ls-rail {
+  position: absolute;
+  left: 0; top: 0;
+  pointer-events: none;
+  z-index: 0;
+}
 
-/* margin-top:auto rather than a fixed offset, so the account group sits at
-   the bottom on a tall screen and simply follows the others on a short one. */
+.ls-ghost {
+  width: var(--ghost-w, 0px);
+  height: var(--ghost-h, 0px);
+  transform: translate(var(--ghost-x, 0px), var(--ghost-y, 0px));
+  opacity: var(--ghost-o, 0);
+  border-radius: var(--r-sm);
+  background: rgba(var(--ink-rgb), 0.05);
+  transition:
+    transform 380ms var(--ease-spring),
+    width 380ms var(--ease-spring),
+    height 380ms var(--ease-spring),
+    opacity var(--dur-hover) ease;
+}
+
+.ls-rail {
+  width: var(--rail-w, 0px);
+  height: var(--rail-h, 0px);
+  transform: translate(var(--rail-x, 0px), var(--rail-y, 0px));
+  opacity: var(--rail-o, 0);
+  border-radius: var(--r-sm);
+  background: var(--evergreen-tint);
+  transition:
+    transform 560ms var(--ease-spring),
+    height 560ms var(--ease-spring),
+    width 560ms var(--ease-spring),
+    opacity var(--dur-hover) ease;
+}
+
+/* The rail's leading edge: the coloured bar marking position in the list. */
+.ls-rail::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  width: 3px;
+  height: 60%;
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  background: var(--evergreen);
+}
+
+.ls-group { position: relative; z-index: 1; display: flex; flex-direction: column; }
+
 .ls-group--footer {
   margin-top: auto;
   padding-top: var(--sp-3);
@@ -205,25 +249,20 @@ html:has(.learn-app) body {
   font-weight: var(--fw-semi);
   color: var(--ink-muted);
   text-align: left;
-  /* Named properties, one short duration: the item should feel like it
-     answers instantly, not like it plays an animation. */
-  transition: background-color var(--dur-hover) ease,
-              color var(--dur-hover) ease,
-              transform var(--dur-press) var(--ease-press);
+  transition: color var(--dur-hover) ease, transform 300ms var(--ease-spring);
 }
 
-/* Tint, not lift. Lift was applied to thirteen surfaces on this page, which
-   is how it stopped meaning anything. */
-.ls-nav-btn:hover {
-  background: var(--evergreen-tint);
-  color: var(--ink);
-}
-
-.ls-nav-btn:active { transform: translateY(1px); }
-
+.ls-nav-btn:hover { color: var(--ink); }
+.ls-nav-btn:active { transform: translateY(1px) scale(0.98); transition-duration: 90ms; }
 .ls-nav-btn:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -2px; }
 
-.ls-nav-label { flex: 1; min-width: 0; }
+.ls-nav-label {
+  flex: 1;
+  min-width: 0;
+  transition: transform 380ms var(--ease-spring);
+}
+
+.ls-nav-btn:hover .ls-nav-label { transform: translateX(3px); }
 
 .ls-nav-icon {
   width: 22px;
@@ -237,32 +276,74 @@ html:has(.learn-app) body {
 
 .ls-nav-btn:hover .ls-nav-icon { color: var(--ink); }
 
-/* Active: tint, evergreen label and icon, and a rail on the leading edge.
-   This is the one place in the system where a coloured rail is allowed,
-   because a rail marks POSITION IN A VERTICAL LIST, which is exactly what is
-   being communicated. (The trailing brand dot the old design added as a
-   fourth signal is gone.) */
-.ls-nav-btn.active,
-.ls-nav-btn.active:hover {
-  background: var(--evergreen-tint);
+.ls-nav-btn.active {
   color: var(--evergreen);
   font-weight: var(--fw-bold);
 }
 
-.ls-nav-btn.active .ls-nav-icon,
-.ls-nav-btn.active:hover .ls-nav-icon { color: var(--evergreen); }
+.ls-nav-btn.active .ls-nav-icon { color: var(--evergreen); }
 
-.ls-nav-btn.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 60%;
-  border-radius: 0 var(--r-xs) var(--r-xs) 0;
-  background: var(--evergreen);
+/* A count on a destination with something waiting (claimable quests). */
+.ls-nav-badge {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--ochre);
+  color: var(--ink);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  animation: fx-pop-in 520ms var(--ease-spring) both;
 }
+
+/* ── Nav icons: one move each, depicting the destination ── */
+
+.ni * { transform-box: fill-box; transition: transform 460ms var(--ease-spring); }
+
+.ni-roof { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-roof { transform: translateY(-2px) rotate(-4deg); }
+.ni-door { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-door { transform: scaleY(0.6); }
+
+.ni-page-l { transform-origin: 100% 50%; }
+.ni-page-r { transform-origin: 0% 50%; }
+.ls-nav-btn:hover .ni-page-l,
+.ls-nav-btn.active .ni-page-l { transform: scaleX(0.84) skewY(-6deg); }
+.ls-nav-btn:hover .ni-page-r,
+.ls-nav-btn.active .ni-page-r { transform: scaleX(0.84) skewY(6deg); }
+
+.ni-ring-o, .ni-ring-i, .ni-bull { transform-origin: 50% 50%; }
+.ls-nav-btn:hover .ni-ring-o { transform: scale(0.82); }
+.ls-nav-btn:hover .ni-ring-i { transform: scale(1.2); transition-delay: 60ms; }
+.ls-nav-btn:hover .ni-bull { transform: scale(1.8); transition-delay: 120ms; }
+
+.ni-bar { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-bar--1 { animation: ni-grow 520ms var(--ease-spring); }
+.ls-nav-btn:hover .ni-bar--2 { animation: ni-grow 520ms var(--ease-spring) 80ms; }
+.ls-nav-btn:hover .ni-bar--3 { animation: ni-grow 520ms var(--ease-spring) 160ms; }
+@keyframes ni-grow { 0% { transform: scaleY(1); } 40% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+
+.ni-star { transform-origin: 50% 55%; }
+.ls-nav-btn:hover .ni-star { transform: rotate(72deg) scale(1.1); }
+.ls-nav-btn.active .ni-star { fill: rgba(var(--evergreen-rgb), 0.18); }
+
+.ni-handle { transform-origin: 50% 0%; }
+.ls-nav-btn:hover .ni-handle { animation: ni-hop 520ms var(--ease-spring); }
+@keyframes ni-hop { 40% { transform: translateY(-3px) scaleX(1.15); } }
+.ls-nav-btn:hover .ni-bag-top { transform: translateY(-1px); }
+
+.ni-head { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-head { animation: ni-nod 620ms var(--ease-out); }
+@keyframes ni-nod { 30% { transform: translateY(1.5px) rotate(-8deg); } 65% { transform: translateY(-0.5px) rotate(6deg); } }
+.ls-nav-btn.active .ni-head { fill: rgba(var(--evergreen-rgb), 0.18); }
+
+.ls-nav-btn:hover .ni-dot--1 { animation: ni-wave 520ms var(--ease-spring); }
+.ls-nav-btn:hover .ni-dot--2 { animation: ni-wave 520ms var(--ease-spring) 70ms; }
+.ls-nav-btn:hover .ni-dot--3 { animation: ni-wave 520ms var(--ease-spring) 140ms; }
+@keyframes ni-wave { 40% { transform: translateX(3px) scale(1.3); } }
 
 /* ── Main column ──────────────────────────────────────────────────────────── */
 
@@ -277,9 +358,7 @@ html:has(.learn-app) body {
   z-index: var(--z-base);
 }
 
-/* ── Course head ──────────────────────────────────────────────────────────────
-   A moment of orientation before the list starts, rather than dropping
-   straight into a stack of cards. Carries the page's one italic phrase. */
+/* ── Course head ──────────────────────────────────────────────────────────── */
 
 .course { display: flex; flex-direction: column; }
 
@@ -296,11 +375,50 @@ html:has(.learn-app) body {
   margin-bottom: var(--sp-2);
 }
 
+.course-sub-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
 .course-sub { font-size: var(--fs-small); color: var(--ink-faint); }
 
-/* ── Resume strip ─────────────────────────────────────────────────────────────
-   Not a card. A strip with a rule above it and the accent spent on its label
-   and its button, because "pick up here" is the page's primary action. */
+/* The whole course, one tick per lesson. */
+.course-ticks {
+  list-style: none;
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 18px;
+}
+
+.course-tick {
+  width: 6px;
+  height: 12px;
+  border-radius: var(--r-xs);
+  background: var(--paper-deep);
+  box-shadow: inset 0 0 0 1px var(--line-faint);
+  cursor: default;
+  transform-origin: 50% 100%;
+  animation: tick-rise 520ms var(--ease-spring) backwards;
+  animation-delay: calc(400ms + var(--i) * 22ms);
+  transition: transform 300ms var(--ease-spring), background-color 300ms ease;
+}
+
+@keyframes tick-rise { from { transform: scaleY(0); } }
+
+.course-tick.is-completed { background: var(--moss); box-shadow: none; }
+.course-tick.is-current {
+  background: var(--clay);
+  box-shadow: none;
+  height: 18px;
+  --ping-color: var(--clay);
+}
+
+.course-tick:hover { transform: scaleY(1.5); }
+
+/* ── Resume strip ─────────────────────────────────────────────────────────── */
 
 .resume {
   display: grid;
@@ -314,17 +432,32 @@ html:has(.learn-app) body {
   border-bottom: 1px solid var(--line);
 }
 
-/* Quiet on purpose. The resume strip and the current-lesson row point at the
-   SAME lesson, and both were carrying the clay accent — which put six clay
-   objects above the fold and left no single loudest thing. The current lesson
-   is the page's primary object; this strip is wayfinding. */
 .resume-label {
   grid-area: label;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
   font-size: var(--fs-micro);
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+.resume-label-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--moss);
+  position: relative;
+}
+
+.resume-label-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--moss);
+  animation: fx-ping 2.6s var(--ease-out) infinite;
 }
 
 .resume-body {
@@ -336,15 +469,45 @@ html:has(.learn-app) body {
 }
 
 .resume-tile {
-  width: 44px;
-  height: 44px;
+  position: relative;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: var(--r-sm);
-  background: var(--paper-deep);
+  border-radius: 50%;
   color: var(--ink-muted);
+  cursor: default;
 }
+
+.resume-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.resume-ring-track { fill: var(--paper-deep); stroke: var(--line-faint); stroke-width: 3; }
+.resume-ring-fill {
+  fill: none;
+  stroke: var(--moss);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1200ms var(--ease-settle);
+  animation: ring-draw 1400ms var(--ease-settle) 400ms backwards;
+}
+
+@keyframes ring-draw { from { stroke-dashoffset: 157; } }
+
+.resume-tile-ico {
+  position: relative;
+  display: grid;
+  place-items: center;
+  transition: transform 520ms var(--ease-spring), color var(--dur-hover) ease;
+}
+
+.resume:hover .resume-tile-ico { transform: rotate(-14deg) scale(1.16); color: var(--evergreen); }
 
 .resume-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
@@ -355,7 +518,10 @@ html:has(.learn-app) body {
   letter-spacing: var(--ls-title);
   line-height: var(--lh-snug);
   color: var(--ink);
+  transition: transform 460ms var(--ease-spring);
 }
+
+.resume:hover .resume-title { transform: translateX(3px); }
 
 .resume-meta { font-size: var(--fs-caption); color: var(--ink-faint); }
 
@@ -364,23 +530,53 @@ html:has(.learn-app) body {
 .resume--done { display: block; }
 .resume--done .resume-label { color: var(--moss); margin-bottom: var(--sp-2); display: block; }
 
-/* ── Module ───────────────────────────────────────────────────────────────────
-   One container: the header and its lessons. A card at --r-lg holding rows
-   that have no radius of their own is the intended nesting; a card inside a
-   card means one of them should not be a card. */
+/* ── Module ───────────────────────────────────────────────────────────────── */
+
+.course-modules { display: flex; flex-direction: column; }
 
 .module {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   overflow: hidden;
   margin-bottom: var(--sp-6);
+  transition: border-color var(--dur-hover) ease, box-shadow 400ms var(--ease-out);
 }
 
-/* A locked module is not interactive, so it gives no feedback at all. */
-.module--locked { opacity: 0.65; }
+.module:not(.module--locked):hover { border-color: var(--line-strong); box-shadow: var(--shadow-raised); }
 
-.module-head { padding: var(--sp-5); }
+.module--locked { opacity: 0.7; }
+.module--locked:hover { opacity: 0.85; }
+
+.module-head { position: relative; padding: var(--sp-5); isolation: isolate; }
+
+/* The whole header is the toggle; the button is laid over it so it stays
+   one real, focusable control. */
+.module-toggle {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+
+.module-toggle:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -4px; }
+.module--locked .module-toggle { cursor: not-allowed; }
+
+.module-head::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(var(--ink-rgb), 0.025);
+  opacity: 0;
+  transition: opacity var(--dur-hover) ease;
+}
+
+.module:not(.module--locked) .module-head:hover::before { opacity: 1; }
 
 .module-head-top {
   display: flex;
@@ -389,9 +585,6 @@ html:has(.learn-app) body {
   margin-bottom: var(--sp-2);
 }
 
-/* The module number is set in the display face at section size and in tan —
-   large enough to index the page, quiet enough not to compete with the title
-   beside it. */
 .module-num {
   font-family: var(--font-display);
   font-size: var(--fs-title);
@@ -399,7 +592,13 @@ html:has(.learn-app) body {
   line-height: 1;
   color: var(--tan-deep);
   font-variant-numeric: tabular-nums;
+  display: inline-block;
+  transform-origin: 0 100%;
+  transition: color var(--dur-hover) ease, transform 460ms var(--ease-spring);
 }
+
+.module:not(.module--locked) .module-head:hover .module-num { color: var(--evergreen); transform: scale(1.2) rotate(-6deg); }
+.module--completed .module-num { color: var(--moss); }
 
 .module-level {
   flex: 1;
@@ -410,6 +609,19 @@ html:has(.learn-app) body {
   color: var(--ink-faint);
 }
 
+.module-chevron {
+  display: grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: var(--r-sm);
+  color: var(--ink-faint);
+  align-self: center;
+  transition: transform 460ms var(--ease-spring), background-color var(--dur-hover) ease, color var(--dur-hover) ease;
+}
+
+.module.is-open .module-chevron { transform: rotate(180deg); }
+.module-head:hover .module-chevron { background: var(--evergreen-tint); color: var(--evergreen); }
+
 .module-title {
   font-family: var(--font-display);
   font-size: var(--fs-title);
@@ -418,7 +630,10 @@ html:has(.learn-app) body {
   line-height: var(--lh-snug);
   color: var(--ink);
   margin-bottom: var(--sp-2);
+  transition: transform 460ms var(--ease-spring);
 }
+
+.module:not(.module--locked) .module-head:hover .module-title { transform: translateX(3px); }
 
 .module-desc {
   font-size: var(--fs-small);
@@ -430,29 +645,64 @@ html:has(.learn-app) body {
 }
 
 .module-progress {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
   margin-bottom: var(--sp-1);
+  pointer-events: none;
 }
 
+.module-progress .track { pointer-events: auto; }
+
 .module-progress-count {
+  display: inline-flex;
   font-size: var(--fs-caption);
   font-weight: var(--fw-bold);
   color: var(--ink-muted);
   flex-shrink: 0;
 }
 
-.module-meta { font-size: var(--fs-caption); color: var(--ink-faint); }
+.module-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+}
+
+.module-meta-hint { color: var(--ink-faint); animation: fx-fade-in 400ms ease; }
 
 .module-locked-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
   padding: 0 var(--sp-5) var(--sp-5);
   font-size: var(--fs-small);
   color: var(--ink-faint);
 }
 
-/* ── Badge ────────────────────────────────────────────────────────────────────
-   --r-xs, so it reads as a printed label rather than a lozenge. */
+.module-locked-hint.is-flash { animation: hint-flash 900ms var(--ease-out); }
+
+@keyframes hint-flash {
+  0%   { color: var(--ink-faint); }
+  20%  { color: var(--clay-ink); transform: translateX(3px); }
+  100% { color: var(--ink-faint); }
+}
+
+/* The collapsing body: grid rows 0fr → 1fr, so the height animates without
+   measuring anything. */
+.module-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 560ms var(--ease-settle);
+}
+
+.module.is-open .module-body { grid-template-rows: 1fr; }
+.module-body-inner { overflow: hidden; min-height: 0; }
+
+/* ── Badge ── */
 
 .badge {
   display: inline-flex;
@@ -472,10 +722,18 @@ html:has(.learn-app) body {
 .badge--active { color: var(--evergreen); background: var(--evergreen-tint); }
 .badge--locked { color: var(--ink-faint); border: 1px solid var(--line); }
 
-/* ── Progress track ───────────────────────────────────────────────────────────
-   A pill radius is correct here: a track genuinely is a rounded bar. Flat
-   fill, no gradient, and no glowing bead on the leading edge — a bar ends
-   where it ends. */
+.badge-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--evergreen);
+  animation: badge-breathe 2.4s var(--ease-out) infinite;
+}
+
+@keyframes badge-breathe { 0%, 60%, 100% { transform: scale(1); } 20% { transform: scale(1.5); } }
+
+.module--completed .badge--done svg { animation: fx-stamp 600ms var(--ease-settle) 600ms backwards; }
+
+/* ── Progress track ── */
 
 .track {
   flex: 1;
@@ -483,7 +741,11 @@ html:has(.learn-app) body {
   background: var(--paper-deep);
   border-radius: var(--r-pill);
   overflow: hidden;
+  cursor: default;
+  transition: height 300ms var(--ease-spring);
 }
+
+.track:hover { height: 9px; }
 
 .track-fill {
   height: 100%;
@@ -498,9 +760,51 @@ html:has(.learn-app) body {
 
 .module-lessons { list-style: none; }
 
-.lesson { border-top: 1px solid var(--line-faint); }
+.lesson {
+  --rail-x: calc(var(--sp-5) + 20px);
+  --tile-mid: calc(var(--sp-3) + 20px);
+  position: relative;
+  border-top: 1px solid var(--line-faint);
+}
+
+.module.is-open .lesson {
+  animation: rv-left 520ms var(--ease-settle) backwards;
+  animation-delay: calc(80ms + var(--i) * 55ms);
+}
+
+/* The path. ::before arrives at this tile from the one above; ::after
+   leaves it toward the one below. Dashed when not yet walked, moss once the
+   lesson it leaves is done. */
+.lesson::before,
+.lesson::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--rail-x) - 1px);
+  width: 2px;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--moss), var(--moss)),
+    repeating-linear-gradient(180deg, var(--line-strong) 0 4px, transparent 4px 8px);
+  background-repeat: no-repeat, repeat;
+  background-size: 100% 0%, 100% 100%;
+  transition: background-size 700ms var(--ease-settle);
+  pointer-events: none;
+}
+
+.lesson::before { top: 0; height: var(--tile-mid); }
+.lesson::after { top: var(--tile-mid); bottom: 0; }
+.lesson[data-first]::before { display: none; }
+.lesson[data-last]::after { display: none; }
+
+.lesson[data-status='completed']::after,
+.lesson[data-status='completed']::before,
+.lesson[data-status='current']::before { background-size: 100% 100%, 100% 100%; }
+
+.lesson[data-status='completed']::after { transition-delay: 200ms; }
 
 .lesson-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--sp-3);
@@ -511,10 +815,10 @@ html:has(.learn-app) body {
 }
 
 .lesson-row:hover { background: var(--evergreen-tint); }
-
 .lesson-row:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -2px; }
 
 .lesson-tile {
+  position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
@@ -523,18 +827,22 @@ html:has(.learn-app) body {
   border-radius: var(--r-sm);
   background: var(--paper-deep);
   color: var(--ink-muted);
-  transition: background-color var(--dur-hover) ease, color var(--dur-hover) ease;
+  box-shadow: 0 0 0 3px var(--surface);
+  transition:
+    background-color var(--dur-hover) ease,
+    color var(--dur-hover) ease,
+    transform 480ms var(--ease-spring);
 }
 
-.lesson-row:hover .lesson-tile { color: var(--evergreen); }
+.lesson-tile svg { transition: transform 480ms var(--ease-spring); }
+
+.lesson-row:not(.lesson-row--locked):hover .lesson-tile { color: var(--evergreen); transform: translateY(-2px); }
+.lesson-row:not(.lesson-row--locked):hover .lesson-tile svg { transform: scale(1.14) rotate(-8deg); }
 
 .lesson-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 
 .lesson-label { font-size: var(--fs-caption); color: var(--ink-faint); }
 
-/* A lesson's name is a lesson's name — it takes the display face wherever it
-   appears, so the same content does not change voice depending on where you
-   meet it. */
 .lesson-title {
   font-family: var(--font-display);
   font-size: var(--fs-body);
@@ -544,7 +852,41 @@ html:has(.learn-app) body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: transform 460ms var(--ease-spring);
 }
+
+.lesson-row:not(.lesson-row--locked):not(.lesson-row--current):hover .lesson-title { transform: translateX(3px); }
+
+/* What pressing the row would do. */
+.lesson-peek {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 3px var(--sp-2);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--evergreen);
+  background: var(--surface);
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity var(--dur-hover) ease, transform 420ms var(--ease-spring);
+}
+
+.lesson-row--available .lesson-peek { color: var(--ochre-ink); }
+.lesson-peek .bi { color: var(--ochre); }
+
+.lesson-row:hover .lesson-peek,
+.lesson-row:focus-visible .lesson-peek,
+.lesson.is-previewing .lesson-peek { opacity: 1; transform: none; }
+
+.lesson-peek-arrow { transition: transform 360ms var(--ease-spring); }
+.lesson.is-previewing .lesson-peek-arrow { transform: rotate(90deg); }
+
+.lesson-peek-star { display: inline-grid; color: var(--ochre); }
 
 .lesson-mark {
   flex-shrink: 0;
@@ -553,25 +895,26 @@ html:has(.learn-app) body {
   display: grid;
   place-items: center;
   border-radius: 50%;
+  transition: transform 420ms var(--ease-spring);
 }
 
 .lesson-mark--done { color: var(--moss); background: var(--moss-tint); }
 .lesson-mark--locked { color: var(--ink-faint); }
 
-/* Completed: a moss check, and the title stays full-strength ink. A finished
-   lesson is not less important — it is done. */
+.lesson-row--completed:hover .lesson-mark--done { transform: scale(1.15) rotate(-10deg); }
+.lesson-row--locked:hover .lesson-mark--locked .ico-shackle { transform: translateY(-1.5px) rotate(-12deg); }
+
+.lesson-mark.is-stamping { animation: fx-stamp 620ms var(--ease-settle) backwards; }
+.lesson-mark.is-stamping .ico-check { animation: fx-draw 480ms var(--ease-out) 260ms both; }
+
 .lesson-row--completed .lesson-tile { background: var(--moss-tint); color: var(--moss); }
 
-/* Locked: present, muted, and not interactive. */
-.lesson[data-status='locked'] { opacity: 0.6; }
-.lesson-row--locked { cursor: default; }
-.lesson-row--locked:hover { background: transparent; }
+/* Locked: present, muted, and it refuses when pressed. */
+.lesson[data-status='locked'] .lesson-row > :not(.lesson-mark) { opacity: 0.6; }
+.lesson-row--locked { cursor: not-allowed; }
+.lesson-row--locked:hover { background: rgba(var(--ink-rgb), 0.025); }
 
-/* ── The current lesson ───────────────────────────────────────────────────────
-   The loudest object on the page, and the only 1.5px border in the product.
-   It gets ONE statement of that fact, not six: the old version stacked an
-   accent border, a tinted ground, an eyebrow, a filled tile, a badge, a
-   coloured arrow and a shadow. */
+/* ── The current lesson ───────────────────────────────────────────────────── */
 
 .lesson[data-status='current'] {
   border-top-color: var(--clay);
@@ -593,13 +936,17 @@ html:has(.learn-app) body {
 .lesson-row--current .lesson-tile {
   background: var(--clay);
   color: var(--surface-raised);
+  --ping-color: var(--clay);
+  box-shadow: 0 0 0 3px var(--surface-raised);
 }
+
+.lesson-row--current:hover .lesson-tile svg { transform: scale(1.14) rotate(-8deg); }
 
 .lesson-row--current .lesson-title { font-size: var(--fs-lead); }
 
-/* Always visible, never a click-to-reveal popup: the row and this panel
-   together are the call to action. */
 .lesson-panel {
+  position: relative;
+  z-index: 1;
   padding: 0 var(--sp-5) var(--sp-5) calc(var(--sp-5) + 40px + var(--sp-3));
 }
 
@@ -610,6 +957,19 @@ html:has(.learn-app) body {
   margin-bottom: var(--sp-3);
   max-width: 32rem;
 }
+
+.lesson-panel-meta {
+  display: flex;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--ink-muted);
+}
+
+.lesson-panel-meta span { display: inline-flex; align-items: center; gap: 4px; cursor: default; }
+.lesson-panel-meta .bi { color: var(--ochre); }
+.lesson-panel-meta .hi { color: var(--berry); }
 
 .lesson-warn {
   display: inline-flex;
@@ -622,26 +982,36 @@ html:has(.learn-app) body {
   color: var(--berry-ink);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
+  animation: fx-shake 500ms var(--ease-out) 400ms;
 }
 
-/* ── Lesson preview (available / completed rows) ──────────────────────────── */
+/* ── Lesson preview (available / completed rows) ── */
 
 .lesson-popup {
+  position: relative;
+  z-index: 1;
   padding: 0 var(--sp-5) var(--sp-4) calc(var(--sp-5) + 40px + var(--sp-3));
-  animation: lessonPopIn var(--dur-enter) var(--ease-out) both;
+  animation: lesson-open 460ms var(--ease-settle) both;
+  transform-origin: 0 0;
 }
 
-@keyframes lessonPopIn {
-  from { opacity: 0; transform: none; }
-  to   { opacity: 1; transform: none; }
+@keyframes lesson-open {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-6px); }
+  to   { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
 }
 
 .lesson-popup-desc {
   font-size: var(--fs-small);
   color: var(--ink-muted);
   line-height: var(--lh-normal);
-  margin-bottom: var(--sp-3);
+  margin-bottom: var(--sp-2);
   max-width: 32rem;
+}
+
+.lesson-popup-record {
+  font-size: var(--fs-caption);
+  color: var(--moss);
+  margin-bottom: var(--sp-3);
 }
 
 /* ── Right column ─────────────────────────────────────────────────────────── */
@@ -663,7 +1033,7 @@ html:has(.learn-app) body {
   gap: var(--sp-4);
 }
 
-/* ── Progress card ────────────────────────────────────────────────────────── */
+/* ── Progress card ── */
 
 .progress-card,
 .quest-widget {
@@ -671,7 +1041,11 @@ html:has(.learn-app) body {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: var(--sp-4);
+  transition: border-color var(--dur-hover) ease, box-shadow 400ms var(--ease-out);
 }
+
+.progress-card:hover,
+.quest-widget:hover { border-color: var(--line-strong); }
 
 .pc-header,
 .qw-title {
@@ -682,51 +1056,7 @@ html:has(.learn-app) body {
   color: var(--ink);
 }
 
-.pc-header { margin-bottom: var(--sp-3); }
-
-.pc-level-row {
-  display: flex;
-  gap: var(--sp-3);
-  align-items: center;
-  margin-bottom: var(--sp-3);
-}
-
-.pc-level-badge {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-sm);
-  background: var(--evergreen);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-
-.pc-level-num {
-  font-family: var(--font-display);
-  font-size: var(--fs-lead);
-  font-weight: var(--fw-bold);
-  color: var(--surface-raised);
-  font-variant-numeric: tabular-nums;
-}
-
-.pc-xp-col { flex: 1; min-width: 0; }
-
-.pc-xp-bar {
-  height: 6px;
-  background: var(--paper-deep);
-  border-radius: var(--r-pill);
-  overflow: hidden;
-  margin-bottom: var(--sp-1);
-}
-
-.pc-xp-fill {
-  height: 100%;
-  background: var(--ochre);
-  border-radius: var(--r-pill);
-  transition: width var(--dur-settle) var(--ease-settle);
-}
-
-.pc-xp-text { font-size: var(--fs-caption); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.pc-header { margin-bottom: var(--sp-3); display: flex; align-items: center; justify-content: space-between; }
 
 .pc-goal {
   margin: var(--sp-3) 0;
@@ -738,7 +1068,7 @@ html:has(.learn-app) body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: var(--sp-1);
+  margin-bottom: var(--sp-2);
 }
 
 .pc-goal-label { font-size: var(--fs-caption); color: var(--ink-faint); }
@@ -754,26 +1084,40 @@ html:has(.learn-app) body {
 }
 
 .pc-goal-value.is-met { color: var(--moss); }
+.pc-goal-value.is-met svg { animation: fx-stamp 600ms var(--ease-settle); }
 
 .pc-goal-track {
-  height: 5px;
+  position: relative;
+  height: 7px;
   background: var(--paper-deep);
   border-radius: var(--r-pill);
-  overflow: hidden;
+  cursor: default;
 }
 
-/* The daily goal is measured in XP, so it fills in the XP colour. It used to
-   be clay, which spent the rationed accent on a sidebar bar. */
 .pc-goal-fill {
   height: 100%;
   background: var(--ochre);
   border-radius: var(--r-pill);
-  /* A hair behind the level bar above it, so the two read as a sequence
-     rather than one synchronised block. */
   transition: width var(--dur-settle) var(--ease-settle) 90ms, background-color var(--dur-enter) ease;
 }
 
 .pc-goal-fill.is-met { background: var(--moss); }
+
+/* A marker walks along the goal track with the day's XP. */
+.pc-goal-marker {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--surface-raised);
+  border: 2.5px solid var(--ochre);
+  transform: translate(-50%, -50%);
+  transition: left var(--dur-settle) var(--ease-settle) 90ms, border-color var(--dur-enter) ease, transform 360ms var(--ease-spring);
+}
+
+.pc-goal-track:hover .pc-goal-marker { transform: translate(-50%, -50%) scale(1.3); }
+.pc-goal-fill.is-met + .pc-goal-marker { border-color: var(--moss); }
 
 .pc-stats {
   display: flex;
@@ -783,17 +1127,22 @@ html:has(.learn-app) body {
 }
 
 .pc-stat {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  cursor: default;
+  padding: var(--sp-1) 0;
+  border-radius: var(--r-sm);
+  transition: background-color var(--dur-hover) ease;
 }
+
+.pc-stat:hover { background: rgba(var(--ink-rgb), 0.035); }
 
 .pc-stat-divider { width: 1px; height: 26px; background: var(--line-faint); }
 
-/* These two figures are what the card exists to show, so they take the
-   display face — the one place in the rail that does. */
 .pc-stat-value {
   display: inline-flex;
   align-items: center;
@@ -805,10 +1154,10 @@ html:has(.learn-app) body {
   letter-spacing: var(--ls-title);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  transition: transform 420ms var(--ease-spring);
 }
 
-.pc-stat-flame { color: var(--ember); }
-.pc-stat.is-dim .pc-stat-flame { color: var(--ink-faint); }
+.pc-stat:hover .pc-stat-value { transform: scale(1.1); }
 
 .pc-stat-label {
   font-size: var(--fs-micro);
@@ -818,7 +1167,7 @@ html:has(.learn-app) body {
   color: var(--ink-faint);
 }
 
-/* ── Quest widget ─────────────────────────────────────────────────────────── */
+/* ── Quest widget ── */
 
 .qw-header {
   display: flex;
@@ -830,17 +1179,21 @@ html:has(.learn-app) body {
 .qw-title { display: inline-flex; align-items: center; gap: var(--sp-1); }
 
 .qw-badge {
-  background: var(--ochre-tint);
-  color: var(--ochre-ink);
-  border-radius: var(--r-xs);
+  background: var(--ochre);
+  color: var(--ink);
+  border-radius: var(--r-pill);
   font-family: var(--font-ui);
   font-size: var(--fs-micro);
-  font-weight: var(--fw-bold);
-  padding: 1px 5px;
+  font-weight: var(--fw-black);
+  padding: 1px 6px;
   font-variant-numeric: tabular-nums;
+  animation: fx-pop-in 520ms var(--ease-spring) both;
 }
 
 .qw-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
   color: var(--ink-muted);
@@ -852,7 +1205,9 @@ html:has(.learn-app) body {
   transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease;
 }
 
+.qw-view-all svg { transition: transform 360ms var(--ease-spring); }
 .qw-view-all:hover { color: var(--clay-ink); border-bottom-color: var(--clay); }
+.qw-view-all:hover svg { transform: translateX(3px); }
 
 .qw-reset {
   display: flex;
@@ -864,9 +1219,11 @@ html:has(.learn-app) body {
   margin-bottom: var(--sp-3);
 }
 
-.qw-reset-count { margin-left: auto; }
+.qw-reset .ico-hand { animation: pg-tick 60s steps(60) infinite; }
 
-.qw-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.qw-reset-count { margin-left: auto; display: inline-flex; gap: 2px; }
+
+.qw-list { display: flex; flex-direction: column; gap: var(--sp-1); }
 
 .qw-weekly {
   border-top: 1px solid var(--line-faint);
@@ -885,9 +1242,7 @@ html:has(.learn-app) body {
 
 .qw-empty { font-size: var(--fs-caption); color: var(--ink-faint); }
 
-/* ── Rail note ────────────────────────────────────────────────────────────────
-   Not a card. A note about where progress actually lives, set in the quietest
-   type in the system, because it is a footnote and should read as one. */
+/* ── Rail note ── */
 
 .rail-note {
   padding-top: var(--sp-3);
@@ -895,11 +1250,15 @@ html:has(.learn-app) body {
 }
 
 .rail-note-body {
+  display: flex;
+  gap: var(--sp-2);
   font-size: var(--fs-caption);
   color: var(--ink-faint);
   line-height: var(--lh-normal);
   margin-bottom: var(--sp-1);
 }
+
+.rail-note-body svg { flex-shrink: 0; margin-top: 2px; color: var(--moss); }
 
 .rail-note-link {
   background: none;
@@ -915,15 +1274,17 @@ html:has(.learn-app) body {
 
 .rail-note-link:hover { color: var(--clay-ink); border-bottom-color: var(--clay); }
 
-/* ── Placeholder views ────────────────────────────────────────────────────────
-   Left-aligned, honest, and typographic. The old version centred a 3.5rem
-   emoji in a 60vh void beside a "Coming Soon" pill — an emoji and a line-icon
-   set must never appear in the same interface. */
+/* ── Placeholder views ── */
 
 .lp-placeholder {
   max-width: 32rem;
   padding: var(--sp-8) 0;
 }
+
+.lp-placeholder > * { animation: fx-slide-up 600ms var(--ease-settle) backwards; }
+.lp-placeholder > :nth-child(2) { animation-delay: 80ms; }
+.lp-placeholder > :nth-child(3) { animation-delay: 160ms; }
+.lp-placeholder > :nth-child(4) { animation-delay: 240ms; }
 
 .lp-placeholder-title {
   font-family: var(--font-display);
@@ -931,14 +1292,14 @@ html:has(.learn-app) body {
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-display);
   color: var(--ink);
-  margin-bottom: var(--sp-3);
+  margin: var(--sp-3) 0;
 }
 
 .lp-placeholder-desc {
   font-size: var(--fs-lead);
   color: var(--ink-muted);
   line-height: var(--lh-relaxed);
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-5);
 }
 
 .lp-placeholder-badge {
@@ -963,7 +1324,6 @@ html:has(.learn-app) body {
 }
 
 @media (max-width: 980px) {
-  /* The right column stops being a companion and becomes a footer. */
   .learn-app { grid-template-columns: 208px minmax(0, 1fr); grid-template-rows: 60px auto; }
   .learn-topbar { grid-column: 2 / -1; }
   .learn-right {
@@ -979,10 +1339,6 @@ html:has(.learn-app) body {
 }
 
 @media (max-width: 900px) {
-  /* A bare 1fr is minmax(auto, 1fr), and that auto floor refuses to shrink
-     below its content — so the horizontally-scrolling nav strip, which is
-     wider than a phone screen on purpose, pushed the whole grid out and gave
-     the page a horizontal scrollbar instead of scrolling inside itself. */
   .learn-app {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 56px auto 1fr auto;
@@ -1011,6 +1367,7 @@ html:has(.learn-app) body {
     overflow-y: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    animation-name: fx-fade-in;
   }
 
   .learn-sidebar::-webkit-scrollbar { display: none; }
@@ -1019,13 +1376,11 @@ html:has(.learn-app) body {
 
   .ls-nav { flex-direction: row; gap: 2px; flex: 1; }
 
-  /* display:contents dissolves the group wrappers so every item becomes a
-     direct flex child of the strip and the three groups read as one row. */
   .ls-group, .ls-group-list { display: contents; }
 
   .ls-group--footer { margin-top: 0; padding-top: 0; border-top: none; }
 
-  .ls-nav-item { padding: 0; margin: 0; flex-shrink: 0; }
+  .ls-nav-item { position: relative; z-index: 1; padding: 0; margin: 0; flex-shrink: 0; }
 
   .ls-nav-btn {
     flex-direction: column;
@@ -1034,18 +1389,19 @@ html:has(.learn-app) body {
     font-size: var(--fs-micro);
   }
 
-  /* The axis changed, so the rail moves to the bottom edge — a rail marks
-     position along the direction the list runs. */
-  .ls-nav-btn.active::before {
-    left: var(--sp-2);
-    right: var(--sp-2);
+  .ls-nav-btn:hover .ls-nav-label { transform: none; }
+
+  /* The axis changed, so the rail's marker runs along the bottom edge. */
+  .ls-rail::before {
+    left: 20%;
+    width: 60%;
     top: auto;
     bottom: 0;
-    transform: none;
-    width: auto;
     height: 2px;
     border-radius: var(--r-xs) var(--r-xs) 0 0;
   }
+
+  .ls-nav-badge { position: absolute; top: 2px; right: 6px; }
 
   .ls-nav-label { flex: none; }
 
@@ -1057,23 +1413,33 @@ html:has(.learn-app) body {
 @media (max-width: 560px) {
   .learn-main { padding: var(--sp-5) var(--sp-4) var(--sp-10); }
   .module-head { padding: var(--sp-4); }
+  .lesson { --rail-x: calc(var(--sp-4) + 20px); }
   .lesson-row { padding: var(--sp-3) var(--sp-4); }
   .lesson-panel,
   .lesson-popup { padding-left: var(--sp-4); padding-right: var(--sp-4); }
   .resume { grid-template-columns: 1fr; grid-template-areas: 'label' 'body' 'action'; }
   .resume .btn { width: 100%; }
   .learn-right-sticky { flex-direction: column; }
+  .course-ticks { width: 100%; }
+  .course-tick { flex: 1; }
+  .lesson-peek { display: none; }
 }
 
-/* A locked module's progress bar is always empty, and an empty bar is a line
-   of noise saying nothing. The lesson count in the hint below already tells
-   you how much is behind the lock. */
 .module--locked .module-progress { display: none; }
 
 @media (max-width: 560px) {
-  /* On a narrow column an ellipsis hides the one thing the row is for. The
-     title wraps instead; the row is allowed to be two lines tall. */
   .lesson-title { white-space: normal; overflow: visible; text-overflow: clip; }
   .lesson-row { align-items: flex-start; }
   .lesson-tile { margin-top: 2px; }
+}
+
+/* Touch screens have no hover, so the preview chips a mouse user reveals are
+   simply shown on the rows that have them. */
+@media (hover: none) {
+  .lesson-peek { opacity: 1; transform: none; }
+  .mf-hint { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-dot, .resume-label-dot::after, .qw-reset .ico-hand { animation: none !important; }
 }

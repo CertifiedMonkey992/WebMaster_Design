@@ -2,14 +2,19 @@
    GemsPanel.jsx — CURRENCY INFORMATION + RECENT LEDGER
    ---------------------------------------------------------------------------
    Every gem movement is written to the ledger by currencyService, so this
-   panel is a genuine transaction history rather than a decorative list.
+   panel is a genuine transaction history.
+
+   Revision 2: the stone turns as the panel opens, the balance rolls, the
+   ways to earn and spend are rows you can read by hovering, and the ledger
+   entries arrive in order, newest first.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useProgression } from '../../state/ProgressionContext'
-import { GemIcon, Icon } from './Icons'
+import { GemIcon, BoltIcon, ShieldIcon, HeartIcon, Icon } from './Icons'
 import { CURRENCY, QUESTS } from '../../config/progressionConfig'
 import { HEART_REFILL_COST, STREAK_SHIELD_COST } from '../../config/shopConfig'
 import { formatNumber } from '../../utils/progressionUtils'
+import RollingNumber from '../../motion/RollingNumber'
 
 const REASON_LABELS = {
   quest: 'Quest reward',
@@ -20,6 +25,7 @@ const REASON_LABELS = {
   achievement: 'Achievement',
   'team-mission': 'Team mission',
   'heart-refill': 'Heart refill',
+  'daily-bonus': 'Daily bonus',
   manual: 'Adjustment',
 }
 
@@ -31,16 +37,27 @@ function timeAgo(ts) {
   return `${Math.floor(diff / 86400000)}d ago`
 }
 
-export default function GemsPanel({ onClose }) {
+export default function GemsPanel({ onClose, onOpenShop }) {
   const { state, vm } = useProgression()
   const history = state.ledger.filter((e) => e.kind === 'gems').slice(0, 6)
 
+  const earn = [
+    { icon: <Icon name="target" size={13} />, text: 'Complete a daily quest', value: `+${QUESTS.REWARD.easy}–${QUESTS.REWARD.hard}` },
+    { icon: <BoltIcon size={13} />, text: 'Gain a level', value: `+${CURRENCY.LEVEL_UP_GEMS}` },
+    { icon: <Icon name="star" size={13} />, text: 'Finish a lesson perfectly', value: `+${CURRENCY.PERFECT_LESSON_GEMS}` },
+    { icon: <Icon name="layers" size={13} />, text: 'Complete a whole section', value: `+${CURRENCY.SECTION_COMPLETE_GEMS}` },
+  ]
+  const spend = [
+    { icon: <HeartIcon size={13} />, text: 'Instant heart refill', value: `−${HEART_REFILL_COST}` },
+    { icon: <ShieldIcon size={13} emblem={false} />, text: 'Streak Shield', value: `−${STREAK_SHIELD_COST}` },
+  ]
+
   return (
     <div className="pg-panel">
-      <div className="pg-gem-hero">
-        <GemIcon size={34} className="pg-gem-hero-icon" />
+      <div className="pg-gem-hero fx-glint-host">
+        <span className="pg-gem-hero-icon"><GemIcon size={38} /></span>
         <div>
-          <div className="pg-gem-hero-value">{formatNumber(vm.gems)}</div>
+          <div className="pg-gem-hero-value"><RollingNumber value={vm.gems} format={formatNumber} /></div>
           <div className="pg-gem-hero-label">gems available</div>
         </div>
       </div>
@@ -59,18 +76,18 @@ export default function GemsPanel({ onClose }) {
       <div className="pg-earn-list">
         <div className="pg-subhead">How to earn</div>
         <ul>
-          <li><Icon name="target" size={13} /> Complete a daily quest <b>+{QUESTS.REWARD.easy}–{QUESTS.REWARD.hard}</b></li>
-          <li><Icon name="chevron-up" size={13} /> Gain a level <b>+{CURRENCY.LEVEL_UP_GEMS}</b></li>
-          <li><Icon name="star" size={13} /> Finish a lesson perfectly <b>+{CURRENCY.PERFECT_LESSON_GEMS}</b></li>
-          <li><Icon name="layers" size={13} /> Complete a whole section <b>+{CURRENCY.SECTION_COMPLETE_GEMS}</b></li>
+          {earn.map((row, i) => (
+            <li key={row.text} style={{ '--i': i }}>{row.icon} {row.text} <b>{row.value}</b></li>
+          ))}
         </ul>
       </div>
 
-      <div className="pg-earn-list">
+      <div className="pg-earn-list pg-earn-list--spend">
         <div className="pg-subhead">Where they go</div>
         <ul>
-          <li><Icon name="clock" size={13} /> Instant heart refill <b>−{HEART_REFILL_COST}</b></li>
-          <li><Icon name="shield" size={13} /> Streak Shield <b>−{STREAK_SHIELD_COST}</b></li>
+          {spend.map((row, i) => (
+            <li key={row.text} style={{ '--i': i + 4 }}>{row.icon} {row.text} <b>{row.value}</b></li>
+          ))}
         </ul>
       </div>
 
@@ -78,7 +95,7 @@ export default function GemsPanel({ onClose }) {
         <div className="pg-ledger">
           <div className="pg-subhead">Recent activity</div>
           {history.map((entry, i) => (
-            <div className="pg-ledger-row" key={`${entry.ts}-${i}`}>
+            <div className="pg-ledger-row" key={`${entry.ts}-${i}`} style={{ '--i': i }}>
               <span className="pg-ledger-reason">
                 {entry.questTitle ?? REASON_LABELS[entry.reason] ?? entry.reason}
               </span>
@@ -91,11 +108,10 @@ export default function GemsPanel({ onClose }) {
         </div>
       )}
 
-      {onClose && (
-        <div className="pg-panel-actions">
-          <button className="pg-btn pg-btn--ghost" onClick={onClose}>Close</button>
-        </div>
-      )}
+      <div className="pg-panel-actions">
+        {onOpenShop && <button type="button" className="btn btn-primary btn-sm" onClick={onOpenShop}>Open the shop</button>}
+        {onClose && <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>}
+      </div>
     </div>
   )
 }

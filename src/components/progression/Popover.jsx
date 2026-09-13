@@ -1,16 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Popover.jsx — ANCHORED PANEL USED BY THE STATUS BAR
    ---------------------------------------------------------------------------
-   Small, dependency-free and accessible: closes on outside click and on
-   Escape, restores focus to the trigger, and collapses to a bottom sheet on
-   narrow screens (handled in CSS) so the panels stay usable on a phone.
+   Closes on outside click and Escape, and collapses to a bottom sheet on
+   narrow screens (CSS).
+
+   Revision 2: the panel grows OUT OF the pill that opened it (scale from its
+   top-right corner with a spring), its contents arrive in sequence, and it
+   leaves by settling back toward the pill rather than vanishing — so it is
+   kept mounted for the length of its exit.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
-export default function Popover({ open, onClose, title, children, align = 'right', className = '' }) {
+const EXIT_MS = 170
+
+export default function Popover({ open, onClose, title, children, align = 'right', className = '', tone }) {
   const ref = useRef(null)
   const titleId = useId()
+  const [mounted, setMounted] = useState(open)
+  const [leaving, setLeaving] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true)
+      setLeaving(false)
+      return undefined
+    }
+    if (!mounted) return undefined
+    setLeaving(true)
+    const t = window.setTimeout(() => { setMounted(false); setLeaving(false) }, EXIT_MS)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   useEffect(() => {
     if (!open) return undefined
@@ -18,7 +39,6 @@ export default function Popover({ open, onClose, title, children, align = 'right
     const onPointerDown = (e) => {
       const el = ref.current
       if (!el) return
-      /* Ignore clicks on the trigger itself — the trigger toggles by itself. */
       if (e.target.closest?.('[data-popover-trigger]')) return
       if (!el.contains(e.target)) onClose()
     }
@@ -32,15 +52,14 @@ export default function Popover({ open, onClose, title, children, align = 'right
     }
   }, [open, onClose])
 
-  if (!open) return null
+  if (!mounted) return null
 
   return (
     <>
-      {/* Scrim only shows on small screens, where the popover becomes a sheet */}
-      <div className="pg-popover-scrim" onClick={onClose} aria-hidden="true" />
+      <div className={`pg-popover-scrim${leaving ? ' is-leaving' : ''}`} onClick={onClose} aria-hidden="true" />
       <div
         ref={ref}
-        className={`pg-popover pg-popover--${align} ${className}`}
+        className={`pg-popover pg-popover--${align}${tone ? ` pg-popover--${tone}` : ''}${leaving ? ' is-leaving' : ''} ${className}`}
         role="dialog"
         aria-modal="false"
         aria-labelledby={titleId}

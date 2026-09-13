@@ -26,8 +26,10 @@ press.
 
 - **Hover**: solid darkens one step (`--evergreen-deep` / `--clay-deep`);
   outline fills with `--evergreen-tint` and its border goes `--evergreen`;
-  quiet takes `--ink` text. **No lift on any button.** A button is attached
-  to the surface it sits on.
+  quiet takes `--ink` text. **No lift on any button** — a button is attached
+  to the surface it sits on — but solid and outline buttons take the
+  **Magnet** verb (≤ 5px toward the pointer) and solid buttons carry a warm
+  pointer-following highlight. Both come from `FxLayer`, not the button CSS.
 - **Active**: `translateY(1px)` plus `--shadow-press`. This is the product's
   press, and it is the same on every button in the app.
 - **Disabled**: `opacity: .45`, `cursor: not-allowed`, no hover response.
@@ -158,10 +160,14 @@ are in.
   done. No tinted row background.
 - **Locked**: `opacity: .6`, a small lock in `--ink-faint`, `cursor: default`,
   no hover at all.
-- There is no path connector between rows. It existed to link lesson cards
-  that floated free of each other; once the module became one container with
-  hairline-separated rows, the container itself is the connection and the
-  segment line was drawing a relationship the layout already showed.
+- **The path** (revision 2): a dashed rail runs through the lesson tiles and
+  fills `--moss` up to the current lesson, so a module reads as a route with a
+  position on it rather than as a list. The current tile pings. The rail is a
+  track carrying the same figure as the progress bar, not a decoration.
+- Modules **collapse**: in-progress open, completed and locked closed. The
+  header toggles it; a locked header shakes and says what unlocks it.
+- Locked rows are focusable, carry a tooltip naming the lesson that unlocks
+  them, and shake their lock when activated.
 
 ### Progress indicators
 
@@ -215,8 +221,12 @@ semantic colour* — always in that order, always the same sizes.
   colour; the number stays `--ink` so the three read as one row of figures.
 - At zero: icon drops to `--ink-faint`, number stays `--ink`. Do not hide it.
 - Hover: border `--line-strong`. Press: `translateY(1px)`.
-- On increase: the number swaps with a 240ms upward wipe and the icon scales
-  to 1.12 and back. Once. This is the reward feedback for small amounts.
+- Numbers **roll** (`RollingNumber`) and hold their old value until an
+  incoming reward flight lands (`useLandedValue`).
+- Each pill is a flight target and carries a `data-tip` tooltip.
+- The icons are **living** (`MOTION_RULES.md`): the flame flickers while
+  alive and flares on increase; the heart shows its fill level and a recovery
+  ring, cracks on loss and beats when one is left; the gem turns on increase.
 
 ### Hearts
 

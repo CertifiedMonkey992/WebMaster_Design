@@ -1,0 +1,381 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   icons.css — HOW THE ECONOMY ICONS ARE LIT, AND HOW THEY MOVE
+   ---------------------------------------------------------------------------
+   Every hero icon is back plate + face + shade + shine (see Icons.jsx). The
+   face is currentColor, so the icon's context decides its hue; the back
+   plate is that same colour mixed toward ink, so the object's thickness is
+   always a darker version of itself rather than a separately chosen colour.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ HEART ═════════════════════════════════════════════════════════════════ */
+
+.hi { overflow: visible; }
+
+.hi-back {
+  fill: currentColor;
+  fill: color-mix(in srgb, currentColor 58%, var(--ink));
+  opacity: calc(0.2 + var(--fill, 1) * 0.8);
+  transition: opacity var(--dur-settle) var(--ease-settle);
+}
+
+/* The empty part of the heart: a faint well with an outline. The outline
+   fades out as the heart fills, so a full heart has a crisp edge and a
+   spent one still shows its shape. */
+.hi-well {
+  fill: currentColor;
+  fill-opacity: 0.13;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-opacity: calc(min(1, (1 - var(--fill, 1)) * 4) * 0.55);
+  transition: stroke-opacity var(--dur-settle) ease;
+}
+
+.hi-face { fill: currentColor; }
+.hi-shade { fill: rgba(var(--ink-rgb), 0.17); }
+
+.hi-shine {
+  fill: none;
+  stroke: rgba(var(--sheen-rgb), 0.7);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  opacity: calc(var(--fill, 1) * 1);
+}
+
+.hi-level {
+  transform: translateY(calc((1 - var(--fill, 1)) * 18px));
+  transition: transform 760ms var(--ease-settle);
+}
+
+.hi-half {
+  transform-box: view-box;
+  transform-origin: 12px 20.5px;
+}
+
+.hi-crack {
+  fill: none;
+  stroke: var(--surface-raised);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+
+/* ── The live heart ── */
+
+.live-heart {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--icon, 20px);
+  height: var(--icon, 20px);
+  flex-shrink: 0;
+  color: var(--berry);
+}
+
+.live-heart .hi { transform-origin: 50% 55%; }
+
+.live-heart.is-empty { color: var(--ink-faint); }
+
+/* Recovery ring — the next heart filling in, drawn around the icon. */
+.lh-ring {
+  position: absolute;
+  width: calc(var(--icon, 20px) * 1.5);
+  height: calc(var(--icon, 20px) * 1.5);
+  left: 50%; top: 52%;
+  translate: -50% -50%;
+  transform: rotate(-90deg);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.lh-ring-track { fill: none; stroke: rgba(var(--ink-rgb), 0.08); stroke-width: 2; }
+
+.lh-ring-fill {
+  fill: none;
+  stroke: var(--berry);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  opacity: 0.55;
+  transition: stroke-dashoffset 900ms linear;
+}
+
+.live-heart.is-empty .lh-ring-fill { opacity: 0.8; }
+
+/* One heart left: a lub-dub, then a long rest. The only warning before a
+   lesson is blocked, and it stops the moment a second heart returns. */
+.live-heart.is-low .hi { animation: hi-beat 2.4s var(--ease-out) infinite; }
+
+@keyframes hi-beat {
+  0%, 36%, 100% { transform: scale(1); }
+  7%  { transform: scale(1.2); }
+  14% { transform: scale(1.02); }
+  21% { transform: scale(1.14); }
+}
+
+/* Lost: the crack flashes, the halves part and tilt, then close again as the
+   fill level drains. The whole icon shakes once. */
+.live-heart.is-cracking .hi { animation: hi-shake 480ms cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+.live-heart.is-cracking .hi-crack { animation: hi-crack 760ms var(--ease-out); }
+.live-heart.is-cracking .hi-half--a { animation: hi-part-a 760ms var(--ease-out); }
+.live-heart.is-cracking .hi-half--b { animation: hi-part-b 760ms var(--ease-out); }
+
+@keyframes hi-shake {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -2.5px 0; }
+  40% { translate: 2.5px 0; }
+  60% { translate: -1.5px 0; }
+  80% { translate: 1px 0; }
+}
+
+@keyframes hi-crack {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  30%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes hi-part-a {
+  0%, 12% { transform: none; }
+  32%     { transform: translate(-1.6px, 0.4px) rotate(-10deg); }
+  68%     { transform: translate(-1.2px, 0.3px) rotate(-7deg); }
+  100%    { transform: none; }
+}
+
+@keyframes hi-part-b {
+  0%, 12% { transform: none; }
+  32%     { transform: translate(1.6px, 0.4px) rotate(10deg); }
+  68%     { transform: translate(1.2px, 0.3px) rotate(7deg); }
+  100%    { transform: none; }
+}
+
+/* Gained: a strong double beat. */
+.live-heart.is-gaining .hi { animation: hi-beat-once 720ms var(--ease-spring); }
+
+@keyframes hi-beat-once {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.32); }
+  38%  { transform: scale(0.96); }
+  56%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ═══ GEM ═══════════════════════════════════════════════════════════════════ */
+
+.gi { overflow: visible; }
+
+.gi-back { fill: currentColor; fill: color-mix(in srgb, currentColor 52%, var(--ink)); }
+.gi-body { fill: currentColor; }
+.gi-crown { fill: rgba(var(--sheen-rgb), 0.36); }
+.gi-pav-l { fill: rgba(var(--sheen-rgb), 0.14); }
+.gi-pav-r { fill: rgba(var(--ink-rgb), 0.17); }
+
+.gi-facets {
+  fill: none;
+  stroke: rgba(var(--ink-rgb), 0.24);
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+}
+
+.gi-glint {
+  fill: rgba(var(--sheen-rgb), 0.78);
+  transform-box: view-box;
+  transform: skewX(-22deg) translateX(-4px);
+}
+
+.live-gem {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--icon, 20px);
+  height: var(--icon, 20px);
+  flex-shrink: 0;
+  color: var(--ochre);
+}
+
+/* Earned: the stone turns over once, like a coin landing, and a glint
+   crosses its face. */
+.live-gem.is-turning .gi { animation: gi-turn 820ms var(--ease-out); }
+.live-gem.is-turning .gi-glint,
+.fx-glint-host:hover .gi-glint { animation: gi-glint 760ms var(--ease-out); }
+
+.live-gem.is-spending .gi { animation: gi-sink 520ms var(--ease-out); }
+
+@keyframes gi-turn {
+  0%   { transform: translateY(0) scaleX(1); }
+  22%  { transform: translateY(-4px) scaleX(0.08); }
+  44%  { transform: translateY(-5px) scaleX(1); }
+  66%  { transform: translateY(-3px) scaleX(0.08); }
+  100% { transform: translateY(0) scaleX(1); }
+}
+
+@keyframes gi-glint {
+  from { transform: skewX(-22deg) translateX(-4px); }
+  to   { transform: skewX(-22deg) translateX(34px); }
+}
+
+@keyframes gi-sink {
+  30% { transform: translateY(2px) scale(0.84); }
+}
+
+/* ═══ FLAME ═════════════════════════════════════════════════════════════════ */
+
+.fi { overflow: visible; }
+
+.fi-outer { fill: currentColor; transition: fill var(--dur-settle) ease; }
+.fi-mid   { fill: var(--ochre); transition: fill var(--dur-settle) ease; }
+.fi-core  { fill: var(--surface-raised); }
+
+.fi-o, .fi-m, .fi-c {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* At risk: the streak is alive but today is not done — a smaller, paler fire. */
+.fi--risk .fi-m { scale: 0.82; }
+.fi--risk .fi-mid { fill: var(--tan-deep); }
+.fi--risk .fi-c { scale: 0.7; }
+
+/* Out: ash. */
+.fi--out .fi-mid { fill: var(--paper-deep); }
+.fi--out .fi-core { fill: var(--surface); }
+
+.live-flame {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: var(--icon, 20px);
+  height: var(--icon, 20px);
+  flex-shrink: 0;
+  color: var(--ember);
+}
+
+.live-flame.is-out { color: var(--ink-faint); }
+
+/* The living flame. Three layers on unrelated periods, so the shape never
+   repeats and never reads as a loop. Only inside .fx-alive — a flame in a
+   toast or a list stays still. */
+.fx-alive .fi--lit .fi-o { animation: fi-flick-o 2.7s ease-in-out infinite; }
+.fx-alive .fi--lit .fi-m { animation: fi-flick-m 1.9s ease-in-out infinite; }
+.fx-alive .fi--lit .fi-c { animation: fi-flick-c 1.3s ease-in-out infinite; }
+.fx-alive .fi--risk .fi-o { animation: fi-sway 3.4s ease-in-out infinite; }
+.fx-alive .fi--risk .fi-c { animation: fi-flick-c 2.1s ease-in-out infinite; }
+
+@keyframes fi-flick-o {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  23% { transform: scale(0.97, 1.05) skewX(-2.5deg); }
+  51% { transform: scale(1.03, 0.97) skewX(1.8deg); }
+  77% { transform: scale(0.99, 1.03) skewX(-1deg); }
+}
+
+@keyframes fi-flick-m {
+  0%, 100% { transform: scale(1, 1) translateX(0); }
+  31% { transform: scale(0.93, 1.1) translateX(0.3px); }
+  63% { transform: scale(1.05, 0.94) translateX(-0.2px); }
+}
+
+@keyframes fi-flick-c {
+  0%, 100% { transform: scale(1, 1); }
+  42% { transform: scale(0.86, 1.16); }
+  71% { transform: scale(1.08, 0.9); }
+}
+
+@keyframes fi-sway {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  30% { transform: rotate(-4deg) scale(0.97, 1.02); }
+  70% { transform: rotate(3deg) scale(1.01, 0.98); }
+}
+
+/* Hover: the fire leans up toward the hand. `scale` composes with the
+   flicker's `transform`, so the two never fight. */
+.fx-flare-host:hover .fi-o,
+.fx-flare-host:focus-visible .fi-o { scale: 1.1 1.2; }
+.fx-flare-host:hover .fi-m,
+.fx-flare-host:focus-visible .fi-m { scale: 1.05 1.26; }
+.fi-o, .fi-m { transition: scale 380ms var(--ease-spring); }
+
+/* Rose: the flare. */
+.live-flame.is-flaring .fi-o { animation: fi-flare-o 980ms var(--ease-out); }
+.live-flame.is-flaring .fi-m { animation: fi-flare-m 980ms var(--ease-out); }
+.live-flame.is-flaring .fi-c { animation: fi-flare-c 980ms var(--ease-out); }
+
+@keyframes fi-flare-o {
+  0%   { transform: scale(1); }
+  24%  { transform: scale(1.28, 1.5) skewX(-4deg); }
+  48%  { transform: scale(0.94, 1.08) skewX(2deg); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fi-flare-m {
+  0%   { transform: scale(1); }
+  28%  { transform: scale(1.3, 1.7); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fi-flare-c {
+  0%   { transform: scale(1); }
+  32%  { transform: scale(1.5, 2); }
+  100% { transform: scale(1); }
+}
+
+.live-flame.is-dousing .fi { animation: gi-sink 620ms var(--ease-out); }
+
+/* A banked Streak Shield sits at the flame's foot. */
+.lf-shield {
+  position: absolute;
+  right: -30%;
+  bottom: -18%;
+  color: var(--evergreen);
+  filter: drop-shadow(0 1px 0 var(--paper));
+}
+
+/* ═══ BOLT, SHIELD ══════════════════════════════════════════════════════════ */
+
+.bi, .si { overflow: visible; }
+
+.bi-back { fill: currentColor; fill: color-mix(in srgb, currentColor 52%, var(--ink)); }
+.bi-face { fill: currentColor; }
+.bi-shade { fill: rgba(var(--ink-rgb), 0.15); }
+.bi-shine { fill: none; stroke: rgba(var(--sheen-rgb), 0.72); stroke-width: 1.5; stroke-linecap: round; }
+
+.si-back { fill: currentColor; fill: color-mix(in srgb, currentColor 55%, var(--ink)); }
+.si-face { fill: currentColor; }
+.si-shade { fill: rgba(var(--ink-rgb), 0.16); }
+.si-emblem { fill: var(--ochre); }
+.si-shine { fill: none; stroke: rgba(var(--sheen-rgb), 0.62); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ═══ LINE ICON PARTS ═══════════════════════════════════════════════════════ */
+
+.ico-check { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.is-drawing .ico-check { animation: fx-draw 520ms var(--ease-out) both; }
+
+.ico-shackle {
+  transform-box: fill-box;
+  transform-origin: 15% 100%;
+  transition: transform 300ms var(--ease-spring);
+}
+.is-denied .ico-shackle { animation: lock-rattle 460ms var(--ease-out); }
+
+@keyframes lock-rattle {
+  0%, 100% { transform: none; }
+  20% { transform: translateY(-2px) rotate(-14deg); }
+  45% { transform: translateY(-1px) rotate(10deg); }
+  70% { transform: translateY(-1px) rotate(-5deg); }
+}
+
+.ico-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 340ms var(--ease-spring);
+}
+
+.ico-hand {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  transition: transform 700ms var(--ease-settle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-alive .fi-o, .fx-alive .fi-m, .fx-alive .fi-c,
+  .live-heart .hi { animation: none !important; }
+}

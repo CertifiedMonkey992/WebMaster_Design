@@ -1,30 +1,41 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    DailyBonusModal.jsx — THE CONNECTED DAILY BONUS
    ---------------------------------------------------------------------------
-   The only job here is wiring: pull the bonus view out of the shared view
-   model, hand it to the presentational track, and route the claim through the
-   central reducer. No reward logic, no dates, no state of its own.
+   Wiring only: pull the bonus view out of the shared view model, hand it to
+   the presentational track, route the claim through the central reducer.
+
+   Revision 2: the panel rises with a spring and leaves by settling back
+   down, so it stays mounted for its exit.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { Icon } from '../progression/Icons'
 import DailyBonusTrack from './DailyBonusTrack'
 import './dailyBonus.css'
 
+const EXIT_MS = 220
+
 export default function DailyBonusModal({ open, onClose }) {
   const { vm, actions } = useProgression()
   const panelRef = useRef(null)
   const closeRef = useRef(null)
+  const [mounted, setMounted] = useState(open)
+  const [leaving, setLeaving] = useState(false)
 
-  /* Keeps the "next reward in 5h 42m" line moving. Availability itself comes
-     from the calendar date in the service, never from this countdown. */
   useClock()
+
+  useEffect(() => {
+    if (open) { setMounted(true); setLeaving(false); return undefined }
+    if (!mounted) return undefined
+    setLeaving(true)
+    const t = window.setTimeout(() => { setMounted(false); setLeaving(false) }, EXIT_MS)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const claim = useCallback(() => actions.claimDailyBonus(), [actions])
 
-  /* Escape to close, and focus moves into the dialog so the keyboard path
-     works without a mouse. */
   useEffect(() => {
     if (!open) return undefined
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
@@ -33,7 +44,6 @@ export default function DailyBonusModal({ open, onClose }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  /* Trap Tab inside the dialog while it is open. */
   useEffect(() => {
     if (!open) return undefined
     const onTab = (e) => {
@@ -54,10 +64,10 @@ export default function DailyBonusModal({ open, onClose }) {
     return () => window.removeEventListener('keydown', onTab)
   }, [open])
 
-  if (!open) return null
+  if (!mounted) return null
 
   return (
-    <div className="db-overlay" onClick={onClose}>
+    <div className={`db-overlay${leaving ? ' is-leaving' : ''}`} onClick={onClose}>
       <div
         className="db-modal"
         role="dialog"

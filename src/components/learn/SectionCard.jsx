@@ -1,54 +1,97 @@
-import { useState, useEffect, useRef, Fragment } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import LessonNode from './LessonNode'
 import useProgressWidth from '../../hooks/useProgressWidth'
+import RollingNumber from '../../motion/RollingNumber'
+import { shake } from '../../motion/burst'
+import { Icon } from '../progression/Icons'
 
 /**
  * A course module: its header and its lessons, as ONE container.
  *
- * This used to be a card followed by five free-floating lesson cards, which
- * put eight card edges on screen for a single module and made the page read
- * as a feed of unrelated surfaces. A module is one object now; the lessons
- * are rows inside it, separated by hairlines.
- *
- * The "hero" variant is gone with it. The active module used to get a tinted
- * gradient ground, an accent border and a glowing orbital illustration — four
- * statements of a fact the expanded lesson list already makes. What marks the
- * active module now is that its lessons are open and one of them carries the
- * only clay border on the page.
- *
- * `section` arrives pre-derived from deriveCourse(), so completed/total/pct/
- * status already reflect real progression state.
+ * Revision 2:
+ *   · the module COLLAPSES — in-progress opens, completed and locked close —
+ *     and the header is the toggle, with a chevron that turns
+ *   · a locked header refuses: it shakes, the lock rattles, and the hint says
+ *     which module unlocks it
+ *   · the lessons are a PATH: a rail runs through the tiles and fills moss up
+ *     to where you are (see LessonNode)
+ *   · the bar settles with a shine, the count rolls
  */
-export default function SectionCard({ section, sectionNumber, onStartLesson }) {
+export default function SectionCard({ section, sectionNumber, previousTitle, onStartLesson, className = '', style }) {
   const [activeLesson, setActiveLesson] = useState(null)
   const cardRef = useRef(null)
+  const lockRef = useRef(null)
   const { completed, total, pct, totalDuration } = section
   const fillWidth = useProgressWidth(pct)
+
+  const isLocked = section.status === 'locked'
+  const isDone = section.status === 'completed'
+  const [open, setOpen] = useState(section.status === 'in-progress')
+  const [denied, setDenied] = useState(0)
+
+  /* A module that just became the active one opens itself. */
+  useEffect(() => {
+    if (section.status === 'in-progress') setOpen(true)
+    if (section.status === 'locked') setOpen(false)
+  }, [section.status])
+
+  /* Folding the module closes any lesson preview inside it, so no control
+     stays reachable by Tab inside a collapsed region. */
+  useEffect(() => { if (!open) setActiveLesson(null) }, [open])
 
   useEffect(() => {
     if (!activeLesson) return
     const handleOutside = (e) => {
-      if (cardRef.current && !cardRef.current.contains(e.target)) {
-        setActiveLesson(null)
-      }
+      if (cardRef.current && !cardRef.current.contains(e.target)) setActiveLesson(null)
     }
     document.addEventListener('mousedown', handleOutside)
     return () => document.removeEventListener('mousedown', handleOutside)
   }, [activeLesson])
 
+  useEffect(() => {
+    if (!denied) return undefined
+    lockRef.current?.classList.add('is-denied')
+    const t = window.setTimeout(() => lockRef.current?.classList.remove('is-denied'), 500)
+    return () => clearTimeout(t)
+  }, [denied])
+
+  const toggleModule = () => {
+    if (isLocked) {
+      shake(cardRef.current, { distance: 6 })
+      setDenied((n) => n + 1)
+      return
+    }
+    setOpen((o) => !o)
+  }
+
   const toggle = (lessonId) =>
     setActiveLesson((prev) => (prev === lessonId ? null : lessonId))
 
-  const isLocked = section.status === 'locked'
-  const isDone = section.status === 'completed'
+  const listId = `${section.id}-lessons`
 
   return (
     <section
-      className={`module module--${section.status}`}
+      className={`module module--${section.status}${open ? ' is-open' : ''} ${className}`.trim()}
+      style={style}
       ref={cardRef}
       aria-labelledby={`${section.id}-title`}
     >
       <header className="module-head">
+        <button
+          type="button"
+          className="module-toggle"
+          onClick={toggleModule}
+          aria-expanded={isLocked ? undefined : open}
+          aria-controls={isLocked ? undefined : listId}
+          aria-disabled={isLocked || undefined}
+          aria-label={
+            isLocked
+              ? `${section.title} is locked. Finish ${previousTitle ?? 'the previous module'} to unlock it.`
+              : `${open ? 'Collapse' : 'Expand'} ${section.title}`
+          }
+          data-tip={isLocked ? `Finish ${previousTitle ?? 'the previous module'} to unlock` : undefined}
+        />
+
         <div className="module-head-top">
           <span className="module-num">{String(sectionNumber).padStart(2, '0')}</span>
           <span className="module-level">{section.level}</span>
@@ -61,13 +104,20 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
           )}
           {section.status === 'in-progress' && (
             <span className="badge badge--active">
+              <span className="badge-dot" aria-hidden="true" />
               {completed === 0 ? 'Up next' : 'In progress'}
             </span>
           )}
           {isLocked && (
-            <span className="badge badge--locked">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span className="badge badge--locked" ref={lockRef}>
+              <Icon name="lock" size={11} strokeWidth={2.6} />
               Locked
+            </span>
+          )}
+
+          {!isLocked && (
+            <span className="module-chevron" aria-hidden="true">
+              <Icon name="chevron-down" size={16} strokeWidth={2.4} />
             </span>
           )}
         </div>
@@ -76,38 +126,53 @@ export default function SectionCard({ section, sectionNumber, onStartLesson }) {
         <p className="module-desc">{section.description || section.subtitle}</p>
 
         <div className="module-progress">
-          <div className="track">
+          <div
+            className="track"
+            data-tip={`${completed} of ${total} lessons · ${pct}%`}
+          >
             <div
-              className={`track-fill${isDone ? ' is-done' : ''}`}
+              key={completed}
+              className={`track-fill${isDone ? ' is-done' : ''}${completed > 0 ? ' fx-fill-shine' : ''}`}
               style={{ width: `${fillWidth}%` }}
             />
           </div>
           <span className="module-progress-count tnum">
-            {completed}/{total}
+            <RollingNumber value={completed} />/{total}
           </span>
         </div>
-        <p className="module-meta tnum">~{totalDuration} min</p>
+        <p className="module-meta tnum">
+          <Icon name="clock" size={11} /> ~{totalDuration} min
+          {!isLocked && !open && <span className="module-meta-hint"> · {total} lessons inside</span>}
+        </p>
       </header>
 
       {!isLocked && (
-        <ol className="module-lessons" role="list">
-          {section.lessons.map((lesson, i) => (
-            <Fragment key={lesson.id}>
-              <LessonNode
-                lesson={lesson}
-                index={i}
-                isPopupOpen={activeLesson === lesson.id}
-                onTogglePopup={() => toggle(lesson.id)}
-                onStartLesson={onStartLesson}
-              />
-            </Fragment>
-          ))}
-        </ol>
+        <div className="module-body" id={listId} aria-hidden={!open}>
+          <div className="module-body-inner">
+            <ol className="module-lessons" role="list">
+              {section.lessons.map((lesson, i) => (
+                <LessonNode
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={i}
+                  isFirst={i === 0}
+                  isLast={i === section.lessons.length - 1}
+                  prevTitle={section.lessons[i - 1]?.title}
+                  isPopupOpen={activeLesson === lesson.id}
+                  onTogglePopup={() => toggle(lesson.id)}
+                  onStartLesson={onStartLesson}
+                  tabbable={open}
+                />
+              ))}
+            </ol>
+          </div>
+        </div>
       )}
 
       {isLocked && (
-        <p className="module-locked-hint">
-          Finish the previous module to unlock these {total} lessons.
+        <p className={`module-locked-hint${denied ? ' is-flash' : ''}`} key={denied}>
+          <Icon name="lock" size={12} strokeWidth={2.4} />
+          Finish {previousTitle ?? 'the previous module'} to unlock these {total} lessons.
         </p>
       )}
     </section>

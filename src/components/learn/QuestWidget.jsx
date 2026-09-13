@@ -1,17 +1,21 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    QuestWidget.jsx — DAILY QUEST SIDEBAR
    ---------------------------------------------------------------------------
-   Reads the generated quest set for TODAY and the current week. Nothing here
-   is hardcoded: targets, progress, completion and claim state all come from
-   the quest engine, so the bars move the instant a lesson finishes.
+   Reads the generated quest set for TODAY and the current week. Targets,
+   progress, completion and claim state all come from the quest engine.
+
+   Revision 2: the countdown's digits roll and its clock hand ticks; the
+   claimable count pops; each quest row opens on hover/focus to show its
+   reward and what is left (QuestCard compact).
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import QuestCard from '../progression/QuestCard'
 import { Icon } from '../progression/Icons'
 import { msUntilEndOfDay, formatDuration } from '../../utils/dateUtils'
+import RollingNumber from '../../motion/RollingNumber'
 
-export default function QuestWidget({ onViewAll }) {
+export default function QuestWidget({ onViewAll, style, className = '' }) {
   const { vm } = useProgression()
   const now = useClock()
 
@@ -19,30 +23,39 @@ export default function QuestWidget({ onViewAll }) {
   const featuredWeekly = weekly.find((q) => !q.completed) ?? weekly[0]
 
   return (
-    <div className="quest-widget">
+    <div className={`quest-widget ${className}`.trim()} style={style}>
       <div className="qw-header">
         <span className="qw-title">
           Daily Quests
-          {claimableCount > 0 && <span className="qw-badge">{claimableCount}</span>}
+          {claimableCount > 0 && (
+            <span className="qw-badge" key={claimableCount} data-tip={`${claimableCount} reward${claimableCount === 1 ? '' : 's'} ready to claim`}>
+              {claimableCount}
+            </span>
+          )}
         </span>
-        <button className="qw-view-all" onClick={onViewAll}>View All</button>
+        <button className="qw-view-all" onClick={onViewAll}>
+          View all
+          <Icon name="chevron-right" size={12} strokeWidth={2.6} />
+        </button>
       </div>
 
       <div className="qw-reset">
-        <Icon name="clock" size={10} />
-        Resets in {formatDuration(msUntilEndOfDay(new Date(now)))}
-        <span className="qw-reset-count">{summary.completed}/{summary.total} done</span>
+        <Icon name="clock" size={11} />
+        Resets in <RollingNumber value={formatDuration(msUntilEndOfDay(new Date(now)))} />
+        <span className="qw-reset-count">
+          <RollingNumber value={summary.completed} />/{summary.total} done
+        </span>
       </div>
 
       <div className="qw-list">
         {daily.length === 0 && <p className="qw-empty">New quests arrive at midnight.</p>}
-        {daily.map((quest) => <QuestCard key={quest.id} quest={quest} variant="compact" />)}
+        {daily.map((quest, i) => <QuestCard key={quest.id} quest={quest} variant="compact" index={i} />)}
       </div>
 
       {featuredWeekly && (
         <div className="qw-weekly">
           <div className="qw-weekly-label">This Week</div>
-          <QuestCard quest={featuredWeekly} variant="compact" />
+          <QuestCard quest={featuredWeekly} variant="compact" index={3} />
         </div>
       )}
     </div>

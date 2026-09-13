@@ -1,0 +1,486 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   motion.css — THE VERBS, AS CLASSES
+   ---------------------------------------------------------------------------
+   Authoritative reference: design-system/MOTION_RULES.md (revision 2).
+
+   Everything here is shared. A component that wants to Reveal, Roll, Tilt or
+   Stamp uses these classes and keyframes rather than writing its own, so the
+   same verb looks and times the same everywhere in the product.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.pg-sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ═══ REVEAL — SPLIT TEXT ═══════════════════════════════════════════════════
+   Each word rises out of its own mask with a 6° lean that resolves to zero:
+   type being set, not type fading in. The mask is padded and pulled back by
+   the same amount so descenders and the italic's overhang are not clipped. */
+
+.st { --st-stagger: 42ms; --st-delay: 0ms; }
+
+.st-w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.1em 0.08em 0.16em;
+  margin: -0.1em -0.08em -0.16em;
+}
+
+.st-i {
+  display: inline-block;
+  transform: translateY(112%) rotate(7deg);
+  transform-origin: 0% 100%;
+  opacity: 0;
+  transition:
+    transform 780ms var(--ease-settle),
+    opacity 380ms var(--ease-out);
+  transition-delay: calc(var(--st-delay) + var(--i, 0) * var(--st-stagger));
+}
+
+.st.is-in .st-i { transform: none; opacity: 1; }
+
+/* ═══ REVEAL — BLOCKS ═══════════════════════════════════════════════════════
+   Animations with `backwards` fill rather than transitions: the entrance
+   owns transform only while it runs, then hands the property back — so a
+   revealed card's own hover lift still works afterwards. */
+
+.rv:not(.rv--stagger):not(.is-in),
+.rv--stagger:not(.is-in) > .rv-item { opacity: 0; }
+
+.rv.is-in:not(.rv--stagger),
+.rv--stagger.is-in > .rv-item {
+  animation-duration: 720ms;
+  animation-timing-function: var(--ease-settle);
+  animation-fill-mode: backwards;
+  animation-delay: var(--rv-delay, 0ms);
+}
+
+.rv--stagger.is-in > .rv-item {
+  animation-delay: calc(var(--rv-delay, 0ms) + var(--i, 0) * var(--stagger));
+}
+
+.rv--up.is-in:not(.rv--stagger),    .rv--up.rv--stagger.is-in > .rv-item    { animation-name: rv-up; }
+.rv--fade.is-in:not(.rv--stagger),  .rv--fade.rv--stagger.is-in > .rv-item  { animation-name: rv-fade; }
+.rv--left.is-in:not(.rv--stagger),  .rv--left.rv--stagger.is-in > .rv-item  { animation-name: rv-left; }
+.rv--right.is-in:not(.rv--stagger), .rv--right.rv--stagger.is-in > .rv-item { animation-name: rv-right; }
+.rv--scale.is-in:not(.rv--stagger), .rv--scale.rv--stagger.is-in > .rv-item { animation-name: rv-scale; }
+.rv--tilt.is-in:not(.rv--stagger),  .rv--tilt.rv--stagger.is-in > .rv-item  { animation-name: rv-tilt; animation-duration: 1000ms; }
+
+@keyframes rv-up    { from { opacity: 0; transform: translateY(18px); } }
+@keyframes rv-fade  { from { opacity: 0; } }
+@keyframes rv-left  { from { opacity: 0; transform: translateX(-22px); } }
+@keyframes rv-right { from { opacity: 0; transform: translateX(22px); } }
+@keyframes rv-scale { from { opacity: 0; transform: translateY(8px) scale(0.94); } }
+@keyframes rv-tilt  {
+  from { opacity: 0; transform: perspective(1400px) rotateX(16deg) translateY(56px) scale(0.96); }
+  40%  { opacity: 1; }
+}
+
+/* ═══ ROLL ══════════════════════════════════════════════════════════════════
+   The ghost digit holds width and baseline; the strip rolls in a window
+   clipped over it. Columns carry right-to-left, 35ms apart. */
+
+.rn { display: inline-flex; align-items: baseline; font-variant-numeric: tabular-nums; }
+.rn-track { display: inline-flex; align-items: baseline; user-select: none; }
+.rn-sym { display: inline-block; white-space: pre; }
+
+.rn-ghost::before,
+.rn-digit::before,
+.rn-sym::before,
+.cu-shown::before { content: attr(data-d); }
+
+.rn-col { position: relative; display: inline-block; line-height: inherit; }
+.rn-ghost { visibility: hidden; }
+
+.rn-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.rn-strip {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 1000%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rn-digit { display: block; height: 10%; text-align: center; }
+
+.rn.is-live .rn-strip {
+  transition: transform 640ms var(--ease-settle);
+  transition-delay: calc(var(--c, 0) * 35ms);
+}
+
+.rn--up .rn-track   { animation: rn-kick-up 560ms var(--ease-spring); }
+.rn--down .rn-track { animation: rn-kick-down 460ms var(--ease-out); }
+
+@keyframes rn-kick-up   { 30% { transform: translateY(-2px) scale(1.12); } }
+@keyframes rn-kick-down { 30% { transform: translateY(1px) scale(0.92); } }
+
+/* ═══ FX LAYER — flights, shards, rings, tooltip ════════════════════════════ */
+
+#fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-fx);
+  pointer-events: none;
+  overflow: hidden;
+  contain: layout style;
+}
+
+.fx-p {
+  position: absolute;
+  display: block;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 2px 2px rgba(var(--ink-rgb), 0.2));
+}
+
+.fx-p svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.fx-p .p-face { fill: currentColor; }
+.fx-p .p-light { fill: rgba(var(--sheen-rgb), 0.5); }
+.fx-p .p-stroke { fill: none; stroke: rgba(var(--sheen-rgb), 0.65); stroke-width: 1.8; stroke-linecap: round; }
+
+.fx-p--gem    { color: var(--ochre); }
+.fx-p--heart  { color: var(--berry); }
+.fx-p--xp     { color: var(--ochre); }
+.fx-p--flame  { color: var(--clay); }
+.fx-p--shield { color: var(--evergreen); }
+.fx-p--star   { color: var(--ochre); }
+
+.fx-label {
+  position: absolute;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-xs);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-float);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ochre-ink);
+}
+
+.fx-label--heart  { color: var(--berry-ink); }
+.fx-label--flame  { color: var(--clay-ink); }
+.fx-label--shield { color: var(--evergreen); }
+
+.fx-shard,
+.fx-dot {
+  position: absolute;
+  display: block;
+  will-change: transform, opacity;
+}
+
+.fx-shard { width: 8px; height: 4px; border-radius: var(--r-xs); }
+.fx-dot   { width: 5px; height: 5px; border-radius: 50%; }
+
+.fx-ring {
+  position: absolute;
+  display: block;
+  border: 2px solid;
+  border-radius: 50%;
+}
+
+/* The tooltip: ink ground, paper text, a printed label rather than a bubble.
+   It scales out of the point on its anchor it describes. */
+.fx-tip {
+  position: fixed;
+  left: 0; top: 0;
+  max-width: 17rem;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-xs);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-snug);
+  text-wrap: balance;
+  box-shadow: var(--shadow-float);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px) scale(0.94);
+  transform-origin: var(--tip-origin, 50%) 100%;
+  transition:
+    opacity var(--dur-micro) ease,
+    transform var(--dur-hover) var(--ease-spring);
+}
+
+.fx-tip[data-side='bottom'] {
+  transform: translateY(-4px) scale(0.94);
+  transform-origin: var(--tip-origin, 50%) 0%;
+}
+
+.fx-tip.is-on { opacity: 1; transform: none; }
+
+.fx-tip::after {
+  content: '';
+  position: absolute;
+  left: var(--tip-origin, 50%);
+  bottom: -3px;
+  width: 7px; height: 7px;
+  background: var(--ink);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: var(--r-xs);
+}
+
+.fx-tip[data-side='bottom']::after { bottom: auto; top: -3px; }
+
+.fx-tip[data-side='right'] {
+  transform: translateX(-4px) scale(0.94);
+  transform-origin: 0% 50%;
+}
+.fx-tip[data-side='right'].is-on { transform: none; }
+.fx-tip[data-side='right']::after { left: -3px; top: 50%; bottom: auto; transform: translateY(-50%) rotate(45deg); }
+
+/* ═══ MAGNET + PRESS — every .btn ═══════════════════════════════════════════
+   Magnet uses the individual `translate` property so it composes with the
+   press's `transform` instead of fighting it. The release is a spring, so a
+   button comes back up like a key rather than snapping. */
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  translate: var(--mag-x, 0px) var(--mag-y, 0px);
+  transition:
+    background-color var(--dur-hover) ease,
+    border-color var(--dur-hover) ease,
+    color var(--dur-hover) ease,
+    translate 420ms var(--ease-spring),
+    transform 320ms var(--ease-spring),
+    box-shadow var(--dur-press) var(--ease-press);
+}
+
+.btn:active:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(1px) scale(0.975);
+  box-shadow: var(--shadow-press);
+  transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), 420ms, 90ms, 90ms;
+  transition-timing-function: ease, ease, ease, var(--ease-spring), var(--ease-press), var(--ease-press);
+}
+
+/* The warm highlight that follows the pointer across a solid button — light
+   landing on it from where the hand is. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    9rem circle at var(--mx, 50%) var(--my, 50%),
+    rgba(var(--sheen-rgb), 0.24),
+    transparent 62%
+  );
+  transition: opacity var(--dur-hover) ease;
+}
+
+.btn-outline::before {
+  background: radial-gradient(
+    8rem circle at var(--mx, 50%) var(--my, 50%),
+    rgba(var(--evergreen-rgb), 0.12),
+    transparent 62%
+  );
+}
+
+.btn.is-magnet::before { opacity: 1; }
+
+/* The trailing arrow leans into the direction of travel, and keeps going a
+   little further on press — "yes, that way". */
+.btn svg.btn-arrow { transition: transform 360ms var(--ease-spring); }
+.btn:hover svg.btn-arrow { transform: translateX(4px); }
+.btn:active svg.btn-arrow { transform: translateX(7px); }
+
+/* ═══ INVITATION — shine ════════════════════════════════════════════════════
+   A band of reflected light crosses the surface, then rests for most of the
+   cycle. Only on things that are waiting for the learner. */
+
+.fx-shine { position: relative; overflow: hidden; isolation: isolate; }
+
+.fx-shine::after {
+  content: '';
+  position: absolute;
+  top: -30%; bottom: -30%;
+  left: -50%;
+  width: 36%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(var(--sheen-rgb), 0.5) 50%,
+    transparent 100%
+  );
+  transform: translateX(0) skewX(-16deg);
+  animation: fx-shine 3.8s var(--ease-settle) infinite;
+  animation-delay: 1.2s;
+}
+
+.fx-shine--once::after { animation-iteration-count: 1; }
+
+@keyframes fx-shine {
+  0%, 58% { transform: translateX(0) skewX(-16deg); }
+  100%    { transform: translateX(520%) skewX(-16deg); }
+}
+
+/* ═══ INVITATION — ping ═════════════════════════════════════════════════════
+   A ring leaves the element and fades — sonar, "here". Visible for about a
+   third of its period. */
+
+.fx-ping { position: relative; }
+
+.fx-ping::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--ping-color, var(--clay));
+  pointer-events: none;
+  opacity: 0;
+  animation: fx-ping 2.6s var(--ease-out) infinite;
+}
+
+@keyframes fx-ping {
+  0%   { opacity: 0.75; transform: scale(1); }
+  34%  { opacity: 0; transform: scale(1.55); }
+  100% { opacity: 0; transform: scale(1.55); }
+}
+
+/* ═══ TILT + SHEEN ══════════════════════════════════════════════════════════
+   `.fx-tilt` applies the tilt to itself; `.fx-sheen` lays the pointer's warm
+   reflection over the surface. --tilt-max is set per component. */
+
+.fx-tilt {
+  transform:
+    perspective(1100px)
+    rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max, 5deg)))
+    rotateY(calc(var(--tilt-x, 0) * var(--tilt-max, 5deg)));
+  transition: transform 700ms var(--ease-settle);
+}
+
+.fx-tilt.is-tilting { transition-duration: 160ms; transition-timing-function: var(--ease-out); }
+
+.fx-sheen { position: relative; }
+
+.fx-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    22rem circle at var(--mx, 50%) var(--my, 50%),
+    rgba(var(--sheen-rgb), 0.3),
+    transparent 55%
+  );
+  transition: opacity 400ms ease;
+  z-index: 2;
+}
+
+.fx-sheen.is-tilting::after,
+[data-tilt].is-tilting .fx-sheen::after { opacity: 1; }
+
+/* ═══ SHARED KEYFRAMES ══════════════════════════════════════════════════════ */
+
+/* Stamp — overshoots in rotation, never in scale. */
+@keyframes fx-stamp {
+  0%   { opacity: 0; transform: scale(1.6) rotate(-14deg); }
+  55%  { opacity: 1; transform: scale(0.94) rotate(4deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes fx-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fx-pop-in {
+  0%   { opacity: 0; transform: scale(0.4); }
+  60%  { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fx-shake {
+  0%, 100% { translate: 0 0; }
+  18% { translate: -5px 0; }
+  36% { translate: 5px 0; }
+  54% { translate: -3px 0; }
+  72% { translate: 2px 0; }
+}
+
+@keyframes fx-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-12deg); }
+  40% { transform: rotate(10deg); }
+  60% { transform: rotate(-6deg); }
+  80% { transform: rotate(3deg); }
+}
+
+@keyframes fx-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+@keyframes fx-fade-in { from { opacity: 0; } }
+
+@keyframes fx-slide-up {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+@keyframes fx-rise-sheet {
+  from { opacity: 0; transform: translateY(100%); }
+}
+
+@keyframes fx-shine-once {
+  from { transform: translateX(-120%) skewX(-16deg); }
+  to   { transform: translateX(420%) skewX(-16deg); }
+}
+
+/* A progress fill that just changed runs one band of light along itself. */
+.fx-fill-shine { position: relative; overflow: hidden; }
+.fx-fill-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(var(--sheen-rgb), 0.6), transparent);
+  transform: translateX(-120%) skewX(-16deg);
+  animation: fx-shine-once 1100ms var(--ease-settle) 280ms both;
+  pointer-events: none;
+}
+
+/* ═══ VIEW TRANSITION ═══════════════════════════════════════════════════════
+   Switching destinations in the app: the new view comes in from the side the
+   nav moved toward. --dir is −1 or 1. */
+
+/* `backwards`, never `both`: a filled transform animation would make this
+   wrapper the containing block for every position:fixed dialog inside the
+   view (the shop's purchase sheet), pinning it to the column instead of the
+   screen. */
+.view-enter {
+  animation: view-in 520ms var(--ease-settle) backwards;
+}
+
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(calc(var(--dir, 1) * 22px)); }
+}
+
+/* ═══ REDUCED MOTION ════════════════════════════════════════════════════════
+   The global rule in index.css collapses every duration. These make sure the
+   END state is what shows — assembled text, revealed blocks — and switch off
+   decoration that would otherwise sit at its first frame. */
+
+@media (prefers-reduced-motion: reduce) {
+  .st-i { transform: none !important; opacity: 1 !important; }
+  .rv:not(.is-in), .rv--stagger:not(.is-in) > .rv-item { opacity: 1 !important; }
+  .fx-shine::after, .fx-ping::after, .fx-fill-shine::after { display: none; }
+  .btn { translate: none; }
+  .btn::before { display: none; }
+  .fx-tilt { transform: none !important; }
+}

@@ -1,17 +1,22 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    AchievementGrid.jsx — PERMANENT MILESTONES
    ---------------------------------------------------------------------------
-   Achievements never reset, so locked ones show real partial progress rather
-   than a blank slot: the learner can always see how close they are.
+   Achievements never reset, so locked ones show real partial progress.
+
+   Revision 2: the ring draws to its figure and the figure counts with it;
+   cards deal in; unlocked cards are medals — they tilt toward the pointer
+   and a glint crosses them; locked cards refuse when pressed (the lock
+   rattles) and their tooltip says exactly how far there is to go.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { useRef } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import { QuestIcon, GemIcon, Icon } from './Icons'
 import useProgressWidth from '../../hooks/useProgressWidth'
+import CountUp from '../../motion/CountUp'
+import Reveal from '../../motion/Reveal'
+import { shake } from '../../motion/burst'
 
-/* The header ring used to be a plain bordered circle with a number in it —
-   a full ring no matter what the number said. It now draws the real ratio,
-   so the shape and the figure can't disagree. */
 const RING_R = 19
 const RING_C = 2 * Math.PI * RING_R
 
@@ -28,18 +33,40 @@ function AchievementRing({ percent }) {
           strokeDashoffset={RING_C * (1 - shown / 100)}
         />
       </svg>
-      <span className="ac-ring-num">{percent}%</span>
+      <span className="ac-ring-num"><CountUp value={percent} suffix="%" immediate delay={200} /></span>
     </div>
   )
 }
 
-/* One card per achievement so each locked bar owns a mount animation of its
-   own; the width still comes straight from a.percent. */
-function AchievementCard({ achievement: a }) {
+function AchievementCard({ achievement: a, style, className = '' }) {
   const fillWidth = useProgressWidth(a.percent)
+  const ref = useRef(null)
+  const iconRef = useRef(null)
+
+  const press = () => {
+    if (a.unlocked) return
+    shake(ref.current, { distance: 4 })
+    iconRef.current?.classList.add('is-denied')
+    window.setTimeout(() => iconRef.current?.classList.remove('is-denied'), 500)
+  }
+
+  const tip = a.unlocked
+    ? `${a.title} · unlocked · +${a.gems} gems paid`
+    : `${a.current} of ${a.target} · ${Math.max(0, a.target - a.current)} to go`
+
   return (
-    <article className={`ac-card ac-${a.tier}${a.unlocked ? ' is-unlocked' : ''}`}>
-      <span className="ac-icon">
+    <article
+      ref={ref}
+      className={`ac-card ac-${a.tier}${a.unlocked ? ' is-unlocked' : ''} ${className}`.trim()}
+      style={style}
+      data-tilt={a.unlocked ? '' : undefined}
+      data-tip={tip}
+      onClick={press}
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press() } }}
+      aria-label={`${a.title}: ${a.description}. ${tip}`}
+    >
+      <span className="ac-icon" ref={iconRef}>
         {a.unlocked
           ? <QuestIcon name={a.icon} size={20} />
           : <Icon name="lock" size={16} />}
@@ -57,7 +84,7 @@ function AchievementCard({ achievement: a }) {
         )}
         {a.unlocked && (
           <div className="ac-unlocked">
-            <Icon name="check" size={11} strokeWidth={3} /> Unlocked
+            <span className="is-drawing"><Icon name="check" size={11} strokeWidth={3} /></span> Unlocked
           </div>
         )}
       </div>
@@ -82,11 +109,11 @@ export default function AchievementGrid() {
         <AchievementRing percent={Math.round((unlocked.length / vm.achievements.length) * 100)} />
       </header>
 
-      <div className="ac-grid">
+      <Reveal className="ac-grid" variant="scale" stagger immediate delay={300}>
         {ordered.map((a) => (
           <AchievementCard key={a.id} achievement={a} />
         ))}
-      </div>
+      </Reveal>
     </div>
   )
 }

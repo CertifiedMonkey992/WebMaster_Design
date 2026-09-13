@@ -4,38 +4,47 @@
    Gems are never taken on a single click. The dialog states what is being
    bought, what it costs, and what the balance will be afterwards.
 
-   The one-shot transaction id is minted when the dialog OPENS, not when the
-   button is pressed, so every retry of one confirmation carries the same id
-   and shopService settles it exactly once. A `settling` latch closes the door
-   on the synchronous double-click before the id guard is even needed.
+   The one-shot transaction id is minted when the dialog OPENS, so every retry
+   of one confirmation carries the same id and shopService settles it once.
 
-   On narrow screens the same markup slides up as a bottom sheet (CSS only).
+   Revision 2: the item drops onto the dialog; the ledger rows arrive in
+   order and "Balance after" counts down from your balance to what will be
+   left, so the cost is watched rather than read. Cancel leaves by sinking.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GemIcon, Icon } from '../progression/Icons'
 import ShopArt from './ShopArt'
+import CountUp from '../../motion/CountUp'
 import { REASONS } from '../../services/shopService'
 
 let txnSeq = 0
 
 export default function PurchaseDialog({ item, balance, owned, onConfirm, onClose }) {
-  /* One id for the life of this dialog — see the note above. */
   const txnId = useMemo(() => `tx${Date.now().toString(36)}-${++txnSeq}`, [])
   const [settling, setSettling] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const confirmRef = useRef(null)
+  const [openBalance] = useState(balance)
+
+  const close = () => {
+    if (leaving) return
+    setLeaving(true)
+    window.setTimeout(onClose, 180)
+  }
 
   useEffect(() => {
     confirmRef.current?.focus()
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onClose() }
+      if (e.key === 'Escape') { e.stopPropagation(); close() }
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const affordable = item.ok || item.reason !== REASONS.INSUFFICIENT_GEMS
-  const after = Math.max(0, balance - item.price)
+  const after = Math.max(0, openBalance - item.price)
 
   const confirm = () => {
     if (settling) return
@@ -44,19 +53,19 @@ export default function PurchaseDialog({ item, balance, owned, onConfirm, onClos
   }
 
   return (
-    <div className="sh-dialog-layer" role="presentation">
-      <div className="sh-dialog-scrim" onClick={onClose} aria-hidden="true" />
+    <div className={`sh-dialog-layer${leaving ? ' is-leaving' : ''}`} role="presentation">
+      <div className="sh-dialog-scrim" onClick={close} aria-hidden="true" />
       <div
         className="sh-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="sh-dialog-title"
       >
-        <button className="sh-dialog-close" onClick={onClose} aria-label="Cancel purchase">
+        <button className="sh-dialog-close" onClick={close} aria-label="Cancel purchase">
           <Icon name="close" size={15} strokeWidth={2.5} />
         </button>
 
-        <div className="sh-dialog-art">
+        <div className={`sh-dialog-art sh-art--${item.accent}`}>
           <ShopArt name={item.art} size={96} />
         </div>
 
@@ -76,29 +85,32 @@ export default function PurchaseDialog({ item, balance, owned, onConfirm, onClos
           </div>
           <div className="sh-ledger-row">
             <dt>Your balance</dt>
-            <dd><GemIcon size={15} /> {balance}</dd>
+            <dd><GemIcon size={15} /> {openBalance}</dd>
           </div>
           <div className="sh-ledger-row sh-ledger-row--total">
             <dt>Balance after</dt>
-            <dd><GemIcon size={15} /> {after}</dd>
+            <dd>
+              <GemIcon size={15} />
+              <CountUp value={after} from={openBalance} immediate delay={520} duration={900} />
+            </dd>
           </div>
         </dl>
 
         {!affordable && (
           <p className="sh-dialog-warn">
-            You need {item.price - balance} more gem{item.price - balance === 1 ? '' : 's'}.
+            You need {item.price - openBalance} more gem{item.price - openBalance === 1 ? '' : 's'}.
           </p>
         )}
 
         <div className="sh-dialog-actions">
-          <button className="sh-btn sh-btn--ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-ghost" onClick={close}>Cancel</button>
           <button
-            className="sh-btn sh-btn--buy"
+            className={`btn btn-primary sh-confirm${item.ok && !settling ? ' fx-shine' : ''}`}
             ref={confirmRef}
             onClick={confirm}
             disabled={!item.ok || settling}
           >
-            <GemIcon size={15} />
+            {settling ? <span className="sh-spinner" aria-hidden="true" /> : <GemIcon size={15} />}
             {settling ? 'Buying…' : `Buy for ${item.price}`}
           </button>
         </div>

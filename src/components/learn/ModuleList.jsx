@@ -1,41 +1,80 @@
-import { useCourse } from '../../state/ProgressionContext'
+import { useCourse, useProgression } from '../../state/ProgressionContext'
 import { getLessonIcon } from './LessonIcons'
 import SectionCard from './SectionCard'
+import SplitText from '../../motion/SplitText'
+import Reveal from '../../motion/Reveal'
+import RollingNumber from '../../motion/RollingNumber'
 
 /**
- * The course map. Derived entirely from real completion state — no hardcoded
- * lesson statuses anywhere.
+ * The course map. Derived entirely from real completion state.
  *
- * The page opens with a heading and one "pick up here" strip rather than
- * dropping straight into a stack of cards, so there is a moment of orientation
- * before the list starts.
+ * Revision 2: the heading assembles and its count rolls; a strip of 22 ticks
+ * under it is the whole course at a glance (hover a tick for its lesson, the
+ * current one pings); the resume strip's tile carries a ring showing how far
+ * through the module you are; the modules arrive in sequence.
  */
 export default function ModuleList({ onStartLesson }) {
   const course = useCourse()
+  const { showcase } = useProgression()
   const current = course.current
+  const allLessons = course.sections.flatMap((s) => s.lessons.map((l) => ({ ...l, section: s.title })))
+
+  const ringPct = current ? current.lessonIndex / current.section.lessons.length : 1
+  const R = 25
+  const C = 2 * Math.PI * R
 
   return (
     <div className="course">
       <header className="course-head">
-        <h1 className="course-title">
+        <SplitText as="h1" className="course-title" immediate={!showcase} stagger={46}>
           {course.completedCount === 0 ? (
             <>Start where the machines <em className="em">actually begin</em>.</>
           ) : (
-            <>You are <em className="em">{course.completedCount} lessons</em> in.</>
+            <>You are <em className="em"><RollingNumber value={course.completedCount} /> {course.completedCount === 1 ? 'lesson' : 'lessons'}</em> in.</>
           )}
-        </h1>
-        <p className="course-sub tnum">
-          {course.completedCount} of {course.totalLessons} lessons ·
-          {' '}{course.totalSections} modules
-        </p>
+        </SplitText>
+
+        <Reveal className="course-sub-row" variant="fade" immediate={!showcase} delay={320}>
+          <p className="course-sub tnum">
+            {course.completedCount} of {course.totalLessons} lessons · {course.totalSections} modules
+          </p>
+          {/* The whole course as ticks: done, here, and still to come. */}
+          <ol className="course-ticks" aria-hidden="true">
+            {allLessons.map((l, i) => (
+              <li
+                key={l.id}
+                className={`course-tick is-${l.status}`}
+                style={{ '--i': i }}
+                data-tip={`${l.title} · ${l.status === 'completed' ? 'done' : l.status === 'current' ? 'up next' : 'locked'}`}
+              />
+            ))}
+          </ol>
+        </Reveal>
       </header>
 
       {current && (
-        <div className="resume">
-          <span className="resume-label">Continue</span>
+        <Reveal className="resume" immediate={!showcase} delay={180}>
+          <span className="resume-label">
+            <span className="resume-label-dot" aria-hidden="true" />
+            Continue
+          </span>
 
           <div className="resume-body">
-            <span className="resume-tile">{getLessonIcon(current.lesson.id)}</span>
+            <span
+              className="resume-tile"
+              data-tip={`${current.lessonIndex} of ${current.section.lessons.length} done in ${current.section.title}`}
+            >
+              <svg className="resume-ring" viewBox="0 0 56 56" aria-hidden="true">
+                <circle className="resume-ring-track" cx="28" cy="28" r={R} />
+                <circle
+                  className="resume-ring-fill"
+                  cx="28" cy="28" r={R}
+                  strokeDasharray={C}
+                  strokeDashoffset={C * (1 - ringPct)}
+                />
+              </svg>
+              <span className="resume-tile-ico">{getLessonIcon(current.lesson.id)}</span>
+            </span>
             <span className="resume-text">
               <span className="resume-title">{current.lesson.title}</span>
               <span className="resume-meta">
@@ -57,7 +96,7 @@ export default function ModuleList({ onStartLesson }) {
               <polyline points="12 5 19 12 12 19" />
             </svg>
           </button>
-        </div>
+        </Reveal>
       )}
 
       {!current && (
@@ -70,14 +109,20 @@ export default function ModuleList({ onStartLesson }) {
         </div>
       )}
 
-      {course.sections.map((section, i) => (
-        <SectionCard
-          key={section.id}
-          section={section}
-          sectionNumber={i + 1}
-          onStartLesson={onStartLesson}
-        />
-      ))}
+      <Reveal className="course-modules" stagger immediate={!showcase} delay={260}>
+        {course.sections.map((section, i) => {
+          const prev = course.sections[i - 1]
+          return (
+            <SectionCard
+              key={section.id}
+              section={section}
+              sectionNumber={i + 1}
+              previousTitle={prev?.title}
+              onStartLesson={onStartLesson}
+            />
+          )
+        })}
+      </Reveal>
     </div>
   )
 }

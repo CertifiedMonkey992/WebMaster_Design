@@ -1,55 +1,62 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ClosingCTA.jsx — THE LAST THING ON THE PAGE
    ---------------------------------------------------------------------------
-   One promise, and it is one the build actually keeps: the course opens
-   without an account. There is no sign-up wall, so the copy does not imply
-   one, and the three figures below are read from the real course data rather
-   than typed in.
+   One promise the build actually keeps: the course opens without an account.
+   The three figures are read from real course data, and they are TALLIED as
+   they arrive — the page counting the course out for you.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
-import useReveal from '../hooks/useReveal'
 import { DAILY_BONUS } from '../config/dailyBonusConfig'
+import SplitText from '../motion/SplitText'
+import Reveal from '../motion/Reveal'
+import CountUp from '../motion/CountUp'
 
 export default function ClosingCTA({ onStartLearning }) {
-  const [ref, animate] = useReveal()
-
   const stats = [
-    { value: TOTAL_LESSONS, label: 'interactive lessons' },
-    { value: TOTAL_SECTIONS, label: 'modules, beginner to advanced' },
-    { value: `${DAILY_BONUS.CYCLE_LENGTH}-day`, label: 'reward track' },
+    { value: TOTAL_LESSONS, label: 'interactive lessons', tip: 'Fill the blank, judge a scenario, pick the right call' },
+    { value: TOTAL_SECTIONS, label: 'modules, beginner to advanced', tip: 'Foundations → ML → neural networks → tools → ethics' },
+    { value: DAILY_BONUS.CYCLE_LENGTH, suffix: '-day', label: 'reward track', tip: 'Gems, XP, hearts — and a Streak Shield on day 7' },
   ]
 
   return (
     <section className="cta-section" aria-labelledby="cta-heading">
-      <div className={`cta-wrap reveal${animate ? ' animate-in' : ''}`} ref={ref}>
+      <div className="cta-wrap">
         <div>
-          <h2 className="cta-heading" id="cta-heading">
-            Lesson one takes five minutes.
-          </h2>
-          <p className="cta-body">
+          <SplitText as="h2" className="cta-heading" id="cta-heading" stagger={50}>
+            Lesson one takes five minutes
+            <svg className="cta-clock" data-st-skip viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9.5" />
+              <path className="cta-clock-sweep" d="M12 12V6.5" />
+            </svg>.
+          </SplitText>
+          <Reveal as="p" className="cta-body" delay={260}>
             No account, no card. Your progress saves in this browser, and the
             next lesson is always waiting at the top of the course.
-          </p>
+          </Reveal>
 
-          <button type="button" className="btn btn-next btn-lg" onClick={onStartLearning}>
-            Start learning
-            <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </button>
+          <Reveal variant="scale" delay={420}>
+            <button type="button" className="btn btn-next btn-lg fx-shine" onClick={onStartLearning} data-magnetic="8">
+              Start learning
+              <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+          </Reveal>
         </div>
 
-        <ul className="cta-stats" role="list">
-          {stats.map((s) => (
-            <li className="cta-stat" key={s.label}>
-              <span className="cta-stat-value">{s.value}</span>
+        <Reveal as="ul" className="cta-stats" role="list" variant="right" stagger delay={200}>
+          {stats.map((s, i) => (
+            <li className="cta-stat" key={s.label} data-tip={s.tip}>
+              <span className="cta-stat-value">
+                <CountUp value={s.value} suffix={s.suffix || ''} delay={300 + i * 180} duration={1200} />
+              </span>
               <span className="cta-stat-label">{s.label}</span>
             </li>
           ))}
-        </ul>
+        </Reveal>
       </div>
     </section>
   )
