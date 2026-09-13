@@ -27,7 +27,7 @@
   stroke: currentColor;
   stroke-width: 1.5;
   stroke-opacity: calc(min(1, (1 - var(--fill, 1)) * 4) * 0.55);
-  transition: stroke-opacity var(--dur-settle) ease;
+  transition: stroke-opacity var(--dur-settle) var(--ease-out);
 }
 
 .hi-face { fill: currentColor; }
@@ -43,7 +43,7 @@
 
 .hi-level {
   transform: translateY(calc((1 - var(--fill, 1)) * 18px));
-  transition: transform 760ms var(--ease-settle);
+  transition: transform var(--dur-reveal) var(--ease-snap);
 }
 
 .hi-half {
@@ -115,10 +115,10 @@
 
 /* Lost: the crack flashes, the halves part and tilt, then close again as the
    fill level drains. The whole icon shakes once. */
-.live-heart.is-cracking .hi { animation: hi-shake 480ms cubic-bezier(0.36, 0.07, 0.19, 0.97); }
-.live-heart.is-cracking .hi-crack { animation: hi-crack 760ms var(--ease-out); }
-.live-heart.is-cracking .hi-half--a { animation: hi-part-a 760ms var(--ease-out); }
-.live-heart.is-cracking .hi-half--b { animation: hi-part-b 760ms var(--ease-out); }
+.live-heart.is-cracking .hi { animation: hi-shake var(--dur-open) cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+.live-heart.is-cracking .hi-crack { animation: hi-crack var(--dur-reveal) var(--ease-out); }
+.live-heart.is-cracking .hi-half--a { animation: hi-part-a var(--dur-reveal) var(--ease-out); }
+.live-heart.is-cracking .hi-half--b { animation: hi-part-b var(--dur-reveal) var(--ease-out); }
 
 @keyframes hi-shake {
   0%, 100% { translate: 0 0; }
@@ -150,7 +150,7 @@
 }
 
 /* Gained: a strong double beat. */
-.live-heart.is-gaining .hi { animation: hi-beat-once 720ms var(--ease-spring); }
+.live-heart.is-gaining .hi { animation: hi-beat-once var(--dur-reveal) var(--ease-spring); }
 
 @keyframes hi-beat-once {
   0%   { transform: scale(1); }
@@ -195,11 +195,11 @@
 
 /* Earned: the stone turns over once, like a coin landing, and a glint
    crosses its face. */
-.live-gem.is-turning .gi { animation: gi-turn 820ms var(--ease-out); }
+.live-gem.is-turning .gi { animation: gi-turn var(--dur-reveal) var(--ease-out); }
 .live-gem.is-turning .gi-glint,
-.fx-glint-host:hover .gi-glint { animation: gi-glint 760ms var(--ease-out); }
+.fx-glint-host:hover .gi-glint { animation: gi-glint var(--dur-reveal) var(--ease-out); }
 
-.live-gem.is-spending .gi { animation: gi-sink 520ms var(--ease-out); }
+.live-gem.is-spending .gi { animation: gi-sink var(--dur-hover) var(--ease-in); }
 
 @keyframes gi-turn {
   0%   { transform: translateY(0) scaleX(1); }
@@ -222,8 +222,8 @@
 
 .fi { overflow: visible; }
 
-.fi-outer { fill: currentColor; transition: fill var(--dur-settle) ease; }
-.fi-mid   { fill: var(--ochre); transition: fill var(--dur-settle) ease; }
+.fi-outer { fill: currentColor; transition: fill var(--dur-settle) var(--ease-out); }
+.fi-mid   { fill: var(--ochre); transition: fill var(--dur-settle) var(--ease-out); }
 .fi-core  { fill: var(--surface-raised); }
 
 .fi-o, .fi-m, .fi-c {
@@ -292,12 +292,12 @@
 .fx-flare-host:focus-visible .fi-o { scale: 1.1 1.2; }
 .fx-flare-host:hover .fi-m,
 .fx-flare-host:focus-visible .fi-m { scale: 1.05 1.26; }
-.fi-o, .fi-m { transition: scale 380ms var(--ease-spring); }
+.fi-o, .fi-m { transition: scale var(--dur-move) var(--ease-snap); }
 
 /* Rose: the flare. */
-.live-flame.is-flaring .fi-o { animation: fi-flare-o 980ms var(--ease-out); }
-.live-flame.is-flaring .fi-m { animation: fi-flare-m 980ms var(--ease-out); }
-.live-flame.is-flaring .fi-c { animation: fi-flare-c 980ms var(--ease-out); }
+.live-flame.is-flaring .fi-o { animation: fi-flare-o var(--dur-celebrate) var(--ease-out); }
+.live-flame.is-flaring .fi-m { animation: fi-flare-m var(--dur-celebrate) var(--ease-out); }
+.live-flame.is-flaring .fi-c { animation: fi-flare-c var(--dur-celebrate) var(--ease-out); }
 
 @keyframes fi-flare-o {
   0%   { transform: scale(1); }
@@ -318,7 +318,7 @@
   100% { transform: scale(1); }
 }
 
-.live-flame.is-dousing .fi { animation: gi-sink 620ms var(--ease-out); }
+.live-flame.is-dousing .fi { animation: gi-sink var(--dur-hover) var(--ease-in); }
 
 /* A banked Streak Shield sits at the flame's foot. */
 .lf-shield {
@@ -347,14 +347,14 @@
 /* ═══ LINE ICON PARTS ═══════════════════════════════════════════════════════ */
 
 .ico-check { stroke-dasharray: 1; stroke-dashoffset: 0; }
-.is-drawing .ico-check { animation: fx-draw 520ms var(--ease-out) both; }
+.is-drawing .ico-check { animation: fx-draw var(--dur-open) var(--ease-out) both; }
 
 .ico-shackle {
   transform-box: fill-box;
   transform-origin: 15% 100%;
-  transition: transform 300ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
-.is-denied .ico-shackle { animation: lock-rattle 460ms var(--ease-out); }
+.is-denied .ico-shackle { animation: lock-rattle var(--dur-open) var(--ease-out); }
 
 @keyframes lock-rattle {
   0%, 100% { transform: none; }
@@ -366,13 +366,13 @@
 .ico-lid {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  transition: transform 340ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .ico-hand {
   transform-box: view-box;
   transform-origin: 12px 12px;
-  transition: transform 700ms var(--ease-settle);
+  transition: transform var(--dur-reveal) var(--ease-snap);
 }
 
 @media (prefers-reduced-motion: reduce) {

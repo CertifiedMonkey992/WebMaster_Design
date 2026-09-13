@@ -61,13 +61,13 @@
   border: 1px solid rgba(var(--ochre-rgb), 0.3);
   border-radius: var(--r-md);
   cursor: default;
-  transition: border-color var(--dur-hover) ease;
+  transition: border-color var(--dur-hover) var(--ease-out);
 }
 
 .sh-balance:hover { border-color: var(--ochre); }
 
 .sh-balance-art { display: grid; place-items: center; }
-.sh-balance-art > svg { width: 48px; height: 48px; transition: transform 520ms var(--ease-spring); }
+.sh-balance-art > svg { width: 48px; height: 48px; transition: transform var(--dur-move) var(--ease-spring); }
 .sh-balance:hover .sh-balance-art > svg { transform: translateY(-4px) rotate(-8deg) scale(1.12); }
 
 .sh-balance-text { display: flex; flex-direction: column; gap: 3px; }
@@ -108,7 +108,7 @@
   font-size: var(--fs-small);
   color: var(--moss);
   overflow: hidden;
-  animation: sh-receipt-in 600ms var(--ease-spring) both;
+  animation: sh-receipt-in var(--dur-modal) var(--ease-snap) both;
 }
 
 @keyframes sh-receipt-in {
@@ -125,7 +125,7 @@
   background: var(--moss);
   color: var(--surface-raised);
   flex-shrink: 0;
-  animation: fx-stamp 600ms var(--ease-settle) 150ms backwards;
+  animation: fx-stamp var(--dur-reveal) var(--ease-settle) 90ms backwards;
 }
 
 .sh-receipt-text { flex: 1; }
@@ -182,9 +182,9 @@
 
 .sh-card {
   position: relative;
-  animation: rv-left 560ms var(--ease-settle) backwards;
-  animation-delay: calc(240ms + var(--i) * 70ms);
-  transition: background-color var(--dur-hover) ease;
+  animation: rv-left var(--dur-open) var(--ease-snap) backwards;
+  animation-delay: calc(150ms + var(--i, 0) * var(--stagger));
+  transition: background-color var(--dur-hover) var(--ease-out);
 }
 
 .sh-card:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
@@ -211,13 +211,13 @@
   display: grid;
   place-items: center;
   border-radius: var(--r-sm);
-  transition: transform 520ms var(--ease-spring);
+  transition: transform var(--dur-lift) var(--ease-lift);
 }
 
 .sh-card-art svg {
   width: 44px;
   height: 44px;
-  transition: transform 520ms var(--ease-spring), filter 400ms ease;
+  transition: transform var(--dur-lift) var(--ease-lift), filter var(--dur-hover) var(--ease-out);
 }
 
 /* Handled: the art lifts out of its tile toward you. */
@@ -226,7 +226,7 @@
   filter: drop-shadow(0 8px 6px rgba(var(--ink-rgb), 0.18));
 }
 
-.sh-card.is-received .sh-card-art { animation: sh-received 900ms var(--ease-spring); }
+.sh-card.is-received .sh-card-art { animation: sh-received var(--dur-celebrate) var(--ease-spring); }
 
 @keyframes sh-received {
   0%   { transform: scale(1); }
@@ -260,7 +260,7 @@
   font-weight: var(--fw-semi);
   letter-spacing: var(--ls-title);
   color: var(--ink);
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .sh-card:hover:not(.is-disabled) .sh-card-name { transform: translateX(3px); }
@@ -277,7 +277,7 @@
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  animation: fx-pop-in 520ms var(--ease-spring) backwards;
+  animation: fx-pop-in var(--dur-lift) var(--ease-spring) backwards;
 }
 
 .sh-card-tagline {
@@ -291,7 +291,7 @@
 .sh-card-desc-wrap {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 460ms var(--ease-settle);
+  transition: grid-template-rows var(--dur-open) var(--ease-snap);
 }
 
 .sh-card-desc {
@@ -301,7 +301,7 @@
   color: var(--ink-faint);
   line-height: var(--lh-normal);
   opacity: 0;
-  transition: opacity 300ms ease;
+  transition: opacity var(--dur-hover) var(--ease-out);
 }
 
 .sh-card:hover .sh-card-desc-wrap,
@@ -326,10 +326,10 @@
   color: var(--ochre-ink);
   font-variant-numeric: tabular-nums;
   cursor: default;
-  transition: color var(--dur-hover) ease;
+  transition: color var(--dur-hover) var(--ease-out);
 }
 
-.sh-price .gi { color: var(--ochre); transition: transform 460ms var(--ease-spring); }
+.sh-price .gi { color: var(--ochre); transition: transform var(--dur-move) var(--ease-spring); }
 .sh-card:hover .sh-price .gi { transform: rotate(-16deg) scale(1.15); }
 
 .sh-card:hover:not(.is-disabled) .sh-buy {
@@ -342,7 +342,7 @@
 .sh-card.is-disabled .sh-price { color: var(--berry-ink); }
 .sh-card.is-disabled .sh-price .gi { color: var(--berry); }
 .sh-card.is-disabled .sh-card-art { opacity: 0.55; }
-.sh-card.is-explaining .sh-price { animation: sh-price-flash 700ms var(--ease-out); }
+.sh-card.is-explaining .sh-price { animation: sh-price-flash var(--dur-reveal) var(--ease-out); }
 
 @keyframes sh-price-flash {
   0%, 100% { transform: none; }
@@ -353,7 +353,7 @@
 .sh-why {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 460ms var(--ease-settle);
+  transition: grid-template-rows var(--dur-open) var(--ease-snap);
 }
 
 .sh-card.is-explaining .sh-why { grid-template-rows: 1fr; }
@@ -392,10 +392,13 @@
   font-size: var(--fs-caption);
   font-weight: var(--fw-bold);
   color: var(--evergreen);
-  transition: gap 300ms var(--ease-spring);
+  transition: color var(--dur-hover) var(--ease-out);
 }
 
-.sh-why-link:hover { gap: 6px; text-decoration: underline; text-underline-offset: 3px; }
+.sh-why-link svg { transition: transform var(--dur-move) var(--ease-snap); }
+.sh-why-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+/* The chevron leans toward where the link goes — a transform, not a gap. */
+.sh-why-link:hover svg { transform: translateX(3px); }
 
 .sh-footnote {
   font-size: var(--fs-caption);
@@ -420,11 +423,11 @@
   position: absolute;
   inset: 0;
   background: rgba(var(--ink-rgb), 0.42);
-  animation: fx-fade-in 220ms ease both;
+  animation: fx-fade-in var(--dur-enter) var(--ease-out) both;
 }
 
-.sh-dialog-layer.is-leaving .sh-dialog-scrim { animation: db-fade-out 180ms var(--ease-in) both; }
-.sh-dialog-layer.is-leaving .sh-dialog { animation: db-sink 180ms var(--ease-in) both; }
+.sh-dialog-layer.is-leaving .sh-dialog-scrim { animation: db-fade-out var(--dur-hover) var(--ease-in) both; }
+.sh-dialog-layer.is-leaving .sh-dialog { animation: db-sink var(--dur-hover) var(--ease-in) both; }
 
 .sh-dialog {
   position: relative;
@@ -435,7 +438,7 @@
   padding: var(--sp-6) var(--sp-6) var(--sp-5);
   text-align: center;
   box-shadow: var(--shadow-modal);
-  animation: sh-dialog-in 560ms var(--ease-spring) both;
+  animation: sh-dialog-in var(--dur-modal) var(--ease-snap) both;
 }
 
 @keyframes sh-dialog-in {
@@ -443,12 +446,12 @@
   to   { opacity: 1; transform: none; }
 }
 
-.sh-dialog > * { animation: fx-slide-up 500ms var(--ease-settle) backwards; }
-.sh-dialog > :nth-child(3) { animation-delay: 120ms; }
-.sh-dialog > :nth-child(4) { animation-delay: 170ms; }
-.sh-dialog > :nth-child(5) { animation-delay: 220ms; }
-.sh-dialog > :nth-child(6) { animation-delay: 270ms; }
-.sh-dialog > :nth-child(7) { animation-delay: 320ms; }
+.sh-dialog > * { animation: fx-slide-up var(--dur-modal) var(--ease-snap) backwards; }
+.sh-dialog > :nth-child(3) { animation-delay: calc(var(--stagger) * 0.75); }
+.sh-dialog > :nth-child(4) { animation-delay: calc(var(--stagger) * 1.5); }
+.sh-dialog > :nth-child(5) { animation-delay: calc(var(--stagger) * 2.25); }
+.sh-dialog > :nth-child(6) { animation-delay: calc(var(--stagger) * 3); }
+.sh-dialog > :nth-child(7) { animation-delay: calc(var(--stagger) * 3.75); }
 
 .sh-dialog-close {
   position: absolute;
@@ -464,7 +467,7 @@
   background: transparent;
   color: var(--ink-faint);
   cursor: pointer;
-  transition: background-color var(--dur-hover), color var(--dur-hover), transform 380ms var(--ease-spring);
+  transition: background-color var(--dur-hover), color var(--dur-hover), transform var(--dur-move) var(--ease-spring);
 }
 
 .sh-dialog-close:hover { background: rgba(var(--ink-rgb), 0.06); color: var(--ink); transform: rotate(90deg); }
@@ -477,10 +480,10 @@
   height: 112px;
   margin: 0 auto var(--sp-3);
   border-radius: var(--r-lg);
-  animation: sh-art-drop 800ms var(--ease-spring) 60ms backwards !important;
+  animation: sh-art-drop var(--dur-reveal) var(--ease-spring) 60ms backwards !important;
 }
 
-.sh-dialog-art svg { transition: transform 520ms var(--ease-spring); }
+.sh-dialog-art svg { transition: transform var(--dur-move) var(--ease-spring); }
 .sh-dialog-art:hover svg { transform: rotate(-8deg) scale(1.1); }
 
 @keyframes sh-art-drop {
@@ -536,12 +539,12 @@
   gap: var(--sp-4);
   padding: 5px 0;
   font-size: var(--fs-small);
-  animation: rv-right 480ms var(--ease-settle) backwards;
+  animation: rv-right var(--dur-open) var(--ease-snap) backwards;
 }
 
-.sh-ledger-row:nth-child(1) { animation-delay: 260ms; }
-.sh-ledger-row:nth-child(2) { animation-delay: 320ms; }
-.sh-ledger-row:nth-child(3) { animation-delay: 380ms; }
+.sh-ledger-row:nth-child(1) { animation-delay: calc(160ms + var(--stagger) * 0); }
+.sh-ledger-row:nth-child(2) { animation-delay: calc(160ms + var(--stagger) * 1); }
+.sh-ledger-row:nth-child(3) { animation-delay: calc(160ms + var(--stagger) * 2); }
 
 .sh-ledger-row dt { color: var(--ink-muted); }
 

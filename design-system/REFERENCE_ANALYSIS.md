@@ -300,6 +300,59 @@ not the problem; **undifferentiated** density is.
 
 ---
 
+## 11b. Motion addendum (revision 3) — why the references feel alive
+
+Studied from the live sites and their shipped bundles, not screenshots.
+
+**Roots & Routes** (Vite + React, GSAP for one object, Framer Motion for the
+rest)
+
+- *The card file.* Seven photo cards stand in individual `perspective:1000px`
+  wells, each `rotateY(16deg) skewY(-1deg)` and stepped 10px down / 0.5px back.
+  Hovering one tweens it **up 88px** and its two neighbours **up 14px**, in
+  **420ms `power3.out`**; leaving returns them in **320ms `power2.out`**, with
+  `overwrite:"auto"` so an interrupted hover never fights itself. No spring,
+  no scale, no stagger, no delay. It feels good because it is *fast, large,
+  and physical*: importance is amplitude, not duration, and the neighbours
+  prove the cards share a drawer.
+- *The testimonial wall.* Two rows driven by `useAnimationFrame`, opposite
+  directions, a slow constant speed you can read at, **paused on hover**, with
+  a masked fade at both ends. This is where "alive when idle" comes from.
+- *The headline rule.* A hand-drawn SVG underline that *re-draws to a new
+  shape* on hover (`d` tweened, `easeInOut`) — the heading answers the pointer
+  without moving a single letter.
+- Everything else is 150–300ms, `cubic-bezier(.4,0,.2,1)`.
+
+**Maitso** (Next.js, DaisyUI, Framer Motion, react-fast-marquee)
+
+- *The rotating plate.* A round food photograph in an `animate={{rotate:360}}`
+  wrapper, `duration: 60, ease: "linear", repeat: Infinity`. One revolution a
+  minute on a naturally round object never reads as a spinner.
+- *Layered entrances.* A block enters with `x: 50`, its heading `x: 25`, its
+  paragraph `x: 12`, all at **0.5s**. Same clock, decreasing amplitude — the
+  group arrives with depth instead of as a queue.
+- *Carousels with context.* Neighbour slides sit at 20–30% opacity: the eye
+  gets the current item and proof there are more.
+- *Press.* `whileTap: { scale: .95 }`, `whileHover: { scale: 1.1 }` on round
+  controls — tactile in one frame.
+- *Nav.* Sticky; its ground changes over 700ms once the hero is passed; link
+  underlines grow from the centre in 300ms.
+
+**What LunX revision 2 was doing instead**
+
+| | References | LunX rev 2 |
+|---|---|---|
+| Hover travel | 200–420ms, strong ease-out | 360–560ms overshoot spring |
+| Showcase hover | one object rises 88px; neighbours 14px | the hovered card lifts, scales 1.06, **grows 140px taller** (moving its own edge out from under the pointer), and five nested parts arrive at five different durations |
+| Idle | marquees drift; a plate turns | nothing, except pings |
+| Groups arriving | same clock, layered amplitude | long delay queues (a Done button at 1.45s) |
+| Easing vocabulary | 2–3 curves | a spring on 181 declarations |
+
+The references are not technically elaborate. They are *disciplined*: few
+curves, short clocks, big amplitudes on the one thing that matters, and one
+thing that is always quietly moving. Revision 3 of `MOTION_RULES.md` encodes
+exactly that.
+
 ## 12. The ten highest-impact improvements
 
 1. **One palette across both pages.** Retire the dark landing page. Warm bone

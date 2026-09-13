@@ -96,10 +96,50 @@ are in.
   appears on scroll.
 - Wordmark Fraunces `--fs-title` `--evergreen`; links Manrope `--fs-small`
   `--ink-muted`.
-- Link hover: `--ink` plus a 1px `--clay` underline that grows from the left
-  over `--dur-hover`. This is the reference's "colour-changing list" done as
-  one deliberate move rather than six.
-- One solid button at the right. Never two.
+- Link hover: `--ink` plus ONE `--clay` underline that slides between links
+  (`--dur-open` `--ease-snap`) and rests on the section being read.
+- One solid button at the right. Never two. **It is one of the page's only
+  two ways into the course** (the other is the closing CTA), so the bar
+  **never hides**: after 24px of scroll it compresses (the strip's ground
+  scales to 56px, the wordmark to 92%) instead of tucking away.
+- Arrival: wordmark, links and button settle in on load, 40ms apart.
+
+### Links into the course (landing page)
+
+Exactly two: the navbar button (top right, always on screen) and the closing
+CTA's button (the bottom of the page). The hero, the section copy and the
+footer do not repeat it — seven routes to one destination read as pleading,
+and dilute the two that matter. In-page section anchors (the navbar's section
+links) are navigation, not course links, and do not count.
+
+### The field guide (landing hero)
+
+- The five modules as a clothbound book (`MOTION_RULES.md` → *The field
+  guide* for anatomy and physics). Closed: evergreen cover, wordmark, title,
+  compass, `22 lessons · 5 chapters`. Open: a contents page, or a chapter
+  spread — opener on the left, lessons with dotted leaders on the right.
+- Pages are `--surface` ruled paper at `--r-xs` corners (paper has almost no
+  radius); the cover board is `--r-sm` at the fore-edge and square at the
+  spine.
+- The hero's curriculum list drives it: hovering a module lifts that
+  chapter's block, clicking opens the book at it.
+- It is one focusable object with a visible focus ring and an `aria-live`
+  line naming the open spread.
+- ≤ 1100px it sits under the copy, centred; ≤ 560px the open book shows its
+  right-hand page with the left page cropped at the stage edge.
+
+### Lesson ticker (landing)
+
+- Every lesson title in the guide, in two rows drifting in opposite
+  directions (`LessonTicker` → `motion/Marquee`). It sits between the hero
+  and the course section and carries the eye from one to the other.
+- Chips are printed labels: `--surface`, hairline, `--r-xs`; chapter number
+  in the chapter's ink, a 22px icon tile, the title in Fraunces
+  `--fs-small`, the duration in `--ink-faint`. Quiet on purpose — it is read
+  as motion and colour, not as twenty-two headlines.
+- Not buttons and not course links. Hovering a row brakes it; each chip names
+  its chapter in a tooltip; scrolling pushes the rows along.
+- Reduced motion: one still row per line, horizontally scrollable.
 
 ### Top bar (`learn-topbar`)
 

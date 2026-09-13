@@ -1,16 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Navbar.jsx — THE LANDING PAGE'S TOP EDGE
    ---------------------------------------------------------------------------
-   Four behaviours, each reporting something:
+   The button at the right is one of only two ways into the course on this
+   page (the other is the closing CTA), so the bar never hides. What it does
+   instead, each reporting something:
 
-     · a clay rule along the bottom edge fills with how far down the page
-       you have read
-     · the bar steps out of the way while you scroll down and comes back the
-       moment you scroll up (or tab into it)
+     · compresses once the page moves — the paper strip shortens and the
+       wordmark settles, so the bar takes less of the reading space
+     · a clay rule along its bottom edge fills with how far down you have read
      · the link for the section you are reading stays underlined
      · ONE ink underline slides between links as the pointer moves, rather
-       than each link growing its own — the reference's colour-changing list
-       done as a single moving object
+       than each link growing its own
+     · when the hero (and everything else on screen that mentions the course)
+       scrolls away, the button's surface catches the light once: it is now
+       the way in
 
    The wordmark's letters ripple on hover; the mark turns.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -28,24 +31,29 @@ export default function Navbar({ onStartLearning }) {
   const navRef = useRef(null)
   const listRef = useRef(null)
   const [scrolled, setScrolled] = useState(false)
-  const [tucked, setTucked] = useState(false)
+  const [cued, setCued] = useState(false)
   const [active, setActive] = useState(null)
   const [hover, setHover] = useState(null)
 
-  /* Scroll: progress, tucking, hairline. One rAF per frame at most. */
+  /* Scroll: progress and compression. One rAF per frame at most, and state
+     only changes when a threshold is actually crossed. */
   useEffect(() => {
-    let lastY = window.scrollY
     let raf = 0
+    let wasPast = window.scrollY > window.innerHeight * 0.7
+    let cueTimer = 0
     const run = () => {
       raf = 0
       const y = window.scrollY
       const max = document.documentElement.scrollHeight - window.innerHeight
       navRef.current?.style.setProperty('--scroll', max > 0 ? (y / max).toFixed(4) : '0')
       setScrolled(y > 24)
-      if (Math.abs(y - lastY) > 8) {
-        setTucked(y > lastY && y > 360)
-        lastY = y
+      const past = y > window.innerHeight * 0.7
+      if (past && !wasPast) {
+        setCued(true)
+        clearTimeout(cueTimer)
+        cueTimer = window.setTimeout(() => setCued(false), 1200)
       }
+      wasPast = past
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(run) }
     run()
@@ -55,6 +63,7 @@ export default function Navbar({ onStartLearning }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       cancelAnimationFrame(raf)
+      clearTimeout(cueTimer)
     }
   }, [])
 
@@ -96,7 +105,7 @@ export default function Navbar({ onStartLearning }) {
   return (
     <nav
       ref={navRef}
-      className={`navbar${scrolled ? ' scrolled' : ''}${tucked ? ' is-tucked' : ''}`}
+      className={`navbar${scrolled ? ' scrolled' : ''}`}
       aria-label="Main navigation"
     >
       <a href="#" className="nav-logo" aria-label="LunX home" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
@@ -137,13 +146,13 @@ export default function Navbar({ onStartLearning }) {
       </ul>
 
       {/* No sign-in button: the login form has no backend, so offering it here
-          would promise an account the product cannot create. Progress persists
-          in the browser instead, which is what the closing CTA says. */}
+          would promise an account the product cannot create. */}
       <div className="nav-actions">
         <button
-          className="btn btn-primary"
+          className={`btn btn-primary${cued ? ' is-cued' : ''}`}
           onClick={onStartLearning}
           aria-label="Start learning for free"
+          data-magnetic="6"
         >
           Start learning
           <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"

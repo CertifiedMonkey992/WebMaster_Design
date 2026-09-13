@@ -4,12 +4,14 @@
    Every panel on this page is the app's own component, mounted through
    ProgressionShowcase against a demo learner built by the real reducer.
 
-   Revision 2 choreography, per section:
+   Choreography, per section (MOTION_RULES.md → Scroll):
      · the eyebrow's index number and rule draw in
      · the heading assembles word by word
      · the paragraphs rise in sequence; each bold term gets a highlighter
        stroke laid under it as it comes into view
-     · the frame stands up out of a tilt and follows the pointer
+     · the frame slides in from its own side, stands up out of a tilt, and
+       then floats on a slow parallax against the copy, which stays put
+     · the real components inside perform their own entrance when seen
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useMemo } from 'react'
@@ -30,6 +32,7 @@ import ProductFrame from './ProductFrame'
 import SplitText from '../../motion/SplitText'
 import Reveal from '../../motion/Reveal'
 import useInView from '../../motion/useInView'
+import { useScrollProgress } from '../../motion/scroll'
 import './showcase.css'
 
 const noop = () => {}
@@ -48,6 +51,8 @@ function Mark({ children, tone = 'ochre' }) {
 
 function Section({ id, index, eyebrow, heading, children, frame, flip = false }) {
   const [ref, inView] = useInView({ threshold: 0.2 })
+  /* Writes --sp (0 entering → 1 leaving) for the frame's parallax. */
+  const parallaxRef = useScrollProgress()
   return (
     <section className="sc-section" id={id} aria-labelledby={`${id}-heading`}>
       <div className={`sc-wrap${flip ? ' flip' : ''}`}>
@@ -62,7 +67,7 @@ function Section({ id, index, eyebrow, heading, children, frame, flip = false })
           </SplitText>
           <Reveal stagger delay={220}>{children}</Reveal>
         </div>
-        <div className="sc-frame">{frame}</div>
+        <div className="sc-frame" ref={parallaxRef} style={{ '--side': flip ? -1 : 1 }}>{frame}</div>
       </div>
     </section>
   )
@@ -114,7 +119,7 @@ function StreakSection() {
       heading={<>Miss a day and<br />you start over.</>}
       flip
       frame={
-        <ProductFrame path="Streak" caption="The live top bar — hover the figures, click the flame." align="right">
+        <ProductFrame path="Streak" caption="The live top bar — hover the figures, click the flame." side="left">
           <div className="sc-stats-frame">
             <div className="sc-topbar">
               <PlayerStatusBar />
@@ -181,7 +186,7 @@ function QuestFrame() {
   const quests = vm.quests.daily.slice(0, 3)
 
   return (
-    <ProductFrame path="Quests" caption="Daily quests, generated fresh each morning. Gems are the payout." align="right">
+    <ProductFrame path="Quests" caption="Daily quests, generated fresh each morning. Gems are the payout." side="left">
       <div className="sc-stack">
         <span className="sc-stack-label">Today&apos;s quests</span>
         {quests.map((quest) => (

@@ -1,16 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer.jsx — THE LAST LINE
    ---------------------------------------------------------------------------
-   The footer used to carry About / Privacy / Terms / GitHub, all pointing at
-   "#". Four links that go nowhere are four misleading affordances, and none of
-   those pages exist. What it carries now is what is true: where to go on this
-   page, the one privacy fact that matters (nothing leaves the browser), and a
-   way back to the top.
+   What it carries is what is true: the one privacy fact that matters (nothing
+   leaves the browser), and a way back to the top.
+
+   It does not repeat the course links. The page has exactly two ways into the
+   course — the navbar's button and the closing CTA directly above this — and
+   a third, one line below the second, would only dilute them. The section
+   links already live in the navbar, which never hides.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const LETTERS = ['L', 'u', 'n', 'X']
+const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-export default function Footer({ onStartLearning }) {
+export default function Footer() {
   return (
     <footer className="footer" role="contentinfo">
       <div className="footer-left">
@@ -18,7 +21,7 @@ export default function Footer({ onStartLearning }) {
         <button
           type="button"
           className="footer-logo-text"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={toTop}
           aria-label="LunX — back to top"
         >
           {LETTERS.map((ch, i) => (
@@ -30,30 +33,18 @@ export default function Footer({ onStartLearning }) {
         </span>
       </div>
 
-      <ul className="footer-links" role="list">
-        <li><a href="#learn" className="footer-link">The course</a></li>
-        <li><a href="#streak" className="footer-link">Streaks</a></li>
-        <li><a href="#daily-bonus" className="footer-link">Rewards</a></li>
-        <li>
-          <button type="button" className="footer-link footer-link--go" onClick={onStartLearning}>
-            Start learning
-          </button>
-        </li>
-        <li>
-          <button
-            type="button"
-            className="footer-top"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            aria-label="Back to top"
-            data-tip="Back to top"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
-            </svg>
-          </button>
-        </li>
-      </ul>
+      <button
+        type="button"
+        className="footer-top"
+        onClick={toTop}
+        aria-label="Back to top"
+        data-tip="Back to top"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+        </svg>
+      </button>
     </footer>
   )
 }

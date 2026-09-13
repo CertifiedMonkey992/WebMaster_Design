@@ -276,7 +276,7 @@ of the page.
 | A surface the pointer is currently on | `--shadow-raised` |
 | Popover, dropdown, tooltip, toast | `--shadow-float` |
 | Modal, lesson overlay | `--shadow-modal` |
-| The landing page's fanned card stack | `--shadow-float`, because it depicts stacked paper |
+| The landing page's field guide | a contact shadow in warm ink under the book, and cast shadows on its pages while a sheet turns — it depicts a physical object, and its shadows move with it |
 | A pressed button | `--shadow-press` |
 | A handled object that has been picked up (a lifted index card, a dragged chip, popped shop art) | `--shadow-lift` |
 
@@ -363,6 +363,7 @@ as the icon set. No gradient meshes, no glow, no 3D, no isometric.**
 |---|---|
 | **Mascot** | There is none, and none is being invented. A mascot the product does not have is a decoration with a face. If one is ever added, it is drawn in the icon language and appears only in empty and completion states. |
 | **Course / module art** | A flat emblem per module, in that module's tint, stroked like the icons. No orbiting rings, no glowing spheres. |
+| **The field guide** | The landing hero's one depicted object: a clothbound book in `--evergreen` with `--surface` pages, chapter tabs in the five chapter inks, a `--clay` ribbon, and a compass drawn in the 2px icon language. Its only "illustration" is the compass, and it is there because the product is a guide. Pages carry real course data. The page and cover shading are two-stop, one-hue gradients depicting depth on a physical surface — the one sanctioned use. |
 | **Rewards** | The existing `ShopArt` and `DailyBonusArt` sets stay: small, flat, legible at 40px. Repalette to warm tokens. |
 | **Empty states** | Text first. An illustration only if it explains something a sentence cannot. |
 | **Completion** | A stamp, not a firework. A rubber-stamp mark in `--moss` reads as earned; particles read as a slot machine. |
@@ -382,24 +383,36 @@ ground, and never on a card.
 Full rules in `MOTION_RULES.md`. The values:
 
 ```css
---dur-micro:     90ms    /* icon twitch, tooltip in */
---dur-press:     120ms   /* button depress / release */
---dur-hover:     180ms   /* hover in and out */
---dur-enter:     240ms   /* popover, toast, panel arriving */
+--dur-micro:     90ms    /* press down, icon twitch, tooltip in */
+--dur-press:     120ms   /* release */
+--dur-hover:     160ms   /* colour, border, background on hover */
+--dur-move:      240ms   /* a hover response that travels */
+--dur-lift:      320ms   /* a handled object picked up / put down */
+--dur-enter:     240ms   /* popover, toast */
 --dur-modal:     320ms   /* a modal taking the screen */
+--dur-open:      420ms   /* expander, view change, travelling indicator */
+--dur-reveal:    560ms   /* arriving on the page as it scrolls in */
 --dur-settle:    600ms   /* a number or bar moving to a new value */
+--dur-turn:      760ms   /* the field guide's cover, a leaf turning */
 --dur-celebrate: 800ms   /* a reward landing, a stamp, a burst */
 
---ease-out:    cubic-bezier(0.33, 1, 0.68, 1);     /* responding to input */
+--ease-out:    cubic-bezier(0.33, 1, 0.68, 1);     /* colour and opacity */
+--ease-snap:   cubic-bezier(0.16, 1, 0.3, 1);      /* travel in response to input */
 --ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1);     /* arriving at a value */
+--ease-lift:   cubic-bezier(0.3, 1.3, 0.5, 1);     /* a handled object, ~3% overshoot */
+--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* Reports only */
 --ease-press:  cubic-bezier(0.4, 0, 0.6, 1);       /* short, symmetric */
---ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* a handled object overshooting */
 --ease-in:     cubic-bezier(0.5, 0, 0.75, 0);      /* something leaving */
---stagger:     45ms                                /* siblings arriving */
+--ease-swing:  cubic-bezier(0.65, 0, 0.35, 1);     /* momentum; ambient drift */
+--stagger:     40ms                                /* siblings arriving */
+--lag-follow:  40ms                                /* secondary part of a gesture */
+--lag-finish:  90ms                                /* supporting part of a gesture */
 ```
 
-Revision 2 of `MOTION_RULES.md` added `--dur-micro`, `--dur-celebrate`,
-`--ease-spring`, `--ease-in` and `--stagger`.
+Revision 3 of `MOTION_RULES.md` added the `move`, `lift`, `open`, `reveal`
+and `turn` tiers, the `snap`, `lift` and `swing` easings and the two lags, and
+restricted `--ease-spring` to Reports. JS reads the same values from
+`src/motion/timing.js`.
 
 ---
 

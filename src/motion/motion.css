@@ -19,7 +19,7 @@
    type being set, not type fading in. The mask is padded and pulled back by
    the same amount so descenders and the italic's overhang are not clipped. */
 
-.st { --st-stagger: 42ms; --st-delay: 0ms; }
+.st { --st-stagger: var(--stagger); --st-delay: 0ms; }
 
 .st-w {
   display: inline-block;
@@ -34,9 +34,11 @@
   transform: translateY(112%) rotate(7deg);
   transform-origin: 0% 100%;
   opacity: 0;
+  /* Snap, not settle: each word is visibly moving from its first frame, so a
+     heading reads as type being set rather than as type waiting to appear. */
   transition:
-    transform 780ms var(--ease-settle),
-    opacity 380ms var(--ease-out);
+    transform var(--dur-reveal) var(--ease-snap),
+    opacity var(--dur-open) var(--ease-out);
   transition-delay: calc(var(--st-delay) + var(--i, 0) * var(--st-stagger));
 }
 
@@ -52,8 +54,8 @@
 
 .rv.is-in:not(.rv--stagger),
 .rv--stagger.is-in > .rv-item {
-  animation-duration: 720ms;
-  animation-timing-function: var(--ease-settle);
+  animation-duration: var(--dur-reveal);
+  animation-timing-function: var(--ease-snap);
   animation-fill-mode: backwards;
   animation-delay: var(--rv-delay, 0ms);
 }
@@ -67,16 +69,28 @@
 .rv--left.is-in:not(.rv--stagger),  .rv--left.rv--stagger.is-in > .rv-item  { animation-name: rv-left; }
 .rv--right.is-in:not(.rv--stagger), .rv--right.rv--stagger.is-in > .rv-item { animation-name: rv-right; }
 .rv--scale.is-in:not(.rv--stagger), .rv--scale.rv--stagger.is-in > .rv-item { animation-name: rv-scale; }
-.rv--tilt.is-in:not(.rv--stagger),  .rv--tilt.rv--stagger.is-in > .rv-item  { animation-name: rv-tilt; animation-duration: 1000ms; }
+.rv--tilt.is-in:not(.rv--stagger),  .rv--tilt.rv--stagger.is-in > .rv-item  { animation-name: rv-tilt; animation-duration: var(--dur-celebrate); }
 
 @keyframes rv-up    { from { opacity: 0; transform: translateY(18px); } }
 @keyframes rv-fade  { from { opacity: 0; } }
 @keyframes rv-left  { from { opacity: 0; transform: translateX(-22px); } }
 @keyframes rv-right { from { opacity: 0; transform: translateX(22px); } }
 @keyframes rv-scale { from { opacity: 0; transform: translateY(8px) scale(0.94); } }
+/* A screen being stood up on the desk: it comes in from the side of the page
+   it lives on (--side −1 left / 1 right), turned slightly toward the centre,
+   and rises out of a backward tilt. */
 @keyframes rv-tilt  {
-  from { opacity: 0; transform: perspective(1400px) rotateX(16deg) translateY(56px) scale(0.96); }
-  40%  { opacity: 1; }
+  from {
+    opacity: 0;
+    transform:
+      perspective(1400px)
+      translateX(calc(var(--side, 0) * 44px))
+      rotateY(calc(var(--side, 0) * -9deg))
+      rotateX(14deg)
+      translateY(48px)
+      scale(0.96);
+  }
+  35%  { opacity: 1; }
 }
 
 /* ═══ ROLL ══════════════════════════════════════════════════════════════════
@@ -112,12 +126,12 @@
 .rn-digit { display: block; height: 10%; text-align: center; }
 
 .rn.is-live .rn-strip {
-  transition: transform 640ms var(--ease-settle);
-  transition-delay: calc(var(--c, 0) * 35ms);
+  transition: transform var(--dur-settle) var(--ease-settle);
+  transition-delay: calc(var(--c, 0) * 30ms);
 }
 
-.rn--up .rn-track   { animation: rn-kick-up 560ms var(--ease-spring); }
-.rn--down .rn-track { animation: rn-kick-down 460ms var(--ease-out); }
+.rn--up .rn-track   { animation: rn-kick-up var(--dur-reveal) var(--ease-spring); }
+.rn--down .rn-track { animation: rn-kick-down var(--dur-open) var(--ease-out); }
 
 @keyframes rn-kick-up   { 30% { transform: translateY(-2px) scale(1.12); } }
 @keyframes rn-kick-down { 30% { transform: translateY(1px) scale(0.92); } }
@@ -209,8 +223,8 @@
   transform: translateY(4px) scale(0.94);
   transform-origin: var(--tip-origin, 50%) 100%;
   transition:
-    opacity var(--dur-micro) ease,
-    transform var(--dur-hover) var(--ease-spring);
+    opacity var(--dur-micro) var(--ease-out),
+    transform var(--dur-move) var(--ease-snap);
 }
 
 .fx-tip[data-side='bottom'] {
@@ -250,20 +264,29 @@
   isolation: isolate;
   overflow: hidden;
   translate: var(--mag-x, 0px) var(--mag-y, 0px);
+  /* On release the magnet lets go over --dur-open on snap: the button glides
+     home without the wobble a spring put on it. The press releases on
+     --ease-lift — a key coming back up 3% past, not a bounce. */
   transition:
-    background-color var(--dur-hover) ease,
-    border-color var(--dur-hover) ease,
-    color var(--dur-hover) ease,
-    translate 420ms var(--ease-spring),
-    transform 320ms var(--ease-spring),
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    translate var(--dur-open) var(--ease-snap),
+    transform var(--dur-lift) var(--ease-lift),
     box-shadow var(--dur-press) var(--ease-press);
+}
+
+/* While the pointer is on it the magnet FOLLOWS — short enough that the
+   button tracks the hand instead of trailing after it. */
+.btn.is-magnet {
+  transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-move), var(--dur-lift), var(--dur-press);
 }
 
 .btn:active:not(:disabled):not([aria-disabled='true']) {
   transform: translateY(1px) scale(0.975);
   box-shadow: var(--shadow-press);
-  transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), 420ms, 90ms, 90ms;
-  transition-timing-function: ease, ease, ease, var(--ease-spring), var(--ease-press), var(--ease-press);
+  transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-move), var(--dur-micro), var(--dur-micro);
+  transition-timing-function: var(--ease-out), var(--ease-out), var(--ease-out), var(--ease-snap), var(--ease-press), var(--ease-press);
 }
 
 /* The warm highlight that follows the pointer across a solid button — light
@@ -280,7 +303,7 @@
     rgba(var(--sheen-rgb), 0.24),
     transparent 62%
   );
-  transition: opacity var(--dur-hover) ease;
+  transition: opacity var(--dur-hover) var(--ease-out);
 }
 
 .btn-outline::before {
@@ -295,7 +318,7 @@
 
 /* The trailing arrow leans into the direction of travel, and keeps going a
    little further on press — "yes, that way". */
-.btn svg.btn-arrow { transition: transform 360ms var(--ease-spring); }
+.btn svg.btn-arrow { transition: transform var(--dur-move) var(--ease-snap); }
 .btn:hover svg.btn-arrow { transform: translateX(4px); }
 .btn:active svg.btn-arrow { transform: translateX(7px); }
 
@@ -362,10 +385,12 @@
     perspective(1100px)
     rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max, 5deg)))
     rotateY(calc(var(--tilt-x, 0) * var(--tilt-max, 5deg)));
-  transition: transform 700ms var(--ease-settle);
+  transition: transform var(--dur-reveal) var(--ease-snap);
 }
 
-.fx-tilt.is-tilting { transition-duration: 160ms; transition-timing-function: var(--ease-out); }
+/* Following the pointer: fast enough to feel attached, slow enough to smooth
+   a trackpad's steps. The release (above) glides back. */
+.fx-tilt.is-tilting { transition-duration: var(--dur-press); transition-timing-function: var(--ease-out); }
 
 .fx-sheen { position: relative; }
 
@@ -381,12 +406,39 @@
     rgba(var(--sheen-rgb), 0.3),
     transparent 55%
   );
-  transition: opacity 400ms ease;
+  transition: opacity var(--dur-open) var(--ease-out);
   z-index: 2;
 }
 
 .fx-sheen.is-tilting::after,
 [data-tilt].is-tilting .fx-sheen::after { opacity: 1; }
+
+/* ═══ AMBIENT ═══════════════════════════════════════════════════════════════
+   Anything inside an element registered with useAmbient() stops spending
+   frames while that element is offscreen. The loops resume where they were. */
+
+[data-offscreen],
+[data-offscreen] *,
+[data-offscreen] *::before,
+[data-offscreen] *::after { animation-play-state: paused !important; }
+
+/* ═══ MARQUEE ═══════════════════════════════════════════════════════════════
+   Structure only; the drift is a Web Animation in Marquee.jsx. The ends fade
+   through a mask so content enters and leaves rather than being cut. */
+
+.mq {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.mq-track { display: flex; width: max-content; will-change: transform; }
+.mq-set { display: flex; flex-shrink: 0; }
+
+.mq--still { overflow-x: auto; scrollbar-width: none; }
+.mq--still::-webkit-scrollbar { display: none; }
+.mq--still .mq-track { will-change: auto; }
 
 /* ═══ SHARED KEYFRAMES ══════════════════════════════════════════════════════ */
 
@@ -451,7 +503,7 @@
   width: 40%;
   background: linear-gradient(90deg, transparent, rgba(var(--sheen-rgb), 0.6), transparent);
   transform: translateX(-120%) skewX(-16deg);
-  animation: fx-shine-once 1100ms var(--ease-settle) 280ms both;
+  animation: fx-shine-once var(--dur-celebrate) var(--ease-settle) var(--lag-finish) both;
   pointer-events: none;
 }
 
@@ -464,11 +516,11 @@
    view (the shop's purchase sheet), pinning it to the column instead of the
    screen. */
 .view-enter {
-  animation: view-in 520ms var(--ease-settle) backwards;
+  animation: view-in var(--dur-open) var(--ease-snap) backwards;
 }
 
 @keyframes view-in {
-  from { opacity: 0; transform: translateY(calc(var(--dir, 1) * 22px)); }
+  from { opacity: 0; transform: translateY(calc(var(--dir, 1) * 16px)); }
 }
 
 /* ═══ REDUCED MOTION ════════════════════════════════════════════════════════

@@ -37,9 +37,14 @@ import StepBody, { correctLabel, isAnswerCorrect, canCheckStep } from './StepRen
 import { getLessonIcon } from './LessonIcons'
 import SplitText from '../../motion/SplitText'
 import CountUp from '../../motion/CountUp'
+import { DUR, LAG } from '../../motion/timing'
 import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
 import { burst, ring, shake } from '../../motion/burst'
+
+/* When each reward tile has landed and its figure should start counting:
+   the tile's CSS delay (470ms + i × --lag-finish) plus most of its rise. */
+const REWARD_AT = (i) => 470 + i * LAG.finish + DUR.modal * 0.6
 
 function CloseButton({ onClick, className = '' }) {
   return (
@@ -399,24 +404,24 @@ export default function LessonModal({ lessonId, onClose }) {
               <polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <SplitText as="h2" className="lm-complete-title" immediate delay={420} stagger={70}>
+          <SplitText as="h2" className="lm-complete-title" immediate delay={260} stagger={45}>
             {isReplay ? 'Review complete' : 'Lesson complete'}
           </SplitText>
           {perfect && <div className="lm-perfect-badge"><Icon name="star" size={14} strokeWidth={2.4} /> Perfect run</div>}
           <div className="lm-complete-rewards">
             <div className="lm-reward" style={{ '--i': 0 }}>
               <span className="lm-reward-icon lm-reward-icon--gem"><GemIcon size={26} /></span>
-              <span className="lm-reward-val"><CountUp prefix="+" value={sessionGems} immediate delay={900} duration={900} /></span>
+              <span className="lm-reward-val"><CountUp prefix="+" value={sessionGems} immediate delay={REWARD_AT(0)} duration={DUR.settle} /></span>
               <span className="lm-reward-lbl">Gems</span>
             </div>
             <div className="lm-reward" style={{ '--i': 1 }}>
               <span className="lm-reward-icon lm-reward-icon--xp"><BoltIcon size={26} /></span>
-              <span className="lm-reward-val"><CountUp prefix="+" value={sessionXP} immediate delay={1050} duration={900} /></span>
+              <span className="lm-reward-val"><CountUp prefix="+" value={sessionXP} immediate delay={REWARD_AT(1)} duration={DUR.settle} /></span>
               <span className="lm-reward-lbl">XP</span>
             </div>
             <div className="lm-reward" style={{ '--i': 2 }}>
               <span className="lm-reward-icon lm-reward-icon--flame"><LiveFlame streak={vm.streak} activeToday size={26} showShield={false} /></span>
-              <span className="lm-reward-val"><CountUp value={vm.streak} from={Math.max(0, vm.streak - 1)} immediate delay={1200} duration={700} /></span>
+              <span className="lm-reward-val"><CountUp value={vm.streak} from={Math.max(0, vm.streak - 1)} immediate delay={REWARD_AT(2)} duration={DUR.settle} /></span>
               <span className="lm-reward-lbl">Day streak</span>
             </div>
           </div>

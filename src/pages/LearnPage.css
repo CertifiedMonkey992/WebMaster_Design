@@ -46,7 +46,7 @@ html:has(.learn-app) body {
   pointer-events: none;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
-  animation: lt-arrive 700ms var(--ease-settle) backwards;
+  animation: lt-arrive var(--dur-modal) var(--ease-snap) backwards;
 }
 
 @keyframes lt-arrive { from { opacity: 0; transform: translateY(-12px); } }
@@ -92,7 +92,7 @@ html:has(.learn-app) body {
   background: var(--evergreen);
   display: grid;
   place-items: center;
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-spring);
 }
 
 .lt-brand:hover .lt-brand-mark { transform: rotate(-12deg); }
@@ -112,7 +112,7 @@ html:has(.learn-app) body {
   padding: var(--sp-5) 0 var(--sp-4);
   overflow-y: auto;
   z-index: var(--z-raised);
-  animation: ls-arrive 700ms var(--ease-settle) backwards;
+  animation: ls-arrive var(--dur-modal) var(--ease-snap) backwards;
 }
 
 @keyframes ls-arrive { from { opacity: 0; transform: translateX(-16px); } }
@@ -148,7 +148,7 @@ html:has(.learn-app) body {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  transition: transform 520ms var(--ease-spring), background-color var(--dur-hover) ease;
+  transition: transform var(--dur-move) var(--ease-spring), background-color var(--dur-hover) var(--ease-out);
 }
 
 .ls-logo:hover .ls-logo-mark { transform: rotate(-12deg) scale(1.08); background: var(--clay); }
@@ -179,10 +179,10 @@ html:has(.learn-app) body {
   border-radius: var(--r-sm);
   background: rgba(var(--ink-rgb), 0.05);
   transition:
-    transform 380ms var(--ease-spring),
-    width 380ms var(--ease-spring),
-    height 380ms var(--ease-spring),
-    opacity var(--dur-hover) ease;
+    transform var(--dur-open) var(--ease-snap),
+    width var(--dur-open) var(--ease-snap),
+    height var(--dur-open) var(--ease-snap),
+    opacity var(--dur-hover) var(--ease-out);
 }
 
 .ls-rail {
@@ -193,10 +193,10 @@ html:has(.learn-app) body {
   border-radius: var(--r-sm);
   background: var(--evergreen-tint);
   transition:
-    transform 560ms var(--ease-spring),
-    height 560ms var(--ease-spring),
-    width 560ms var(--ease-spring),
-    opacity var(--dur-hover) ease;
+    transform var(--dur-open) var(--ease-snap),
+    height var(--dur-open) var(--ease-snap),
+    width var(--dur-open) var(--ease-snap),
+    opacity var(--dur-hover) var(--ease-out);
 }
 
 /* The rail's leading edge: the coloured bar marking position in the list. */
@@ -249,17 +249,17 @@ html:has(.learn-app) body {
   font-weight: var(--fw-semi);
   color: var(--ink-muted);
   text-align: left;
-  transition: color var(--dur-hover) ease, transform 300ms var(--ease-spring);
+  transition: color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-snap);
 }
 
 .ls-nav-btn:hover { color: var(--ink); }
-.ls-nav-btn:active { transform: translateY(1px) scale(0.98); transition-duration: 90ms; }
+.ls-nav-btn:active { transform: translateY(1px) scale(0.98); transition-duration: var(--dur-micro); }
 .ls-nav-btn:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -2px; }
 
 .ls-nav-label {
   flex: 1;
   min-width: 0;
-  transition: transform 380ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .ls-nav-btn:hover .ls-nav-label { transform: translateX(3px); }
@@ -271,7 +271,7 @@ html:has(.learn-app) body {
   display: grid;
   place-items: center;
   color: var(--ink-faint);
-  transition: color var(--dur-hover) ease;
+  transition: color var(--dur-hover) var(--ease-out);
 }
 
 .ls-nav-btn:hover .ls-nav-icon { color: var(--ink); }
@@ -296,12 +296,12 @@ html:has(.learn-app) body {
   font-size: var(--fs-micro);
   font-weight: var(--fw-black);
   font-variant-numeric: tabular-nums;
-  animation: fx-pop-in 520ms var(--ease-spring) both;
+  animation: fx-pop-in var(--dur-lift) var(--ease-spring) both;
 }
 
 /* ── Nav icons: one move each, depicting the destination ── */
 
-.ni * { transform-box: fill-box; transition: transform 460ms var(--ease-spring); }
+.ni * { transform-box: fill-box; transition: transform var(--dur-move) var(--ease-spring); }
 
 .ni-roof { transform-origin: 50% 100%; }
 .ls-nav-btn:hover .ni-roof { transform: translateY(-2px) rotate(-4deg); }
@@ -317,13 +317,13 @@ html:has(.learn-app) body {
 
 .ni-ring-o, .ni-ring-i, .ni-bull { transform-origin: 50% 50%; }
 .ls-nav-btn:hover .ni-ring-o { transform: scale(0.82); }
-.ls-nav-btn:hover .ni-ring-i { transform: scale(1.2); transition-delay: 60ms; }
-.ls-nav-btn:hover .ni-bull { transform: scale(1.8); transition-delay: 120ms; }
+.ls-nav-btn:hover .ni-ring-i { transform: scale(1.2); transition-delay: var(--lag-follow); }
+.ls-nav-btn:hover .ni-bull { transform: scale(1.8); transition-delay: var(--lag-finish); }
 
 .ni-bar { transform-origin: 50% 100%; }
-.ls-nav-btn:hover .ni-bar--1 { animation: ni-grow 520ms var(--ease-spring); }
-.ls-nav-btn:hover .ni-bar--2 { animation: ni-grow 520ms var(--ease-spring) 80ms; }
-.ls-nav-btn:hover .ni-bar--3 { animation: ni-grow 520ms var(--ease-spring) 160ms; }
+.ls-nav-btn:hover .ni-bar--1 { animation: ni-grow var(--dur-open) var(--ease-spring); }
+.ls-nav-btn:hover .ni-bar--2 { animation: ni-grow var(--dur-open) var(--ease-spring) 50ms; }
+.ls-nav-btn:hover .ni-bar--3 { animation: ni-grow var(--dur-open) var(--ease-spring) 100ms; }
 @keyframes ni-grow { 0% { transform: scaleY(1); } 40% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
 
 .ni-star { transform-origin: 50% 55%; }
@@ -331,18 +331,18 @@ html:has(.learn-app) body {
 .ls-nav-btn.active .ni-star { fill: rgba(var(--evergreen-rgb), 0.18); }
 
 .ni-handle { transform-origin: 50% 0%; }
-.ls-nav-btn:hover .ni-handle { animation: ni-hop 520ms var(--ease-spring); }
+.ls-nav-btn:hover .ni-handle { animation: ni-hop var(--dur-open) var(--ease-spring); }
 @keyframes ni-hop { 40% { transform: translateY(-3px) scaleX(1.15); } }
 .ls-nav-btn:hover .ni-bag-top { transform: translateY(-1px); }
 
 .ni-head { transform-origin: 50% 100%; }
-.ls-nav-btn:hover .ni-head { animation: ni-nod 620ms var(--ease-out); }
+.ls-nav-btn:hover .ni-head { animation: ni-nod var(--dur-reveal) var(--ease-out); }
 @keyframes ni-nod { 30% { transform: translateY(1.5px) rotate(-8deg); } 65% { transform: translateY(-0.5px) rotate(6deg); } }
 .ls-nav-btn.active .ni-head { fill: rgba(var(--evergreen-rgb), 0.18); }
 
-.ls-nav-btn:hover .ni-dot--1 { animation: ni-wave 520ms var(--ease-spring); }
-.ls-nav-btn:hover .ni-dot--2 { animation: ni-wave 520ms var(--ease-spring) 70ms; }
-.ls-nav-btn:hover .ni-dot--3 { animation: ni-wave 520ms var(--ease-spring) 140ms; }
+.ls-nav-btn:hover .ni-dot--1 { animation: ni-wave var(--dur-open) var(--ease-spring); }
+.ls-nav-btn:hover .ni-dot--2 { animation: ni-wave var(--dur-open) var(--ease-spring) 40ms; }
+.ls-nav-btn:hover .ni-dot--3 { animation: ni-wave var(--dur-open) var(--ease-spring) 90ms; }
 @keyframes ni-wave { 40% { transform: translateX(3px) scale(1.3); } }
 
 /* ── Main column ──────────────────────────────────────────────────────────── */
@@ -401,9 +401,9 @@ html:has(.learn-app) body {
   box-shadow: inset 0 0 0 1px var(--line-faint);
   cursor: default;
   transform-origin: 50% 100%;
-  animation: tick-rise 520ms var(--ease-spring) backwards;
-  animation-delay: calc(400ms + var(--i) * 22ms);
-  transition: transform 300ms var(--ease-spring), background-color 300ms ease;
+  animation: tick-rise var(--dur-modal) var(--ease-snap) backwards;
+  animation-delay: calc(250ms + var(--i, 0) * var(--stagger));
+  transition: transform var(--dur-move) var(--ease-snap), background-color var(--dur-hover) var(--ease-out);
 }
 
 @keyframes tick-rise { from { transform: scaleY(0); } }
@@ -494,8 +494,8 @@ html:has(.learn-app) body {
   stroke: var(--moss);
   stroke-width: 3;
   stroke-linecap: round;
-  transition: stroke-dashoffset 1200ms var(--ease-settle);
-  animation: ring-draw 1400ms var(--ease-settle) 400ms backwards;
+  transition: stroke-dashoffset var(--dur-celebrate) var(--ease-settle);
+  animation: ring-draw var(--dur-celebrate) var(--ease-settle) 250ms backwards;
 }
 
 @keyframes ring-draw { from { stroke-dashoffset: 157; } }
@@ -504,7 +504,7 @@ html:has(.learn-app) body {
   position: relative;
   display: grid;
   place-items: center;
-  transition: transform 520ms var(--ease-spring), color var(--dur-hover) ease;
+  transition: transform var(--dur-move) var(--ease-spring), color var(--dur-hover) var(--ease-out);
 }
 
 .resume:hover .resume-tile-ico { transform: rotate(-14deg) scale(1.16); color: var(--evergreen); }
@@ -518,7 +518,7 @@ html:has(.learn-app) body {
   letter-spacing: var(--ls-title);
   line-height: var(--lh-snug);
   color: var(--ink);
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .resume:hover .resume-title { transform: translateX(3px); }
@@ -541,7 +541,7 @@ html:has(.learn-app) body {
   border-radius: var(--r-lg);
   overflow: hidden;
   margin-bottom: var(--sp-6);
-  transition: border-color var(--dur-hover) ease, box-shadow 400ms var(--ease-out);
+  transition: border-color var(--dur-hover) var(--ease-out), box-shadow var(--dur-lift) var(--ease-out);
 }
 
 .module:not(.module--locked):hover { border-color: var(--line-strong); box-shadow: var(--shadow-raised); }
@@ -573,7 +573,7 @@ html:has(.learn-app) body {
   z-index: -1;
   background: rgba(var(--ink-rgb), 0.025);
   opacity: 0;
-  transition: opacity var(--dur-hover) ease;
+  transition: opacity var(--dur-hover) var(--ease-out);
 }
 
 .module:not(.module--locked) .module-head:hover::before { opacity: 1; }
@@ -594,7 +594,7 @@ html:has(.learn-app) body {
   font-variant-numeric: tabular-nums;
   display: inline-block;
   transform-origin: 0 100%;
-  transition: color var(--dur-hover) ease, transform 460ms var(--ease-spring);
+  transition: color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-spring);
 }
 
 .module:not(.module--locked) .module-head:hover .module-num { color: var(--evergreen); transform: scale(1.2) rotate(-6deg); }
@@ -616,7 +616,7 @@ html:has(.learn-app) body {
   border-radius: var(--r-sm);
   color: var(--ink-faint);
   align-self: center;
-  transition: transform 460ms var(--ease-spring), background-color var(--dur-hover) ease, color var(--dur-hover) ease;
+  transition: transform var(--dur-move) var(--ease-snap), background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out);
 }
 
 .module.is-open .module-chevron { transform: rotate(180deg); }
@@ -630,7 +630,7 @@ html:has(.learn-app) body {
   line-height: var(--lh-snug);
   color: var(--ink);
   margin-bottom: var(--sp-2);
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .module:not(.module--locked) .module-head:hover .module-title { transform: translateX(3px); }
@@ -672,7 +672,7 @@ html:has(.learn-app) body {
   color: var(--ink-faint);
 }
 
-.module-meta-hint { color: var(--ink-faint); animation: fx-fade-in 400ms ease; }
+.module-meta-hint { color: var(--ink-faint); animation: fx-fade-in var(--dur-open) var(--ease-out); }
 
 .module-locked-hint {
   display: flex;
@@ -683,7 +683,7 @@ html:has(.learn-app) body {
   color: var(--ink-faint);
 }
 
-.module-locked-hint.is-flash { animation: hint-flash 900ms var(--ease-out); }
+.module-locked-hint.is-flash { animation: hint-flash var(--dur-celebrate) var(--ease-out); }
 
 @keyframes hint-flash {
   0%   { color: var(--ink-faint); }
@@ -696,7 +696,7 @@ html:has(.learn-app) body {
 .module-body {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 560ms var(--ease-settle);
+  transition: grid-template-rows var(--dur-open) var(--ease-snap);
 }
 
 .module.is-open .module-body { grid-template-rows: 1fr; }
@@ -731,7 +731,7 @@ html:has(.learn-app) body {
 
 @keyframes badge-breathe { 0%, 60%, 100% { transform: scale(1); } 20% { transform: scale(1.5); } }
 
-.module--completed .badge--done svg { animation: fx-stamp 600ms var(--ease-settle) 600ms backwards; }
+.module--completed .badge--done svg { animation: fx-stamp var(--dur-reveal) var(--ease-settle) 370ms backwards; }
 
 /* ── Progress track ── */
 
@@ -742,10 +742,12 @@ html:has(.learn-app) body {
   border-radius: var(--r-pill);
   overflow: hidden;
   cursor: default;
-  transition: height 300ms var(--ease-spring);
+  /* Hover thickens the track so it reads as something you can inspect —
+     as a transform, not a height change, so the row does not reflow. */
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
-.track:hover { height: 9px; }
+.track:hover { transform: scaleY(1.5); }
 
 .track-fill {
   height: 100%;
@@ -768,8 +770,8 @@ html:has(.learn-app) body {
 }
 
 .module.is-open .lesson {
-  animation: rv-left 520ms var(--ease-settle) backwards;
-  animation-delay: calc(80ms + var(--i) * 55ms);
+  animation: rv-left var(--dur-open) var(--ease-snap) backwards;
+  animation-delay: calc(50ms + var(--i, 0) * var(--stagger));
 }
 
 /* The path. ::before arrives at this tile from the one above; ::after
@@ -787,7 +789,7 @@ html:has(.learn-app) body {
     repeating-linear-gradient(180deg, var(--line-strong) 0 4px, transparent 4px 8px);
   background-repeat: no-repeat, repeat;
   background-size: 100% 0%, 100% 100%;
-  transition: background-size 700ms var(--ease-settle);
+  transition: background-size var(--dur-settle) var(--ease-settle);
   pointer-events: none;
 }
 
@@ -800,7 +802,7 @@ html:has(.learn-app) body {
 .lesson[data-status='completed']::before,
 .lesson[data-status='current']::before { background-size: 100% 100%, 100% 100%; }
 
-.lesson[data-status='completed']::after { transition-delay: 200ms; }
+.lesson[data-status='completed']::after { transition-delay: 120ms; }
 
 .lesson-row {
   position: relative;
@@ -811,7 +813,7 @@ html:has(.learn-app) body {
   padding: var(--sp-3) var(--sp-5);
   cursor: pointer;
   outline: none;
-  transition: background-color var(--dur-hover) ease;
+  transition: background-color var(--dur-hover) var(--ease-out);
 }
 
 .lesson-row:hover { background: var(--evergreen-tint); }
@@ -829,12 +831,12 @@ html:has(.learn-app) body {
   color: var(--ink-muted);
   box-shadow: 0 0 0 3px var(--surface);
   transition:
-    background-color var(--dur-hover) ease,
-    color var(--dur-hover) ease,
-    transform 480ms var(--ease-spring);
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-move) var(--ease-spring);
 }
 
-.lesson-tile svg { transition: transform 480ms var(--ease-spring); }
+.lesson-tile svg { transition: transform var(--dur-move) var(--ease-spring); }
 
 .lesson-row:not(.lesson-row--locked):hover .lesson-tile { color: var(--evergreen); transform: translateY(-2px); }
 .lesson-row:not(.lesson-row--locked):hover .lesson-tile svg { transform: scale(1.14) rotate(-8deg); }
@@ -852,7 +854,7 @@ html:has(.learn-app) body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .lesson-row:not(.lesson-row--locked):not(.lesson-row--current):hover .lesson-title { transform: translateX(3px); }
@@ -873,7 +875,7 @@ html:has(.learn-app) body {
   background: var(--surface);
   opacity: 0;
   transform: translateX(10px);
-  transition: opacity var(--dur-hover) ease, transform 420ms var(--ease-spring);
+  transition: opacity var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-snap);
 }
 
 .lesson-row--available .lesson-peek { color: var(--ochre-ink); }
@@ -883,7 +885,7 @@ html:has(.learn-app) body {
 .lesson-row:focus-visible .lesson-peek,
 .lesson.is-previewing .lesson-peek { opacity: 1; transform: none; }
 
-.lesson-peek-arrow { transition: transform 360ms var(--ease-spring); }
+.lesson-peek-arrow { transition: transform var(--dur-move) var(--ease-spring); }
 .lesson.is-previewing .lesson-peek-arrow { transform: rotate(90deg); }
 
 .lesson-peek-star { display: inline-grid; color: var(--ochre); }
@@ -895,7 +897,7 @@ html:has(.learn-app) body {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  transition: transform 420ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-spring);
 }
 
 .lesson-mark--done { color: var(--moss); background: var(--moss-tint); }
@@ -904,8 +906,8 @@ html:has(.learn-app) body {
 .lesson-row--completed:hover .lesson-mark--done { transform: scale(1.15) rotate(-10deg); }
 .lesson-row--locked:hover .lesson-mark--locked .ico-shackle { transform: translateY(-1.5px) rotate(-12deg); }
 
-.lesson-mark.is-stamping { animation: fx-stamp 620ms var(--ease-settle) backwards; }
-.lesson-mark.is-stamping .ico-check { animation: fx-draw 480ms var(--ease-out) 260ms both; }
+.lesson-mark.is-stamping { animation: fx-stamp var(--dur-reveal) var(--ease-settle) backwards; }
+.lesson-mark.is-stamping .ico-check { animation: fx-draw var(--dur-open) var(--ease-out) 160ms both; }
 
 .lesson-row--completed .lesson-tile { background: var(--moss-tint); color: var(--moss); }
 
@@ -982,7 +984,7 @@ html:has(.learn-app) body {
   color: var(--berry-ink);
   font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
-  animation: fx-shake 500ms var(--ease-out) 400ms;
+  animation: fx-shake var(--dur-open) var(--ease-out) 250ms;
 }
 
 /* ── Lesson preview (available / completed rows) ── */
@@ -991,7 +993,7 @@ html:has(.learn-app) body {
   position: relative;
   z-index: 1;
   padding: 0 var(--sp-5) var(--sp-4) calc(var(--sp-5) + 40px + var(--sp-3));
-  animation: lesson-open 460ms var(--ease-settle) both;
+  animation: lesson-open var(--dur-open) var(--ease-settle) both;
   transform-origin: 0 0;
 }
 
@@ -1041,7 +1043,7 @@ html:has(.learn-app) body {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   padding: var(--sp-4);
-  transition: border-color var(--dur-hover) ease, box-shadow 400ms var(--ease-out);
+  transition: border-color var(--dur-hover) var(--ease-out), box-shadow var(--dur-lift) var(--ease-out);
 }
 
 .progress-card:hover,
@@ -1084,7 +1086,7 @@ html:has(.learn-app) body {
 }
 
 .pc-goal-value.is-met { color: var(--moss); }
-.pc-goal-value.is-met svg { animation: fx-stamp 600ms var(--ease-settle); }
+.pc-goal-value.is-met svg { animation: fx-stamp var(--dur-reveal) var(--ease-settle); }
 
 .pc-goal-track {
   position: relative;
@@ -1095,29 +1097,33 @@ html:has(.learn-app) body {
 }
 
 .pc-goal-fill {
+  position: relative;
   height: 100%;
   background: var(--ochre);
   border-radius: var(--r-pill);
-  transition: width var(--dur-settle) var(--ease-settle) 90ms, background-color var(--dur-enter) ease;
+  transition: width var(--dur-settle) var(--ease-settle) 90ms, background-color var(--dur-enter) var(--ease-out);
 }
 
 .pc-goal-fill.is-met { background: var(--moss); }
 
-/* A marker walks along the goal track with the day's XP. */
+/* A marker walks along the goal track with the day's XP. It rides the end of
+   the fill, so it travels with the fill's own width transition — no second
+   clock, and no animated `left`. */
 .pc-goal-marker {
   position: absolute;
   top: 50%;
+  right: 0;
   width: 13px;
   height: 13px;
   border-radius: 50%;
   background: var(--surface-raised);
   border: 2.5px solid var(--ochre);
-  transform: translate(-50%, -50%);
-  transition: left var(--dur-settle) var(--ease-settle) 90ms, border-color var(--dur-enter) ease, transform 360ms var(--ease-spring);
+  transform: translate(50%, -50%);
+  transition: border-color var(--dur-enter) var(--ease-out), transform var(--dur-move) var(--ease-lift);
 }
 
-.pc-goal-track:hover .pc-goal-marker { transform: translate(-50%, -50%) scale(1.3); }
-.pc-goal-fill.is-met + .pc-goal-marker { border-color: var(--moss); }
+.pc-goal-track:hover .pc-goal-marker { transform: translate(50%, -50%) scale(1.3); }
+.pc-goal-fill.is-met .pc-goal-marker { border-color: var(--moss); }
 
 .pc-stats {
   display: flex;
@@ -1136,7 +1142,7 @@ html:has(.learn-app) body {
   cursor: default;
   padding: var(--sp-1) 0;
   border-radius: var(--r-sm);
-  transition: background-color var(--dur-hover) ease;
+  transition: background-color var(--dur-hover) var(--ease-out);
 }
 
 .pc-stat:hover { background: rgba(var(--ink-rgb), 0.035); }
@@ -1154,7 +1160,7 @@ html:has(.learn-app) body {
   letter-spacing: var(--ls-title);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  transition: transform 420ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-spring);
 }
 
 .pc-stat:hover .pc-stat-value { transform: scale(1.1); }
@@ -1187,7 +1193,7 @@ html:has(.learn-app) body {
   font-weight: var(--fw-black);
   padding: 1px 6px;
   font-variant-numeric: tabular-nums;
-  animation: fx-pop-in 520ms var(--ease-spring) both;
+  animation: fx-pop-in var(--dur-lift) var(--ease-spring) both;
 }
 
 .qw-view-all {
@@ -1202,10 +1208,10 @@ html:has(.learn-app) body {
   cursor: pointer;
   padding: 2px 0;
   border-bottom: 1px solid transparent;
-  transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease;
+  transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
 }
 
-.qw-view-all svg { transition: transform 360ms var(--ease-spring); }
+.qw-view-all svg { transition: transform var(--dur-move) var(--ease-spring); }
 .qw-view-all:hover { color: var(--clay-ink); border-bottom-color: var(--clay); }
 .qw-view-all:hover svg { transform: translateX(3px); }
 
@@ -1269,7 +1275,7 @@ html:has(.learn-app) body {
   font-weight: var(--fw-semi);
   color: var(--ink-muted);
   border-bottom: 1px solid var(--line-strong);
-  transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease;
+  transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
 }
 
 .rail-note-link:hover { color: var(--clay-ink); border-bottom-color: var(--clay); }
@@ -1281,10 +1287,10 @@ html:has(.learn-app) body {
   padding: var(--sp-8) 0;
 }
 
-.lp-placeholder > * { animation: fx-slide-up 600ms var(--ease-settle) backwards; }
-.lp-placeholder > :nth-child(2) { animation-delay: 80ms; }
-.lp-placeholder > :nth-child(3) { animation-delay: 160ms; }
-.lp-placeholder > :nth-child(4) { animation-delay: 240ms; }
+.lp-placeholder > * { animation: fx-slide-up var(--dur-open) var(--ease-snap) backwards; }
+.lp-placeholder > :nth-child(2) { animation-delay: calc(var(--stagger) * 1); }
+.lp-placeholder > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+.lp-placeholder > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
 
 .lp-placeholder-title {
   font-family: var(--font-display);

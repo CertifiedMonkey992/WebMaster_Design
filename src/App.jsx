@@ -3,6 +3,7 @@ import './App.css'
 
 import Navbar          from './components/Navbar'
 import Hero            from './components/Hero'
+import LessonTicker    from './components/LessonTicker'
 import ProductSections from './components/showcase/ProductSections'
 import ClosingCTA      from './components/ClosingCTA'
 import LoginModal      from './components/LoginModal'
@@ -37,18 +38,22 @@ export default function App() {
     )
   }
 
+  /* The landing page has exactly two ways into the course: the navbar's
+     button (always on screen) and the closing CTA (the bottom of the page).
+     COMPONENT_RULES.md → Links into the course. */
   return (
     <div className="app">
       <FxLayer />
       <Navbar onStartLearning={goLearn} />
 
       <main>
-        <Hero onStartLearning={goLearn} />
+        <Hero />
+        <LessonTicker />
         <ProductSections />
         <ClosingCTA onStartLearning={goLearn} />
       </main>
 
-      <Footer onStartLearning={goLearn} />
+      <Footer />
 
       {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
     </div>

@@ -34,8 +34,9 @@ implementation:
   shadow, border, icon, illustration, motion, z-index
 - `design-system/COMPONENT_RULES.md` — how each component in this product
   looks and behaves, in every state
-- `design-system/MOTION_RULES.md` — the twelve motion verbs, the sanctioned
-  loops, and the shared motion library in `src/motion/`
+- `design-system/MOTION_RULES.md` — timing tiers, the twelve motion verbs,
+  the sanctioned loops and ambient motion, the field guide, and the shared
+  motion library in `src/motion/`
 - `design-system/ANTI_AI_RULES.md` — prohibited patterns, BAD/BETTER, plus a
   pre-commit checklist
 - `design-system/REFERENCE_ANALYSIS.md` — why the references work and why
@@ -72,9 +73,11 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 - **Typography** — eight sizes, five weights, two families. Fraunces for the
   product's voice, Manrope for the interface's, and they never swap jobs.
 - **Gradients** — effectively none. Flat fills.
-- **Animations** — twelve verbs and seven durations (`MOTION_RULES.md`,
-  revision 2). Every animation is a Response, a Report or an Invitation and
-  goes through `src/motion/`. Loops only where that file lists them.
+- **Animations** — twelve verbs, tiered duration tokens and named easings
+  (`MOTION_RULES.md`, revision 3). Every animation is a Response, a Report,
+  an Invitation or a listed Ambient motion and goes through `src/motion/`.
+  No literal durations in component CSS; no spring on a Response. Loops only
+  where that file lists them.
 - **Components** — reuse `.btn`, the card pattern, the row pattern.
 
 ## Rules of engagement

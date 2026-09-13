@@ -11,6 +11,7 @@ import { DAILY_BONUS } from '../config/dailyBonusConfig'
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import CountUp from '../motion/CountUp'
+import { DUR, STAGGER } from '../motion/timing'
 
 export default function ClosingCTA({ onStartLearning }) {
   const stats = [
@@ -30,12 +31,12 @@ export default function ClosingCTA({ onStartLearning }) {
               <path className="cta-clock-sweep" d="M12 12V6.5" />
             </svg>.
           </SplitText>
-          <Reveal as="p" className="cta-body" delay={260}>
+          <Reveal as="p" className="cta-body" delay={DUR.move * 0.5}>
             No account, no card. Your progress saves in this browser, and the
             next lesson is always waiting at the top of the course.
           </Reveal>
 
-          <Reveal variant="scale" delay={420}>
+          <Reveal variant="scale" delay={DUR.move}>
             <button type="button" className="btn btn-next btn-lg fx-shine" onClick={onStartLearning} data-magnetic="8">
               Start learning
               <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -47,11 +48,11 @@ export default function ClosingCTA({ onStartLearning }) {
           </Reveal>
         </div>
 
-        <Reveal as="ul" className="cta-stats" role="list" variant="right" stagger delay={200}>
+        <Reveal as="ul" className="cta-stats" role="list" variant="right" stagger delay={DUR.hover}>
           {stats.map((s, i) => (
             <li className="cta-stat" key={s.label} data-tip={s.tip}>
               <span className="cta-stat-value">
-                <CountUp value={s.value} suffix={s.suffix || ''} delay={300 + i * 180} duration={1200} />
+                <CountUp value={s.value} suffix={s.suffix || ''} delay={DUR.move + i * STAGGER * 3} duration={DUR.celebrate} />
               </span>
               <span className="cta-stat-label">{s.label}</span>
             </li>

@@ -43,8 +43,9 @@ export default function ProgressCard({ style, className = '' }) {
           className="pc-goal-track"
           data-tip={met ? 'Goal met for today' : `${Math.max(0, vm.goals.dailyXP - vm.daily.xp)} XP to today's goal`}
         >
-          <div className={`pc-goal-fill${met ? ' is-met' : ''}`} style={{ width: `${goalWidth}%` }} />
-          <span className="pc-goal-marker" style={{ left: `${goalWidth}%` }} aria-hidden="true" />
+          <div className={`pc-goal-fill${met ? ' is-met' : ''}`} style={{ width: `${goalWidth}%` }}>
+            <span className="pc-goal-marker" aria-hidden="true" />
+          </div>
         </div>
       </div>
 

@@ -131,6 +131,7 @@
 
   --tan:      #D8C3A0;    /* structural warm fill: chips, tile grounds */
   --tan-deep: #C2A87F;
+  --tan-rgb:  216, 195, 160;   /* foil on the field guide's cloth cover */
 
   /* ── Semantic ──────────────────────────────────────────────────────────────
      Four hues, each owning exactly one meaning, each appearing wherever that
@@ -206,24 +207,45 @@
   --sheen-rgb: 255, 253, 248;
 
   /* ── Motion ────────────────────────────────────────────────────────────────
-     Seven durations, five easings. Revision 2 of MOTION_RULES.md added
-     micro (an icon twitch) and celebrate (a reward landing), which were
-     being forced into the nearest neighbour and felt wrong in both. */
-  --dur-micro:     90ms;
-  --dur-press:     120ms;
-  --dur-hover:     180ms;
-  --dur-enter:     240ms;
-  --dur-modal:     320ms;
-  --dur-settle:    600ms;
-  --dur-celebrate: 800ms;
+     MOTION_RULES.md, revision 3. Durations are TIERS, not taste: a response
+     answers inside a frame and finishes inside 300ms; importance is shown by
+     how far something moves, never by how long it takes. Mirrored for JS in
+     src/motion/timing.js — the two change together. */
 
-  --ease-out:    cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1);
-  --ease-press:  cubic-bezier(0.4, 0, 0.6, 1);
+  /* micro — must feel instantaneous */
+  --dur-micro:     90ms;    /* press down, icon twitch, tooltip in */
+  --dur-press:     120ms;   /* release */
+  --dur-hover:     160ms;   /* colour, border, background, opacity */
+  /* small — a response that travels */
+  --dur-move:      240ms;   /* nudge, slide, icon turn, underline, tab lean */
+  --dur-lift:      320ms;   /* a handled object picked up or put down */
+  /* medium — something arrives or opens */
+  --dur-enter:     240ms;   /* popover, toast */
+  --dur-modal:     320ms;   /* a modal taking the screen */
+  --dur-open:      420ms;   /* expander, view change, travelling indicator */
+  --dur-reveal:    560ms;   /* arriving on the page as it scrolls in */
+  /* large — a value, or an object with weight */
+  --dur-settle:    600ms;   /* a number or bar moving to a new value */
+  --dur-turn:      760ms;   /* the field guide's cover, a leaf turning */
+  --dur-celebrate: 800ms;   /* a reward landing, a stamp, a burst */
+
+  --ease-out:    cubic-bezier(0.33, 1, 0.68, 1);     /* colour and opacity */
+  /* Travel in response to input: ~70% of the distance in the first third,
+     then a long soft landing. No overshoot — a Response never wobbles. */
+  --ease-snap:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-settle: cubic-bezier(0.2, 0.8, 0.3, 1);     /* arriving at a value */
+  /* A handled object arriving in the hand: ~3% overshoot is its weight. */
+  --ease-lift:   cubic-bezier(0.3, 1.3, 0.5, 1);
+  /* REPORTS ONLY — a stamp, a pop-in, a digit kick, an icon twitch. */
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-in:     cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-press:  cubic-bezier(0.4, 0, 0.6, 1);
+  --ease-in:     cubic-bezier(0.5, 0, 0.75, 0);      /* leaving */
+  /* Momentum both ways — a cover under its own weight, an ambient drift. */
+  --ease-swing:  cubic-bezier(0.65, 0, 0.35, 1);
 
-  --stagger: 45ms;
+  --stagger:    40ms;   /* siblings arriving */
+  --lag-follow: 40ms;   /* the secondary part of one gesture */
+  --lag-finish: 90ms;   /* the supporting part of one gesture */
 
   /* ── Z-index ───────────────────────────────────────────────────────────── */
   --z-base:    1;

@@ -25,15 +25,24 @@
     rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max)))
     rotateY(calc(var(--tilt-x, 0) * var(--tilt-max)));
   transition:
-    transform 800ms var(--ease-settle),
-    box-shadow 500ms var(--ease-out);
+    transform var(--dur-reveal) var(--ease-snap),
+    box-shadow var(--dur-open) var(--ease-out);
 }
 
 .pf.is-tilting {
   box-shadow: var(--shadow-lift);
-  transition-duration: 240ms, 500ms;
+  transition-duration: var(--dur-move), var(--dur-lift);
   transition-timing-function: var(--ease-out), var(--ease-out);
 }
+
+/* The real components inside hold their own entrance animations until the
+   frame is actually on screen. Revision 2 mounted them at page load, so the
+   bonus days were dealt, and the hearts popped in, for nobody. A paused
+   animation with a backwards fill holds its first frame, so nothing flashes
+   in its final state first. */
+.pf:not(.is-seen) .pf-body *,
+.pf:not(.is-seen) .pf-body *::before,
+.pf:not(.is-seen) .pf-body *::after { animation-play-state: paused !important; }
 
 .pf-chrome {
   display: flex;
@@ -66,7 +75,7 @@
   text-overflow: ellipsis;
   color: var(--ink-muted);
   display: inline-block;
-  animation: fx-slide-up 520ms var(--ease-spring) both;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) var(--lag-finish) both;
 }
 
 /* Honest labelling: this is the running component. */
@@ -109,6 +118,13 @@
 }
 
 .pf-inner { will-change: transform; }
+
+/* The frame floats against the copy: a slow parallax from --sp (written by
+   the shared scroll listener, 0 entering → 1 leaving). The copy stays put, so
+   the page reads as two planes. */
+.sc-frame {
+  transform: translate3d(0, calc((0.5 - var(--sp, 0.5)) * 72px), 0);
+}
 
 .pf-body.is-cropped {
   padding-bottom: var(--sp-10);
@@ -170,7 +186,7 @@
   color: var(--ink-faint);
   opacity: 0;
   transform: translateY(8px);
-  transition: opacity 400ms ease, transform 600ms var(--ease-spring);
+  transition: opacity var(--dur-open) var(--ease-out), transform var(--dur-reveal) var(--ease-snap);
 }
 
 .sc-eyebrow-rule {
@@ -179,13 +195,15 @@
   background: var(--clay);
   transform: scaleX(0);
   transform-origin: 0 50%;
-  transition: transform 700ms var(--ease-settle) 120ms;
+  transition: transform var(--dur-reveal) var(--ease-snap) var(--lag-follow);
 }
 
 .sc-eyebrow-text {
   opacity: 0;
   transform: translateX(-8px);
-  transition: opacity 400ms ease 360ms, transform 600ms var(--ease-spring) 360ms;
+  transition:
+    opacity var(--dur-open) var(--ease-out) calc(var(--lag-finish) * 2),
+    transform var(--dur-reveal) var(--ease-snap) calc(var(--lag-finish) * 2);
 }
 
 .sc-eyebrow.is-in .sc-eyebrow-num,
@@ -219,7 +237,7 @@
   background-repeat: no-repeat;
   background-size: 0% 38%;
   background-position: 0 90%;
-  transition: background-size 900ms var(--ease-settle) 300ms;
+  transition: background-size var(--dur-celebrate) var(--ease-snap) 200ms;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
@@ -230,7 +248,7 @@
 .mark--moss  { background-image: linear-gradient(var(--moss-tint), var(--moss-tint)); }
 
 .mark.is-in { background-size: 100% 38%; }
-.mark:hover { background-size: 100% 90%; transition-delay: 0ms; transition-duration: 300ms; }
+.mark:hover { background-size: 100% 90%; transition-delay: 0ms; transition-duration: var(--dur-move); }
 
 /* ── Player-stat strip ───────────────────────────────────────────────────── */
 
@@ -277,7 +295,7 @@
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
   cursor: default;
-  transition: background-color var(--dur-hover) ease;
+  transition: background-color var(--dur-hover) var(--ease-out);
 }
 
 .sc-shop-mini-item:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
@@ -289,9 +307,10 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-lift) var(--ease-lift);
 }
 
+/* Shop art is a handled object: it lifts out of its row. */
 .sc-shop-mini-item:hover .sc-shop-mini-art { transform: translateY(-4px) scale(1.2) rotate(-8deg); }
 
 .sc-shop-mini-name {
@@ -301,7 +320,7 @@
   font-size: var(--fs-small);
   font-weight: var(--fw-semi);
   color: var(--ink);
-  transition: transform 460ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-snap) var(--lag-follow);
 }
 
 .sc-shop-mini-item:hover .sc-shop-mini-name { transform: translateX(4px); }
@@ -320,6 +339,7 @@
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 1060px) {
+  .sc-frame { transform: translate3d(0, calc((0.5 - var(--sp, 0.5)) * 36px), 0); }
   .sc-wrap, .sc-wrap.flip { grid-template-columns: 1fr; gap: var(--sp-8); }
   .sc-wrap.flip > .sc-copy { order: 0; }
   .sc-wrap.flip > .sc-frame { order: 1; }
@@ -329,4 +349,9 @@
 @media (max-width: 820px) {
   .sc-section { padding: var(--sp-16) var(--sp-5); }
   .pf-body { padding: var(--sp-3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-frame { transform: none; }
+  .pf:not(.is-seen) .pf-body * { animation-play-state: running !important; }
 }

@@ -130,15 +130,26 @@ the user should do next, the screen is wrong. Everything else steps down:
 one primary, a few secondary, the rest quiet. Equal weight across a page is
 the single most reliable symptom of generated design.
 
-### 7. Motion answers; it does not perform
+### 7. Motion answers at once, and the objects are alive
 
-Every animation responds to something a person did, or reports something
-that changed. Nothing loops. Nothing floats. Nothing breathes. If you cannot
-name the event an animation is a response to, delete it.
+Every animation responds to something a person did, reports something that
+changed, invites the next step, or — for the few real *objects* on a page —
+lets them sit in the world (the field guide breathes on its desk). If you
+cannot name which of those four an animation is, delete it.
 
-Durations: 120ms for a press, 180ms for a hover, 300ms for something
-arriving, 600ms for a value settling. Nothing slower without a reason
-written in the code.
+Responses start within a frame and finish inside 300ms. Importance is shown
+by how *far* something moves, never by how *long* it takes. Ambient motion is
+rationed like the accent: one living object per region of attention, slow,
+small, and it yields the moment a hand touches it.
+
+Durations and easings are tokens (`MOTION_RULES.md`, revision 3). A literal
+duration in a component is a bug.
+
+> Revision 1 of this principle said "Nothing loops. Nothing floats. Nothing
+> breathes." The product that produced read as a printed page that happened
+> to keep score. Revisions 2 and 3 of the motion rules were requested
+> deliberately; the calm is now carried by *timing discipline* instead of by
+> stillness.
 
 ### 8. Real content, at the density it actually has
 

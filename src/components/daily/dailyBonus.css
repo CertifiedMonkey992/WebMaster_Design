@@ -25,14 +25,14 @@
   border-radius: var(--r-sm);
   cursor: pointer;
   transition:
-    background-color var(--dur-hover) ease,
-    color var(--dur-hover) ease,
-    border-color var(--dur-hover) ease,
-    transform 300ms var(--ease-spring);
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-move) var(--ease-snap);
 }
 
 .db-indicator:hover { background: rgba(var(--ink-rgb), 0.05); color: var(--ink); }
-.db-indicator:active { transform: translateY(1px) scale(0.96); transition-duration: 90ms; }
+.db-indicator:active { transform: translateY(1px) scale(0.96); transition-duration: var(--dur-micro); }
 
 .db-indicator.is-ready {
   color: var(--clay-ink);
@@ -66,7 +66,7 @@
   width: 4px; height: 4px;
   border-radius: 50%;
   background: rgba(var(--ink-rgb), 0.16);
-  transition: background-color 300ms ease, transform 300ms var(--ease-spring);
+  transition: background-color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-snap);
 }
 .db-indicator-pips i.is-on { background: var(--moss); }
 .db-indicator-pips i.is-today { background: var(--clay); transform: scale(1.4); }
@@ -105,12 +105,12 @@
   place-items: center;
   padding: var(--sp-5);
   background: rgba(var(--ink-rgb), 0.42);
-  animation: fx-fade-in 260ms ease both;
+  animation: fx-fade-in var(--dur-enter) var(--ease-out) both;
   overflow-y: auto;
 }
 
-.db-overlay.is-leaving { animation: db-fade-out 220ms var(--ease-in) both; }
-.db-overlay.is-leaving .db-modal { animation: db-sink 220ms var(--ease-in) both; }
+.db-overlay.is-leaving { animation: db-fade-out var(--dur-hover) var(--ease-in) both; }
+.db-overlay.is-leaving .db-modal { animation: db-sink var(--dur-hover) var(--ease-in) both; }
 
 @keyframes db-fade-out { to { opacity: 0; } }
 @keyframes db-sink { to { opacity: 0; transform: translateY(16px) scale(0.97); } }
@@ -125,7 +125,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-modal);
-  animation: db-rise 620ms var(--ease-spring) both;
+  animation: db-rise var(--dur-modal) var(--ease-snap) both;
 }
 
 @keyframes db-rise {
@@ -147,7 +147,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: color var(--dur-hover) ease, border-color var(--dur-hover) ease, transform 380ms var(--ease-spring);
+  transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-spring);
 }
 
 .db-close:hover { color: var(--ink); border-color: var(--line-strong); transform: rotate(90deg); }
@@ -181,7 +181,7 @@
   font-size: var(--fs-title);
   color: var(--ink);
   line-height: 1.15;
-  animation: fx-slide-up 520ms var(--ease-spring) both;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) both;
 }
 
 .db-progress-tag {
@@ -207,7 +207,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  animation: fx-slide-up 560ms var(--ease-settle) 80ms backwards;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) 50ms backwards;
 }
 
 .db-hero.is-ready {
@@ -228,10 +228,10 @@
     perspective(500px)
     rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max)))
     rotateY(calc(var(--tilt-x, 0) * var(--tilt-max)));
-  transition: transform 600ms var(--ease-settle), background-color 400ms ease;
+  transition: transform var(--dur-reveal) var(--ease-snap), background-color var(--dur-hover) var(--ease-out);
 }
 
-.db-hero-art.is-tilting { transition-duration: 140ms; }
+.db-hero-art.is-tilting { transition-duration: var(--dur-press); }
 
 .db-hero.is-ready .db-hero-art { background: var(--clay-tint); cursor: pointer; }
 
@@ -245,11 +245,11 @@
   50%      { transform: translateY(-6px) rotate(-3deg); }
 }
 
-.db-hero-art > svg { transition: transform 500ms var(--ease-spring); }
+.db-hero-art > svg { transition: transform var(--dur-move) var(--ease-spring); }
 .db-hero.is-ready .db-hero-art:hover > svg { transform: scale(1.1) rotate(-4deg); }
 
 /* Claim — charge… */
-.db-hero.is-charging .db-hero-art > svg { animation: db-charge 300ms linear both; }
+.db-hero.is-charging .db-hero-art > svg { animation: db-charge var(--dur-lift) linear both; }
 
 @keyframes db-charge {
   0%   { transform: scale(1) rotate(0); }
@@ -261,7 +261,7 @@
 }
 
 /* …then burst. */
-.db-hero.is-bursting .db-hero-art > svg { animation: db-burst 900ms var(--ease-spring) both; }
+.db-hero.is-bursting .db-hero-art > svg { animation: db-burst var(--dur-celebrate) var(--ease-spring) both; }
 
 @keyframes db-burst {
   0%   { transform: scale(0.86); }
@@ -272,10 +272,10 @@
 
 .db-hero-body { min-width: 0; flex: 1; }
 
-.db-hero-body > * { animation: fx-slide-up 520ms var(--ease-settle) backwards; }
-.db-hero-body > :nth-child(2) { animation-delay: 80ms; }
-.db-hero-body > :nth-child(3) { animation-delay: 140ms; }
-.db-hero-body > :nth-child(4) { animation-delay: 200ms; }
+.db-hero-body > * { animation: fx-slide-up var(--dur-modal) var(--ease-snap) backwards; }
+.db-hero-body > :nth-child(2) { animation-delay: calc(var(--stagger) * 1); }
+.db-hero-body > :nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+.db-hero-body > :nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
 
 .db-hero-eyebrow {
   display: block;
@@ -322,20 +322,20 @@
   cursor: pointer;
   translate: var(--mag-x, 0px) var(--mag-y, 0px);
   transition:
-    transform 320ms var(--ease-spring),
-    translate 420ms var(--ease-spring),
-    box-shadow var(--dur-press) ease,
-    background-color var(--dur-hover) ease;
+    transform var(--dur-move) var(--ease-snap),
+    translate var(--dur-open) var(--ease-snap),
+    box-shadow var(--dur-press) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out);
 }
 
 .db-claim-btn:hover { background: var(--clay-deep); }
-.db-claim-btn:active { transform: translateY(1px) scale(0.95); box-shadow: var(--shadow-press); transition-duration: 90ms; }
+.db-claim-btn:active { transform: translateY(1px) scale(0.95); box-shadow: var(--shadow-press); transition-duration: var(--dur-micro); }
 .db-claim-btn--static { cursor: default; }
 
 .db-claim-btn.is-claiming {
   background: var(--moss);
   cursor: default;
-  animation: db-claim-squash 460ms var(--ease-spring);
+  animation: db-claim-squash var(--dur-open) var(--ease-spring);
 }
 
 @keyframes db-claim-squash {
@@ -368,7 +368,7 @@
   background: var(--moss-tint);
   border: 1px solid rgba(var(--moss-rgb), 0.28);
   border-radius: var(--r-md);
-  animation: db-receipt-in 560ms var(--ease-spring) both;
+  animation: db-receipt-in var(--dur-modal) var(--ease-snap) both;
 }
 
 @keyframes db-receipt-in {
@@ -386,7 +386,7 @@
   color: var(--surface-raised);
   background: var(--moss);
   border-radius: 50%;
-  animation: fx-stamp 600ms var(--ease-settle) 120ms backwards;
+  animation: fx-stamp var(--dur-reveal) var(--ease-settle) 70ms backwards;
 }
 
 .db-receipt-text { font-size: var(--fs-small); color: var(--moss); }
@@ -419,7 +419,7 @@
   height: 8px;
   border-radius: 50%;
   background: var(--paper-deep);
-  transition: background-color 400ms ease, width 500ms var(--ease-spring);
+  transition: background-color var(--dur-hover) var(--ease-out), width var(--dur-open) var(--ease-snap);
   transition-delay: calc(var(--i) * 60ms);
 }
 
@@ -458,7 +458,7 @@
 .db-days::after {
   width: calc((100% - 100% / 7) * var(--path, 0));
   background: var(--moss);
-  transition: width 900ms var(--ease-settle);
+  transition: width var(--dur-celebrate) var(--ease-settle);
 }
 
 .db-day {
@@ -474,12 +474,12 @@
   border: 1px solid var(--line);
   border-radius: var(--r-md);
   cursor: default;
-  animation: db-deal 620ms var(--ease-spring) backwards;
-  animation-delay: calc(160ms + var(--i) * 55ms);
+  animation: db-deal var(--dur-reveal) var(--ease-spring) backwards;
+  animation-delay: calc(100ms + var(--i, 0) * var(--stagger));
   transition:
-    border-color var(--dur-hover) ease,
-    box-shadow 400ms var(--ease-out),
-    transform 460ms var(--ease-spring);
+    border-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-lift) var(--ease-out),
+    transform var(--dur-lift) var(--ease-lift);
 }
 
 @keyframes db-deal {
@@ -514,7 +514,7 @@
   width: 100%;
   height: auto;
   max-width: 54px;
-  transition: transform 500ms var(--ease-spring);
+  transition: transform var(--dur-lift) var(--ease-lift);
 }
 
 .db-day:hover .db-day-art > svg { transform: translateY(-3px) scale(1.14) rotate(-6deg); }
@@ -572,7 +572,7 @@
 
 .db-day.is-next { border-color: rgba(var(--evergreen-rgb), 0.35); }
 
-.db-day.is-locked .db-day-art { opacity: 0.62; filter: saturate(0.62); transition: opacity 300ms, filter 300ms; }
+.db-day.is-locked .db-day-art { opacity: 0.62; filter: saturate(0.62); transition: opacity var(--dur-lift) var(--ease-out), filter var(--dur-lift) var(--ease-out); }
 .db-day.is-locked:hover .db-day-art { opacity: 1; filter: none; }
 .db-day.is-locked .db-day-amount { color: var(--ink-faint); }
 
@@ -593,7 +593,7 @@
   pointer-events: none;
 }
 
-.db-day--final:hover::after { animation: db-foil 900ms var(--ease-settle); }
+.db-day--final:hover::after { animation: db-foil var(--dur-celebrate) var(--ease-settle); }
 
 @keyframes db-foil { to { transform: translateX(460%) skewX(-16deg); } }
 
@@ -608,14 +608,14 @@
   border: none;
   border-radius: var(--r-sm);
   cursor: pointer;
-  transition: background-color var(--dur-hover) ease, transform 300ms var(--ease-spring);
+  transition: background-color var(--dur-hover) var(--ease-out), transform var(--dur-lift) var(--ease-lift);
 }
 
 .db-day-claim:hover { background: var(--clay-deep); transform: scale(1.06); }
 .db-day-claim:active { transform: scale(0.94); }
 
 /* The card that just paid out turns over to its claimed face. */
-.db-day.is-flashing { animation: db-turn 900ms var(--ease-spring) both; }
+.db-day.is-flashing { animation: db-turn var(--dur-celebrate) var(--ease-spring) both; }
 
 @keyframes db-turn {
   0%   { transform: perspective(500px) rotateY(0deg); }
@@ -623,7 +623,7 @@
   100% { transform: perspective(500px) rotateY(0deg); }
 }
 
-.db-day.is-flashing .db-day-status { animation: fx-stamp 600ms var(--ease-settle) 400ms backwards; }
+.db-day.is-flashing .db-day-status { animation: fx-stamp var(--dur-reveal) var(--ease-settle) 250ms backwards; }
 
 /* ── Landing-page showcase variant ────────────────────────────────────────── */
 

@@ -16,14 +16,14 @@
   flex-direction: column;
   font-family: var(--font-ui);
   overflow: hidden;
-  animation: lm-in 460ms var(--ease-settle) backwards;
+  animation: lm-in var(--dur-modal) var(--ease-snap) backwards;
 }
 
 @keyframes lm-in {
   from { opacity: 0; transform: translateY(40px); }
 }
 
-.lm-overlay.is-leaving { animation: lm-out 240ms var(--ease-in) both; }
+.lm-overlay.is-leaving { animation: lm-out var(--dur-hover) var(--ease-in) both; }
 
 @keyframes lm-out { to { opacity: 0; transform: translateY(24px); } }
 
@@ -65,7 +65,7 @@ kbd,
   cursor: pointer;
   border-radius: var(--r-sm);
   flex-shrink: 0;
-  transition: color var(--dur-hover), background-color var(--dur-hover), border-color var(--dur-hover), transform 380ms var(--ease-spring);
+  transition: color var(--dur-hover), background-color var(--dur-hover), border-color var(--dur-hover), transform var(--dur-move) var(--ease-spring);
 }
 .lm-close:hover { color: var(--ink); background: var(--paper); border-color: var(--line); transform: rotate(90deg); }
 .lm-close--abs { position: absolute; top: var(--sp-6); left: var(--sp-6); }
@@ -96,7 +96,7 @@ kbd,
   height: 100%;
   background: var(--moss);
   border-radius: var(--r-pill);
-  transition: width 700ms var(--ease-settle);
+  transition: width var(--dur-settle) var(--ease-settle);
 }
 
 .lm-progress-count {
@@ -121,7 +121,7 @@ kbd,
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   cursor: default;
-  transition: background-color var(--dur-hover) ease;
+  transition: background-color var(--dur-hover) var(--ease-out);
 }
 
 .lm-cur:hover { background: rgba(var(--ink-rgb), 0.05); }
@@ -170,7 +170,7 @@ kbd,
   transform: translateX(var(--tab-x, 0px));
   background: var(--evergreen);
   border-radius: var(--r-xs) var(--r-xs) 0 0;
-  transition: transform 520ms var(--ease-spring), width 520ms var(--ease-spring);
+  transition: transform var(--dur-open) var(--ease-snap), width var(--dur-open) var(--ease-snap);
 }
 
 /* ── Step dots ── */
@@ -186,10 +186,10 @@ kbd,
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--paper-deep);
-  transition: width 420ms var(--ease-spring), border-radius 420ms var(--ease-spring), background-color 300ms ease;
+  transition: width var(--dur-open) var(--ease-snap), border-radius var(--dur-open) var(--ease-snap), background-color var(--dur-hover) var(--ease-out);
 }
 .lm-dot--active { background: var(--evergreen); width: 26px; border-radius: var(--r-pill); }
-.lm-dot--done   { background: var(--moss); animation: fx-pop 420ms var(--ease-spring); }
+.lm-dot--done   { background: var(--moss); animation: fx-pop var(--dur-open) var(--ease-spring); }
 
 /* ── Body ── */
 .lm-body {
@@ -206,7 +206,7 @@ kbd,
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: lm-step-in 560ms var(--ease-settle) backwards;
+  animation: lm-step-in var(--dur-open) var(--ease-snap) backwards;
 }
 
 @keyframes lm-step-in {
@@ -226,7 +226,7 @@ kbd,
   border-radius: var(--r-md);
   padding: var(--sp-4) var(--sp-5) var(--sp-4) var(--sp-8);
   border: 1px solid var(--line-faint);
-  animation: fx-slide-up 520ms var(--ease-settle) 80ms backwards;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) 50ms backwards;
 }
 
 /* A margin note mark — the field guide's aside. */
@@ -240,7 +240,7 @@ kbd,
   border-radius: var(--r-pill);
   background: var(--tan-deep);
   transform-origin: 50% 0;
-  animation: lm-rule 700ms var(--ease-settle) 300ms backwards;
+  animation: lm-rule var(--dur-reveal) var(--ease-settle) 190ms backwards;
 }
 
 @keyframes lm-rule { from { transform: scaleY(0); } }
@@ -256,7 +256,7 @@ kbd,
   margin: 0 0 var(--sp-6);
   max-width: 32rem;
   line-height: var(--lh-snug);
-  animation: fx-slide-up 520ms var(--ease-settle) 160ms backwards;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) 100ms backwards;
 }
 
 /* ── Fill blank ── */
@@ -275,7 +275,7 @@ kbd,
   justify-content: center;
   line-height: 2.2;
   max-width: 30rem;
-  animation: fx-slide-up 520ms var(--ease-settle) 220ms backwards;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) 140ms backwards;
 }
 
 .lm-sent-text { white-space: pre; }
@@ -295,7 +295,7 @@ kbd,
   cursor: pointer;
   border-radius: var(--r-sm) var(--r-sm) 0 0;
   white-space: nowrap;
-  transition: background-color var(--dur-hover), border-color var(--dur-hover), transform 300ms var(--ease-spring);
+  transition: background-color var(--dur-hover), border-color var(--dur-hover), transform var(--dur-move) var(--ease-snap);
 }
 
 .lm-blank--empty {
@@ -341,9 +341,9 @@ kbd,
   color: var(--ink);
   cursor: grab;
   user-select: none;
-  animation: fx-pop-in 520ms var(--ease-spring) backwards;
-  animation-delay: calc(320ms + var(--i) * 50ms);
-  transition: border-color var(--dur-hover), background-color var(--dur-hover), transform 380ms var(--ease-spring), box-shadow 300ms var(--ease-out), opacity 200ms ease;
+  animation: fx-pop-in var(--dur-lift) var(--ease-spring) backwards;
+  animation-delay: calc(200ms + var(--i, 0) * var(--stagger));
+  transition: border-color var(--dur-hover), background-color var(--dur-hover), transform var(--dur-lift) var(--ease-lift), box-shadow var(--dur-lift) var(--ease-out), opacity var(--dur-hover) var(--ease-out);
 }
 
 .lm-chip:hover:not(.lm-chip--ghost):not(:disabled) {
@@ -359,7 +359,7 @@ kbd,
   transform: translateY(1px) scale(0.96);
   border-bottom-width: 1.5px;
   box-shadow: none;
-  transition-duration: 90ms;
+  transition-duration: var(--dur-micro);
 }
 
 .lm-chip.is-dragging { opacity: 0.4; transform: scale(0.95); }
@@ -385,7 +385,7 @@ kbd,
   white-space: pre-wrap;
   width: 100%;
   text-align: left;
-  animation: fx-slide-up 520ms var(--ease-settle) 80ms backwards;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) 50ms backwards;
 }
 
 .lm-mcq-opts { display: flex; flex-direction: column; gap: var(--sp-3); width: 100%; }
@@ -405,14 +405,14 @@ kbd,
   cursor: pointer;
   text-align: left;
   line-height: 1.45;
-  animation: rv-up 520ms var(--ease-settle) backwards;
-  animation-delay: calc(260ms + var(--i) * 70ms);
+  animation: rv-up var(--dur-open) var(--ease-snap) backwards;
+  animation-delay: calc(160ms + var(--i, 0) * var(--stagger));
   transition:
-    border-color var(--dur-hover) ease,
-    background-color var(--dur-hover) ease,
-    color var(--dur-hover) ease,
-    transform 380ms var(--ease-spring),
-    box-shadow 300ms var(--ease-out);
+    border-color var(--dur-hover) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-lift) var(--ease-lift),
+    box-shadow var(--dur-lift) var(--ease-out);
 }
 
 .lm-binary-btn {
@@ -443,14 +443,14 @@ kbd,
 }
 
 .lm-mcq-btn:hover:not(:disabled) .lm-opt-text { transform: translateX(3px); }
-.lm-opt-text { transition: transform 380ms var(--ease-spring); }
+.lm-opt-text { transition: transform var(--dur-move) var(--ease-snap); }
 
 .lm-binary-btn:active:not(:disabled),
 .lm-mcq-btn:active:not(:disabled) {
   transform: translateY(1px);
   border-bottom-width: 1.5px;
   box-shadow: var(--shadow-press);
-  transition-duration: 90ms;
+  transition-duration: var(--dur-micro);
 }
 
 .lm-binary-btn:disabled,
@@ -466,7 +466,7 @@ kbd,
   border-radius: 50%;
   border: 2px solid var(--line-strong);
   background: var(--surface);
-  transition: border-color var(--dur-hover) ease, background-color var(--dur-hover) ease;
+  transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
 }
 
 .lm-opt-mark::after {
@@ -475,19 +475,19 @@ kbd,
   border-radius: 50%;
   background: var(--evergreen);
   transform: scale(0);
-  transition: transform 380ms var(--ease-spring);
+  transition: transform var(--dur-move) var(--ease-spring);
 }
 
 .lm-opt-mark.is-selected { border-color: var(--evergreen); }
 .lm-opt-mark.is-selected::after { transform: scale(1); }
 
 .lm-opt-mark.is-correct,
-.lm-opt-mark.is-wrong { border: none; color: var(--surface-raised); animation: fx-stamp 560ms var(--ease-settle) both; }
+.lm-opt-mark.is-wrong { border: none; color: var(--surface-raised); animation: fx-stamp var(--dur-reveal) var(--ease-settle) both; }
 .lm-opt-mark.is-correct { background: var(--moss); }
 .lm-opt-mark.is-wrong { background: var(--berry); }
 .lm-opt-mark.is-correct::after,
 .lm-opt-mark.is-wrong::after { display: none; }
-.lm-opt-mark .ico-check { animation: fx-draw 420ms var(--ease-out) 200ms both; }
+.lm-opt-mark .ico-check { animation: fx-draw var(--dur-open) var(--ease-out) 120ms both; }
 
 /* ── Option states ── */
 .lm-opt--selected { border-color: var(--evergreen) !important; background: var(--evergreen-tint) !important; }
@@ -498,7 +498,7 @@ kbd,
   background: var(--moss-tint) !important;
   color: var(--moss) !important;
   opacity: 1 !important;
-  animation: lm-correct 620ms var(--ease-spring) !important;
+  animation: lm-correct var(--dur-reveal) var(--ease-spring) !important;
 }
 
 @keyframes lm-correct {
@@ -524,7 +524,7 @@ kbd,
   gap: var(--sp-4);
   position: sticky;
   bottom: 0;
-  animation: lm-bar-up 460ms var(--ease-spring) both;
+  animation: lm-bar-up var(--dur-modal) var(--ease-snap) both;
 }
 
 @keyframes lm-bar-up { from { transform: translateY(100%); } }
@@ -542,10 +542,10 @@ kbd,
   color: var(--surface-raised);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  animation: fx-stamp 600ms var(--ease-settle) 120ms backwards;
+  animation: fx-stamp var(--dur-reveal) var(--ease-settle) 70ms backwards;
 }
 
-.lm-fb-icon .ico-check { animation: fx-draw 460ms var(--ease-out) 320ms both; }
+.lm-fb-icon .ico-check { animation: fx-draw var(--dur-open) var(--ease-out) 200ms both; }
 .lm-fb-icon--wrong { background: var(--berry); }
 
 .lm-fb-title { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: var(--fw-semi); color: var(--moss); }
@@ -553,7 +553,7 @@ kbd,
 .lm-fb-correct { font-size: var(--fs-small); color: var(--ink-muted); margin-top: 2px; }
 
 .lm-btn-check { min-width: 10rem; }
-.lm-btn-check.is-ready { animation: lm-ready 500ms var(--ease-spring); }
+.lm-btn-check.is-ready { animation: lm-ready var(--dur-open) var(--ease-spring); }
 
 @keyframes lm-ready { 40% { transform: scale(1.06); } }
 
@@ -591,11 +591,11 @@ kbd,
     perspective(400px)
     rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max)))
     rotateY(calc(var(--tilt-x, 0) * var(--tilt-max)));
-  transition: transform 600ms var(--ease-settle);
-  animation: lm-mark-drop 900ms var(--ease-spring) 60ms backwards;
+  transition: transform var(--dur-reveal) var(--ease-snap);
+  animation: lm-mark-drop var(--dur-celebrate) var(--ease-spring) 60ms backwards;
 }
 
-.lm-welcome-mark.is-tilting { transition-duration: 140ms; }
+.lm-welcome-mark.is-tilting { transition-duration: var(--dur-press); }
 
 @keyframes lm-mark-drop {
   0%   { opacity: 0; transform: translateY(-60px) rotate(-25deg) scale(0.6); }
@@ -612,7 +612,7 @@ kbd,
   text-transform: uppercase;
   color: var(--clay-ink);
   margin-bottom: var(--sp-2);
-  animation: fx-fade-in 500ms ease 200ms backwards;
+  animation: fx-fade-in var(--dur-open) var(--ease-out) 120ms backwards;
 }
 
 .lm-welcome-title {
@@ -630,7 +630,7 @@ kbd,
   font-size: var(--fs-body);
   color: var(--ink-muted);
   margin: 0 0 var(--sp-6);
-  animation: fx-slide-up 520ms var(--ease-settle) 500ms backwards;
+  animation: fx-slide-up var(--dur-modal) var(--ease-snap) 310ms backwards;
 }
 
 .lm-welcome-bonus {
@@ -645,7 +645,7 @@ kbd,
   font-weight: var(--fw-bold);
   color: var(--ochre-ink);
   margin-bottom: var(--sp-5);
-  animation: fx-pop-in 620ms var(--ease-spring) 640ms backwards;
+  animation: fx-pop-in var(--dur-lift) var(--ease-spring) 400ms backwards;
 }
 
 .lm-welcome-bonus .bi { color: var(--ochre); }
@@ -665,20 +665,20 @@ kbd,
   align-items: center;
   gap: 6px;
   cursor: default;
-  animation: fx-slide-up 520ms var(--ease-settle) backwards;
+  animation: fx-slide-up var(--dur-modal) var(--ease-snap) backwards;
 }
 
-.lm-welcome-meta span:nth-child(1) { animation-delay: 760ms; }
-.lm-welcome-meta span:nth-child(2) { animation-delay: 830ms; }
-.lm-welcome-meta span:nth-child(3) { animation-delay: 900ms; }
+.lm-welcome-meta span:nth-child(1) { animation-delay: calc(470ms + var(--stagger) * 0); }
+.lm-welcome-meta span:nth-child(2) { animation-delay: calc(470ms + var(--stagger) * 1); }
+.lm-welcome-meta span:nth-child(3) { animation-delay: calc(470ms + var(--stagger) * 2); }
 .lm-welcome-meta span:nth-child(1) svg { color: var(--berry); }
 .lm-welcome-meta span:nth-child(2) svg { color: var(--ochre); }
 .lm-welcome-meta span:nth-child(3) svg { color: var(--ember); }
-.lm-welcome-meta svg { transition: transform 420ms var(--ease-spring); }
+.lm-welcome-meta svg { transition: transform var(--dur-move) var(--ease-spring); }
 .lm-welcome-meta span:hover svg { transform: scale(1.3) rotate(-10deg); }
 
-.lm-start-btn { min-width: 14rem; animation: fx-pop-in 620ms var(--ease-spring) 980ms backwards; }
-.lm-welcome .lm-key-hint { margin-top: var(--sp-3); animation: fx-fade-in 500ms ease 1300ms backwards; }
+.lm-start-btn { min-width: 14rem; animation: fx-pop-in var(--dur-lift) var(--ease-spring) 610ms backwards; }
+.lm-welcome .lm-key-hint { margin-top: var(--sp-3); animation: fx-fade-in var(--dur-open) var(--ease-out) 810ms backwards; }
 
 .lm-replay-note {
   max-width: 26rem;
@@ -715,7 +715,7 @@ kbd,
   border: 3px solid var(--moss);
   background: var(--surface-raised);
   color: var(--moss);
-  animation: lm-slam 700ms var(--ease-settle) 120ms backwards;
+  animation: lm-slam var(--dur-reveal) var(--ease-settle) 70ms backwards;
 }
 
 @keyframes lm-slam {
@@ -725,7 +725,7 @@ kbd,
   100% { transform: none; }
 }
 
-.lm-stamp .ico-check { animation: fx-draw 520ms var(--ease-out) 520ms both; }
+.lm-stamp .ico-check { animation: fx-draw var(--dur-open) var(--ease-out) 320ms both; }
 
 .lm-complete-title {
   font-family: var(--font-display);
@@ -749,7 +749,7 @@ kbd,
   text-transform: uppercase;
   color: var(--ink);
   margin-bottom: var(--sp-4);
-  animation: lm-badge-turn 800ms var(--ease-spring) 800ms backwards;
+  animation: lm-badge-turn var(--dur-reveal) var(--ease-spring) 500ms backwards;
 }
 
 @keyframes lm-badge-turn {
@@ -770,9 +770,12 @@ kbd,
   padding: var(--sp-4) var(--sp-6);
   min-width: 7rem;
   box-shadow: var(--shadow-float);
-  animation: lm-reward-rise 700ms var(--ease-spring) backwards;
-  animation-delay: calc(760ms + var(--i) * 140ms);
-  transition: transform 460ms var(--ease-spring), box-shadow 400ms var(--ease-out);
+  /* The rewards are dealt in order — the order is the point, so they are a
+     full --lag-finish apart, and each tile's figure starts counting as it lands
+     (LessonModal.jsx reads the same numbers from timing.js). */
+  animation: lm-reward-rise var(--dur-modal) var(--ease-snap) backwards;
+  animation-delay: calc(470ms + var(--i, 0) * var(--lag-finish));
+  transition: transform var(--dur-lift) var(--ease-lift), box-shadow var(--dur-lift) var(--ease-out);
 }
 
 .lm-reward:hover { transform: translateY(-4px) rotate(-1.5deg); box-shadow: var(--shadow-lift); }
@@ -784,7 +787,7 @@ kbd,
 .lm-reward-icon { display: flex; align-items: center; justify-content: center; height: 32px; }
 .lm-reward-icon--gem { color: var(--ochre); }
 .lm-reward-icon--xp  { color: var(--ochre); }
-.lm-reward-icon > svg { transition: transform 460ms var(--ease-spring); }
+.lm-reward-icon > svg { transition: transform var(--dur-lift) var(--ease-lift); }
 .lm-reward:hover .lm-reward-icon > svg { transform: scale(1.25) rotate(-12deg); }
 
 .lm-reward-val { font-family: var(--font-display); font-size: var(--fs-title); font-weight: var(--fw-bold); color: var(--ink); }
@@ -794,10 +797,10 @@ kbd,
   font-size: var(--fs-small);
   color: var(--ink-muted);
   margin-bottom: var(--sp-6);
-  animation: fx-fade-in 600ms ease 1300ms backwards;
+  animation: fx-fade-in var(--dur-open) var(--ease-out) 810ms backwards;
 }
 
-.lm-done-btn { min-width: 12rem; animation: fx-pop-in 620ms var(--ease-spring) 1450ms backwards; }
+.lm-done-btn { min-width: 12rem; animation: fx-pop-in var(--dur-lift) var(--ease-spring) 900ms backwards; }
 
 /* ── Out-of-hearts screen ── */
 .lm-blocked { background: var(--berry-tint); }
@@ -810,7 +813,7 @@ kbd,
   margin-bottom: var(--sp-4);
   border-radius: 50%;
   background: var(--surface-raised);
-  animation: lm-mark-drop 900ms var(--ease-spring) backwards;
+  animation: lm-mark-drop var(--dur-celebrate) var(--ease-spring) backwards;
 }
 
 .lm-blocked .lm-welcome-sub { max-width: 30rem; }

@@ -4,18 +4,25 @@
    A thin window frame around the app's own components, mounted through
    ProgressionShowcase. Nothing inside is redrawn for marketing.
 
-   Revision 2:
-     · the frame stands up out of a backward tilt as it enters (Reveal tilt)
+   Motion (MOTION_RULES.md → Scroll):
+     · it stands up out of a backward tilt as it enters, sliding in from the
+       side of the page it lives on
+     · the real components inside keep their OWN entrance animations paused
+       until the frame is actually seen (.pf:not(.is-seen) in showcase.css) —
+       so the day tiles are dealt, the hearts pop in and the quest bars fill
+       for the reader, not offscreen at page load
+     · it floats on a slow parallax against the copy beside it
      · it leans a couple of degrees toward the pointer, with a warm sheen
-     · `scrub` — a cropped surface scrolls its OWN content as the page
-       scrolls past it, so the further you read, the more of the course the
-       frame shows. Cropping is allowed; altering what is inside is not.
+     · `scrub` — a cropped surface scrolls its OWN content as the page scrolls
+       past it, so the further you read, the more of the course the frame
+       shows. Cropping is allowed; altering what is inside is not.
      · the chrome says, truthfully, that what is inside is live
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import Reveal from '../../motion/Reveal'
-import { prefersReducedMotion } from '../../motion/env'
+import useInView from '../../motion/useInView'
+import { useScrollProgress } from '../../motion/scroll'
 import './showcase.css'
 
 export default function ProductFrame({
@@ -23,47 +30,34 @@ export default function ProductFrame({
   caption,
   maxHeight,
   scrub = false,
-  align = 'left',
+  side = 'right',
   children,
 }) {
-  const figRef = useRef(null)
   const bodyRef = useRef(null)
   const innerRef = useRef(null)
+  const [seenRef, seen] = useInView({ threshold: 0.25 })
 
-  useEffect(() => {
-    if (!scrub || prefersReducedMotion()) return undefined
-    const fig = figRef.current
-    const body = bodyRef.current
-    const inner = innerRef.current
-    if (!fig || !body || !inner) return undefined
-
-    let raf = 0
-    const run = () => {
-      raf = 0
-      const r = fig.getBoundingClientRect()
-      const vh = window.innerHeight
-      /* 0 when the frame's top enters the bottom of the screen, 1 when its
-         bottom reaches the top third. */
-      const p = Math.max(0, Math.min(1, (vh - r.top) / (vh + r.height * 0.6)))
+  const scrubRef = useScrollProgress({
+    cssVar: null,
+    disabled: !scrub,
+    onProgress: (p) => {
+      const body = bodyRef.current
+      const inner = innerRef.current
+      if (!body || !inner) return
       const overflow = Math.max(0, inner.scrollHeight - body.clientHeight + 40)
-      inner.style.transform = `translateY(${(-p * overflow).toFixed(1)}px)`
-    }
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(run) }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', onScroll, { passive: true })
-    run()
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', onScroll)
-      cancelAnimationFrame(raf)
-    }
-  }, [scrub])
+      /* Starts once the frame is well into view, finishes as it leaves. */
+      const t = Math.max(0, Math.min(1, (p - 0.2) / 0.62))
+      inner.style.transform = `translate3d(0, ${(-t * overflow).toFixed(1)}px, 0)`
+    },
+  })
+
+  const figRef = useCallback((node) => { seenRef.current = node; scrubRef(node) }, [seenRef, scrubRef])
 
   return (
-    <Reveal variant="tilt" threshold={0.12}>
+    <Reveal variant="tilt" threshold={0.12} style={{ '--side': side === 'left' ? -1 : 1 }}>
       <figure
         ref={figRef}
-        className={`pf fx-sheen${align === 'right' ? ' pf--right' : ''}`}
+        className={`pf fx-sheen${seen ? ' is-seen' : ''}`}
         data-tilt
       >
         <div className="pf-chrome" aria-hidden="true">
@@ -86,7 +80,11 @@ export default function ProductFrame({
           className={`pf-body${maxHeight ? ' is-cropped' : ''}${scrub ? ' is-scrub' : ''}`}
           style={maxHeight ? { maxHeight } : undefined}
         >
-          <div ref={innerRef} className="pf-inner">{children}</div>
+          {/* A scrubbing frame is watch-only: its content slides under the pointer
+              with the page, and its lesson buttons are a demo that goes nowhere —
+              the landing page's only routes into the course are the navbar and
+              the closing CTA. */}
+          <div ref={innerRef} className="pf-inner" {...(scrub ? { inert: '' } : {})}>{children}</div>
         </div>
 
         {caption && <figcaption className="pf-caption">{caption}</figcaption>}

@@ -207,11 +207,25 @@ Infinite orbit and pulse loops on decorative objects. A permanently nudging
 arrow. Motion that is identical on every element, which is what makes it read
 as a template.
 
-**BETTER** — every animation is a Response, a Report or an Invitation (see
-`MOTION_RULES.md`, revision 2). Motion is *differentiated by meaning*: a
-handled index card lifts, a row tints, a number rolls, a reward flies to the
-counter it belongs to. Loops exist only as the listed Invitations and living
-icons, and each stops when its state ends.
+**BETTER** — every animation is a Response, a Report, an Invitation or a
+listed Ambient motion (see `MOTION_RULES.md`, revision 3). Motion is
+*differentiated by meaning*: a handled object lifts, a row tints, a number
+rolls, a reward flies to the counter it belongs to, the field guide breathes.
+Loops exist only where that file lists them, and each stops when its state
+ends.
+
+## 20b. Uniform timing and spring-everything
+
+**BAD** — `transform 460ms var(--ease-spring)` on a label nudge, a card lift,
+a travelling underline and a modal alike. Every hover takes half a second and
+everything wobbles on arrival. The parts of one hover finishing at 520, 620
+and 820ms. This is the motion equivalent of equal radii everywhere, and it
+reads as generated just as reliably.
+
+**BETTER** — duration comes from the tier (`--dur-move` for a nudge,
+`--dur-lift` for a handled object, `--dur-open` for an indicator), easing from
+the kind of motion (`--ease-snap` for responses, `--ease-spring` only for
+Reports), and one gesture runs on one clock with lags.
 
 ## 21. Components from different templates
 
@@ -246,6 +260,10 @@ Run this against any UI diff before committing.
 - [ ] No `transition: all`. Every `infinite` animation is a loop listed in `MOTION_RULES.md`.
 - [ ] Lift (`translateY(-Npx)` on hover) only on handled objects — never rows or buttons.
 - [ ] Every new animation uses a `--dur-*` token and one of the named verbs.
+- [ ] No `--ease-spring` on a hover, focus or travelling indicator.
+- [ ] Every part of one gesture shares a duration; order comes from `--lag-*`.
+- [ ] Nothing actionable arrives later than its screen's budget.
+- [ ] Every ambient loop is listed, paused offscreen, and yields to the hand.
 - [ ] Card edges on the changed screen: ≤ 4.
 - [ ] `--clay` appearances on the changed screen: 2–3.
 - [ ] The loudest element is the next action.
@@ -278,6 +296,21 @@ At the end of the redesign pass the counts were:
 
 Anything above those numbers is a regression. The two sanctioned exceptions
 are listed so a later pass does not "fix" them into something worse.
+
+> **Revision 3 (timing pass).** Add `ms` — literal millisecond durations in
+> component CSS — to the audit:
+> `ms:$(grep -rhoE '(transition|animation)[^;]*\b[0-9]{2,4}ms' $CSS | wc -l)`.
+> Its target is **0** for base durations; delays computed from `--stagger` or
+> `--lag-*` do not count. `spring` —
+> `$(grep -rho 'ease-spring' $CSS | wc -l)` — should only find Reports.
+> Revision 2 ended at ~600 literal durations and 181 springs.
+>
+> Revision 3 ended at: `hex 10` (every one a `#000` mask channel — the product
+> frames' crop fades and the ticker's edge fade), `size 0`, `radius 0`,
+> `weight 0`, `loops 30` (the five new ones are the field guide's breath, its
+> shadow's breath, its ribbon, its seal, and the closing clock — all listed
+> under Ambient), `all 0`, base `ms 0`, `spring 79` (icon twitches and
+> Reports).
 
 > **Revision 2 (interactivity pass).** `loops` and `lifts` are no longer
 > expected to be near zero: the living-interface revision of
