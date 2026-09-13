@@ -17,9 +17,9 @@ import { DUR, STAGGER } from '../motion/timing'
 export default function ClosingCTA({ onStartLearning }) {
   const planeRef = useScrollProgress()
   const stats = [
-    { value: TOTAL_LESSONS, label: 'interactive lessons', tip: 'Fill the blank, judge a scenario, pick the right call' },
-    { value: TOTAL_SECTIONS, label: 'modules, beginner to advanced', tip: 'Foundations → ML → neural networks → tools → ethics' },
-    { value: DAILY_BONUS.CYCLE_LENGTH, suffix: '-day', label: 'reward track', tip: 'Gems, XP, hearts — and a Streak Shield on day 7' },
+    { value: TOTAL_LESSONS, label: 'interactive lessons', tip: 'Fill-in-the-blank, AI-or-not and multiple-choice questions' },
+    { value: TOTAL_SECTIONS, label: 'modules, beginner to advanced', tip: 'Foundations → machine learning → neural networks → tools → ethics' },
+    { value: DAILY_BONUS.CYCLE_LENGTH, suffix: '-day', label: 'bonus track', tip: `Gems, XP, hearts, and a Streak Shield on day ${DAILY_BONUS.CYCLE_LENGTH}` },
   ]
 
   return (
@@ -34,13 +34,14 @@ export default function ClosingCTA({ onStartLearning }) {
             </svg>.
           </SplitText>
           <Reveal as="p" className="cta-body" delay={DUR.move * 0.5}>
-            No account, no card. Your progress saves in this browser, and the
-            next lesson is always waiting at the top of the course.
+            It covers what makes a system AI rather than ordinary code. There is
+            nothing to sign up for: open the course, and your progress saves in
+            this browser as you go.
           </Reveal>
 
           <Reveal variant="scale" delay={DUR.move}>
             <button type="button" className="btn btn-next btn-lg fx-shine" onClick={onStartLearning} data-magnetic="8">
-              Start learning
+              Open the course
               <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />

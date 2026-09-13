@@ -17,8 +17,11 @@
 import { useMemo } from 'react'
 import { ProgressionShowcase, useProgression } from '../../state/ProgressionContext'
 import { getShowcaseState } from '../../data/showcaseState'
-import { TOTAL_LESSONS, TOTAL_SECTIONS } from '../../data/learnData'
+import { TOTAL_LESSONS } from '../../data/learnData'
 import { SHOP_ITEMS } from '../../config/shopConfig'
+import { STREAK, QUESTS } from '../../config/progressionConfig'
+import { DAILY_BONUS } from '../../config/dailyBonusConfig'
+import { SHORTEST_LESSON, LONGEST_LESSON } from '../guide/guideData'
 
 import ModuleList from '../learn/ModuleList'
 import PlayerStatusBar from '../progression/PlayerStatusBar'
@@ -36,6 +39,10 @@ import { useScrollProgress } from '../../motion/scroll'
 import './showcase.css'
 
 const noop = () => {}
+
+/* Small counts read as words in running prose ("three quests"), not numerals. */
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+const inWords = (n) => WORDS[n] ?? String(n)
 
 /* A bold term that gets a highlighter stroke when it is read. Exported for the
    About page, which uses the same section vocabulary. */
@@ -101,11 +108,11 @@ function LearnSection() {
       id="learn"
       index={1}
       eyebrow="The course"
-      heading={<>{TOTAL_LESSONS} lessons.<br />One path through AI.</>}
+      heading={<>{TOTAL_LESSONS} lessons,<br />one module at a time.</>}
       frame={
         <ProductFrame
           path="Learn"
-          caption="The Learn tab, showing itself around. Point at it to hold it still."
+          caption="The Learn tab with a sample learner’s progress. It scrolls on its own; hover to pause it."
           maxHeight="30rem"
           tour={COURSE_TOUR}
         >
@@ -114,15 +121,16 @@ function LearnSection() {
       }
     >
       <p className="sc-body">
-        {TOTAL_SECTIONS} modules, from what AI actually is through to the ethics
-        of using it. Lessons run 4–8 minutes and <Mark>unlock in order</Mark>,
-        so there is never a question about what to do next — and the map tracks
-        exactly how far you have got.
+        Finishing a module <Mark>unlocks the next one</Mark>, so you learn how AI
+        works before the tools, and the tools before the ethics of using them.
+        Lessons take {SHORTEST_LESSON}–{LONGEST_LESSON} minutes, and the course
+        map always marks the one to do next.
       </p>
       <p className="sc-body">
-        Lessons are interactive rather than video: fill in the blank, judge a
-        scenario, pick the right call. A wrong answer <Mark tone="berry">costs a heart</Mark>,
-        so there is no clicking through on autopilot.
+        Lessons are questions, not videos: fill in the blank, decide whether a
+        system is AI or ordinary code, choose the best answer. A wrong
+        answer <Mark tone="berry">costs a heart</Mark>, so you can’t click
+        through on autopilot.
       </p>
     </Section>
   )
@@ -136,10 +144,10 @@ function StreakSection() {
       id="streak"
       index={2}
       eyebrow="Streaks"
-      heading={<>Miss a day and<br />you start over.</>}
+      heading={<>A day counts once<br />you finish something.</>}
       flip
       frame={
-        <ProductFrame path="Streak" caption="The live top bar — hover the figures, click the flame." side="left">
+        <ProductFrame path="Streak" caption="The app’s top bar and streak panel. Hover a number to see what it counts, or click the flame." side="left">
           <div className="sc-stats-frame">
             <div className="sc-topbar">
               <PlayerStatusBar />
@@ -152,14 +160,15 @@ function StreakSection() {
       }
     >
       <p className="sc-body">
-        A day only counts once you finish something. The streak tracks
-        <Mark tone="clay"> calendar days</Mark>, not 24-hour gaps, so a late-night
-        session and a morning one are two days — exactly as you would expect.
+        Finishing a lesson or a practice session extends your streak; opening
+        LunX doesn’t. Days follow the <Mark tone="clay">calendar</Mark>, not
+        24-hour windows, so a lesson late at night and another the next morning
+        count as two days.
       </p>
       <p className="sc-body">
-        Milestones at 3, 7, 14 and 30 days pay gems. Miss one day and a
-        <Mark tone="moss"> Streak Shield</Mark> covers it, if you have one banked. Miss
-        two, and you start again.
+        Streak milestones pay gems, starting at {STREAK.MILESTONES[0]} days and
+        going up to {STREAK.MILESTONES[STREAK.MILESTONES.length - 1]}. If you miss one day, a <Mark tone="moss">Streak Shield</Mark> covers
+        it, as long as you have one. Miss two days in a row and the streak resets.
       </p>
     </Section>
   )
@@ -170,7 +179,7 @@ function StreakSection() {
 function BonusFrame() {
   const { vm } = useProgression()
   return (
-    <ProductFrame path="Daily bonus" caption="The bonus panel, mid-track. Day 4 is today's.">
+    <ProductFrame path="Daily bonus" caption="The daily bonus panel for a sample learner on day 4.">
       <DailyBonusTrack view={vm.dailyBonus} variant="showcase" showHeader={false} />
     </ProductFrame>
   )
@@ -182,18 +191,18 @@ function BonusSection() {
       id="daily-bonus"
       index={3}
       eyebrow="Daily bonus"
-      heading={<>Come back.<br />Get paid.</>}
+      heading={<>{DAILY_BONUS.CYCLE_LENGTH} days,<br />{DAILY_BONUS.CYCLE_LENGTH} rewards.</>}
       frame={<BonusFrame />}
     >
       <p className="sc-body">
-        A seven-day track with a reward waiting on each one: gems, XP, hearts,
-        and a <Mark>Streak Shield on day 7</Mark>. Claim it, and tomorrow the
-        next day unlocks.
+        The track pays gems, XP and hearts, with a <Mark>Streak Shield on
+        day {DAILY_BONUS.CYCLE_LENGTH}</Mark>. Each day you visit, the next reward
+        is waiting for you to claim.
       </p>
       <p className="sc-body">
-        Nothing collects itself — you press the button. And miss a day? The track
-        waits where you left it. The streak is what punishes absence; the bonus
-        does not pile on.
+        Miss a day and the track picks up where you left off instead of
+        resetting. A missed day can already cost you your streak, so the bonus
+        doesn’t take anything away as well.
       </p>
     </Section>
   )
@@ -208,7 +217,7 @@ function QuestFrame() {
   const quests = vm.quests.daily.slice(0, 3)
 
   return (
-    <ProductFrame path="Quests" caption="Daily quests, generated fresh each morning. Gems are the payout." side="left">
+    <ProductFrame path="Quests" caption="Today’s quests for a sample learner, and everything the shop sells." side="left">
       <div className="sc-stack">
         <span className="sc-stack-label">Today&apos;s quests</span>
         {quests.map((quest, i) => (
@@ -247,19 +256,21 @@ function QuestSection() {
       id="quests"
       index={4}
       eyebrow="Quests & shop"
-      heading={<>Always something<br />to work toward.</>}
+      heading={<>Quests earn gems.<br />Gems buy second chances.</>}
       flip
       frame={<QuestFrame />}
     >
       <p className="sc-body">
-        Three quests are generated each day and scale with your level — earn XP,
-        finish lessons, keep a perfect run. Claim them for gems. Weekly quests
-        run alongside for the longer haul.
+        Each day brings {inWords(QUESTS.DAILY_COUNT)} new quests: an easy one, a medium
+        one and a challenge, such as reaching your XP goal or finishing lessons
+        without losing a heart. Targets rise with your level, and weekly quests
+        work the same way over seven days.
       </p>
       <p className="sc-body">
-        Gems buy exactly three things: <Mark tone="berry">refill your hearts</Mark>, add a
-        single heart, or bank a <Mark tone="moss">Streak Shield</Mark>. That is the whole
-        shop — no cosmetics, no filler.
+        The shop sells {inWords(SHOP_ITEMS.length)} things: <Mark tone="berry">a full heart
+        refill</Mark>, a single extra heart, and a <Mark tone="moss">Streak Shield</Mark>.
+        Nothing in it is cosmetic: every item either gets you back into a lesson
+        or protects your streak.
       </p>
     </Section>
   )

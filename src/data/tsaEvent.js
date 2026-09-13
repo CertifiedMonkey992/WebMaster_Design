@@ -1,13 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   tsaEvent.js — THE TSA WEBMASTER EVENT PAGE, WORD FOR WORD
+   tsaEvent.js — THE TSA WEBMASTER EVENT DESCRIPTION, WORD FOR WORD
    ---------------------------------------------------------------------------
-   Reproduced exactly as published for the 2026–27 Webmaster event, so the
-   compliance section on the About page quotes the requirements rather than
-   paraphrasing them. Only layout characters (zero-width joiners and runs of
-   spaces used for alignment on the source page) have been left out.
+   The event description and the 2026–27 theme, quoted exactly so the About
+   page's compliance section states the prompt in TSA's own words. Only the
+   description and theme belong here — not deadlines, submission steps or
+   example entries.
 
-   Do not edit the wording here. If TSA revises the event page, replace the
-   text wholesale and re-check the requirement ledger in AboutPage.jsx.
+   Do not edit the wording. If TSA revises the prompt, replace it wholesale.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export const TSA_EVENT_URL = 'https://tsaweb.org/competitions-programs/tsa/themes-problems'
@@ -34,23 +33,4 @@ export const TSA_EVENT = {
       text: 'An interactive, gamified user interface (e.g., digital badges, experience points, or a progress dashboard) designed to engage students and visually track their completion of the learning modules.',
     },
   ],
-  caption: 'Bothell HS, Team 1, 2026 1st Place',
-  resources: {
-    heading: 'Event Resources',
-    examplesHeading: 'EVENT EXAMPLES',
-    examplesLead: 'Click on the links to the right to view past entries for this event!',
-    examples: [
-      { label: '2025 Nationals 1st Place: Website', href: 'https://maitso.vercel.app/' },
-      { label: '2026 State 1st Place Winner: Website', href: 'https://roots-and-routes-bothell.vercel.app/' },
-    ],
-  },
-  deadlines: {
-    heading: 'Event Deadlines',
-    date: 'January 21, 2027',
-    lines: [
-      'Students will need their Participant ID number, and password, from their advisor. Only the team captain will be able to upload the file.',
-      'Students submit link to website for scoring. Website must contain a minimum of 3 completed pages, following the annual theme.',
-      'Pages must be separate pages (not just a scroll down option), linked from the home page.',
-    ],
-  },
 }

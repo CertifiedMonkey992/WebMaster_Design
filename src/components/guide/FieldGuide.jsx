@@ -836,7 +836,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
         ) : (
           <p className="fg-hint">
             <span className="fg-hint--pointer">
-              Open the guide <span className="fg-hint-sep" aria-hidden="true">·</span> <kbd>←</kbd><kbd>→</kbd> turn chapters
+              Click the cover to open <span className="fg-hint-sep" aria-hidden="true">·</span> <kbd>←</kbd><kbd>→</kbd> turn chapters
             </span>
             <span className="fg-hint--touch">Tap the cover to open · swipe to turn</span>
           </p>

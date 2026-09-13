@@ -23,7 +23,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 const LINKS = [
   { id: 'learn', label: 'Course' },
   { id: 'streak', label: 'Streaks' },
-  { id: 'daily-bonus', label: 'Rewards' },
+  { id: 'daily-bonus', label: 'Daily bonus' },
   { id: 'quests', label: 'Quests' },
 ]
 
@@ -174,7 +174,7 @@ export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = f
         <button
           className={`btn btn-primary${cued ? ' is-cued' : ''}`}
           onClick={onStartLearning}
-          aria-label="Start learning for free"
+          aria-label="Start learning: open the course"
           data-magnetic="6"
         >
           Start learning

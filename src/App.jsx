@@ -112,6 +112,8 @@ export default function App() {
       <Footer
         links={[
           { label: 'About LunX', onClick: () => goAbout() },
+          { label: 'How a lesson works', onClick: () => goAbout('method') },
+          { label: 'Credits', onClick: () => goAbout('credits') },
           { label: 'TSA compliance', onClick: () => goAbout('compliance') },
         ]}
       />

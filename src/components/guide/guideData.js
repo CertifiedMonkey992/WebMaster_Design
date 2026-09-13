@@ -25,6 +25,10 @@ export const minutesOf = (section) =>
   section.lessons.reduce((m, l) => m + parseInt(l.duration, 10), 0)
 
 export const TOTAL_MINUTES = SECTIONS.reduce((m, s) => m + minutesOf(s), 0)
+
+const LESSON_MINUTES = SECTIONS.flatMap((s) => s.lessons.map((l) => parseInt(l.duration, 10)))
+export const SHORTEST_LESSON = Math.min(...LESSON_MINUTES)
+export const LONGEST_LESSON = Math.max(...LESSON_MINUTES)
 export { TOTAL_LESSONS }
 
 export const pad = (n) => String(n).padStart(2, '0')

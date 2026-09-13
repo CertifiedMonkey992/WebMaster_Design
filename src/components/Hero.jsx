@@ -36,10 +36,12 @@ export default function Hero() {
   return (
     <section className="hero" aria-labelledby="hero-heading">
       <div className="hero-left">
+        {/* Who it is for, how much there is, and the one thing a visitor
+            might worry about before clicking. */}
         <Reveal as="p" variant="left" immediate delay={60} className="hero-eyebrow">
-          <b>Beta</b>
+          <b>Grades 9–12</b>
           <span className="hero-live" aria-hidden="true" />
-          <span>{TOTAL_LESSONS} lessons live · no account needed</span>
+          <span>{TOTAL_LESSONS} lessons · no account needed</span>
         </Reveal>
 
         {/* The product's one italic-clay emphasis, on the half of the sentence
@@ -47,9 +49,9 @@ export default function Hero() {
             hand-drawn rule is inked under the phrase — and re-inked, to a new
             shape, whenever the pointer crosses it. */}
         <SplitText as="h1" className="hero-heading" id="hero-heading" immediate delay={100} stagger={34}>
-          A field guide to the machines that are{' '}
+          A field guide to the AI{' '}
           <em className="em hero-em">
-            already deciding things
+            you already use
             <svg className="hero-scribble" data-st-skip viewBox="0 0 300 18" preserveAspectRatio="none" aria-hidden="true">
               <path className="hero-scribble-a" pathLength="1" d="M3 12.5C48 6.5 96 15 150 9.5s104-3.5 147 1.5" />
               <path className="hero-scribble-b" pathLength="1" d="M4 9.5C58 14 108 5.5 158 11s96 2 139-3" />
@@ -58,10 +60,10 @@ export default function Hero() {
         </SplitText>
 
         <Reveal as="p" className="hero-sub" immediate delay={420}>
-          {TOTAL_LESSONS} short lessons on how AI actually works — <span className="hero-term">training
-          data</span>, <span className="hero-term">neural networks</span>, <span className="hero-term">the
-          tools</span>, and <span className="hero-term">the ethics</span> of using them. Free, no account,
-          and it remembers where you stopped.
+          Short, interactive lessons on how models <span className="hero-term">learn from
+          data</span>, what happens inside a <span className="hero-term">neural network</span>, how
+          to <span className="hero-term">prompt AI tools</span>, and when using AI <span className="hero-term">crosses
+          an ethical line</span>. Earn XP and badges, and keep a daily streak as you go.
         </Reveal>
 
         <Reveal as="ol" className="hero-path" variant="left" stagger immediate delay={560}>
@@ -92,7 +94,7 @@ export default function Hero() {
         </Reveal>
 
         <Reveal as="p" variant="fade" className="hero-path-meta" immediate delay={820}>
-          Self-paced. Lessons unlock in order. Progress saves in this browser.
+          Pick a module to open the guide at that chapter.
         </Reveal>
       </div>
 

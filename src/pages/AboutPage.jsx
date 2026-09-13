@@ -5,8 +5,8 @@
    in order:
 
      hero          what this page is, a catalogue card of the facts
-     compliance    the TSA compliance statement, the event page word for
-                   word, and a ledger answering each requirement
+     compliance    the TSA compliance statement and the event description
+                   and theme, word for word
      story         why a field guide, and the three principles behind it
      impact        the course counted, split into the brief's three strands
      credits       everything the site uses that it did not write
@@ -26,8 +26,6 @@ import { Eyebrow, Mark } from '../components/showcase/ProductSections'
 import { SECTIONS, TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { DAILY_TEMPLATES, WEEKLY_TEMPLATES } from '../data/questTemplates'
-import { SHOP_ITEMS } from '../config/shopConfig'
-import { DAILY_BONUS } from '../config/dailyBonusConfig'
 import { XP, CURRENCY, HEARTS } from '../config/progressionConfig'
 import { TSA_EVENT } from '../data/tsaEvent'
 import { CHAPTER_INK, TOTAL_MINUTES, minutesOf, pad } from '../components/guide/guideData'
@@ -64,58 +62,8 @@ const STRANDS = [
 })
 
 const strand = (id) => STRANDS.find((s) => s.id === id)
-const moduleRange = (nums) => (nums.length > 1 ? `modules ${nums[0]}–${nums[nums.length - 1]}` : `module ${nums[0]}`)
-const lessonList = (id) => strand(id).sections.flatMap((s) => s.lessons.map((l) => l.title))
-
 /* A list in prose: "a, b and c". */
 const inProse = (items) => (items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`)
-
-/* ── The requirement ledger ──────────────────────────────────────────────────
-   One row per thing the event page says the site must do, in the event
-   page's own order. `where` is plain text on purpose: the page's ways into the
-   course stay the navbar button and the closing CTA. */
-const LEDGER = [
-  {
-    need: 'Educational content modules: at least three distinct learning sections',
-    how: `${TOTAL_SECTIONS} modules holding ${TOTAL_LESSONS} lessons, grouped into the three strands the brief names.`,
-    where: 'Course → Learn',
-  },
-  {
-    need: '…covering fundamental AI concepts',
-    how: `${inProse(strand('concepts').sections.map((s) => s.title))}: ${strand('concepts').lessons} lessons, ${strand('concepts').minutes} minutes.`,
-    where: `Course → ${moduleRange(strand('concepts').numbers)}`,
-  },
-  {
-    need: '…practical AI tools/techniques',
-    how: `${strand('tools').sections[0].title}: ${inProse(lessonList('tools'))}.`,
-    where: `Course → ${moduleRange(strand('tools').numbers)}`,
-  },
-  {
-    need: '…and ethical AI usage',
-    how: `${strand('ethics').sections[0].title}: ${inProse(lessonList('ethics'))}.`,
-    where: `Course → ${moduleRange(strand('ethics').numbers)}`,
-  },
-  {
-    need: 'Gamification: digital badges, experience points or a progress dashboard',
-    how: `All three: ${ACHIEVEMENTS.length} badges, XP for every correct answer and lesson, plus gems, hearts, a daily streak, ${QUEST_TYPES} quest types, a ${DAILY_BONUS.CYCLE_LENGTH}-day bonus track and a ${SHOP_ITEMS.length}-item shop.`,
-    where: 'Course → top bar, Quests, Shop, Profile',
-  },
-  {
-    need: 'Progress tracking: visually track completion of the learning modules',
-    how: 'A progress bar on every module, a path that fills up to your current lesson, a level bar, and a profile of lifetime totals and badges.',
-    where: 'Course → Learn, Profile',
-  },
-  {
-    need: 'A minimum of 3 completed pages, following the annual theme',
-    how: 'Home, Course and About — each one complete, and each one about the AI learning portal.',
-    where: 'The navbar on every page',
-  },
-  {
-    need: 'Separate pages (not just a scroll down option), linked from the home page',
-    how: 'Each page has its own address (#/learn, #/about) that survives a refresh and the Back button. The home page links to the course from its navbar and closing section, and to About from its navbar and footer.',
-    where: 'Home → navbar, footer',
-  },
-]
 
 /* ── Credits ─────────────────────────────────────────────────────────────── */
 
@@ -136,13 +84,6 @@ const ArrowDown = () => (
   <svg className="btn-arrow ab-arrow-down" width="16" height="16" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M12 5v14" /><path d="m6 13 6 6 6-6" />
-  </svg>
-)
-
-const Check = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="m5 12.5 4.5 4.5L19 7.5" />
   </svg>
 )
 
@@ -191,8 +132,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
               LunX is our chapter’s entry for the 2026–27 TSA Webmaster theme: an
               AI learning portal for high school students in grades 9–12. This page
               covers the thinking behind it, what the {TOTAL_LESSONS}-lesson course
-              contains, how a lesson works, and how the site meets each requirement
-              of the event.
+              contains, how a lesson works, and the TSA prompt it was built to answer.
             </Reveal>
 
             <Reveal className="ab-hero-actions" variant="fade" immediate delay={520}>
@@ -242,17 +182,16 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
                   UI kit or CSS framework was used.</Mark>
                 </p>
                 <p className="sc-body">
-                  The event page is reproduced alongside, word for word, so the
-                  requirements are read in TSA’s own language. The ledger below it
-                  answers each one.
+                  The TSA Webmaster event description and the 2026–27 theme are
+                  quoted here word for word.
                 </p>
               </Reveal>
             </div>
 
-            {/* The event page, verbatim (data/tsaEvent.js). */}
+            {/* The event description and theme, verbatim (data/tsaEvent.js). */}
             <Reveal as="figure" className="ab-doc" variant="up" delay={DUR.hover}>
               <figcaption className="ab-doc-label">
-                From the TSA Webmaster event page
+                TSA Webmaster event description
               </figcaption>
               <blockquote className="ab-doc-body" cite={TSA_EVENT.description.linkHref}>
                 <h3 className="ab-doc-h">{TSA_EVENT.description.heading}</h3>
@@ -269,35 +208,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
                     <li key={item.term}><strong>{item.term}</strong> {item.text}</li>
                   ))}
                 </ul>
-                <p className="ab-doc-caption">{TSA_EVENT.caption}</p>
-
-                <h3 className="ab-doc-h">{TSA_EVENT.resources.heading}</h3>
-                <p className="ab-doc-label ab-doc-label--inline">{TSA_EVENT.resources.examplesHeading}</p>
-                <p>{TSA_EVENT.resources.examplesLead}</p>
-                <ul className="ab-doc-links">
-                  {TSA_EVENT.resources.examples.map((ex) => (
-                    <li key={ex.href}><a href={ex.href} target="_blank" rel="noreferrer">{ex.label}</a></li>
-                  ))}
-                </ul>
-
-                <h3 className="ab-doc-h">{TSA_EVENT.deadlines.heading}</h3>
-                <p className="ab-doc-strong">{TSA_EVENT.deadlines.date}</p>
-                {TSA_EVENT.deadlines.lines.map((line) => <p key={line}>{line}</p>)}
               </blockquote>
-            </Reveal>
-          </div>
-
-          <div className="ab-wrap">
-            <h3 className="ab-sub-heading" id="ledger-heading">How LunX answers each requirement</h3>
-            <Reveal as="ol" className="ab-ledger" role="list" stagger delay={DUR.hover} aria-labelledby="ledger-heading">
-              {LEDGER.map((row) => (
-                <li className="ab-ledger-row" key={row.need}>
-                  <span className="ab-ledger-status"><Check /> Met</span>
-                  <span className="ab-ledger-need">{row.need}</span>
-                  <span className="ab-ledger-how">{row.how}</span>
-                  <span className="ab-ledger-where">{row.where}</span>
-                </li>
-              ))}
             </Reveal>
           </div>
         </section>

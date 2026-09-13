@@ -12,7 +12,7 @@
 
 import { getLessonIcon } from '../learn/LessonIcons'
 import {
-  CHAPTERS, CHAPTER_INK, TOTAL_LESSONS, TOTAL_MINUTES, folio, minutesOf, pad,
+  CHAPTERS, CHAPTER_INK, LONGEST_LESSON, TOTAL_LESSONS, TOTAL_MINUTES, folio, minutesOf, pad,
 } from './guideData'
 
 const ink = (j) => `var(${CHAPTER_INK[j % CHAPTER_INK.length]})`
@@ -75,8 +75,8 @@ function InsideCover({ spread }) {
       <span className="fg-label">This guide belongs to</span>
       <p className="fg-owner">whoever is reading it.</p>
       <p className="fg-note">
-        No account. It keeps your place in this browser, and lessons unlock in
-        order.
+        Chapters run from beginner to advanced. No lesson takes longer
+        than {LONGEST_LESSON} minutes.
       </p>
       <ul className="fg-howto">
         <li><kbd>←</kbd><kbd>→</kbd> turn a chapter</li>
