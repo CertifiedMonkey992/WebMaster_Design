@@ -27,7 +27,16 @@ const LINKS = [
   { id: 'quests', label: 'Quests' },
 ]
 
-export default function Navbar({ onStartLearning }) {
+/* Props beyond the landing page's defaults:
+     links        the section links, for a page whose sections differ
+     scrollLinks  scroll to a section instead of following its fragment —
+                  for a page that lives at its own address (#/about), which a
+                  fragment would overwrite
+     onLogoClick  what the wordmark does (default: back to the top)
+     pageLink     { label, onClick } — a quiet link to the site's other page,
+                  beside the one solid button. It stays visible on a phone,
+                  where the section links are hidden. */
+export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = false, onLogoClick, pageLink }) {
   const navRef = useRef(null)
   const listRef = useRef(null)
   const [scrolled, setScrolled] = useState(false)
@@ -78,14 +87,22 @@ export default function Navbar({ onStartLearning }) {
       },
       { rootMargin: '-45% 0px -50% 0px' },
     )
-    LINKS.forEach(({ id }) => {
+    links.forEach(({ id }) => {
       const el = document.getElementById(id)
       if (el) observer.observe(el)
     })
     const top = () => { if (window.scrollY < 300) setActive(null) }
     window.addEventListener('scroll', top, { passive: true })
     return () => { observer.disconnect(); window.removeEventListener('scroll', top) }
-  }, [])
+  }, [links])
+
+  const followLink = (e, id) => {
+    if (!scrollLinks) return
+    const target = document.getElementById(id)
+    if (!target) return
+    e.preventDefault()
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   /* The sliding underline follows hover, and rests on the active link. */
   useLayoutEffect(() => {
@@ -108,7 +125,7 @@ export default function Navbar({ onStartLearning }) {
       className={`navbar${scrolled ? ' scrolled' : ''}`}
       aria-label="Main navigation"
     >
-      <a href="#" className="nav-logo" aria-label="LunX home" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+      <a href="#" className="nav-logo" aria-label="LunX home" onClick={(e) => { e.preventDefault(); if (onLogoClick) onLogoClick(); else window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
         <span className="nav-logo-mark" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />
@@ -127,10 +144,11 @@ export default function Navbar({ onStartLearning }) {
         ref={listRef}
         onPointerLeave={() => setHover(null)}
       >
-        {LINKS.map((link) => (
+        {links.map((link) => (
           <li key={link.id}>
             <a
               href={`#${link.id}`}
+              onClick={(e) => followLink(e, link.id)}
               data-link={link.id}
               className={active === link.id ? 'is-active' : ''}
               aria-current={active === link.id ? 'location' : undefined}
@@ -148,6 +166,11 @@ export default function Navbar({ onStartLearning }) {
       {/* No sign-in button: the login form has no backend, so offering it here
           would promise an account the product cannot create. */}
       <div className="nav-actions">
+        {pageLink && (
+          <button type="button" className="btn btn-ghost nav-page-link" onClick={pageLink.onClick}>
+            {pageLink.label}
+          </button>
+        )}
         <button
           className={`btn btn-primary${cued ? ' is-cued' : ''}`}
           onClick={onStartLearning}

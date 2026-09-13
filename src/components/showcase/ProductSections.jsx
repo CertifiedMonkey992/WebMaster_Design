@@ -37,8 +37,9 @@ import './showcase.css'
 
 const noop = () => {}
 
-/* A bold term that gets a highlighter stroke when it is read. */
-function Mark({ children, tone = 'ochre' }) {
+/* A bold term that gets a highlighter stroke when it is read. Exported for the
+   About page, which uses the same section vocabulary. */
+export function Mark({ children, tone = 'ochre' }) {
   const [ref, inView] = useInView({ threshold: 0.9, rootMargin: '0px 0px -12% 0px' })
   return (
     <strong ref={ref} className={`mark mark--${tone}${inView ? ' is-in' : ''}`}>
@@ -49,19 +50,26 @@ function Mark({ children, tone = 'ochre' }) {
 
 /* ── Section shell ───────────────────────────────────────────────────────── */
 
-function Section({ id, index, eyebrow, heading, children, frame, flip = false }) {
+/* The eyebrow: the section's number, a clay rule that draws, then the label. */
+export function Eyebrow({ index, children }) {
   const [ref, inView] = useInView({ threshold: 0.2 })
+  return (
+    <span ref={ref} className={`sc-eyebrow${inView ? ' is-in' : ''}`}>
+      <span className="sc-eyebrow-num">{String(index).padStart(2, '0')}</span>
+      <span className="sc-eyebrow-rule" aria-hidden="true" />
+      <span className="sc-eyebrow-text">{children}</span>
+    </span>
+  )
+}
+
+function Section({ id, index, eyebrow, heading, children, frame, flip = false }) {
   /* Writes --sp (0 entering → 1 leaving) for the frame's parallax. */
   const parallaxRef = useScrollProgress()
   return (
     <section className="sc-section" id={id} aria-labelledby={`${id}-heading`}>
       <div className={`sc-wrap${flip ? ' flip' : ''}`}>
         <div className="sc-copy">
-          <span ref={ref} className={`sc-eyebrow${inView ? ' is-in' : ''}`}>
-            <span className="sc-eyebrow-num">{String(index).padStart(2, '0')}</span>
-            <span className="sc-eyebrow-rule" aria-hidden="true" />
-            <span className="sc-eyebrow-text">{eyebrow}</span>
-          </span>
+          <Eyebrow index={index}>{eyebrow}</Eyebrow>
           <SplitText as="h2" className="sc-heading" id={`${id}-heading`} stagger={48}>
             {heading}
           </SplitText>

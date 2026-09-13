@@ -1020,6 +1020,10 @@
 
 .footer-copy { font-size: var(--fs-caption); color: var(--ink-faint); }
 
+/* Links to the site's other pages sit between the privacy line and the
+   back-to-top control. */
+.footer-links { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-left: auto; }
+
 .footer-top {
   width: 32px; height: 32px;
   display: grid;
@@ -1074,6 +1078,10 @@
 
 @media (max-width: 560px) {
   .hero-em { white-space: normal; }
+  /* The wordmark, the page link and the button share a phone's width. */
+  .navbar { gap: var(--sp-3); }
+  .nav-actions { gap: var(--sp-1); }
+  .nav-page-link { padding-left: var(--sp-2); padding-right: var(--sp-2); }
 }
 
 /* Touch: the hover-revealed count and arrow are simply shown. */

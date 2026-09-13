@@ -308,6 +308,8 @@ html:has(.learn-app) body {
 .ni-door { transform-origin: 50% 100%; }
 .ls-nav-btn:hover .ni-door { transform: scaleY(0.6); }
 
+.ls-nav-btn:hover .ni-about-dot { transform: translateY(-2px); }
+
 .ni-page-l { transform-origin: 100% 50%; }
 .ni-page-r { transform-origin: 0% 50%; }
 .ls-nav-btn:hover .ni-page-l,

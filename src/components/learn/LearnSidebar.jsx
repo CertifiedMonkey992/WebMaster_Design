@@ -40,6 +40,15 @@ const HomeIcon = () => (
   </svg>
 )
 
+/* About: the dot of the "i" hops. */
+const AboutIcon = () => (
+  <svg {...ico} className="ni ni-about">
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 11v5.5" />
+    <circle className="ni-about-dot" cx="12" cy="7.6" r="1.3" fill="currentColor" stroke="none" />
+  </svg>
+)
+
 const LearnIcon = () => (
   <svg {...ico} className="ni ni-learn">
     <path className="ni-page-l" d="M12 7.7a3.5 3.5 0 0 0-4-3.2H3v12h5a3.5 3.5 0 0 1 4 2.8" />
@@ -100,6 +109,7 @@ const NAV_GROUPS = [
     label: 'Learn',
     items: [
       { id: 'home',     label: 'Home',     Icon: HomeIcon, action: 'home', tip: 'Back to the LunX front page' },
+      { id: 'about',    label: 'About',    Icon: AboutIcon, action: 'about', tip: 'Our story and the TSA compliance statement' },
       { id: 'learn',    label: 'Learn',    Icon: LearnIcon },
       { id: 'practice', label: 'Practice', Icon: PracticeIcon, tip: 'Free review — never costs a heart' },
     ],
@@ -124,7 +134,7 @@ const NAV_GROUPS = [
   },
 ]
 
-export default function LearnSidebar({ active, onChange, onGoHome, badges = {} }) {
+export default function LearnSidebar({ active, onChange, onGoHome, onGoAbout, badges = {} }) {
   const navRef = useRef(null)
   const [hover, setHover] = useState(null)
 
@@ -167,7 +177,11 @@ export default function LearnSidebar({ active, onChange, onGoHome, badges = {} }
           type="button"
           data-nav={item.id}
           className={`ls-nav-btn${isActive ? ' active' : ''}`}
-          onClick={() => (item.action === 'home' ? onGoHome() : onChange(item.id))}
+          onClick={() => {
+            if (item.action === 'home') onGoHome()
+            else if (item.action === 'about') onGoAbout?.()
+            else onChange(item.id)
+          }}
           onPointerEnter={() => setHover(item.id)}
           onFocus={() => setHover(item.id)}
           aria-current={isActive ? 'page' : undefined}

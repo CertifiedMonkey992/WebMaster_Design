@@ -54,7 +54,7 @@ function PlaceholderView({ viewId, onNavigate }) {
   )
 }
 
-export default function LearnPage({ onGoHome, onLoginClick }) {
+export default function LearnPage({ onGoHome, onGoAbout, onLoginClick }) {
   const { vm } = useProgression()
   const [activeNav, setActiveNav] = useState('learn')
   const [dir, setDir] = useState(1)
@@ -90,6 +90,7 @@ export default function LearnPage({ onGoHome, onLoginClick }) {
         active={activeNav}
         onChange={navigate}
         onGoHome={onGoHome}
+        onGoAbout={onGoAbout}
         badges={{ quests: vm.quests.claimableCount }}
       />
 

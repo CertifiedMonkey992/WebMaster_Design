@@ -13,7 +13,10 @@
 const LETTERS = ['L', 'u', 'n', 'X']
 const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-export default function Footer() {
+/* `links` — [{ label, onClick }] — the site's other pages (About from home,
+   Home from About). Page links, not course links, so they do not count
+   against the two ways into the course. */
+export default function Footer({ links = [] }) {
   return (
     <footer className="footer" role="contentinfo">
       <div className="footer-left">
@@ -32,6 +35,16 @@ export default function Footer() {
           No accounts, no tracking. Your progress never leaves this browser.
         </span>
       </div>
+
+      {links.length > 0 && (
+        <nav className="footer-links" aria-label="Pages">
+          {links.map((link) => (
+            <button key={link.label} type="button" className="btn btn-ghost btn-sm" onClick={link.onClick}>
+              {link.label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       <button
         type="button"
