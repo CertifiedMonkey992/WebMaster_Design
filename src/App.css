@@ -479,9 +479,16 @@
 }
 
 .hero-path-item.is-lit .hero-path-num,
+.hero-path-item.is-echo .hero-path-num,
 .hero-path-item:hover .hero-path-num { color: var(--chapter); }
 .hero-path-item.is-lit .hero-path-num::before,
+.hero-path-item.is-echo .hero-path-num::before,
 .hero-path-item:hover .hero-path-num::before { transform: translateY(-50%) scaleY(1); }
+
+/* Echo (revision 4): the book is showing this chapter on its own. The row
+   answers quietly — its chapter mark and a label nudge, no tint, no arrow —
+   so the hand's own highlight stays the louder of the two. */
+.hero-path-item.is-echo .hero-path-label { transform: translateX(3px); }
 
 .hero-path-label {
   font-family: var(--font-display);
@@ -885,12 +892,13 @@
 }
 
 /* Sweeps round once as the heading lands, then keeps time: a clock that
-   stops after one lap is a picture of a clock. One revolution a minute,
-   linear, starting from where the sweep left it. (Ambient — MOTION_RULES.) */
+   stops after one lap is a picture of a clock. Revision 4: it TICKS — one
+   step a second — because a hand gliding at one revolution a minute is too
+   slow for anyone to see move. (Ambient — MOTION_RULES.) */
 .st.is-in .cta-clock .cta-clock-sweep {
   animation:
     cta-sweep var(--dur-celebrate) var(--ease-settle) 520ms both,
-    cta-run 60s linear calc(520ms + var(--dur-celebrate)) infinite;
+    cta-run 60s steps(60) calc(520ms + var(--dur-celebrate)) infinite;
 }
 
 @keyframes cta-sweep { from { transform: rotate(-300deg); } to { transform: rotate(0deg); } }
@@ -910,6 +918,10 @@
   list-style: none;
   border-top: 1px solid var(--line);
 }
+
+/* The tally column floats on a slower plane than the copy beside it
+   (--sp from motion/scroll.js, 0 entering → 1 leaving). */
+.cta-stats-plane { transform: translate3d(0, calc((0.5 - var(--sp, 0.5)) * 44px), 0); }
 
 .cta-stat {
   position: relative;
@@ -935,6 +947,21 @@
 }
 
 .cta-stat:hover::after { transform: scaleX(1); }
+
+/* Idle (revision 4): now and then the rules under the tally are drawn again,
+   one row after another — the course being counted out once more. The hand
+   takes over the rule on hover. */
+.cta-stats.is-in .cta-stat::after {
+  animation: cta-tally var(--idle-sweep) var(--ease-snap) calc(3s + var(--i, 0) * 180ms) infinite;
+}
+
+.cta-stats.is-in .cta-stat:hover::after { animation: none; }
+
+@keyframes cta-tally {
+  0%, 82%   { transform: scaleX(0); opacity: 1; }
+  90%       { transform: scaleX(1); opacity: 1; }
+  98%, 100% { transform: scaleX(1); opacity: 0; }
+}
 
 .cta-stat-value {
   font-family: var(--font-display);
@@ -1053,4 +1080,9 @@
 @media (hover: none) {
   .hpc-rest { opacity: 0; }
   .hpc-hover { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-stat::after, .cta-clock .cta-clock-sweep, .hero-live::after { animation: none !important; }
+  .cta-stats-plane { transform: none; }
 }

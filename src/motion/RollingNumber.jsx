@@ -11,6 +11,10 @@
 
    Never rolls on first render: a value that was already 12 when the page
    loaded did not just become 12. The accessible text is the plain value.
+
+   Revision 4: the digits FLASH as they roll — through the colour a parent
+   names in --rn-up (a gem count flashes ochre) or --rn-down (berry by
+   default) — so a change reads from across the screen, not only up close.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef, useState } from 'react'
@@ -20,7 +24,7 @@ const DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 export default function RollingNumber({ value, format, className = '', ...rest }) {
   const text = format ? format(value) : String(value ?? '')
   const prev = useRef(value)
-  const [dir, setDir] = useState(null)
+  const [change, setChange] = useState({ dir: null, n: 0 })
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -32,18 +36,22 @@ export default function RollingNumber({ value, format, className = '', ...rest }
     const before = prev.current
     prev.current = value
     if (before === value || typeof value !== 'number' || typeof before !== 'number') return undefined
-    setDir(value > before ? 'up' : 'down')
-    const t = window.setTimeout(() => setDir(null), 700)
+    setChange((c) => ({ dir: value > before ? 'up' : 'down', n: c.n + 1 }))
+    const t = window.setTimeout(() => setChange((c) => ({ ...c, dir: null })), 900)
     return () => clearTimeout(t)
   }, [value])
 
+  const { dir } = change
   const chars = text.split('')
   const n = chars.length
 
+  /* Two changes in quick succession must both kick: the parity class swaps
+     the keyframe name, which restarts the animation without remounting the
+     digit strips (a remount would lose their roll). */
   return (
     <span
       {...rest}
-      className={`rn${mounted ? ' is-live' : ''}${dir ? ` rn--${dir}` : ''} ${className}`.trim()}
+      className={`rn${mounted ? ' is-live' : ''}${dir ? ` rn--${dir} rn--p${change.n % 2}` : ''} ${className}`.trim()}
     >
       <span className="pg-sr-only">{text}</span>
       <span className="rn-track" aria-hidden="true">

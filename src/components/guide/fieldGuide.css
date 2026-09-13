@@ -31,6 +31,7 @@
   --fg-h: 19rem;
   --fg-shift: calc(var(--fg-w) / 2);   /* how far the book slides to centre an open spread */
   --breathe: 7.7s;
+  --drift: 11.3s;
   --sway: 5.3s;
   position: relative;
   height: 33rem;
@@ -119,20 +120,24 @@
 
 @keyframes fg-shadow-breathe {
   0%, 100% { transform: translateZ(-1px); opacity: 1; }
-  50%      { transform: translateZ(-1px) scale(0.965); opacity: 0.78; }
+  50%      { transform: translateZ(-1px) scale(0.94); opacity: 0.7; }
 }
 
-/* ── Arrival + breath + the hand ─────────────────────────────────────────── */
+/* ── Arrival + float + the hand ──────────────────────────────────────────── */
 
-/* Dropped onto the desk on load, then breathing. The breath and the shadow's
-   breath share duration and delay, so they stay in step forever. */
+/* Dropped onto the desk on load, then floating. Revision 3's breath (7px,
+   0.5°) was too small to see; the float now rises 9px and turns 0.8°, and a
+   second, unrelated 11.3s drift rocks the book about its long axis, so the
+   pose never repeats inside a minute. The float and the shadow's breath
+   share duration and delay, so they stay in step forever. */
 .fg-arrive {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
   animation:
     fg-arrive var(--dur-celebrate) var(--ease-snap) 220ms backwards,
-    fg-breathe var(--breathe) var(--ease-swing) calc(220ms + var(--dur-celebrate)) infinite;
+    fg-breathe var(--breathe) var(--ease-swing) calc(220ms + var(--dur-celebrate)) infinite,
+    fg-drift var(--drift) var(--ease-swing) calc(220ms + var(--dur-celebrate)) infinite alternate;
 }
 
 @keyframes fg-arrive {
@@ -142,14 +147,21 @@
 
 @keyframes fg-breathe {
   0%, 100% { transform: none; }
-  50%      { transform: translateZ(7px) rotateZ(0.5deg); }
+  50%      { transform: translateZ(9px) rotateZ(0.8deg); }
+}
+
+/* `rotate` is its own property, so the drift composes with the float's
+   transform instead of replacing it. */
+@keyframes fg-drift {
+  from { rotate: 1 0.3 0 -0.6deg; }
+  to   { rotate: 1 0.3 0 0.9deg; }
 }
 
 /* In the hand, or open for reading: the book holds still. Its shadow holds
    with it. */
 .fg-stage.is-held .fg-arrive,
+.fg-stage.is-open .fg-arrive { animation-play-state: running, paused, paused; }
 .fg-stage.is-held .fg-shadow,
-.fg-stage.is-open .fg-arrive,
 .fg-stage.is-open .fg-shadow { animation-play-state: running, paused; }
 
 /* The pose the pointer spring writes, plus the press dip on its own
@@ -306,8 +318,8 @@
 }
 
 @keyframes fg-sway {
-  from { transform: translateZ(calc(var(--fg-r) * 1px + 0.4px)) rotateX(-62deg) rotateZ(-2.5deg); }
-  to   { transform: translateZ(calc(var(--fg-r) * 1px + 0.4px)) rotateX(-62deg) rotateZ(2.5deg); }
+  from { transform: translateZ(calc(var(--fg-r) * 1px + 0.4px)) rotateX(-62deg) rotateZ(-3.5deg); }
+  to   { transform: translateZ(calc(var(--fg-r) * 1px + 0.4px)) rotateX(-62deg) rotateZ(3.5deg); }
 }
 
 /* The page corner lifts under the pointer: "turn me". */
@@ -378,6 +390,17 @@
 }
 
 .fg-tab.is-called { --lean: 1; }
+
+/* Idle riffle: a thumb running down the fore-edge. Each tab leans out in
+   turn on `translate`, which composes with the proximity lean's transform. */
+.fg-stage.is-riffling:not(.is-open) .fg-tabs--right .fg-tab {
+  animation: fg-tab-riffle var(--dur-reveal) var(--ease-swing) calc(var(--j, 0) * 90ms) both;
+}
+
+@keyframes fg-tab-riffle {
+  0%, 100% { translate: 0 0; }
+  40%      { translate: 9px 0; }
+}
 .fg-tab:focus-visible { outline: none; }
 .fg-tab:focus-visible .fg-tab-face { outline: 2px solid var(--evergreen); outline-offset: 2px; }
 
@@ -489,6 +512,45 @@
 }
 
 .fg-stage.is-held .fg-sheen { opacity: 1; }
+
+/* Ambient: a band of window light crosses the cloth once per --idle-sweep,
+   the way a book on a desk catches the room as the day moves. It gives way
+   to the hand's own sheen, and to the reader once the book is open. */
+.fg-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur-open) var(--ease-out);
+}
+
+.fg-glare::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -70%;
+  width: 55%;
+  background: linear-gradient(
+    100deg,
+    rgba(var(--sheen-rgb), 0) 0%,
+    rgba(var(--sheen-rgb), 0.07) 38%,
+    rgba(var(--sheen-rgb), 0.15) 50%,
+    rgba(var(--sheen-rgb), 0.07) 62%,
+    rgba(var(--sheen-rgb), 0) 100%
+  );
+  transform: translateX(0) rotate(8deg);
+  animation: fg-glare var(--idle-sweep) var(--ease-swing) calc(220ms + var(--dur-celebrate) + 1.8s) infinite;
+}
+
+@keyframes fg-glare {
+  0%, 72% { transform: translateX(0) rotate(8deg); }
+  100%    { transform: translateX(330%) rotate(8deg); }
+}
+
+.fg-stage.is-held .fg-glare,
+.fg-stage.is-open .fg-glare { opacity: 0; }
 
 /* ── Leaves in the air ───────────────────────────────────────────────────── */
 
@@ -1004,6 +1066,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fg-arrive, .fg-shadow, .fg-ribbon, .fg-compass-seal, .fg-controls { animation: none !important; }
+  .fg-arrive, .fg-shadow, .fg-ribbon, .fg-compass-seal, .fg-controls, .fg-glare::before, .fg-tab { animation: none !important; }
   .fg-lean { transform: none; }
 }

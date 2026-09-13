@@ -29,8 +29,17 @@
                              and wanders when left alone.
      thumb tabs              lean out by proximity to the pointer.
 
-   Ambient: the book breathes and its ribbon sways (CSS), paused offscreen,
-   and paused while the book is in the hand.
+   Ambient: the book floats and its ribbon sways, and a band of window light
+   crosses the cloth now and then (CSS) — paused offscreen, held still while
+   the book is in the hand.
+
+   Idle life (revision 4, MOTION_RULES.md → The field guide → Idle life): left
+   alone, the book performs small gestures at jittered intervals — the cover
+   lifts on a breath of air and taps back down, a chapter's pages lift and its
+   tab leans out, the thumb tabs riffle, the needle swings and finds north —
+   and, rarely, it opens itself, turns a chapter or two, and closes. The hand
+   always wins: any touch cancels the gesture in progress and leaves the book
+   as it is, and idle life waits 8s after the last touch.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import {
@@ -40,7 +49,8 @@ import { CHAPTERS, CHAPTER_INK, PAGE_UNITS, SPREADS, leftUnits, tabDepth, spread
 import { Cover, LeftPage, RightPage, TabFaces } from './GuidePages'
 import { createSpring } from '../../motion/spring'
 import { hasFinePointer, prefersReducedMotion } from '../../motion/env'
-import useAmbient, { isOnScreen } from '../../motion/ambient'
+import useAmbient, { isOnScreen, onVisibility } from '../../motion/ambient'
+import { every, idleFor, pick } from '../../motion/idle'
 import { useScrollProgress } from '../../motion/scroll'
 import { DUR } from '../../motion/timing'
 import './fieldGuide.css'
@@ -58,6 +68,18 @@ const LIFT = { stiffness: 260, damping: 26, force: null }
 const HOVER_ANGLE = 14
 const PEEK_ANGLE = 18
 
+/* Idle feels. AIR: a breath lifting the cover — slower than a hand, with a
+   few percent of float at the top. DROP: the cover let go from a small
+   angle — a softened gravity pulls it down and the desk's stop (restitution
+   0.3) gives the tap. */
+const AIR = { stiffness: 60, damping: 11, force: null }
+const DROP = { stiffness: 40, damping: 7, force: (a) => -700 * Math.cos((a * Math.PI) / 180) }
+const NEEDLE = { stiffness: 55, damping: 6.5 }
+const NEEDLE_LOOSE = { stiffness: 26, damping: 3.2 }
+/* After a touch, the book waits this long before it performs again. */
+const HANDS_OFF_MS = 8000
+const rand = (a, b) => a + Math.random() * (b - a)
+
 const LEAF_MS = Math.round(DUR.turn * 0.85)
 const LEAF_STAGGER = 80
 /* A page turned by a finger: it resists for a moment as it lifts, travels
@@ -74,7 +96,7 @@ function useStableSprings(make) {
   return ref.current
 }
 
-const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
+const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiRef) {
   const stageRef = useRef(null)
   const deskRef = useRef(null)
   const floatRef = useRef(null)
@@ -90,7 +112,13 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
 
   /* Mirrors of state for the event handlers and spring callbacks, which are
      created once and must not close over stale values. */
-  const live = useRef({ open: false, spread: 0, turn: null, pendingPeek: undefined, queued: null })
+  const live = useRef({
+    open: false, spread: 0, turn: null, pendingPeek: undefined, queued: null,
+    /* Idle life: when the hand last touched the book (or the hero's chapter
+       list), whether the book is performing, and what it did last. */
+    lastTouch: -Infinity, performing: null, gTimers: [], lastGesture: null,
+    lastTour: -Infinity, smallSinceTour: 0, autoOpened: false,
+  })
   live.current.open = open
   live.current.spread = spread
   live.current.turn = turn
@@ -126,7 +154,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
     }),
     tx: createSpring({ stiffness: 140, damping: 20, onUpdate: (v) => floatRef.current?.style.setProperty('--tx', v.toFixed(3)) }),
     ty: createSpring({ stiffness: 140, damping: 20, onUpdate: (v) => floatRef.current?.style.setProperty('--ty', v.toFixed(3)) }),
-    needle: createSpring({ stiffness: 55, damping: 6.5, precision: 0.05, onUpdate: (v) => coverRef.current?.style.setProperty('--needle', `${v.toFixed(2)}deg`) }),
+    needle: createSpring({ ...NEEDLE, precision: 0.05, onUpdate: (v) => coverRef.current?.style.setProperty('--needle', `${v.toFixed(2)}deg`) }),
   }))
 
   useEffect(() => () => Object.values(springs).forEach((s) => s.stop()), [springs])
@@ -201,10 +229,189 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
     }
   }, [moveHinge, springs])
 
+  /* ── The hand takes over ─────────────────────────────────────────────────
+     Any touch — on the book, its controls, or the hero's chapter list —
+     stops whatever the book is performing, and leaves it exactly as it is:
+     a book the tour opened stays open for the learner to read. */
+
+  const stopPerforming = useCallback(() => {
+    const L = live.current
+    L.gTimers.forEach(clearTimeout)
+    L.gTimers = []
+    L.performing = null
+    const stage = stageRef.current
+    stage?.classList.remove('is-riffling')
+    stage?.querySelectorAll('.fg-tab.is-idle-called').forEach((t) => t.classList.remove('is-called', 'is-idle-called'))
+    /* A needle left mid-swing on its loose spring gets its own feel back. */
+    springs.needle.set(springs.needle.target, NEEDLE)
+    onShow?.(null)
+  }, [springs, onShow])
+
+  const takeOver = useCallback(() => {
+    const L = live.current
+    L.lastTouch = performance.now()
+    if (L.performing) {
+      stopPerforming()
+      L.autoOpened = false
+    }
+  }, [stopPerforming])
+
   useImperativeHandle(apiRef, () => ({
-    peek,
-    go: (j) => turnTo(j + 1),
-  }), [peek, turnTo])
+    peek: (j) => { takeOver(); peek(j) },
+    go: (j) => { takeOver(); turnTo(j + 1) },
+  }), [peek, turnTo, takeOver])
+
+  /* ── Idle life ──────────────────────────────────────────────────────────── */
+
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage || reduced.current) return undefined
+    const L = live.current
+    const after = (ms, fn) => { L.gTimers.push(window.setTimeout(fn, ms)) }
+    const done = (ms) => after(ms, () => { L.performing = null })
+
+    const shareInView = () => {
+      const r = stage.getBoundingClientRect()
+      const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0)
+      return r.height ? seen / r.height : 0
+    }
+
+    const gestures = {
+      /* A breath of air lifts the cover; it taps back down. */
+      lift() {
+        moveHinge(rand(9, 14), AIR)
+        after(rand(520, 760), () => moveHinge(0, DROP))
+        done(1500)
+      },
+      /* A chapter's pages lift and its thumb tab leans out. */
+      peek() {
+        const j = Math.floor(Math.random() * CHAPTERS.length)
+        peek(j)
+        /* The hero's chapter list is the same instrument: its row answers. */
+        onShow?.(j)
+        after(DUR.move, () => {
+          const tab = stage.querySelector(`.fg-tabs--right .fg-tab[data-tab="${j}"]`)
+          tab?.classList.add('is-called', 'is-idle-called')
+        })
+        after(rand(1000, 1300), () => {
+          stage.querySelectorAll('.fg-tab.is-idle-called').forEach((t) => t.classList.remove('is-called', 'is-idle-called'))
+          L.pendingPeek = undefined
+          moveHinge(0, DROP)
+          onShow?.(null)
+        })
+        done(2100)
+      },
+      /* A thumb runs down the fore-edge: the tabs lean out in turn while the
+         cover gives a little. */
+      riffle() {
+        stage.classList.add('is-riffling')
+        moveHinge(4, AIR)
+        after(620, () => moveHinge(0, DROP))
+        after(CHAPTERS.length * 90 + DUR.reveal + 80, () => stage.classList.remove('is-riffling'))
+        done(1400)
+      },
+      /* The needle swings wide on a loose spring and finds north again. */
+      north() {
+        const away = springs.needle.target + (Math.random() < 0.5 ? -1 : 1) * rand(120, 220)
+        springs.needle.set(away, NEEDLE_LOOSE)
+        after(rand(620, 820), () => springs.needle.set(Math.round(away / 360) * 360 + rand(-5, 5), NEEDLE))
+        done(1900)
+      },
+      /* The rare one: the book opens itself at the contents, turns a chapter
+         (sometimes two), and closes. Returns its length so the next gesture
+         waits longer. */
+      tour() {
+        L.lastTour = performance.now()
+        L.smallSinceTour = 0
+        L.autoOpened = true
+        openAt(0)
+        const first = Math.random() < 0.6 ? 1 : 2
+        const second = Math.random() < 0.45 ? Math.min(SPREADS - 1, first + 1) : null
+        let t = 1900
+        after(t, () => { turnTo(first); onShow?.(first - 1) })
+        t += 2400
+        if (second != null) {
+          after(t, () => { turnTo(second); onShow?.(second - 1) })
+          t += 2300
+        }
+        after(t, () => { L.autoOpened = false; close(); onShow?.(null) })
+        done(t + 900)
+        return t
+      },
+    }
+
+    const run = () => {
+      const now = performance.now()
+      if (L.performing || !isOnScreen(stage)) return 0
+      if (now - L.lastTouch < HANDS_OFF_MS) return 0
+      /* Open, turning, moving, or a block held up by the hand (a chapter
+         in the hero list hovered for a long time): not the book's turn. */
+      if (L.open || L.turn || springs.hinge.moving) return 0
+      if (springs.hinge.target !== 0 || L.pendingPeek !== undefined) return 0
+      /* Held under the pointer, or in keyboard focus. (A mouse click also
+         focuses the stage; that alone is not "being handled".) */
+      const focus = document.activeElement
+      if (stage.classList.contains('is-held') || (stage.contains(focus) && focus.matches(':focus-visible'))) return 0
+      const choice = pick([
+        { id: 'lift', weight: 3 },
+        { id: 'peek', weight: 3 },
+        { id: 'riffle', weight: 2 },
+        { id: 'north', weight: 2 },
+        {
+          id: 'tour',
+          weight: 4,
+          when: () => L.smallSinceTour >= 2 && now - L.lastTour > 30000 && idleFor() > 5000 && shareInView() > 0.7,
+        },
+      ], L.lastGesture)
+      if (!choice) return 0
+      L.lastGesture = choice.id
+      L.performing = choice.id
+      if (choice.id !== 'tour') L.smallSinceTour += 1
+      return gestures[choice.id]() || 0
+    }
+
+    /* Mostly still: a small gesture takes 1–2s, and the rest between them is
+       4–9s, never the same twice. */
+    const cancel = every({ min: 4200, max: 8800, first: 2600, run })
+
+    /* Nobody can see it — scrolled away, or the tab went to the background,
+       where timers keep running but frames do not: stop performing. A book
+       the tour opened closes at once rather than closing for nobody. */
+    const abandon = () => {
+      if (!L.performing) return
+      const wasTour = L.autoOpened
+      stopPerforming()
+      L.autoOpened = false
+      if (!wasTour) {
+        /* A small gesture: put the block down and, if a peek swapped the
+           page under the cover, put the contents back (a jump skips the
+           spring's onRest, which would otherwise do it). */
+        L.pendingPeek = undefined
+        springs.hinge.jump(0)
+        if (L.spread !== 0) { L.spread = 0; setSpread(0) }
+        return
+      }
+      if (L.turn) { L.queued = 'close'; return }
+      if (L.open) {
+        L.open = false
+        setOpen(false)
+        onOpenChange?.(false)
+        springs.hinge.jump(0)
+        L.spread = 0
+        setSpread(0)
+      }
+    }
+    const offVisibility = onVisibility(stage, (on) => { if (!on) abandon() })
+    const onHidden = () => { if (document.hidden) abandon() }
+    document.addEventListener('visibilitychange', onHidden)
+
+    return () => {
+      cancel()
+      offVisibility()
+      document.removeEventListener('visibilitychange', onHidden)
+      stopPerforming()
+    }
+  }, [springs, moveHinge, peek, openAt, turnTo, close, stopPerforming, onOpenChange, onShow])
 
   /* ── Leaves ───────────────────────────────────────────────────────────── */
 
@@ -286,6 +493,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
   useEffect(() => {
     const stage = stageRef.current
     if (!stage || reduced.current) return undefined
+    const hero = stage.closest('.hero')
     let raf = 0
     let px = 0
     let py = 0
@@ -297,10 +505,16 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
       const sr = stage.getBoundingClientRect()
       inStage = px >= sr.left && px <= sr.right && py >= sr.top && py <= sr.bottom
 
-      /* Pose: ±1 across the stage, weighted by a spring. */
+      /* Pose: ±1 across the stage, weighted by a spring. Anywhere else in
+         the hero the book turns about a third of the way toward the pointer
+         — it noticed you before you reached it. */
+      const hr = hero?.getBoundingClientRect()
       if (inStage) {
         springs.tx.set(clamp(((px - sr.left) / sr.width) * 2 - 1, -1, 1))
         springs.ty.set(clamp(((py - sr.top) / sr.height) * 2 - 1, -1, 1))
+      } else if (hr && px >= hr.left && px <= hr.right && py >= hr.top && py <= hr.bottom) {
+        springs.tx.set(clamp((px - (sr.left + sr.width / 2)) / (hr.width / 2), -1, 1) * 0.32)
+        springs.ty.set(clamp((py - (sr.top + sr.height / 2)) / (hr.height / 2), -1, 1) * 0.32)
       } else {
         springs.tx.set(0)
         springs.ty.set(0)
@@ -390,6 +604,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
   /* ── Handling the object ──────────────────────────────────────────────── */
 
   const onBookEnter = () => {
+    takeOver()
     stageRef.current?.classList.add('is-held')
     /* Unless a chapter is already lifted (from the hero list), the hand on
        the book lifts the cover. */
@@ -404,6 +619,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
 
   const swipe = useRef(null)
   const onPointerDown = (e) => {
+    takeOver()
     stageRef.current?.classList.add('is-pressed')
     swipe.current = { x: e.clientX, y: e.clientY, type: e.pointerType, used: false }
   }
@@ -440,6 +656,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
   }
 
   const onKeyDown = (e) => {
+    takeOver()
     const { open: isOpen, spread: at } = live.current
     if (e.target !== e.currentTarget && (e.key === 'Enter' || e.key === ' ')) return
     switch (e.key) {
@@ -564,6 +781,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
                 <div className="fg-hinge">
                   <div ref={coverRef} className="fg-cover" onClick={onCoverClick} {...inertProps(open)}>
                     <Cover />
+                    <span className="fg-glare" aria-hidden="true" />
                     <span className="fg-sheen" aria-hidden="true" />
                     <span className="fg-shade fg-shade--cover" aria-hidden="true" />
                   </div>
@@ -604,7 +822,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange }, apiRef) {
         </div>
       </div>
 
-      <div className="fg-controls">
+      <div className="fg-controls" onPointerDown={takeOver}>
         {open ? (
           <>
             <button type="button" className="fg-ctl" onClick={() => (spread === 0 ? close() : turnTo(spread - 1))} aria-label={spread === 0 ? 'Close the book' : 'Previous chapter'}>

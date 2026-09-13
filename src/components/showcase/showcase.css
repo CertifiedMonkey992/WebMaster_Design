@@ -132,10 +132,48 @@
   mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
 }
 
-.pf-body.is-scrub {
+.pf-viewport { position: relative; }
+
+.pf-body.is-tour {
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 84%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 84%, transparent 100%);
 }
+
+/* Reduced motion: no tour — the reader scrolls the frame by hand. */
+.pf-body.is-manual {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* The tour's position: a slim thumb on the frame's right edge, travelling on
+   the same timing as the content (motion/tour.js). */
+.pf-scroll {
+  position: absolute;
+  top: var(--sp-3);
+  bottom: var(--sp-3);
+  right: 5px;
+  width: 3px;
+  border-radius: var(--r-pill);
+  background: var(--line-faint);
+  pointer-events: none;
+}
+
+.pf-scroll-thumb {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 24px;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+  will-change: transform;
+  transition: background-color var(--dur-hover) var(--ease-out);
+}
+
+/* Holding still under the hand: the thumb darkens to say "paused here". */
+.pf:hover .pf-scroll-thumb { background: var(--ink-faint); }
 
 .pf-caption {
   padding: var(--sp-3) var(--sp-4);
@@ -310,8 +348,10 @@
   transition: transform var(--dur-lift) var(--ease-lift);
 }
 
-/* Shop art is a handled object: it lifts out of its row. */
+/* Shop art is a handled object: it lifts out of its row. The idle float runs
+   on the inner span, so the lift and the float compose. */
 .sc-shop-mini-item:hover .sc-shop-mini-art { transform: translateY(-4px) scale(1.2) rotate(-8deg); }
+.sc-shop-mini-art > .fx-float { display: grid; place-items: center; }
 
 .sc-shop-mini-name {
   flex: 1;

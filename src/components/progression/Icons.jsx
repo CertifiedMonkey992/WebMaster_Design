@@ -1,26 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Icons.jsx — THE ECONOMY'S ICON SET
    ---------------------------------------------------------------------------
-   Revision 2. The hero icons — heart, flame, gem, bolt, shield — are drawn as
-   small physical objects rather than flat glyphs, all to one construction so
-   they read as one family:
+   The hero icons — heart, flame, gem, bolt, shield — are drawn as small
+   physical objects rather than flat glyphs, all to one construction so they
+   read as one family:
 
      · a BACK plate, offset 1px down in a darker mix of the icon's own colour —
        the object's thickness
-     · the FACE in currentColor
+     · the FACE, a two-stop gradient of ONE hue: currentColor, lit toward the
+       top by that same colour mixed with warm light (VISUAL_SYSTEM.md →
+       Light on the economy)
      · one SHADE facet on the lower right (ink at low alpha) — depth
-     · one warm SHINE mark on the upper left — where the light comes from
+     · warm SPECULAR marks on the upper left — where the light comes from
 
-   Every part carries a class, so CSS can colour it for a state (a dim flame,
-   an empty heart) and animate it for an event (the flame's layers flicker on
-   their own periods; the heart's halves part when it cracks) without a second
-   drawing. Clip-path ids are namespaced with useId, because the same heart
-   renders a dozen times on one screen.
+   Revision 4 makes these the product's flagship objects (MOTION_RULES.md →
+   The economy icons). Every moving part carries a class — the gem's glint
+   and sparkle, the heart's halves and crack, the flame's three layers — so CSS
+   can animate idle events and Reports without a second drawing. Each icon
+   carries a --seed (0–1, stable per instance) so identical icons on one
+   screen perform at different moments.
+
+   Gradient and clip-path ids are namespaced with useId, because the same
+   heart renders a dozen times on one screen.
 
    The line icons below are unchanged: 24px box, 2px round strokes.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useId } from 'react'
+import { seedOf } from '../../motion/idle'
 import './icons.css'
 
 const base = (size) => ({
@@ -42,6 +49,16 @@ const stroke = {
 
 const useUid = () => useId().replace(/:/g, '')
 
+/** A vertical two-stop face gradient; the stop colours live in icons.css. */
+function Face({ id, kind }) {
+  return (
+    <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" className={`ic-stop-a ic-stop-a--${kind}`} />
+      <stop offset="100%" className={`ic-stop-b ic-stop-b--${kind}`} />
+    </linearGradient>
+  )
+}
+
 /* ── Heart ───────────────────────────────────────────────────────────────────
    `fill` (0–1) is how much of the heart is full: the top-bar heart shows the
    ratio of hearts left, so the icon itself says "limited". The heart is drawn
@@ -56,19 +73,19 @@ const CRACK = '12,6.4 10.7,9.4 13,12 10.9,14.6 12.5,17.2 12,21'
 export function HeartIcon({ size = 20, empty = false, fill, className = '', style }) {
   const uid = useUid()
   const level = empty ? 0 : fill == null ? 1 : Math.max(0, Math.min(1, fill))
-  const crack = CRACK.split(' ').join(' ')
 
   return (
-    <svg {...base(size)} className={`hi ${className}`.trim()} style={{ ...style, '--fill': level }}>
+    <svg {...base(size)} className={`hi ${className}`.trim()} style={{ ...style, '--fill': level, '--seed': seedOf(uid) }}>
       <defs>
+        <Face id={`${uid}f`} kind="heart" />
         <clipPath id={`${uid}l`}>
           <polygon className="hi-level" points="0,3 24,3 24,24 0,24" />
         </clipPath>
         <clipPath id={`${uid}a`}>
-          <polygon points={`0,0 12,0 ${crack} 12,24 0,24`} />
+          <polygon points={`0,0 12,0 ${CRACK} 12,24 0,24`} />
         </clipPath>
         <clipPath id={`${uid}b`}>
-          <polygon points={`24,0 12,0 ${crack} 12,24 24,24`} />
+          <polygon points={`24,0 12,0 ${CRACK} 12,24 24,24`} />
         </clipPath>
       </defs>
 
@@ -78,41 +95,49 @@ export function HeartIcon({ size = 20, empty = false, fill, className = '', styl
             <path className="hi-back" d={HEART} transform="translate(0 1.1)" />
             <path className="hi-well" d={HEART} />
             <g clipPath={`url(#${uid}l)`}>
-              <path className="hi-face" d={HEART} />
+              <path className="hi-face" d={HEART} fill={`url(#${uid}f)`} />
               <path className="hi-shade" d={HEART_SHADE} />
             </g>
             <path className="hi-shine" d={HEART_SHINE} />
+            <ellipse className="hi-spec" cx="7.9" cy="7.3" rx="1.05" ry=".75" transform="rotate(-38 7.9 7.3)" />
           </g>
         </g>
       ))}
-      <polyline className="hi-crack" points={crack.replace(/ /g, ' ')} />
+      <polyline className="hi-crack" points={CRACK} />
     </svg>
   )
 }
 
 /* ── Gem ─────────────────────────────────────────────────────────────────────
-   A cut stone: table, crown, two pavilion facets in different lights, and a
-   glint band clipped to the stone that sweeps across it when it is earned or
-   hovered. */
+   A cut stone: a lit table and two crown facets above the girdle, three
+   pavilion facets below it in different lights, a glint band clipped to the
+   stone that crosses it now and then, a flash layer for the moment gems land,
+   and a four-point sparkle that twinkles at the table's corner. */
 
 const GEM = 'M7.4 2.6h9.2L22 9.1 12 21.6 2 9.1Z'
 
 export function GemIcon({ size = 20, className = '', style }) {
   const uid = useUid()
   return (
-    <svg {...base(size)} className={`gi ${className}`.trim()} style={style}>
+    <svg {...base(size)} className={`gi ${className}`.trim()} style={{ ...style, '--seed': seedOf(uid) }}>
       <defs>
+        <Face id={`${uid}f`} kind="gem" />
         <clipPath id={`${uid}g`}><path d={GEM} /></clipPath>
       </defs>
       <path className="gi-back" d={GEM} transform="translate(0 1)" />
-      <path className="gi-body" d={GEM} />
-      <path className="gi-crown" d="M7.4 2.6h9.2L18.6 9.1H5.4Z" />
-      <path className="gi-pav-l" d="M2 9.1h3.4L12 21.6Z" />
-      <path className="gi-pav-r" d="M18.6 9.1H22L12 21.6Z" />
-      <path className="gi-facets" d="M2 9.1h20M5.4 9.1 12 21.6l6.6-12.5M9.6 2.6 8 9.1M14.4 2.6 16 9.1" />
+      <path className="gi-body" d={GEM} fill={`url(#${uid}f)`} />
+      <path className="gi-crown-l" d="M7.4 2.6h2.2L8 9.1H2Z" />
+      <path className="gi-table" d="M9.6 2.6h4.8L16 9.1H8Z" />
+      <path className="gi-crown-r" d="M14.4 2.6h2.2L22 9.1h-6Z" />
+      <path className="gi-pav-l" d="M2 9.1h6L12 21.6Z" />
+      <path className="gi-pav-r" d="M16 9.1h6L12 21.6Z" />
+      <path className="gi-facets" d="M2 9.1h20M8 9.1l4 12.5 4-12.5M9.6 2.6 8 9.1M14.4 2.6 16 9.1" />
+      <path className="gi-rim" d="M3.3 8.3 7.8 3.3" />
       <g clipPath={`url(#${uid}g)`}>
         <rect className="gi-glint" x="-6" y="-2" width="4" height="28" />
+        <path className="gi-flash" d={GEM} />
       </g>
+      <path className="gi-spark" d="M17.6 .6 18.3 3 20.7 3.7 18.3 4.4 17.6 6.8 16.9 4.4 14.5 3.7 16.9 3Z" />
     </svg>
   )
 }
@@ -120,7 +145,8 @@ export function GemIcon({ size = 20, className = '', style }) {
 /* ── Flame ───────────────────────────────────────────────────────────────────
    Three nested flames — ember outside, ochre in the middle, a cream core —
    each on its own group so CSS can flicker them on different periods and
-   flare them together. `state`:
+   flare them together. The outer flame is lit from its base, where a fire is
+   hottest. `state`:
 
      lit    the streak is alive and today is done: full flame, full core
      risk   alive, but today is not done yet: shorter, paler, uneasy
@@ -129,10 +155,12 @@ export function GemIcon({ size = 20, className = '', style }) {
 const FLAME = 'M13.1 1.5c.3 2.6-.7 4.3-2.2 5.8-1.7 1.7-3.8 3.2-4.4 5.9-.8 3.6 1.3 7.1 4.8 8.2 4 1.2 8.1-1.3 8.6-5.4.4-3.1-1-5.1-2.9-6.9-.3 1.1-.9 1.9-1.8 2.3.5-3.6-.5-7.1-2.1-9.9Z'
 
 export function FlameIcon({ size = 20, className = '', dim = false, state, style }) {
+  const uid = useUid()
   const s = state ?? (dim ? 'out' : 'lit')
   return (
-    <svg {...base(size)} className={`fi fi--${s} ${className}`.trim()} style={style}>
-      <g className="fi-o"><path className="fi-outer" d={FLAME} /></g>
+    <svg {...base(size)} className={`fi fi--${s} ${className}`.trim()} style={{ ...style, '--seed': seedOf(uid) }}>
+      <defs><Face id={`${uid}f`} kind="flame" /></defs>
+      <g className="fi-o"><path className="fi-outer" d={FLAME} fill={`url(#${uid}f)`} /></g>
       <g className="fi-m"><path className="fi-mid" d={FLAME} transform="matrix(.62 0 0 .62 4.7 8.2)" /></g>
       <g className="fi-c"><path className="fi-core" d={FLAME} transform="matrix(.34 0 0 .34 8.2 14)" /></g>
     </svg>
@@ -144,10 +172,12 @@ export function FlameIcon({ size = 20, className = '', dim = false, state, style
 const BOLT = 'M13.5 1.8 4 13.6h6.8L9.6 22.2 20 9.9h-6.9Z'
 
 export function BoltIcon({ size = 20, className = '', style }) {
+  const uid = useUid()
   return (
-    <svg {...base(size)} className={`bi ${className}`.trim()} style={style}>
+    <svg {...base(size)} className={`bi ${className}`.trim()} style={{ ...style, '--seed': seedOf(uid) }}>
+      <defs><Face id={`${uid}f`} kind="bolt" /></defs>
       <path className="bi-back" d={BOLT} transform="translate(.7 1)" />
-      <path className="bi-face" d={BOLT} />
+      <path className="bi-face" d={BOLT} fill={`url(#${uid}f)`} />
       <path className="bi-shade" d="M13.1 9.9H20L9.6 22.2l.9-6.9Z" />
       <path className="bi-shine" d="M12 4.9 7.3 11" />
     </svg>
@@ -159,13 +189,21 @@ export function BoltIcon({ size = 20, className = '', style }) {
 const SHIELD = 'M12 2.5 20 6v6c0 4.6-3.2 8.3-8 9.5-4.8-1.2-8-4.9-8-9.5V6Z'
 
 export function ShieldIcon({ size = 20, className = '', style, emblem = true }) {
+  const uid = useUid()
   return (
-    <svg {...base(size)} className={`si ${className}`.trim()} style={style}>
+    <svg {...base(size)} className={`si ${className}`.trim()} style={{ ...style, '--seed': seedOf(uid) }}>
+      <defs>
+        <Face id={`${uid}f`} kind="shield" />
+        <clipPath id={`${uid}s`}><path d={SHIELD} /></clipPath>
+      </defs>
       <path className="si-back" d={SHIELD} transform="translate(0 1)" />
-      <path className="si-face" d={SHIELD} />
+      <path className="si-face" d={SHIELD} fill={`url(#${uid}f)`} />
       <path className="si-shade" d="M12 2.5 20 6v6c0 4.6-3.2 8.3-8 9.5Z" />
       {emblem && <path className="si-emblem" d={FLAME} transform="matrix(.42 0 0 .42 6.9 5.6)" />}
       <path className="si-shine" d="M11.4 5.1 6.6 7.1v3" />
+      <g clipPath={`url(#${uid}s)`}>
+        <rect className="si-glint" x="-6" y="-2" width="4" height="28" />
+      </g>
     </svg>
   )
 }

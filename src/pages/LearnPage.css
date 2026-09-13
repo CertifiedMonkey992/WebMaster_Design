@@ -416,6 +416,32 @@ html:has(.learn-app) body {
   --ping-color: var(--clay);
 }
 
+/* Idle (revision 4): now and then a wave runs along the lessons already done
+   and lands on the one that is next — the road so far, read in one glance.
+   `scale` is its own property, so the hover's transform still composes. */
+.course-tick.is-completed,
+.course-tick.is-current {
+  animation:
+    tick-rise var(--dur-modal) var(--ease-snap) backwards,
+    tick-run var(--idle-run) var(--ease-out) infinite;
+  animation-delay:
+    calc(250ms + var(--i, 0) * var(--stagger)),
+    calc(2.4s + var(--i, 0) * 70ms);
+}
+
+.course-tick.is-current { animation-name: tick-rise, tick-run-here; }
+
+@keyframes tick-run {
+  0%, 84%, 94%, 100% { scale: 1 1; }
+  88% { scale: 1 1.5; }
+}
+
+@keyframes tick-run-here {
+  0%, 84%, 100% { scale: 1 1; }
+  89% { scale: 1.35 1.55; }
+  94% { scale: 1 0.9; }
+}
+
 .course-tick:hover { transform: scaleY(1.5); }
 
 /* ── Resume strip ─────────────────────────────────────────────────────────── */
@@ -1164,6 +1190,7 @@ html:has(.learn-app) body {
 }
 
 .pc-stat:hover .pc-stat-value { transform: scale(1.1); }
+.pc-stat.fx-flare-host { --rn-up: var(--clay); }
 
 .pc-stat-label {
   font-size: var(--fs-micro);
@@ -1447,5 +1474,5 @@ html:has(.learn-app) body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .badge-dot, .resume-label-dot::after, .qw-reset .ico-hand { animation: none !important; }
+  .badge-dot, .resume-label-dot::after, .qw-reset .ico-hand, .course-tick { animation: none !important; }
 }

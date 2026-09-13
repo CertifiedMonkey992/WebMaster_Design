@@ -2,7 +2,7 @@
    timing.js — THE MOTION TOKENS, FOR JAVASCRIPT
    ---------------------------------------------------------------------------
    Web Animations need numbers, not CSS variables. These mirror the tiers in
-   index.css exactly (MOTION_RULES.md, revision 3). Change one, change both.
+   index.css exactly (MOTION_RULES.md, revision 4). Change one, change both.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export const DUR = {
@@ -33,3 +33,14 @@ export const EASE = {
 
 export const STAGGER = 40
 export const LAG = { follow: 40, finish: 90 }
+
+/* Idle periods (revision 4), in ms. */
+export const IDLE = {
+  glint: 6700,
+  beat: 5300,
+  zap: 7900,
+  float: 5900,
+  sweep: 9700,
+  run: 7300,
+  wave: 6100,
+}

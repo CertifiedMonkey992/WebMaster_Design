@@ -93,6 +93,7 @@
 }
 
 .sh-balance-value .gi { color: var(--ochre); }
+.sh-balance-value { --rn-up: var(--ochre-bright); }
 
 /* ── Purchase receipt ─────────────────────────────────────────────────────── */
 
@@ -225,6 +226,17 @@
   transform: translateY(-10px) scale(1.34) rotate(-8deg);
   filter: drop-shadow(0 8px 6px rgba(var(--ink-rgb), 0.18));
 }
+
+/* Idle (revision 4): what you can buy floats in its tile, each item on its
+   own multiple of --idle-float (motion.css → fx-float moves `translate` and
+   `rotate`, so the hover lift above still composes). Items you cannot afford
+   sit still: nothing invites a purchase that would be refused. */
+.sh-card:not(.is-disabled) .sh-card-art svg {
+  animation: fx-float calc(var(--idle-float) * var(--float-k, 1)) var(--ease-swing) infinite alternate;
+}
+.sh-card:nth-child(2) .sh-card-art svg { --float-k: 1.23; animation-delay: -2.1s; }
+.sh-card:nth-child(3) .sh-card-art svg { --float-k: 0.87; animation-delay: -4.4s; }
+.sh-balance-art > svg { animation: fx-float calc(var(--idle-float) * 1.11) var(--ease-swing) -1.3s infinite alternate; }
 
 .sh-card.is-received .sh-card-art { animation: sh-received var(--dur-celebrate) var(--ease-spring); }
 
@@ -630,5 +642,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sh-receipt-timer, .sh-spinner { animation: none; }
+  .sh-receipt-timer, .sh-spinner, .sh-card-art svg, .sh-balance-art > svg { animation: none; }
 }

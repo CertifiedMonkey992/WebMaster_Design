@@ -11,9 +11,11 @@ import { DAILY_BONUS } from '../config/dailyBonusConfig'
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import CountUp from '../motion/CountUp'
+import { useScrollProgress } from '../motion/scroll'
 import { DUR, STAGGER } from '../motion/timing'
 
 export default function ClosingCTA({ onStartLearning }) {
+  const planeRef = useScrollProgress()
   const stats = [
     { value: TOTAL_LESSONS, label: 'interactive lessons', tip: 'Fill the blank, judge a scenario, pick the right call' },
     { value: TOTAL_SECTIONS, label: 'modules, beginner to advanced', tip: 'Foundations → ML → neural networks → tools → ethics' },
@@ -48,16 +50,18 @@ export default function ClosingCTA({ onStartLearning }) {
           </Reveal>
         </div>
 
-        <Reveal as="ul" className="cta-stats" role="list" variant="right" stagger delay={DUR.hover}>
-          {stats.map((s, i) => (
-            <li className="cta-stat" key={s.label} data-tip={s.tip}>
-              <span className="cta-stat-value">
-                <CountUp value={s.value} suffix={s.suffix || ''} delay={DUR.move + i * STAGGER * 3} duration={DUR.celebrate} />
-              </span>
-              <span className="cta-stat-label">{s.label}</span>
-            </li>
-          ))}
-        </Reveal>
+        <div className="cta-stats-plane" ref={planeRef}>
+          <Reveal as="ul" className="cta-stats" role="list" variant="right" stagger delay={DUR.hover}>
+            {stats.map((s, i) => (
+              <li className="cta-stat" key={s.label} data-tip={s.tip}>
+                <span className="cta-stat-value">
+                  <CountUp value={s.value} suffix={s.suffix || ''} delay={DUR.move + i * STAGGER * 3} duration={DUR.celebrate} />
+                </span>
+                <span className="cta-stat-label">{s.label}</span>
+              </li>
+            ))}
+          </Reveal>
+        </div>
       </div>
     </section>
   )

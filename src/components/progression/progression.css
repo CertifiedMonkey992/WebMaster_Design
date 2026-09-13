@@ -161,26 +161,35 @@
 
 .pg-pill[aria-expanded='true']::after { transform: scaleX(1); }
 
+/* Hover is one gesture on one clock: the icon answers first (an icon twitch
+   is a Report-sized move, so it may spring), the figure follows by
+   --lag-follow. Each icon's own hover move — the gem catching the light, the
+   heart's beat, the fire leaning up — lives in icons.css. */
 .pg-pill .live-heart,
 .pg-pill .live-flame,
 .pg-pill .live-gem { transition: transform var(--dur-move) var(--ease-spring); }
 
-.pg-pill:hover .live-heart,
-.pg-pill:hover .live-gem { transform: scale(1.14) rotate(-6deg); }
+.pg-pill:hover .live-heart { transform: scale(1.12); }
+.pg-pill:hover .live-gem { transform: scale(1.16) rotate(-10deg); }
+.pg-pill:hover .live-flame { transform: translateY(-1px); }
 
 .pg-pill-value {
   min-width: 1ch;
   font-variant-numeric: tabular-nums;
-  transition: color var(--dur-hover) var(--ease-out);
+  transition:
+    color var(--dur-hover) var(--ease-out),
+    transform var(--dur-move) var(--ease-snap) var(--lag-follow);
 }
 
-.pg-pill--streak { color: var(--clay-ink); }
+.pg-pill:hover .pg-pill-value { transform: translateX(1px); }
+
+.pg-pill--streak { color: var(--clay-ink); --rn-up: var(--clay); }
 .pg-pill--streak .pg-pill-value { color: var(--ink); }
 .pg-pill--streak.is-dim .pg-pill-value { color: var(--ink-faint); }
 .pg-pill--streak.is-risk .pg-pill-value { color: var(--ink-muted); }
 
-.pg-pill--gems { color: var(--ochre-ink); }
-.pg-pill--hearts { color: var(--berry-ink); }
+.pg-pill--gems { color: var(--ochre-ink); --rn-up: var(--ochre-bright); }
+.pg-pill--hearts { color: var(--berry-ink); --rn-up: var(--berry-bright); }
 
 .pg-pill:hover .pg-pill-value { color: currentColor; }
 
@@ -526,6 +535,8 @@
 }
 
 .pg-gem-hero-label { font-size: var(--fs-caption); color: var(--ink-faint); }
+.pg-gem-hero-value { --rn-up: var(--ochre-bright); }
+.pg-streak-hero-value { --rn-up: var(--clay); }
 
 .pg-earn-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 
@@ -668,6 +679,37 @@
 
 .pg-day.is-active .ico-check { animation-delay: calc(260ms + var(--i, 0) * var(--stagger)); }
 
+/* Idle (revision 4): a warm sheen runs across the ticked days, left to right,
+   and each check hops as the light passes it — the week read as one run. The
+   travel happens in the last 12% of a 7.3s cycle; the rest is stillness. */
+.pg-week.is-running .pg-day.is-active .pg-day-dot { overflow: hidden; }
+
+.pg-week.is-running .pg-day.is-active .pg-day-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 28%, rgba(var(--sheen-rgb), 0.6) 50%, transparent 72%);
+  transform: translateX(-130%);
+  animation: pg-week-run var(--idle-run) var(--ease-settle) calc(var(--i, 0) * 90ms + 1.2s) infinite;
+}
+
+/* The hop moves the square itself (an HTML box the compositor can run), on
+   `translate`/`scale` so the hover's transform still composes. */
+.pg-week.is-running .pg-day.is-active .pg-day-dot {
+  animation: pg-week-hop var(--idle-run) var(--ease-out) calc(var(--i, 0) * 90ms + 1.2s) infinite;
+}
+
+@keyframes pg-week-run {
+  0%, 86%   { transform: translateX(-130%); }
+  97%, 100% { transform: translateX(130%); }
+}
+
+@keyframes pg-week-hop {
+  0%, 87%, 97%, 100% { translate: 0 0; scale: 1; }
+  91% { translate: 0 -2px; scale: 1.18; }
+}
+
 .pg-day.is-today .pg-day-dot { border: 1.5px solid var(--ink); }
 .pg-day.is-today .pg-day-label { color: var(--ink); font-weight: var(--fw-bold); }
 .pg-day.is-future .pg-day-dot { opacity: 0.5; border-style: dashed; }
@@ -715,6 +757,15 @@
 }
 
 @keyframes pg-path-grow { from { transform: scaleX(0); } }
+
+/* The spark walking to the next stone (motion.css → .fx-walk). */
+.pg-path-walk {
+  top: 14px;
+  height: 3px;
+  --walk-color: var(--clay-bright);
+}
+
+.pg-path-walk > i { animation-delay: 1.4s; }
 
 .pg-stone {
   position: absolute;
@@ -823,7 +874,7 @@
    LEVEL BLOCK — the XP landing site
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.lv-block { display: flex; align-items: center; gap: var(--sp-3); }
+.lv-block { display: flex; align-items: center; gap: var(--sp-3); --rn-up: var(--ochre-bright); }
 
 .lv-badge {
   position: relative;
@@ -909,11 +960,30 @@
 .lv-track:hover { transform: scaleY(1.4); }
 
 .lv-fill {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   background: var(--ochre);
   border-radius: var(--r-pill);
   transition: width var(--dur-settle) var(--ease-settle);
 }
+
+/* Idle (revision 4): XP is earned value, so its bar catches the light now
+   and then, on the bolt's own period. A bar that just changed plays
+   .fx-fill-shine on the same pseudo-element instead. */
+.lv-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 50%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--gem-light-rgb), 0.85), transparent);
+  transform: translateX(-120%);
+  animation: qc-fill-glint var(--idle-zap) var(--ease-settle) 4.2s infinite;
+}
+
+/* The badge's bolt flickers on the same period, a beat before the bar. */
+.lv-badge-bolt.fx-zap .bi { animation-delay: 2.9s; }
 
 .lv-meta {
   display: flex;
@@ -1005,6 +1075,8 @@
 }
 
 .qc-compact-fill {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   background: var(--evergreen);
   border-radius: var(--r-pill);
@@ -1012,6 +1084,40 @@
   transition-delay: calc(50ms + var(--i, 0) * var(--stagger));
 }
 .qc-compact-fill.is-done { background: var(--moss); }
+
+/* Idle (revision 4): progress that is still going carries a band of light
+   along its fill now and then, each row in turn. A fill that just changed
+   plays .fx-fill-shine on the same pseudo-element, which takes over. */
+.qc-compact:not(.is-complete) .qc-compact-fill::after,
+.qc-card:not(.is-complete) .qc-card-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 60%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--sheen-rgb), 0.55), transparent);
+  transform: translateX(-120%);
+  animation: qc-fill-glint var(--idle-glint) var(--ease-settle) calc(var(--i, 0) * 1.4s + 0.8s) infinite;
+}
+
+@keyframes qc-fill-glint {
+  0%, 78%   { transform: translateX(-120%); }
+  96%, 100% { transform: translateX(220%); }
+}
+
+/* Idle: each quest's icon gives a small tick, one row after another, so the
+   list reads as things waiting to be done. `rotate`/`scale`, so the hover
+   twitch still composes. */
+.qc-compact:not(.is-claimed) .qc-compact-icon > svg,
+.qc-card:not(.is-claimed) .qc-card-icon > svg {
+  animation: qc-icon-tick var(--idle-wave) var(--ease-out) calc(var(--i, 0) * 1.9s + 1.6s) infinite;
+}
+
+@keyframes qc-icon-tick {
+  0%, 86%, 100% { rotate: 0deg; scale: 1; }
+  90% { rotate: -14deg; scale: 1.18; }
+  94% { rotate: 7deg; scale: 1.04; }
+}
 
 /* The details drawer inside a compact row. */
 .qc-compact-more {
@@ -1187,6 +1293,8 @@
 }
 
 .qc-card-fill {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   background: var(--qc-accent, var(--evergreen));
   border-radius: var(--r-pill);
@@ -1656,6 +1764,9 @@
   pointer-events: none;
 }
 
+/* Idle (revision 4): an earned medal catches the light now and then, each
+   card on its own offset; the hand's hover plays the glint at once. */
+.ac-card.is-unlocked::after { animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(var(--i, 0) * -1.7s) infinite; }
 .ac-card.is-unlocked:hover::after { animation: db-foil var(--dur-celebrate) var(--ease-settle); }
 
 .ac-card.is-unlocked.ac-bronze { border-color: rgba(var(--ochre-rgb), 0.28); }
@@ -2346,7 +2457,11 @@
   .pg-recovery-clock-ico .ico-hand,
   .qp-reset .ico-hand,
   .rt-life,
-  .pg-day-dot.fx-ping::after {
+  .pg-day-dot.fx-ping::after,
+  .pg-week.is-running .pg-day-dot::after,
+  .pg-week.is-running .pg-day-dot,
+  .qc-compact-fill::after, .qc-card-fill::after, .lv-fill::after, .ac-card.is-unlocked::after,
+  .qc-compact-icon > svg, .qc-card-icon > svg {
     animation: none !important;
   }
 

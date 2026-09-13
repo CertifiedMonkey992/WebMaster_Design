@@ -126,6 +126,21 @@ kbd,
 
 .lm-cur:hover { background: rgba(var(--ink-rgb), 0.05); }
 .lm-cur--xp .bi { color: var(--ochre); }
+
+/* A lesson is where the learner concentrates: the counters here report every
+   change (a heart cracking, gems landing) but keep no idle life — no gleam,
+   no slow beat, no embers — so nothing in the corner of the eye competes with
+   the question. */
+.lm-currency-row .live-gem:not(.is-turning) .gi-glint,
+.lm-currency-row .live-gem:not(.is-turning) .gi-spark,
+.lm-currency-row .live-heart.is-beating .hi { animation: none; }
+.lm-currency-row .lf-embers { display: none; }
+
+/* Each figure flashes its own currency as it rolls (motion.css → Roll). */
+.lm-cur--xp    { --rn-up: var(--ochre-bright); }
+.lm-cur--gem   { --rn-up: var(--ochre-bright); }
+.lm-cur--heart { --rn-up: var(--berry-bright); }
+.lm-cur--flame { --rn-up: var(--clay); }
 .lm-cur--empty { color: var(--berry-ink); background: var(--berry-tint); }
 
 /* ── Tab bar ── */

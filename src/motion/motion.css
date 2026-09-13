@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    motion.css — THE VERBS, AS CLASSES
    ---------------------------------------------------------------------------
-   Authoritative reference: design-system/MOTION_RULES.md (revision 2).
+   Authoritative reference: design-system/MOTION_RULES.md (revision 4).
 
    Everything here is shared. A component that wants to Reveal, Roll, Tilt or
    Stamp uses these classes and keyframes rather than writing its own, so the
@@ -130,11 +130,23 @@
   transition-delay: calc(var(--c, 0) * 30ms);
 }
 
-.rn--up .rn-track   { animation: rn-kick-up var(--dur-reveal) var(--ease-spring); }
-.rn--down .rn-track { animation: rn-kick-down var(--dur-open) var(--ease-out); }
+/* The kick (transform) and the flash (colour) are one gesture on one clock.
+   The parity classes swap keyframe names so a second change restarts both. */
+.rn--up.rn--p0 .rn-track   { animation: rn-kick-up-0 var(--dur-reveal) var(--ease-spring), rn-flash-up-0 var(--dur-celebrate) var(--ease-out); }
+.rn--up.rn--p1 .rn-track   { animation: rn-kick-up-1 var(--dur-reveal) var(--ease-spring), rn-flash-up-1 var(--dur-celebrate) var(--ease-out); }
+.rn--down.rn--p0 .rn-track { animation: rn-kick-down-0 var(--dur-open) var(--ease-out), rn-flash-down-0 var(--dur-celebrate) var(--ease-out); }
+.rn--down.rn--p1 .rn-track { animation: rn-kick-down-1 var(--dur-open) var(--ease-out), rn-flash-down-1 var(--dur-celebrate) var(--ease-out); }
 
-@keyframes rn-kick-up   { 30% { transform: translateY(-2px) scale(1.12); } }
-@keyframes rn-kick-down { 30% { transform: translateY(1px) scale(0.92); } }
+@keyframes rn-kick-up-0   { 30% { transform: translateY(-2px) scale(1.16); } }
+@keyframes rn-kick-up-1   { 30% { transform: translateY(-2px) scale(1.16); } }
+@keyframes rn-kick-down-0 { 30% { transform: translateY(1px) scale(0.9); } }
+@keyframes rn-kick-down-1 { 30% { transform: translateY(1px) scale(0.9); } }
+
+/* The flash holds the new colour briefly, then hands back to the text's own. */
+@keyframes rn-flash-up-0   { 10%, 45% { color: var(--rn-up, var(--moss)); } }
+@keyframes rn-flash-up-1   { 10%, 45% { color: var(--rn-up, var(--moss)); } }
+@keyframes rn-flash-down-0 { 10%, 45% { color: var(--rn-down, var(--berry)); } }
+@keyframes rn-flash-down-1 { 10%, 45% { color: var(--rn-down, var(--berry)); } }
 
 /* ═══ FX LAYER — flights, shards, rings, tooltip ════════════════════════════ */
 
@@ -200,6 +212,32 @@
   display: block;
   border: 2px solid;
   border-radius: 50%;
+}
+
+/* A four-point glint (revision 4 → Light). Drawn as a clipped square so it
+   costs one composited node, and never blurred: a sparkle is a hard point of
+   reflected light, not a haze. */
+.fx-spark {
+  position: absolute;
+  display: block;
+  will-change: transform, opacity;
+  clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+}
+
+/* The bloom behind an economy icon. The icon renders the node; burst.js's
+   bloom() animates it. Radial, warm, and invisible at rest. */
+.li-bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--icon, 20px) * var(--bloom-size, 2.4));
+  height: calc(var(--icon, 20px) * var(--bloom-size, 2.4));
+  margin: calc(var(--icon, 20px) * var(--bloom-size, 2.4) / -2) 0 0 calc(var(--icon, 20px) * var(--bloom-size, 2.4) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--bloom-rgb, var(--ochre-bright-rgb)), 0.55) 0%, rgba(var(--bloom-rgb, var(--ochre-bright-rgb)), 0.22) 38%, rgba(var(--bloom-rgb, var(--ochre-bright-rgb)), 0) 68%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* The tooltip: ink ground, paper text, a printed label rather than a bubble.
@@ -422,6 +460,79 @@
 [data-offscreen] *::before,
 [data-offscreen] *::after { animation-play-state: paused !important; }
 
+/* ═══ IDLE EVENTS (revision 4) ══════════════════════════════════════════════
+   Shared idle loops. Each is visible for a small part of a long period, and
+   takes a per-instance offset from --seed (0–1, set from idle.js seedOf) or
+   from its index, so siblings never move as a chorus. */
+
+/* Reward art floating in its tile. --float-k stretches the period so items
+   in one list drift on unrelated rhythms. It moves the individual
+   `translate` and `rotate` properties, so it composes with any hover or
+   Report transform on the same element instead of freezing it. */
+.fx-float {
+  animation: fx-float calc(var(--idle-float) * var(--float-k, 1)) var(--ease-swing) calc(var(--seed, 0) * -6s) infinite alternate;
+}
+
+@keyframes fx-float {
+  from { translate: 0 1px; rotate: 1deg; }
+  to   { translate: 0 -3px; rotate: -2deg; }
+}
+
+/* Light crossing a surface now and then — day 7's foil, a shield's face. */
+.fx-sweep { position: relative; overflow: hidden; isolation: isolate; }
+
+.fx-sweep::after {
+  content: '';
+  position: absolute;
+  top: -30%; bottom: -30%;
+  left: -60%;
+  width: 40%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(var(--sheen-rgb), 0.62), transparent);
+  transform: translateX(0) skewX(-16deg);
+  animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(var(--seed, 0) * -9.7s) infinite;
+}
+
+@keyframes fx-sweep {
+  0%, 80% { transform: translateX(0) skewX(-16deg); }
+  100%    { transform: translateX(460%) skewX(-16deg); }
+}
+
+/* A spark walking a gap — from where you are to the next stop. The wrapper
+   spans the gap; its child travels 0 → 100% of the wrapper (translate
+   percentages are the element's own width, so the child is as wide as the
+   wrapper and carries its dot on its left edge). */
+.fx-walk {
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.fx-walk > i {
+  position: absolute;
+  inset: 0;
+  animation: fx-walk 3.7s var(--ease-swing) calc(var(--seed, 0) * -3.7s) infinite;
+}
+
+.fx-walk > i::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--walk-color, var(--clay));
+}
+
+@keyframes fx-walk {
+  0%   { transform: translateX(0); opacity: 0; }
+  8%   { opacity: 1; }
+  52%  { transform: translateX(100%); opacity: 1; }
+  60%, 100% { transform: translateX(100%); opacity: 0; }
+}
+
 /* ═══ MARQUEE ═══════════════════════════════════════════════════════════════
    Structure only; the drift is a Web Animation in Marquee.jsx. The ends fade
    through a mask so content enters and leaves rather than being cut. */
@@ -523,6 +634,38 @@
   from { opacity: 0; transform: translateY(calc(var(--dir, 1) * 16px)); }
 }
 
+/* ═══ PAGE TURN (revision 4) ════════════════════════════════════════════════
+   Landing ↔ app (pageTurn.js). The new page slides in from the edge you are
+   travelling toward with a warm shadow on its leading edge; the old page
+   gives way a third of the distance and dims. Snap, not swing: it answers a
+   click, so it must be visibly moving on its first frame. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: calc(var(--dur-turn) * 0.85);
+  animation-timing-function: var(--ease-snap);
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+
+html[data-turn='forward']::view-transition-new(root) { animation-name: vt-in-from-right; }
+html[data-turn='forward']::view-transition-old(root) { animation-name: vt-give-left; }
+html[data-turn='back']::view-transition-new(root)    { animation-name: vt-in-from-left; }
+html[data-turn='back']::view-transition-old(root)    { animation-name: vt-give-right; }
+
+@keyframes vt-in-from-right {
+  from { transform: translateX(100%); box-shadow: -28px 0 56px rgba(var(--ink-rgb), 0.24); }
+  to   { transform: none; box-shadow: -28px 0 56px rgba(var(--ink-rgb), 0); }
+}
+
+@keyframes vt-in-from-left {
+  from { transform: translateX(-100%); box-shadow: 28px 0 56px rgba(var(--ink-rgb), 0.24); }
+  to   { transform: none; box-shadow: 28px 0 56px rgba(var(--ink-rgb), 0); }
+}
+
+@keyframes vt-give-left  { to { transform: translateX(-33%); filter: brightness(0.92); } }
+@keyframes vt-give-right { to { transform: translateX(33%); filter: brightness(0.92); } }
+
 /* ═══ REDUCED MOTION ════════════════════════════════════════════════════════
    The global rule in index.css collapses every duration. These make sure the
    END state is what shows — assembled text, revealed blocks — and switch off
@@ -531,7 +674,9 @@
 @media (prefers-reduced-motion: reduce) {
   .st-i { transform: none !important; opacity: 1 !important; }
   .rv:not(.is-in), .rv--stagger:not(.is-in) > .rv-item { opacity: 1 !important; }
-  .fx-shine::after, .fx-ping::after, .fx-fill-shine::after { display: none; }
+  .fx-shine::after, .fx-ping::after, .fx-fill-shine::after, .fx-sweep::after, .fx-walk { display: none; }
+  .fx-float { animation: none !important; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
   .btn { translate: none; }
   .btn::before { display: none; }
   .fx-tilt { transform: none !important; }

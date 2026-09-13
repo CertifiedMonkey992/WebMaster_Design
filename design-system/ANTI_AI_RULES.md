@@ -170,8 +170,15 @@ testimonials is dense and reads beautifully because the density is
 leading edge of a progress bar, a `filter: drop-shadow` in the accent colour
 on an active icon.
 
-**BETTER** — no element emits light. Contrast, weight and colour mark
-importance. A progress bar ends where it ends.
+**BETTER** — contrast, weight and colour mark importance. A progress bar ends
+where it ends. Chrome, text, buttons and bars never emit light.
+
+> **Revision 4.** Light is now *earned*, in three warm forms only, and only
+> on the economy objects: specular marks drawn into a gem, heart, flame or
+> shield; an idle **glint** crossing a gem; and a **bloom** that opens behind
+> an icon for one `--dur-celebrate` when its value rises. A bloom at rest, a
+> glow on a button, or an accent-coloured `box-shadow: 0 0 …` is still this
+> rule's BAD case. See `MOTION_RULES.md` → *Light*.
 
 ## 17. Futuristic AI effects
 
@@ -207,8 +214,9 @@ Infinite orbit and pulse loops on decorative objects. A permanently nudging
 arrow. Motion that is identical on every element, which is what makes it read
 as a template.
 
-**BETTER** — every animation is a Response, a Report, an Invitation or a
-listed Ambient motion (see `MOTION_RULES.md`, revision 3). Motion is
+**BETTER** — every animation is a Response, a Report, an Invitation, a
+listed Ambient motion or a listed Idle event (see `MOTION_RULES.md`,
+revision 4). Motion is
 *differentiated by meaning*: a handled object lifts, a row tints, a number
 rolls, a reward flies to the counter it belongs to, the field guide breathes.
 Loops exist only where that file lists them, and each stops when its state
@@ -264,6 +272,8 @@ Run this against any UI diff before committing.
 - [ ] Every part of one gesture shares a duration; order comes from `--lag-*`.
 - [ ] Nothing actionable arrives later than its screen's budget.
 - [ ] Every ambient loop is listed, paused offscreen, and yields to the hand.
+- [ ] Every idle event is listed, seeded or jittered, and never runs while handled.
+- [ ] Light (glint, sparkle, bloom) appears only on economy objects; blooms only as Reports.
 - [ ] Card edges on the changed screen: ≤ 4.
 - [ ] `--clay` appearances on the changed screen: 2–3.
 - [ ] The loudest element is the next action.

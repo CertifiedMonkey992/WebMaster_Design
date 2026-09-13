@@ -102,7 +102,7 @@ function ShopCard({ item, onBuy, onNavigate, popped, index }) {
         </div>
 
         <div className="sh-card-foot">
-          <span className="sh-price fx-glint-host" data-tip={disabled ? reason.text : `${item.price} gems`}>
+          <span className="sh-price fx-glint-host fx-gleam" data-tip={disabled ? reason.text : `${item.price} gems`}>
             <GemIcon size={16} />
             {item.price}
           </span>
@@ -206,7 +206,7 @@ export default function ShopView({ onNavigate }) {
         </div>
 
         <Reveal variant="scale" immediate delay={180}>
-          <div className="sh-balance fx-glint-host" ref={balanceRef} data-tip="Earn more from quests and perfect lessons">
+          <div className="sh-balance fx-glint-host fx-gleam" ref={balanceRef} data-tip="Earn more from quests and perfect lessons">
             <span className="sh-balance-art"><ShopArt name="gemStack" size={78} /></span>
             <div className="sh-balance-text">
               <span className="sh-balance-label">Your balance</span>

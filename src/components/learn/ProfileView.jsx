@@ -55,7 +55,7 @@ export default function ProfileView() {
             <LiveFlame streak={vm.streak} activeToday={vm.activeToday} size={20} showShield={false} />
             <b><CountUp value={vm.streak} immediate delay={300} /></b><span>day streak</span>
           </div>
-          <div className="pv-headline-item fx-glint-host" data-tip="Gems in hand">
+          <div className="pv-headline-item fx-glint-host fx-gleam" data-tip="Gems in hand">
             <span className="pv-gem"><GemIcon size={20} /></span>
             <b><CountUp value={vm.gems} immediate delay={380} format={formatNumber} /></b><span>gems</span>
           </div>

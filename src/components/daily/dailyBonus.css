@@ -235,14 +235,41 @@
 
 .db-hero.is-ready .db-hero-art { background: var(--clay-tint); cursor: pointer; }
 
-/* Waiting: today's art bobs in its tile. */
+.db-hero-art { position: relative; }
+
+/* Waiting: today's art bobs in its tile. The bob moves `translate` and
+   `rotate`, so it composes with the hover's transform instead of freezing it. */
 .db-hero.is-ready:not(.is-charging):not(.is-bursting) .db-hero-art > svg {
   animation: db-bob 3s ease-in-out infinite;
 }
 
 @keyframes db-bob {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50%      { transform: translateY(-6px) rotate(-3deg); }
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  50%      { translate: 0 -6px; rotate: -3deg; }
+}
+
+/* Idle (revision 4): light twinkles at the waiting reward's edges — three
+   four-point glints on unrelated periods, each visible a fifth of its cycle. */
+.db-twinkles { position: absolute; inset: 0; pointer-events: none; }
+
+.db-twinkles i {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  background: var(--ochre-bright);
+  clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+  transform: scale(0);
+  animation: db-twinkle 2.9s var(--ease-out) 0.4s infinite;
+}
+
+.db-twinkles i:nth-child(1) { top: 12%; right: 14%; }
+.db-twinkles i:nth-child(2) { bottom: 20%; left: 12%; width: 8px; height: 8px; background: var(--clay-bright); animation-duration: 3.7s; animation-delay: 1.5s; }
+.db-twinkles i:nth-child(3) { top: 34%; left: 18%; width: 7px; height: 7px; animation-duration: 4.3s; animation-delay: 2.6s; }
+
+@keyframes db-twinkle {
+  0%, 72%, 100% { transform: scale(0) rotate(0deg); }
+  82%           { transform: scale(1) rotate(45deg); }
+  92%           { transform: scale(0) rotate(90deg); }
 }
 
 .db-hero-art > svg { transition: transform var(--dur-move) var(--ease-spring); }
@@ -460,7 +487,6 @@
   background: var(--moss);
   transition: width var(--dur-celebrate) var(--ease-settle);
 }
-
 .db-day {
   position: relative;
   z-index: 1;
@@ -573,10 +599,24 @@
 .db-day.is-next { border-color: rgba(var(--evergreen-rgb), 0.35); }
 
 .db-day.is-locked .db-day-art { opacity: 0.62; filter: saturate(0.62); transition: opacity var(--dur-lift) var(--ease-out), filter var(--dur-lift) var(--ease-out); }
+
+/* Idle (revision 4): now and then a ripple runs down the waiting days — each
+   locked reward lifts a little in turn, like a row of things on a shelf
+   nudged at one end. `translate`/`rotate`, so a hover's lift still works. */
+.db-day.is-locked .db-day-art > svg {
+  animation: db-wave var(--idle-wave) var(--ease-swing) calc(var(--i, 0) * 110ms + 2s) infinite;
+}
+
+@keyframes db-wave {
+  0%, 78%, 94%, 100% { translate: 0 0; rotate: 0deg; }
+  84% { translate: 0 -4px; rotate: -4deg; }
+  89% { translate: 0 0; rotate: 2deg; }
+}
 .db-day.is-locked:hover .db-day-art { opacity: 1; filter: none; }
 .db-day.is-locked .db-day-amount { color: var(--ink-faint); }
 
-/* Day 7 — the payoff. Gold rim, and a foil sheen crosses it on hover. */
+/* Day 7 — the payoff. Gold rim, and a foil sheen crosses it now and then
+   (revision 4, --idle-sweep) and at once on hover. */
 .db-day--final { border-color: rgba(var(--ochre-rgb), 0.45); overflow: hidden; }
 .db-day--final .db-day-amount { color: var(--ochre-ink); }
 .db-day--final.is-locked { background: var(--ochre-tint); }
@@ -593,6 +633,7 @@
   pointer-events: none;
 }
 
+.db-day--final:not(.is-claimed)::after { animation: fx-sweep var(--idle-sweep) var(--ease-settle) 3.1s infinite; }
 .db-day--final:hover::after { animation: db-foil var(--dur-celebrate) var(--ease-settle); }
 
 @keyframes db-foil { to { transform: translateX(460%) skewX(-16deg); } }
@@ -679,5 +720,7 @@
   .db-indicator.is-ready .db-indicator-icon svg,
   .db-indicator-dot::after,
   .db-hero-art > svg,
-  .db-day.is-today .db-day-art > svg { animation: none !important; }
+  .db-day-art > svg,
+  .db-day--final::after { animation: none !important; }
+  .db-twinkles { display: none; }
 }

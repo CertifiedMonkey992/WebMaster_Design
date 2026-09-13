@@ -25,6 +25,9 @@ import { CHAPTER_INK, minutesOf, pad } from './guide/guideData'
 export default function Hero() {
   const guide = useRef(null)
   const [lit, setLit] = useState(null)
+  /* The chapter the book is showing on its own (an idle peek, or its tour):
+     the list row answers it more quietly than it answers the hand. */
+  const [echo, setEcho] = useState(null)
   const [bookOpen, setBookOpen] = useState(false)
 
   const light = (i) => { setLit(i); guide.current?.peek(i) }
@@ -66,7 +69,7 @@ export default function Hero() {
             <li key={section.id} style={{ '--chapter': `var(${CHAPTER_INK[i]})` }}>
               <button
                 type="button"
-                className={`hero-path-item${lit === i ? ' is-lit' : ''}`}
+                className={`hero-path-item${lit === i ? ' is-lit' : ''}${lit == null && echo === i ? ' is-echo' : ''}`}
                 onPointerEnter={() => light(i)}
                 onPointerLeave={unlight}
                 onFocus={() => light(i)}
@@ -94,7 +97,7 @@ export default function Hero() {
       </div>
 
       <div className="hero-right">
-        <FieldGuide ref={guide} onOpenChange={setBookOpen} />
+        <FieldGuide ref={guide} onOpenChange={setBookOpen} onShow={setEcho} />
       </div>
     </section>
   )

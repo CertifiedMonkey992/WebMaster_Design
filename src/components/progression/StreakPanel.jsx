@@ -4,6 +4,11 @@
    The calendar reads the real per-day activity history, so a tick means the
    learner genuinely did something that day.
 
+   Revision 4 (idle life): embers leave the hero flame; a warm sheen runs
+   across the ticked days and the squares hop in turn; a spark walks from
+   today's streak to the next milestone stone; a banked shield catches the
+   light.
+
    Revision 2:
      · the flame is alive, and the number rolls
      · the week's days are dealt in; today, unfinished, pings; each day's
@@ -77,7 +82,7 @@ export default function StreakPanel({ onOpenShop }) {
       </div>
 
       {/* ── This week ── */}
-      <div className="pg-week">
+      <div className={`pg-week${vm.streak > 0 ? ' is-running' : ''}`}>
         <div className="pg-week-head">
           <span>This week</span>
           {!vm.activeToday && (
@@ -134,6 +139,16 @@ export default function StreakPanel({ onOpenShop }) {
           <div className="pg-path" role="img" aria-label={`${vm.streak} days, next milestone at ${milestone.target}`}>
             <span className="pg-path-track" />
             <span className="pg-path-fill" style={{ width: at(vm.streak) }} />
+            {/* Invitation: a spark walks from where you are to the next stone. */}
+            {vm.streak < milestone.target && (
+              <span
+                className="fx-walk pg-path-walk"
+                style={{ left: at(vm.streak), width: `calc(${at(milestone.target)} - ${at(vm.streak)})` }}
+                aria-hidden="true"
+              >
+                <i />
+              </span>
+            )}
             {stones.map((m) => (
               <span
                 key={m}
@@ -154,7 +169,7 @@ export default function StreakPanel({ onOpenShop }) {
 
       {/* ── Shields ── */}
       <div className={`pg-shields${vm.shields > 0 ? ' is-stocked' : ''}`}>
-        <span className="pg-shields-icon" aria-hidden="true">
+        <span className={`pg-shields-icon${vm.shields > 0 ? ' fx-gleam' : ''}`} aria-hidden="true">
           <ShieldIcon size={26} />
         </span>
         <div className="pg-shields-text">

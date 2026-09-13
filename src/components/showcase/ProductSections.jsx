@@ -75,6 +75,18 @@ function Section({ id, index, eyebrow, heading, children, frame, flip = false })
 
 /* ── 1. Learn ─────────────────────────────────────────────────────────────── */
 
+/* The course frame's route (MOTION_RULES.md → Auto-tour): the top of the
+   course, then the current lesson — the loudest object in the product — then
+   the rest of the map, and back round. */
+const COURSE_TOUR = ({ max, height, offsetOf }, clamp) => {
+  const current = offsetOf('.lesson-row--current')
+  return [
+    { y: 0, hold: 1600 },
+    current != null && { y: clamp(current - height * 0.28, 0, max), hold: 2800 },
+    { y: max, hold: 1800 },
+  ]
+}
+
 function LearnSection() {
   return (
     <Section
@@ -85,9 +97,9 @@ function LearnSection() {
       frame={
         <ProductFrame
           path="Learn"
-          caption="The Learn tab. Scroll — the frame scrolls the real course with you."
+          caption="The Learn tab, showing itself around. Point at it to hold it still."
           maxHeight="30rem"
-          scrub
+          tour={COURSE_TOUR}
         >
           <ModuleList onStartLesson={noop} />
         </ProductFrame>
@@ -181,6 +193,8 @@ function BonusSection() {
 
 /* ── 4. Quests and the shop ───────────────────────────────────────────────── */
 
+const FLOAT_K = [1, 1.23, 0.87]
+
 function QuestFrame() {
   const { vm } = useProgression()
   const quests = vm.quests.daily.slice(0, 3)
@@ -189,19 +203,25 @@ function QuestFrame() {
     <ProductFrame path="Quests" caption="Daily quests, generated fresh each morning. Gems are the payout." side="left">
       <div className="sc-stack">
         <span className="sc-stack-label">Today&apos;s quests</span>
-        {quests.map((quest) => (
-          <QuestCard key={quest.id} quest={quest} variant="compact" />
+        {quests.map((quest, i) => (
+          <QuestCard key={quest.id} quest={quest} variant="compact" index={i} />
         ))}
 
         <span className="sc-stack-label" style={{ marginTop: '0.5rem' }}>
           What gems buy
         </span>
         <ul className="sc-shop-mini">
-          {SHOP_ITEMS.map((item) => (
+          {SHOP_ITEMS.map((item, i) => (
             <li className="sc-shop-mini-item" key={item.id} data-tip={item.description}>
-              <span className="sc-shop-mini-art"><ShopArt name={item.art} size={40} /></span>
+              {/* Each item floats on its own multiple of --idle-float, so the
+                  three never rise together. */}
+              <span className="sc-shop-mini-art">
+                <span className="fx-float" style={{ '--float-k': FLOAT_K[i % FLOAT_K.length], '--seed': i / SHOP_ITEMS.length }}>
+                  <ShopArt name={item.art} size={40} />
+                </span>
+              </span>
               <span className="sc-shop-mini-name">{item.name}</span>
-              <span className="sc-shop-mini-price">
+              <span className="sc-shop-mini-price fx-gleam fx-glint-host">
                 <GemIcon size={13} />
                 {item.price}
               </span>

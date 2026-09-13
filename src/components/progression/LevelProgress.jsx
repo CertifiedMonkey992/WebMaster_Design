@@ -52,7 +52,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
     <div className={`lv-block lv-${size}`} ref={targetRef}>
       <div className={`lv-badge${turning ? ' is-turning' : ''}`} aria-hidden="true" data-tip={`Level ${level} · ${vm.levelTitle}`}>
         <span className="lv-badge-num"><RollingNumber value={level} /></span>
-        <span className="lv-badge-bolt"><BoltIcon size={12} /></span>
+        <span className="lv-badge-bolt fx-zap"><BoltIcon size={12} /></span>
       </div>
 
       <div className="lv-col">

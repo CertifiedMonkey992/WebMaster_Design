@@ -73,11 +73,12 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 - **Typography** — eight sizes, five weights, two families. Fraunces for the
   product's voice, Manrope for the interface's, and they never swap jobs.
 - **Gradients** — effectively none. Flat fills.
-- **Animations** — twelve verbs, tiered duration tokens and named easings
-  (`MOTION_RULES.md`, revision 3). Every animation is a Response, a Report,
-  an Invitation or a listed Ambient motion and goes through `src/motion/`.
-  No literal durations in component CSS; no spring on a Response. Loops only
-  where that file lists them.
+- **Animations** — fourteen verbs, tiered duration tokens and named easings
+  (`MOTION_RULES.md`, revision 4). Every animation is a Response, a Report,
+  an Invitation, a listed Ambient motion or a listed Idle event and goes
+  through `src/motion/`. No literal durations in component CSS; no spring on
+  a Response. Loops and idle events only where that file lists them. Light
+  (glint, sparkle, bloom) only on the economy icons.
 - **Components** — reuse `.btn`, the card pattern, the row pattern.
 
 ## Rules of engagement

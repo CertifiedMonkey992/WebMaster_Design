@@ -125,8 +125,23 @@ links) are navigation, not course links, and do not count.
   chapter's block, clicking opens the book at it.
 - It is one focusable object with a visible focus ring and an `aria-live`
   line naming the open spread.
+- It has an **idle life** (revision 4): left alone it lifts its cover, peeks
+  at a chapter, riffles its tabs, lets the needle find north, and now and then
+  opens itself, turns a chapter and closes. Any hand on it — or on the hero's
+  chapter list — cancels what it is doing, and it leaves an opened book open
+  for the learner.
 - ≤ 1100px it sits under the copy, centred; ≤ 560px the open book shows its
   right-hand page with the left page cropped at the stage edge.
+
+### Product frame (landing)
+
+- A thin window around a real component: `--r-lg`, hairline, `--shadow-float`
+  (it depicts a screen standing in front of the page), a chrome strip naming
+  the path and a moss *Live* tag, and a one-line caption.
+- It is an ambient host: whatever lives inside stops offscreen.
+- The course frame **tours itself** (revision 4, `MOTION_RULES.md` →
+  *Auto-tour*) with a slim scroll thumb on its right edge; the pointer on it
+  holds the tour still. Its caption says so.
 
 ### Lesson ticker (landing)
 
@@ -264,9 +279,13 @@ semantic colour* — always in that order, always the same sizes.
 - Numbers **roll** (`RollingNumber`) and hold their old value until an
   incoming reward flight lands (`useLandedValue`).
 - Each pill is a flight target and carries a `data-tip` tooltip.
-- The icons are **living** (`MOTION_RULES.md`): the flame flickers while
-  alive and flares on increase; the heart shows its fill level and a recovery
-  ring, cracks on loss and beats when one is left; the gem turns on increase.
+- The icons are **living** (`MOTION_RULES.md` → *The economy icons*): each
+  has an idle life (the gem glints, the heart beats slowly, embers leave the
+  flame), a hover move, and a Report for gain and loss — a bloom behind the
+  icon and a flash of the currency's colour through the rolling digits when
+  the value rises; a crack, a drop and a berry flash when a heart is lost.
+- The three pills are one strip: on hover the icon moves and the number
+  nudges toward it by 1px (one gesture, one clock). They never grow a border.
 
 ### Hearts
 

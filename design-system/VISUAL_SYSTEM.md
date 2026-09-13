@@ -180,6 +180,26 @@ There is no separate "warning". A warning in this product is either a cost
 (`--berry`) or a thing to attend to (`--clay`). Adding a fourth semantic hue
 would break the four-hue discipline for no gain.
 
+### Light on the economy (revision 4)
+
+The economy icons are small physical objects, and physical treasure catches
+the light. These four tokens exist **only** for the specular parts of the
+economy icons, the sparkles and embers around them, and a Report's bloom
+behind them (`MOTION_RULES.md` → *Light*). They are never a resting text,
+border, button or surface colour — a figure may flash through one for the
+length of a Roll, and that is all.
+
+```css
+--gem-light:    #F6DE9A   /* a gem's lit crown and table; sparkles */
+--ochre-bright: #E2A631   /* gem / XP bloom; a gem's upper face */
+--berry-bright: #CC4450   /* heart bloom; a heart's upper face */
+--clay-bright:  #DE6C3A   /* flame bloom; the flame's hot layer; embers */
+```
+
+All four are warm (red is the largest channel). Alpha channel versions
+(`--gem-light-rgb`, `--ochre-bright-rgb`, `--berry-bright-rgb`,
+`--clay-bright-rgb`) exist for blooms.
+
 ### Educational / gamification states
 
 These are compositions of the above, not new colours:
@@ -365,6 +385,7 @@ as the icon set. No gradient meshes, no glow, no 3D, no isometric.**
 | **Course / module art** | A flat emblem per module, in that module's tint, stroked like the icons. No orbiting rings, no glowing spheres. |
 | **The field guide** | The landing hero's one depicted object: a clothbound book in `--evergreen` with `--surface` pages, chapter tabs in the five chapter inks, a `--clay` ribbon, and a compass drawn in the 2px icon language. Its only "illustration" is the compass, and it is there because the product is a guide. Pages carry real course data. The page and cover shading are two-stop, one-hue gradients depicting depth on a physical surface — the one sanctioned use. |
 | **Rewards** | The existing `ShopArt` and `DailyBonusArt` sets stay: small, flat, legible at 40px. Repalette to warm tokens. |
+| **Economy icons** | Gem, heart, flame, bolt and shield are drawn as small objects: a back plate, a face, a shade facet, a warm shine mark. Revision 4 lets their faces take a two-stop, one-hue gradient toward the `-bright` token and gives the gem a lit crown in `--gem-light` — the one place in the product where things look like treasure. |
 | **Empty states** | Text first. An illustration only if it explains something a sentence cannot. |
 | **Completion** | A stamp, not a firework. A rubber-stamp mark in `--moss` reads as earned; particles read as a slot machine. |
 | **Decorative** | None. There is no category for "art added because the area looked bare". |
@@ -407,12 +428,21 @@ Full rules in `MOTION_RULES.md`. The values:
 --stagger:     40ms                                /* siblings arriving */
 --lag-follow:  40ms                                /* secondary part of a gesture */
 --lag-finish:  90ms                                /* supporting part of a gesture */
+
+--idle-glint:  6.7s    /* a gem catching the light */
+--idle-beat:   5.3s    /* a healthy heart's slow beat */
+--idle-zap:    7.9s    /* the XP bolt's flicker */
+--idle-float:  5.9s    /* reward art floating in its tile */
+--idle-sweep:  9.7s    /* light crossing a large surface; a rule drawn again */
+--idle-run:    7.3s    /* a wave running along a row */
+--idle-wave:   6.1s    /* things in a list stirring in turn */
 ```
 
 Revision 3 of `MOTION_RULES.md` added the `move`, `lift`, `open`, `reveal`
 and `turn` tiers, the `snap`, `lift` and `swing` easings and the two lags, and
-restricted `--ease-spring` to Reports. JS reads the same values from
-`src/motion/timing.js`.
+restricted `--ease-spring` to Reports. Revision 4 added the seven idle periods,
+chosen to be mutually unrelated so no two idle events on one screen fall into
+step. JS reads the same values from `src/motion/timing.js`.
 
 ---
 

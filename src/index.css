@@ -155,6 +155,19 @@
   --ochre-rgb: 192, 138, 30;
   --berry-rgb: 160, 43, 55;
 
+  /* ── Light on the economy (MOTION_RULES.md revision 4 → Light) ─────────────
+     Only for the specular parts of the economy icons and the bloom a Report
+     opens behind them. Never a text, border, button or surface colour. All
+     warm: red is the largest channel of every one. */
+  --gem-light:        #F6DE9A;
+  --gem-light-rgb:    246, 222, 154;
+  --ochre-bright:     #E2A631;
+  --ochre-bright-rgb: 226, 166, 49;
+  --berry-bright:     #CC4450;
+  --berry-bright-rgb: 204, 68, 80;
+  --clay-bright:      #DE6C3A;
+  --clay-bright-rgb:  222, 108, 58;
+
   /* ── Spacing (8pt, with 4px for the inside of small controls) ──────────── */
   --sp-1:  0.25rem;
   --sp-2:  0.5rem;
@@ -207,7 +220,7 @@
   --sheen-rgb: 255, 253, 248;
 
   /* ── Motion ────────────────────────────────────────────────────────────────
-     MOTION_RULES.md, revision 3. Durations are TIERS, not taste: a response
+     MOTION_RULES.md, revision 4 (tiers from revision 3). Durations are TIERS, not taste: a response
      answers inside a frame and finishes inside 300ms; importance is shown by
      how far something moves, never by how long it takes. Mirrored for JS in
      src/motion/timing.js — the two change together. */
@@ -246,6 +259,16 @@
   --stagger:    40ms;   /* siblings arriving */
   --lag-follow: 40ms;   /* the secondary part of one gesture */
   --lag-finish: 90ms;   /* the supporting part of one gesture */
+
+  /* Idle periods (revision 4). Mutually unrelated, so no two idle events on
+     one screen ever fall into step; each instance adds a seeded offset. */
+  --idle-glint: 6.7s;   /* a gem catching the light */
+  --idle-beat:  5.3s;   /* a healthy heart's slow beat */
+  --idle-zap:   7.9s;   /* the XP bolt's flicker */
+  --idle-float: 5.9s;   /* reward art floating in its tile */
+  --idle-sweep: 9.7s;   /* light crossing a large surface; a rule drawn again */
+  --idle-run:   7.3s;   /* a wave running along a row (streak week, course ticks) */
+  --idle-wave:  6.1s;   /* things in a list stirring in turn (bonus days, quest icons) */
 
   /* ── Z-index ───────────────────────────────────────────────────────────── */
   --z-base:    1;

@@ -20,6 +20,10 @@
              settles into "come back tomorrow"; the receipt slides in
 
    Hovering any day card lifts it and tells you what it holds and when.
+
+   Revision 4 (idle life): today's art floats and light twinkles at its edges;
+   the locked days' art ripples down the row now and then; day 7's foil
+   sweeps.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -211,6 +215,10 @@ export default function DailyBonusTrack({
           data-tilt={showingReady ? '' : undefined}
         >
           <DailyBonusArt name={showingReady ? (reward?.art ?? 'gift') : (view.upcomingReward?.art ?? 'gift')} size={104} />
+          {/* Idle: while a reward waits, light twinkles at its edges. */}
+          {showingReady && !phase && (
+            <span className="db-twinkles" aria-hidden="true"><i /><i /><i /></span>
+          )}
         </div>
 
         <div className="db-hero-body">

@@ -12,6 +12,7 @@ import LearnPage       from './pages/LearnPage'
 
 import { ProgressionProvider } from './state/ProgressionContext'
 import FxLayer from './motion/FxLayer'
+import { turnPage } from './motion/pageTurn'
 /* Last, so the shared verbs (magnet, press, reveal) sit on top of the
    component stylesheets imported above rather than being overridden by them. */
 import './motion/motion.css'
@@ -20,17 +21,25 @@ export default function App() {
   const [loginOpen,    setLoginOpen]    = useState(false)
   const [currentPage,  setCurrentPage]  = useState('landing')
 
-  const goLearn = () => {
+  /* The landing page and the app are one book: moving between them turns a
+     page (MOTION_RULES.md → Page turns). 'instant' because the html element
+     scrolls smoothly, and the new page must start at its top, not travel. */
+  const goLearn = () => turnPage(() => {
     setCurrentPage('learn')
-    window.scrollTo({ top: 0 })
-  }
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, { dir: 1 })
+
+  const goHome = () => turnPage(() => {
+    setCurrentPage('landing')
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }, { dir: -1 })
 
   if (currentPage === 'learn') {
     return (
       <ProgressionProvider>
         <FxLayer />
         <LearnPage
-          onGoHome={() => { setCurrentPage('landing'); window.scrollTo({ top: 0 }) }}
+          onGoHome={goHome}
           onLoginClick={() => setLoginOpen(true)}
         />
         {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
