@@ -644,3 +644,11 @@
 @media (prefers-reduced-motion: reduce) {
   .sh-receipt-timer, .sh-spinner, .sh-card-art svg, .sh-balance-art > svg { animation: none; }
 }
+
+/* Revision 5 — an item the learner can afford, shown by the Stage: the
+   hover's lift, performed. */
+.sh-card[data-shown]:not(.is-disabled) { background: var(--evergreen-tint); }
+.sh-card[data-shown]:not(.is-disabled) .sh-card-art svg {
+  transform: translateY(-10px) scale(1.34) rotate(-8deg);
+  filter: drop-shadow(0 8px 6px rgba(var(--ink-rgb), 0.18));
+}

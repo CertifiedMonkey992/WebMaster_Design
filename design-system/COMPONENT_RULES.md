@@ -125,11 +125,16 @@ links) are navigation, not course links, and do not count.
   chapter's block, clicking opens the book at it.
 - It is one focusable object with a visible focus ring and an `aria-live`
   line naming the open spread.
-- It has an **idle life** (revision 4): left alone it lifts its cover, peeks
-  at a chapter, riffles its tabs, lets the needle find north, and now and then
-  opens itself, turns a chapter and closes. Any hand on it — or on the hero's
-  chapter list — cancels what it is doing, and it leaves an opened book open
-  for the learner.
+- It has a **repertoire** (revisions 4 and 5): left alone it lifts its cover,
+  peeks at a chapter, riffles its tabs, lets the needle find north, stands
+  ajar, and — as the hero's Major performance — opens itself and shows its
+  pages (one turn with a hesitating page, two turns, a skim and back to the
+  front, or straight open at a chapter) before closing. Its gestures take
+  their turn on the Stage with the hero's copy. Any hand on it — or on the
+  hero's chapter list — cancels what it is doing, and it leaves an opened
+  book open for the learner.
+- Its leaves bend as they turn (two panels hinged at 58%), and a cover that
+  lands hard presses the book into the desk.
 - ≤ 1100px it sits under the copy, centred; ≤ 560px the open book shows its
   right-hand page with the left page cropped at the stage edge.
 
@@ -142,6 +147,17 @@ links) are navigation, not course links, and do not count.
 - The course frame **tours itself** (revision 4, `MOTION_RULES.md` →
   *Auto-tour*) with a slim scroll thumb on its right edge; the pointer on it
   holds the tour still. Its caption says so.
+- **Revision 5 — every frame has its own demo learner and a scene**
+  (`ProgressionDemo`, `showcase/scenes/`). The chrome carries a **cue**
+  between the path and the *Live* tag: ≤ 5 words of Manrope caption in
+  `--ink-muted`, sentence case, naming what the demo learner is doing
+  before it happens; the *Live* dot beats faster while a scene plays. The
+  frame is a flight scope — rewards earned inside land on counters inside.
+  Its controls work on the demo learner, and its caption says both: that it
+  plays itself, and that the visitor can take over.
+- Frames whose scene pays rewards carry the app's real top bar
+  (`PlayerStatusBar`, and `DailyBonusIndicator` for the bonus frame) as the
+  place those rewards land.
 
 ### Lesson ticker (landing)
 

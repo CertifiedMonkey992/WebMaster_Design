@@ -171,6 +171,19 @@ export function createTour({
   if (thumb) thumb.style.transform = place(y, sizeThumb(max, height), max)
   beginHold(route[0].hold)
 
+  /* Where the content actually is right now, mid-glide included. */
+  const liveY = () => {
+    const m = getComputedStyle(content).transform
+    if (!m || m === 'none') return y
+    const parts = m.match(/matrix(3d)?\(([^)]+)\)/)
+    if (!parts) return y
+    const v = parts[2].split(',').map(Number)
+    return -(parts[1] ? v[13] : v[5])
+  }
+
+  let visitAnim = null
+  let visitThumb = null
+
   return {
     hold(reason) {
       const was = running()
@@ -181,11 +194,71 @@ export function createTour({
       if (!reasons.delete(reason)) return
       if (running()) resumeNow()
     },
+    /**
+     * Revision 5 — a scene asks the tour to take the reader somewhere: the
+     * route pauses, the content glides to `selector` (placed a little above
+     * the middle) and the promise resolves on arrival. `resume()` hands the
+     * frame back to its route.
+     */
+    visit(selector, { place: at = 0.28 } = {}) {
+      if (destroyed) return Promise.resolve(false)
+      const was = running()
+      reasons.add('visit')
+      if (was) pauseNow()
+      if (phase === 'glide' && anim) {
+        y = liveY()
+        anim.cancel(); anim = null
+        thumbAnim?.cancel(); thumbAnim = null
+        content.style.transform = `translate3d(0, ${-y}px, 0)`
+        phase = 'hold'
+        holdLeft = 600
+      }
+      const ctx = measure()
+      const top = ctx.offsetOf(selector)
+      if (top == null) return Promise.resolve(false)
+      const to = clamp(top - ctx.height * at, 0, ctx.max)
+      const dist = Math.abs(to - y)
+      const travel = sizeThumb(ctx.max, ctx.height)
+      if (dist < 2) return Promise.resolve(true)
+      const timing = { duration: clamp(dist * msPerPx, minGlide, maxGlide), easing: EASE.swing, fill: 'forwards' }
+      visitAnim = content.animate([{ transform: `translate3d(0, ${-y}px, 0)` }, { transform: `translate3d(0, ${-to}px, 0)` }], timing)
+      if (thumb) visitThumb = thumb.animate([{ transform: place(y, travel, ctx.max) }, { transform: place(to, travel, ctx.max) }], timing)
+      return new Promise((resolve) => {
+        visitAnim.onfinish = () => {
+          y = to
+          content.style.transform = `translate3d(0, ${-to}px, 0)`
+          if (thumb) thumb.style.transform = place(to, travel, ctx.max)
+          visitAnim?.cancel(); visitAnim = null
+          visitThumb?.cancel(); visitThumb = null
+          resolve(true)
+        }
+        /* A hidden tab renders no frames; the visit must still arrive. */
+        window.setTimeout(() => visitAnim?.finish(), timing.duration + 250)
+      })
+    },
+    /** Hand the frame back to its route after a visit. */
+    resume(holdMs = 1200) {
+      if (!reasons.has('visit')) return
+      if (visitAnim) {
+        y = liveY()
+        visitAnim.cancel(); visitAnim = null
+        visitThumb?.cancel(); visitThumb = null
+        content.style.transform = `translate3d(0, ${-y}px, 0)`
+      }
+      reasons.delete('visit')
+      clearTimeout(holdTimer)
+      holdTimer = 0
+      phase = 'hold'
+      holdLeft = holdMs
+      if (running()) beginHold(holdMs)
+    },
     destroy() {
       destroyed = true
       clearTimeout(holdTimer)
       anim?.cancel()
       thumbAnim?.cancel()
+      visitAnim?.cancel()
+      visitThumb?.cancel()
     },
   }
 }

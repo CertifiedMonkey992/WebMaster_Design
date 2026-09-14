@@ -102,6 +102,24 @@ export function getShowcaseState() {
   return cached
 }
 
+let bonusCached = null
+
+/**
+ * The bonus frame's learner (revision 5): the same learner, two wrong answers
+ * later — through the real LOSE_HEART action — so day 4's "2 Hearts" has
+ * somewhere to go when the frame claims it, instead of being swapped for gems
+ * because the hearts were already full.
+ */
+export function getBonusShowcaseState() {
+  if (bonusCached) return bonusCached
+  const now = Date.now()
+  let state = getShowcaseState()
+  state = reduce(state, { type: ACTIONS.LOSE_HEART, payload: { reason: 'mistake' } }, now).state
+  state = reduce(state, { type: ACTIONS.LOSE_HEART, payload: { reason: 'mistake' } }, now).state
+  bonusCached = state
+  return bonusCached
+}
+
 /** The section a visitor sees on the course map, used to caption it honestly. */
 export const SHOWCASE_SECTION_COUNT = SECTIONS.length
 

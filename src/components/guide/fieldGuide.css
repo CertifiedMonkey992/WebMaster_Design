@@ -572,6 +572,94 @@
 
 .fg-tab--carried { pointer-events: none; }
 
+/* Paper bends (revision 5). A leaf is two panels hinged at 58% of its width;
+   FieldGuide.jsx turns the whole leaf about the spine and the outer panel
+   about the fold. Each face shows only the part of its page that lies on
+   its panel: a full-width sheet inside, offset so the two halves meet at
+   the fold with no seam.
+
+     inner recto   page x 0–58%      outer recto   page x 58–100%
+     inner verso   page x 42–100%    outer verso   page x 0–42%
+   (a verso is the left-hand page, whose spine side is its right edge) */
+.fg-leaf-part {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform-style: preserve-3d;
+}
+
+.fg-leaf-part--inner { left: 0; width: 58%; }
+
+.fg-leaf-part--outer {
+  left: 58%;
+  right: 0;
+  transform-origin: 0 50%;
+}
+
+.fg-leaf-sheet {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--fg-w);
+}
+
+.fg-leaf-part--inner .fg-leaf-recto .fg-leaf-sheet { left: 0; }
+.fg-leaf-part--inner .fg-leaf-verso .fg-leaf-sheet { left: calc(var(--fg-w) * -0.42); }
+.fg-leaf-part--outer .fg-leaf-recto .fg-leaf-sheet { left: calc(var(--fg-w) * -0.58); }
+.fg-leaf-part--outer .fg-leaf-verso .fg-leaf-sheet { left: 0; }
+
+/* The gutter belongs to the spine side only; the corners to the fore-edge. */
+.fg-leaf-part--outer .fg-leaf-face::before { display: none; }
+.fg-leaf-part--inner .fg-leaf-recto,
+.fg-leaf-part--inner .fg-leaf-verso { border-radius: 0; }
+
+/* Where the paper bends it catches the light on one side and falls into
+   shade on the other — both run with the bend (opacity from JS). */
+.fg-fold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 42%;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.fg-leaf-part--outer .fg-leaf-recto .fg-fold {
+  left: 0;
+  background: linear-gradient(90deg, rgba(var(--sheen-rgb), 0.55), rgba(var(--sheen-rgb), 0));
+}
+
+.fg-leaf-part--outer .fg-leaf-verso .fg-fold {
+  right: 0;
+  background: linear-gradient(270deg, rgba(var(--sheen-rgb), 0.45), rgba(var(--sheen-rgb), 0));
+}
+
+.fg-leaf-part--inner .fg-leaf-recto .fg-fold {
+  right: 0;
+  background: linear-gradient(270deg, rgba(var(--ink-rgb), 0.2), rgba(var(--ink-rgb), 0));
+}
+
+.fg-leaf-part--inner .fg-leaf-verso .fg-fold {
+  left: 0;
+  background: linear-gradient(90deg, rgba(var(--ink-rgb), 0.2), rgba(var(--ink-rgb), 0));
+}
+
+/* A carried thumb tab rides on the fore-edge, which is now the outer panel's
+   edge — so it bends with the paper. */
+.fg-leaf-part--outer .fg-tab--carried { left: 100%; }
+
+/* Weight (revision 5): a cover that lands hard presses the book into the
+   desk for a moment, and the contact shadow tightens with it. */
+.fg-stage.is-landing .fg-float {
+  translate: 0 0 calc(var(--fg-thump, 0.5) * -4px);
+  transition-duration: var(--dur-micro);
+  transition-timing-function: var(--ease-press);
+}
+
+.fg-shadow { transition: scale var(--dur-move) var(--ease-lift); }
+.fg-stage.is-landing .fg-shadow { scale: calc(1 - var(--fg-thump, 0.5) * 0.03); transition-duration: var(--dur-micro); }
+
 /* ── The cover's printing ────────────────────────────────────────────────── */
 
 .fg-cover-art {

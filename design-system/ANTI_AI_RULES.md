@@ -273,6 +273,8 @@ Run this against any UI diff before committing.
 - [ ] Nothing actionable arrives later than its screen's budget.
 - [ ] Every ambient loop is listed, paused offscreen, and yields to the hand.
 - [ ] Every idle event is listed, seeded or jittered, and never runs while handled.
+- [ ] Every performance (book gesture, demo scene, preview) registers with the Stage (`usePerformer`), is listed in `MOTION_RULES.md` → *The sanctioned performances*, and keeps no timer of its own for *when*.
+- [ ] No Demonstration writes the learner's real progress; every demo scene cues its cause first.
 - [ ] Light (glint, sparkle, bloom) appears only on economy objects; blooms only as Reports.
 - [ ] Card edges on the changed screen: ≤ 4.
 - [ ] `--clay` appearances on the changed screen: 2–3.

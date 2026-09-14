@@ -434,3 +434,29 @@
 @media (prefers-reduced-motion: reduce) {
   .ab-strand-seg { transform: none; }
 }
+
+/* Revision 5 — "One lesson, start to finish" walked in turn (Stage, Minor):
+   the step being run is tinted from its number's side and its yield kicks. */
+.ab-step {
+  position: relative;
+  isolation: isolate;
+}
+.ab-step::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(var(--sp-3) * -1);
+  z-index: -1;
+  border-radius: var(--r-sm);
+  background: var(--evergreen-tint);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform var(--dur-open) var(--ease-snap);
+}
+.ab-step[data-shown]::before { transform: scaleX(1); }
+.ab-step-num { transition: transform var(--dur-move) var(--ease-snap); }
+.ab-step[data-shown] .ab-step-num { transform: translateX(3px); }
+.ab-step[data-shown] .ab-step-yield { animation: fx-pop var(--dur-reveal) var(--ease-spring); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-step::before { transition: none; }
+}

@@ -9,21 +9,27 @@
    reward and what is left (QuestCard compact).
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { useRef } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import QuestCard from '../progression/QuestCard'
 import { Icon } from '../progression/Icons'
 import { msUntilEndOfDay, formatDuration } from '../../utils/dateUtils'
 import RollingNumber from '../../motion/RollingNumber'
+import { useQuestWidgetPreviews } from './previews'
 
 export default function QuestWidget({ onViewAll, style, className = '' }) {
   const { vm } = useProgression()
   const now = useClock()
+  const rootRef = useRef(null)
+  const questsRef = useRef(null)
+  questsRef.current = [...vm.quests.daily, ...vm.quests.weekly]
+  useQuestWidgetPreviews(rootRef, () => questsRef.current)
 
   const { daily, weekly, summary, claimableCount } = vm.quests
   const featuredWeekly = weekly.find((q) => !q.completed) ?? weekly[0]
 
   return (
-    <div className={`quest-widget ${className}`.trim()} style={style}>
+    <div className={`quest-widget ${className}`.trim()} style={style} ref={rootRef}>
       <div className="qw-header">
         <span className="qw-title">
           Daily Quests

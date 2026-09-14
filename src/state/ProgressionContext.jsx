@@ -46,6 +46,42 @@ const RECONCILE_MS = 15000
 
 let rewardSeq = 0
 
+/** The UI's action creators over any dispatch — the learner's own, or a demo
+ *  learner's (ProgressionDemo). */
+function createActions(dispatch) {
+  return {
+    awardXP:        (amount, reason) => dispatch(ACTIONS.AWARD_XP, { amount, reason }),
+    awardGems:      (amount, reason) => dispatch(ACTIONS.AWARD_GEMS, { amount, reason }),
+    spendGems:      (amount, reason) => dispatch(ACTIONS.SPEND_GEMS, { amount, reason }),
+
+    loseHeart:      (reason) => dispatch(ACTIONS.LOSE_HEART, { reason }),
+    restoreHeart:   (count, reason) => dispatch(ACTIONS.RESTORE_HEART, { count, reason }),
+    restoreAllHearts: (reason) => dispatch(ACTIONS.RESTORE_ALL_HEARTS, { reason }),
+    refillHeartsWithGems: () => dispatch(ACTIONS.REFILL_HEARTS_GEMS),
+
+    recordAnswer:   (payload) => dispatch(ACTIONS.RECORD_ANSWER, payload),
+    completeLesson: (payload) => dispatch(ACTIONS.COMPLETE_LESSON, payload),
+    completePractice: (payload) => dispatch(ACTIONS.COMPLETE_PRACTICE, payload),
+    addPracticeTime: (seconds) => dispatch(ACTIONS.ADD_PRACTICE_TIME, { seconds }),
+
+    /** Buy a shop item. `txnId` is minted per confirmation dialog, so replaying
+     *  the same purchase is refused rather than charged twice. */
+    purchaseItem:   (itemId, txnId) => dispatch(ACTIONS.PURCHASE_ITEM, { itemId, txnId }),
+
+    /** Claim today's daily bonus. Safe to call twice — the second call is
+     *  refused by the stored claim date rather than paying again. */
+    claimDailyBonus: () => dispatch(ACTIONS.CLAIM_DAILY_BONUS),
+
+    claimQuest:     (questId) => dispatch(ACTIONS.CLAIM_QUEST, { questId }),
+    claimAllQuests: () => dispatch(ACTIONS.CLAIM_ALL_QUESTS),
+    claimTeamReward: () => dispatch(ACTIONS.CLAIM_TEAM_REWARD),
+    rerollTeamMission: () => dispatch(ACTIONS.REROLL_TEAM_MISSION),
+
+    setDailyGoal:   (dailyXP) => dispatch(ACTIONS.SET_DAILY_GOAL, { dailyXP }),
+    reconcileNow:   () => dispatch(ACTIONS.RECONCILE),
+  }
+}
+
 export function ProgressionProvider({ children }) {
   /* ── Load once, reconcile against the real clock ── */
   const bootRef = useRef(null)
@@ -147,35 +183,7 @@ export function ProgressionProvider({ children }) {
 
   /* ── Action creators ── */
   const actions = useMemo(() => ({
-    awardXP:        (amount, reason) => dispatch(ACTIONS.AWARD_XP, { amount, reason }),
-    awardGems:      (amount, reason) => dispatch(ACTIONS.AWARD_GEMS, { amount, reason }),
-    spendGems:      (amount, reason) => dispatch(ACTIONS.SPEND_GEMS, { amount, reason }),
-
-    loseHeart:      (reason) => dispatch(ACTIONS.LOSE_HEART, { reason }),
-    restoreHeart:   (count, reason) => dispatch(ACTIONS.RESTORE_HEART, { count, reason }),
-    restoreAllHearts: (reason) => dispatch(ACTIONS.RESTORE_ALL_HEARTS, { reason }),
-    refillHeartsWithGems: () => dispatch(ACTIONS.REFILL_HEARTS_GEMS),
-
-    recordAnswer:   (payload) => dispatch(ACTIONS.RECORD_ANSWER, payload),
-    completeLesson: (payload) => dispatch(ACTIONS.COMPLETE_LESSON, payload),
-    completePractice: (payload) => dispatch(ACTIONS.COMPLETE_PRACTICE, payload),
-    addPracticeTime: (seconds) => dispatch(ACTIONS.ADD_PRACTICE_TIME, { seconds }),
-
-    /** Buy a shop item. `txnId` is minted per confirmation dialog, so replaying
-     *  the same purchase is refused rather than charged twice. */
-    purchaseItem:   (itemId, txnId) => dispatch(ACTIONS.PURCHASE_ITEM, { itemId, txnId }),
-
-    /** Claim today's daily bonus. Safe to call twice — the second call is
-     *  refused by the stored claim date rather than paying again. */
-    claimDailyBonus: () => dispatch(ACTIONS.CLAIM_DAILY_BONUS),
-
-    claimQuest:     (questId) => dispatch(ACTIONS.CLAIM_QUEST, { questId }),
-    claimAllQuests: () => dispatch(ACTIONS.CLAIM_ALL_QUESTS),
-    claimTeamReward: () => dispatch(ACTIONS.CLAIM_TEAM_REWARD),
-    rerollTeamMission: () => dispatch(ACTIONS.REROLL_TEAM_MISSION),
-
-    setDailyGoal:   (dailyXP) => dispatch(ACTIONS.SET_DAILY_GOAL, { dailyXP }),
-    reconcileNow:   () => dispatch(ACTIONS.RECONCILE),
+    ...createActions(dispatch),
 
     /* ── Developer-only helpers ── */
     dev: {
@@ -321,6 +329,92 @@ export function ProgressionShowcase({ state, children }) {
     /* Lets a component opt out of interactive affordances if it ever needs to. */
     showcase: true,
   }), [state, now])
+
+  return (
+    <ProgressionContext.Provider value={value}>
+      <RewardContext.Provider value={NOOP_REWARDS}>
+        <ClockContext.Provider value={now}>
+          {children}
+        </ClockContext.Provider>
+      </RewardContext.Provider>
+    </ProgressionContext.Provider>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEMO PROVIDER (MOTION_RULES.md revision 5 → demo learners)
+   ---------------------------------------------------------------------------
+   A showcase learner that can DO things. Same contexts, same components, same
+   view model — but every action runs the real reducer against a state held
+   in memory, and the learner keeps its own clock, which a scene can move on
+   to tomorrow. That is how a product frame on the landing page demonstrates a
+   quest being completed, a bonus day claimed or a streak kept, with the real
+   engine deciding every number.
+
+   Three guarantees:
+     · nothing here calls save() or touches storage — the visitor's own
+       progress is neither read nor written
+     · each frame gets its own learner, so one scene cannot disturb another
+     · reset() returns to the seed; scenes only call it while off screen, so
+       nobody watches a figure run backwards
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const DAY_MS = 86400000
+
+export function ProgressionDemo({ seed, children }) {
+  const seedRef = useRef(null)
+  if (seedRef.current === null) seedRef.current = typeof seed === 'function' ? seed() : seed
+
+  const stateRef = useRef(seedRef.current)
+  const offsetRef = useRef(0)
+  const [state, setState] = useState(seedRef.current)
+  const [now, setNow] = useState(() => Date.now())
+
+  const dispatch = useCallback((type, payload) => {
+    const action = typeof type === 'string' ? { type, payload } : type
+    const at = Date.now() + offsetRef.current
+    const result = reduce(stateRef.current, action, at)
+    if (result.state !== stateRef.current) {
+      stateRef.current = result.state
+      setState(result.state)
+    }
+    setNow(at)
+    return result.events
+  }, [])
+
+  const demo = useMemo(() => ({
+    /** Move the learner's clock to the same time tomorrow and let the engine
+     *  reconcile, exactly as it would overnight. */
+    nextDay: () => {
+      offsetRef.current += DAY_MS
+      return dispatch(ACTIONS.RECONCILE)
+    },
+    /** How many demo days have passed since the seed. */
+    days: () => Math.round(offsetRef.current / DAY_MS),
+    /** Back to the seed. Call only while the frame is off screen. */
+    reset: () => {
+      offsetRef.current = 0
+      stateRef.current = seedRef.current
+      setState(seedRef.current)
+      setNow(Date.now())
+    },
+    raw: () => stateRef.current,
+    now: () => Date.now() + offsetRef.current,
+  }), [dispatch])
+
+  const actions = useMemo(() => ({ ...createActions(dispatch), dev: NOOP_ACTIONS.dev }), [dispatch])
+
+  const value = useMemo(() => ({
+    state,
+    vm: buildViewModel(state, now),
+    dispatch,
+    actions,
+    isNewUser: false,
+    recoveredFromCorruption: false,
+    devMode: false,
+    showcase: true,
+    demo,
+  }), [state, now, dispatch, actions, demo])
 
   return (
     <ProgressionContext.Provider value={value}>

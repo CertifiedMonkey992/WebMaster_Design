@@ -170,7 +170,8 @@
 .pg-pill .live-gem { transition: transform var(--dur-move) var(--ease-spring); }
 
 .pg-pill:hover .live-heart { transform: scale(1.12); }
-.pg-pill:hover .live-gem { transform: scale(1.16) rotate(-10deg); }
+.pg-pill:hover .live-gem,
+.pg-pill[data-shown] .live-gem { transform: scale(1.16) rotate(-10deg); }
 .pg-pill:hover .live-flame { transform: translateY(-1px); }
 
 .pg-pill-value {
@@ -1029,7 +1030,8 @@
 
 .qc-compact:hover,
 .qc-compact:focus-visible,
-.qc-compact:focus-within { background: rgba(var(--ink-rgb), 0.035); }
+.qc-compact:focus-within,
+.qc-compact[data-shown] { background: rgba(var(--ink-rgb), 0.035); }
 
 .qc-compact:focus-visible { box-shadow: inset 0 0 0 2px var(--evergreen); }
 
@@ -1043,7 +1045,8 @@
   transition: transform var(--dur-move) var(--ease-spring), background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out);
 }
 
-.qc-compact:hover .qc-compact-icon { transform: rotate(-10deg) scale(1.12); }
+.qc-compact:hover .qc-compact-icon,
+.qc-compact[data-shown] .qc-compact-icon { transform: rotate(-10deg) scale(1.12); }
 .qc-compact.is-complete .qc-compact-icon { color: var(--moss); background: var(--moss-tint); }
 .qc-compact.is-claimable .qc-compact-icon { color: var(--ochre-ink); background: var(--ochre-tint); }
 
@@ -1128,7 +1131,8 @@
 
 .qc-compact:hover .qc-compact-more,
 .qc-compact:focus-visible .qc-compact-more,
-.qc-compact:focus-within .qc-compact-more { grid-template-rows: 1fr; }
+.qc-compact:focus-within .qc-compact-more,
+.qc-compact[data-shown] .qc-compact-more { grid-template-rows: 1fr; }
 
 .qc-compact-more-inner {
   min-height: 0;
@@ -1149,9 +1153,12 @@
 
 .qc-compact:hover .qc-compact-more-inner > *,
 .qc-compact:focus-visible .qc-compact-more-inner > *,
-.qc-compact:focus-within .qc-compact-more-inner > * { opacity: 1; transform: none; }
-.qc-compact:hover .qc-compact-more-inner > :nth-child(2) { transition-delay: calc(var(--lag-follow) * 1); }
-.qc-compact:hover .qc-compact-more-inner > :nth-child(3) { transition-delay: calc(var(--lag-follow) * 2); }
+.qc-compact:focus-within .qc-compact-more-inner > *,
+.qc-compact[data-shown] .qc-compact-more-inner > * { opacity: 1; transform: none; }
+.qc-compact:hover .qc-compact-more-inner > :nth-child(2),
+.qc-compact[data-shown] .qc-compact-more-inner > :nth-child(2) { transition-delay: calc(var(--lag-follow) * 1); }
+.qc-compact:hover .qc-compact-more-inner > :nth-child(3),
+.qc-compact[data-shown] .qc-compact-more-inner > :nth-child(3) { transition-delay: calc(var(--lag-follow) * 2); }
 
 .qc-compact-reward { display: inline-flex; align-items: center; gap: 2px; font-weight: var(--fw-bold); color: var(--ochre-ink); }
 .qc-compact-reward .gi { color: var(--ochre); }
@@ -2508,3 +2515,9 @@
 .pg-earn-list li svg,
 .tm-reward svg,
 .sc-shop-mini-price svg { color: var(--ochre); }
+
+/* Revision 5 — an earned medal catching the light, performed by the Stage. */
+.ac-card.is-unlocked[data-shown]::after { animation: db-foil var(--dur-celebrate) var(--ease-settle); }
+.ac-card.is-unlocked[data-shown] .ac-icon { transform: rotate(-14deg) scale(1.15); }
+.ac-track { position: relative; }
+.qc-card-track { position: relative; }

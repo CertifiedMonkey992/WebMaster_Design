@@ -43,14 +43,15 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import {
-  forwardRef, memo, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState,
+  forwardRef, memo, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState,
 } from 'react'
 import { CHAPTERS, CHAPTER_INK, PAGE_UNITS, SPREADS, leftUnits, tabDepth, spreadLabel } from './guideData'
 import { Cover, LeftPage, RightPage, TabFaces } from './GuidePages'
 import { createSpring } from '../../motion/spring'
 import { hasFinePointer, prefersReducedMotion } from '../../motion/env'
 import useAmbient, { isOnScreen, onVisibility } from '../../motion/ambient'
-import { every, idleFor, pick } from '../../motion/idle'
+import { pick } from '../../motion/idle'
+import { usePerformer, yieldTo } from '../../motion/stage'
 import { useScrollProgress } from '../../motion/scroll'
 import { DUR } from '../../motion/timing'
 import './fieldGuide.css'
@@ -73,6 +74,8 @@ const PEEK_ANGLE = 18
    angle — a softened gravity pulls it down and the desk's stop (restitution
    0.3) gives the tap. */
 const AIR = { stiffness: 60, damping: 11, force: null }
+/* The cover drifting open far enough to see beneath it: slower still. */
+const AIR_SLOW = { stiffness: 28, damping: 7.5, force: null }
 const DROP = { stiffness: 40, damping: 7, force: (a) => -700 * Math.cos((a * Math.PI) / 180) }
 const NEEDLE = { stiffness: 55, damping: 6.5 }
 const NEEDLE_LOOSE = { stiffness: 26, damping: 3.2 }
@@ -86,6 +89,31 @@ const LEAF_STAGGER = 80
    quickly through vertical, and lays itself down softly. */
 const LEAF_EASE = 'cubic-bezier(0.42, 0.02, 0.2, 1)'
 
+/* Paper bends (revision 5). A leaf is two panels hinged at FOLD of its width.
+   The outer panel's angle RELATIVE to the inner one, over the turn: it leads
+   while the leaf lifts (the page is lifted by its edge), trails as it falls
+   (air under the free edge), and flops a little past flat as it lands. Signs
+   are for a forward turn; a backward turn mirrors them. */
+const FOLD = 0.58
+const BEND = [
+  { offset: 0, b: 0 },
+  { offset: 0.18, b: -24 },
+  { offset: 0.4, b: -9 },
+  { offset: 0.58, b: 8 },
+  { offset: 0.8, b: 12 },
+  { offset: 0.93, b: -3 },
+  { offset: 1, b: 0 },
+]
+/* The hesitation: a page lifted by its corner and let fall back. */
+const FLUTTER_MS = 1050
+const FLUTTER = [
+  { offset: 0, a: 0, b: 0 },
+  { offset: 0.38, a: -30, b: -18 },
+  { offset: 0.62, a: -12, b: 7 },
+  { offset: 0.84, a: -1.5, b: 3 },
+  { offset: 1, a: 0, b: 0 },
+]
+
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
 const ink = (j) => `var(${CHAPTER_INK[j % CHAPTER_INK.length]})`
 const inertProps = (hidden) => (hidden ? { inert: '', 'aria-hidden': 'true' } : {})
@@ -94,6 +122,26 @@ function useStableSprings(make) {
   const ref = useRef(null)
   if (!ref.current) ref.current = make()
   return ref.current
+}
+
+/* One panel of a turning leaf: its two faces each show the part of their
+   page that lies on this panel (see .fg-leaf-part in fieldGuide.css). */
+function LeafPart({ part, recto, verso, children }) {
+  return (
+    <div className={`fg-leaf-part fg-leaf-part--${part}`}>
+      <div className="fg-leaf-face fg-leaf-recto">
+        <div className="fg-leaf-sheet"><RightPage spread={recto} /></div>
+        <span className="fg-fold" />
+        <span className="fg-shade" />
+      </div>
+      <div className="fg-leaf-face fg-leaf-verso">
+        <div className="fg-leaf-sheet"><LeftPage spread={verso} /></div>
+        <span className="fg-fold" />
+        <span className="fg-shade" />
+      </div>
+      {children}
+    </div>
+  )
 }
 
 const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiRef) {
@@ -117,7 +165,8 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
     /* Idle life: when the hand last touched the book (or the hero's chapter
        list), whether the book is performing, and what it did last. */
     lastTouch: -Infinity, performing: null, gTimers: [], lastGesture: null,
-    lastTour: -Infinity, smallSinceTour: 0, autoOpened: false,
+    lastMajor: null, smallSinceMajor: 1, autoOpened: false,
+    fallSpeed: 0, thumpTimer: 0,
   })
   live.current.open = open
   live.current.spread = spread
@@ -129,10 +178,21 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
   const springs = useStableSprings(() => ({
     hinge: createSpring({
       value: 0, min: 0, max: 180, restitution: 0.3, precision: 0.05, restSpeed: 8, ...LIFT,
-      onUpdate: (a) => {
+      onUpdate: (a, v) => {
         const desk = deskRef.current
         if (!desk) return
         desk.style.setProperty('--fg-angle', a.toFixed(2))
+        /* Weight (revision 5): a cover that hits the desk at speed presses
+           the book into it for a moment. */
+        const fell = live.current.fallSpeed
+        live.current.fallSpeed = v
+        if (a < 0.5 && fell < -140 && v >= 0) {
+          const stage = stageRef.current
+          stage?.style.setProperty('--fg-thump', Math.min(1, -fell / 700).toFixed(2))
+          stage?.classList.add('is-landing')
+          window.clearTimeout(live.current.thumpTimer)
+          live.current.thumpTimer = window.setTimeout(() => stage?.classList.remove('is-landing'), DUR.move)
+        }
         /* A different chapter was asked for while the block was lifted: let
            it fall first, change what is under it once it is down, lift again.
            Pages never swap while you can see between them. */
@@ -250,6 +310,9 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
   const takeOver = useCallback(() => {
     const L = live.current
     L.lastTouch = performance.now()
+    /* The Stage stops the performance too (it is watching the same hand);
+       this covers the hero's chapter list, which lives outside the stage. */
+    yieldTo(stageRef.current)
     if (L.performing) {
       stopPerforming()
       L.autoOpened = false
@@ -261,170 +324,283 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
     go: (j) => { takeOver(); turnTo(j + 1) },
   }), [peek, turnTo, takeOver])
 
-  /* ── Idle life ──────────────────────────────────────────────────────────── */
+  /* ── Repertoire (MOTION_RULES.md → The field guide → Repertoire) ─────────
+     The book no longer keeps its own clock: its gestures are Stage
+     performers, so they take their turn with everything else on the page
+     and never land on top of another performance. Each run returns how long
+     the gesture takes to settle. */
 
-  useEffect(() => {
+  /* A page hesitating: lifted by its corner, let fall back. */
+  const flutter = useCallback(() => {
+    const L = live.current
+    if (!L.open || L.turn || L.spread >= SPREADS - 1 || reduced.current) return
+    const next = { id: Date.now(), from: L.spread, to: L.spread + 1, flutter: true }
+    L.turn = next
+    setTurn(next)
+  }, [])
+
+  const handled = useCallback(() => {
+    const L = live.current
     const stage = stageRef.current
-    if (!stage || reduced.current) return undefined
+    if (!stage) return true
+    if (performance.now() - L.lastTouch < HANDS_OFF_MS) return true
+    /* Open, turning, moving, or a block held up by the hand (a chapter in the
+       hero list hovered for a long time): not the book's turn. */
+    if (L.open || L.turn || springs.hinge.moving) return true
+    if (springs.hinge.target !== 0 || L.pendingPeek !== undefined) return true
+    /* Held under the pointer, or in keyboard focus. (A mouse click also
+       focuses the stage; that alone is not "being handled".) */
+    const focus = document.activeElement
+    return stage.classList.contains('is-held') || (stage.contains(focus) && focus.matches(':focus-visible'))
+  }, [springs])
+
+  /* Nobody can see it — scrolled away, or the tab went to the background,
+     where timers keep running but frames do not: stop performing. A book a
+     showcase opened closes at once rather than closing for nobody. */
+  const abandon = useCallback(() => {
+    const L = live.current
+    if (!L.performing) return
+    const wasShowcase = L.autoOpened
+    stopPerforming()
+    L.autoOpened = false
+    if (!wasShowcase) {
+      /* A small gesture: put the block down and, if a peek swapped the page
+         under the cover, put the contents back (a jump skips the spring's
+         onRest, which would otherwise do it). */
+      L.pendingPeek = undefined
+      springs.hinge.jump(0)
+      if (L.spread !== 0) { L.spread = 0; setSpread(0) }
+      return
+    }
+    if (L.turn) { L.queued = 'close'; return }
+    if (L.open) {
+      L.open = false
+      setOpen(false)
+      onOpenChange?.(false)
+      springs.hinge.jump(0)
+      L.spread = 0
+      setSpread(0)
+    }
+  }, [springs, stopPerforming, onOpenChange])
+
+  const gestures = useMemo(() => {
     const L = live.current
     const after = (ms, fn) => { L.gTimers.push(window.setTimeout(fn, ms)) }
-    const done = (ms) => after(ms, () => { L.performing = null })
-
-    const shareInView = () => {
-      const r = stage.getBoundingClientRect()
-      const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0)
-      return r.height ? seen / r.height : 0
+    const settle = (ms) => { after(ms, () => { L.performing = null }); return ms }
+    const stage = () => stageRef.current
+    const callTab = (j, on) => {
+      const s = stage()
+      if (!s) return
+      if (on) s.querySelector(`.fg-tabs--right .fg-tab[data-tab="${j}"]`)?.classList.add('is-called', 'is-idle-called')
+      else s.querySelectorAll('.fg-tab.is-idle-called').forEach((t) => t.classList.remove('is-called', 'is-idle-called'))
     }
 
-    const gestures = {
+    return {
+      /* ── Accents ── */
+
       /* A breath of air lifts the cover; it taps back down. */
       lift() {
         moveHinge(rand(9, 14), AIR)
         after(rand(520, 760), () => moveHinge(0, DROP))
-        done(1500)
-      },
-      /* A chapter's pages lift and its thumb tab leans out. */
-      peek() {
-        const j = Math.floor(Math.random() * CHAPTERS.length)
-        peek(j)
-        /* The hero's chapter list is the same instrument: its row answers. */
-        onShow?.(j)
-        after(DUR.move, () => {
-          const tab = stage.querySelector(`.fg-tabs--right .fg-tab[data-tab="${j}"]`)
-          tab?.classList.add('is-called', 'is-idle-called')
-        })
-        after(rand(1000, 1300), () => {
-          stage.querySelectorAll('.fg-tab.is-idle-called').forEach((t) => t.classList.remove('is-called', 'is-idle-called'))
-          L.pendingPeek = undefined
-          moveHinge(0, DROP)
-          onShow?.(null)
-        })
-        done(2100)
+        return settle(1300)
       },
       /* A thumb runs down the fore-edge: the tabs lean out in turn while the
          cover gives a little. */
       riffle() {
-        stage.classList.add('is-riffling')
+        stage()?.classList.add('is-riffling')
         moveHinge(4, AIR)
         after(620, () => moveHinge(0, DROP))
-        after(CHAPTERS.length * 90 + DUR.reveal + 80, () => stage.classList.remove('is-riffling'))
-        done(1400)
+        after(CHAPTERS.length * 90 + DUR.reveal + 80, () => stage()?.classList.remove('is-riffling'))
+        return settle(1300)
       },
       /* The needle swings wide on a loose spring and finds north again. */
       north() {
         const away = springs.needle.target + (Math.random() < 0.5 ? -1 : 1) * rand(120, 220)
         springs.needle.set(away, NEEDLE_LOOSE)
         after(rand(620, 820), () => springs.needle.set(Math.round(away / 360) * 360 + rand(-5, 5), NEEDLE))
-        done(1900)
+        return settle(1700)
       },
-      /* The rare one: the book opens itself at the contents, turns a chapter
-         (sometimes two), and closes. Returns its length so the next gesture
-         waits longer. */
-      tour() {
-        L.lastTour = performance.now()
-        L.smallSinceTour = 0
+
+      /* ── Minors ── */
+
+      /* A chapter's pages lift and its thumb tab leans out; the hero's
+         chapter list is the same instrument, so its row answers. */
+      peek() {
+        const j = Math.floor(Math.random() * CHAPTERS.length)
+        peek(j)
+        onShow?.(j)
+        after(DUR.move, () => callTab(j, true))
+        after(rand(1100, 1400), () => {
+          callTab(j, false)
+          L.pendingPeek = undefined
+          moveHinge(0, DROP)
+          onShow?.(null)
+        })
+        return settle(2100)
+      },
+      /* The cover swings open far enough to show the contents beneath it,
+         hangs there on a breath, and falls shut with a slap. */
+      ajar() {
+        moveHinge(rand(48, 62), AIR_SLOW)
+        after(rand(1150, 1350), () => moveHinge(0, HEFT))
+        return settle(2400)
+      },
+
+      /* ── Majors: showcases ── */
+
+      /* Opens at the contents; the right page hesitates; one chapter turns;
+         holds; the chapter block closes, heavily. */
+      oneTurn() {
         L.autoOpened = true
         openAt(0)
-        const first = Math.random() < 0.6 ? 1 : 2
-        const second = Math.random() < 0.45 ? Math.min(SPREADS - 1, first + 1) : null
-        let t = 1900
-        after(t, () => { turnTo(first); onShow?.(first - 1) })
-        t += 2400
-        if (second != null) {
-          after(t, () => { turnTo(second); onShow?.(second - 1) })
-          t += 2300
-        }
+        let t = 1350
+        after(t, flutter)
+        t += FLUTTER_MS + 250
+        const k = Math.random() < 0.5 ? 1 : 2
+        after(t, () => { turnTo(k); onShow?.(k - 1) })
+        t += 2100
         after(t, () => { L.autoOpened = false; close(); onShow?.(null) })
-        done(t + 900)
-        return t
+        return settle(t + 900)
+      },
+      /* Opens; turns a chapter; turns another; riffles back to the contents;
+         closes. */
+      twoTurns() {
+        L.autoOpened = true
+        openAt(0)
+        let t = 1250
+        after(t, () => { turnTo(1); onShow?.(0) })
+        t += 1850
+        after(t, () => { turnTo(2); onShow?.(1) })
+        t += 1850
+        after(t, () => { turnTo(0); onShow?.(null) })
+        t += LEAF_MS + LEAF_STAGGER + 450
+        after(t, () => { L.autoOpened = false; close() })
+        return settle(t + 900)
+      },
+      /* Opens; three leaves riffle forward to a later chapter; holds on it;
+         riffles back to the front; closes. */
+      skim() {
+        L.autoOpened = true
+        openAt(0)
+        let t = 1250
+        after(t, () => { turnTo(3); onShow?.(2) })
+        t += 2300
+        after(t, () => { turnTo(0); onShow?.(null) })
+        t += LEAF_MS + 2 * LEAF_STAGGER + 450
+        after(t, () => { L.autoOpened = false; close() })
+        return settle(t + 900)
+      },
+      /* A chapter's block lifts and the book opens straight at it, as if by
+         its thumb tab; it turns one more; closes. */
+      atChapter() {
+        L.autoOpened = true
+        const j = 1 + Math.floor(Math.random() * 3)
+        peek(j)
+        onShow?.(j)
+        after(DUR.move, () => callTab(j, true))
+        let t = 850
+        after(t, () => { callTab(j, false); openAt(j + 1) })
+        t += 1900
+        after(t, () => { turnTo(Math.min(SPREADS - 1, j + 2)); onShow?.(Math.min(CHAPTERS.length - 1, j + 1)) })
+        t += 2000
+        after(t, () => { L.autoOpened = false; close(); onShow?.(null) })
+        return settle(t + 900)
       },
     }
+  }, [springs, moveHinge, peek, openAt, turnTo, close, flutter, onShow])
 
-    const run = () => {
-      const now = performance.now()
-      if (L.performing || !isOnScreen(stage)) return 0
-      if (now - L.lastTouch < HANDS_OFF_MS) return 0
-      /* Open, turning, moving, or a block held up by the hand (a chapter
-         in the hero list hovered for a long time): not the book's turn. */
-      if (L.open || L.turn || springs.hinge.moving) return 0
-      if (springs.hinge.target !== 0 || L.pendingPeek !== undefined) return 0
-      /* Held under the pointer, or in keyboard focus. (A mouse click also
-         focuses the stage; that alone is not "being handled".) */
-      const focus = document.activeElement
-      if (stage.classList.contains('is-held') || (stage.contains(focus) && focus.matches(':focus-visible'))) return 0
-      const choice = pick([
-        { id: 'lift', weight: 3 },
-        { id: 'peek', weight: 3 },
-        { id: 'riffle', weight: 2 },
-        { id: 'north', weight: 2 },
-        {
-          id: 'tour',
-          weight: 4,
-          when: () => L.smallSinceTour >= 2 && now - L.lastTour > 30000 && idleFor() > 5000 && shareInView() > 0.7,
-        },
-      ], L.lastGesture)
-      if (!choice) return 0
-      L.lastGesture = choice.id
-      L.performing = choice.id
-      if (choice.id !== 'tour') L.smallSinceTour += 1
-      return gestures[choice.id]() || 0
-    }
+  const shareInView = () => {
+    const r = stageRef.current?.getBoundingClientRect()
+    if (!r?.height) return 0
+    return (Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0)) / r.height
+  }
 
-    /* Mostly still: a small gesture takes 1–2s, and the rest between them is
-       4–9s, never the same twice. */
-    const cancel = every({ min: 4200, max: 8800, first: 2600, run })
+  /* Run one gesture as a performance: the hand stops it where it is; leaving
+     the screen puts the book back. */
+  const performGesture = (ctx, options) => {
+    const L = live.current
+    const choice = pick(options, L.lastGesture)
+    if (!choice) return 0
+    L.lastGesture = choice.id
+    L.performing = choice.id
+    ctx.onStop((reason) => {
+      if (reason === 'hand') { stopPerforming(); L.autoOpened = false } else abandon()
+    })
+    return gestures[choice.id]()
+  }
 
-    /* Nobody can see it — scrolled away, or the tab went to the background,
-       where timers keep running but frames do not: stop performing. A book
-       the tour opened closes at once rather than closing for nobody. */
-    const abandon = () => {
-      if (!L.performing) return
-      const wasTour = L.autoOpened
-      stopPerforming()
-      L.autoOpened = false
-      if (!wasTour) {
-        /* A small gesture: put the block down and, if a peek swapped the
-           page under the cover, put the contents back (a jump skips the
-           spring's onRest, which would otherwise do it). */
-        L.pendingPeek = undefined
-        springs.hinge.jump(0)
-        if (L.spread !== 0) { L.spread = 0; setSpread(0) }
-        return
-      }
-      if (L.turn) { L.queued = 'close'; return }
-      if (L.open) {
-        L.open = false
-        setOpen(false)
-        onOpenChange?.(false)
-        springs.hinge.jump(0)
-        L.spread = 0
-        setSpread(0)
-      }
-    }
+  usePerformer(stageRef, {
+    id: 'book:accent',
+    region: 'hero:book',
+    tier: 'accent',
+    share: 0.5,
+    busy: handled,
+    run: (ctx) => {
+      live.current.smallSinceMajor += 1
+      return performGesture(ctx, [{ id: 'lift', weight: 3 }, { id: 'riffle', weight: 2 }, { id: 'north', weight: 2 }])
+    },
+  })
+
+  usePerformer(stageRef, {
+    id: 'book:minor',
+    region: 'hero:book',
+    tier: 'minor',
+    share: 0.5,
+    busy: handled,
+    run: (ctx) => {
+      live.current.smallSinceMajor += 1
+      return performGesture(ctx, [{ id: 'peek', weight: 3 }, { id: 'ajar', weight: 2 }])
+    },
+  })
+
+  usePerformer(stageRef, {
+    id: 'book:showcase',
+    region: 'hero:book',
+    tier: 'major',
+    cooldown: 16000,
+    share: 0.7,
+    busy: handled,
+    when: () => live.current.smallSinceMajor >= 2 && shareInView() > 0.7,
+    run: (ctx) => {
+      const L = live.current
+      L.smallSinceMajor = 0
+      const options = ['oneTurn', 'twoTurns', 'skim', 'atChapter']
+        .filter((id) => id !== L.lastMajor)
+        .map((id) => ({ id, weight: 1 }))
+      const choice = pick(options, null)
+      L.lastMajor = choice?.id ?? null
+      return performGesture(ctx, choice ? [choice] : options)
+    },
+  })
+
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage || reduced.current) return undefined
     const offVisibility = onVisibility(stage, (on) => { if (!on) abandon() })
     const onHidden = () => { if (document.hidden) abandon() }
     document.addEventListener('visibilitychange', onHidden)
-
     return () => {
-      cancel()
       offVisibility()
       document.removeEventListener('visibilitychange', onHidden)
       stopPerforming()
     }
-  }, [springs, moveHinge, peek, openAt, turnTo, close, stopPerforming, onOpenChange, onShow])
+  }, [abandon, stopPerforming])
 
   /* ── Leaves ───────────────────────────────────────────────────────────── */
 
   useLayoutEffect(() => {
     if (!turn) return undefined
-    const { from, to } = turn
+    const { from, to, flutter: hesitating } = turn
     const forward = to > from
     const count = Math.abs(to - from)
     const nodes = [...(leavesRef.current?.querySelectorAll('.fg-leaf') || [])]
-    const total = LEAF_MS + (count - 1) * LEAF_STAGGER
+    const duration = hesitating ? FLUTTER_MS : LEAF_MS
+    const total = duration + (count - 1) * LEAF_STAGGER
     const desk = deskRef.current
-    desk?.style.setProperty('--fg-n-delay', `${(count - 1) * LEAF_STAGGER}ms`)
-    desk?.style.setProperty('--fg-n-dur', `${LEAF_MS}ms`)
+    if (!hesitating) {
+      desk?.style.setProperty('--fg-n-delay', `${(count - 1) * LEAF_STAGGER}ms`)
+      desk?.style.setProperty('--fg-n-dur', `${LEAF_MS}ms`)
+    }
 
     const rightTop = (s) => 2 + PAGE_UNITS - leftUnits(s)
     const leftTop = (s) => 2 + leftUnits(s)
@@ -436,40 +612,67 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
       /* The stacks' re-balancing timing belongs to this turn only. */
       desk?.style.removeProperty('--fg-n-delay')
       desk?.style.removeProperty('--fg-n-dur')
-      live.current.spread = to
+      const landed = hesitating ? from : to
+      live.current.spread = landed
       live.current.turn = null
-      setSpread(to)
+      setSpread(landed)
       setTurn(null)
     }
 
+    const sign = forward ? 1 : -1
     const anims = nodes.map((node, i) => {
+      const outer = node.querySelector('.fg-leaf-part--outer')
+      const folds = node.querySelectorAll('.fg-fold')
+      const timing = { duration, delay: i * LEAF_STAGGER, easing: hesitating ? 'cubic-bezier(0.37, 0, 0.3, 1)' : LEAF_EASE, fill: 'both' }
+
+      if (hesitating) {
+        const z = rightTop(from) + 0.6
+        const main = node.animate(
+          FLUTTER.map((k) => ({ offset: k.offset, transform: `translateZ(${z + Math.abs(k.a) * 0.08}px) rotateY(${k.a}deg)` })),
+          timing,
+        )
+        outer?.animate(FLUTTER.map((k) => ({ offset: k.offset, transform: `rotateY(${k.b}deg)` })), timing)
+        folds.forEach((f) => f.animate(FLUTTER.map((k) => ({ offset: k.offset, opacity: Math.min(1, Math.abs(k.b) / 18) })), timing))
+        return main
+      }
+
       const z0 = (forward ? rightTop(from) : leftTop(from)) + 0.6 + (count - 1 - i) * 0.5
       const z1 = (forward ? leftTop(to) : rightTop(to)) + 0.6 + i * 0.5
       const a0 = forward ? 0 : -180
       const a1 = forward ? -180 : 0
-      const timing = { duration: LEAF_MS, delay: i * LEAF_STAGGER, easing: LEAF_EASE, fill: 'both' }
       const main = node.animate(
         [
           { transform: `translateZ(${z0}px) rotateY(${a0}deg)` },
+          /* Lifted clear of both stacks at the top of its arc. */
+          { transform: `translateZ(${Math.max(z0, z1) + 3}px) rotateY(-90deg)`, offset: 0.5 },
           { transform: `translateZ(${z1}px) rotateY(${a1}deg)` },
         ],
         timing,
       )
+      /* The paper bends: the outer panel leads, trails, and flops flat. */
+      outer?.animate(BEND.map((k) => ({ offset: k.offset, transform: `rotateY(${k.b * sign}deg)` })), timing)
+      folds.forEach((f) => f.animate(BEND.map((k) => ({ offset: k.offset, opacity: Math.min(1, Math.abs(k.b) / 20) })), timing))
+
       /* Light: a face darkens as it turns away from the light and brightens
          as it lands face-up. Keyed to the same progress as the rotation. */
-      const leaving = node.querySelector(forward ? '.fg-leaf-recto .fg-shade' : '.fg-leaf-verso .fg-shade')
-      const arriving = node.querySelector(forward ? '.fg-leaf-verso .fg-shade' : '.fg-leaf-recto .fg-shade')
-      leaving?.animate([{ opacity: 0 }, { opacity: 0.34, offset: 0.5 }, { opacity: 0.34 }], timing)
-      arriving?.animate([{ opacity: 0.3 }, { opacity: 0.3, offset: 0.5 }, { opacity: 0 }], timing)
+      node.querySelectorAll(forward ? '.fg-leaf-recto .fg-shade' : '.fg-leaf-verso .fg-shade')
+        .forEach((s) => s.animate([{ opacity: 0 }, { opacity: 0.34, offset: 0.5 }, { opacity: 0.34 }], timing))
+      node.querySelectorAll(forward ? '.fg-leaf-verso .fg-shade' : '.fg-leaf-recto .fg-shade')
+        .forEach((s) => s.animate([{ opacity: 0.3 }, { opacity: 0.3, offset: 0.5 }, { opacity: 0 }], timing))
       return main
     })
 
     /* The page being uncovered takes a cast shadow as the leaves lift off
-       it; the page being covered takes one as they come down. */
+       it; the page being covered takes one as they come down. A hesitating
+       page only shades what it lifts from. */
     const under = forward ? rightCastRef.current : leftCastRef.current
     const over = forward ? leftCastRef.current : rightCastRef.current
-    under?.animate([{ opacity: 0 }, { opacity: 0.26, offset: 0.3 }, { opacity: 0.18, offset: 0.7 }, { opacity: 0 }], { duration: total, easing: 'linear' })
-    over?.animate([{ opacity: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0.22, offset: 0.8 }, { opacity: 0 }], { duration: total, easing: 'linear' })
+    if (hesitating) {
+      under?.animate([{ opacity: 0 }, { opacity: 0.2, offset: 0.38 }, { opacity: 0 }], { duration: total, easing: 'ease-in-out' })
+    } else {
+      under?.animate([{ opacity: 0 }, { opacity: 0.26, offset: 0.3 }, { opacity: 0.18, offset: 0.7 }, { opacity: 0 }], { duration: total, easing: 'linear' })
+      over?.animate([{ opacity: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0.22, offset: 0.8 }, { opacity: 0 }], { duration: total, easing: 'linear' })
+    }
 
     const last = anims[anims.length - 1]
     if (last) last.onfinish = finish
@@ -691,7 +894,8 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
   const forward = turn ? turn.to > turn.from : false
   const rightSpread = turn ? (forward ? turn.to : turn.from) : spread
   const leftSpread = turn ? (forward ? turn.from : turn.to) : spread
-  const n = leftUnits(turn ? turn.to : spread)
+  /* A hesitating page moves no paper from one stack to the other. */
+  const n = leftUnits(turn && !turn.flutter ? turn.to : spread)
 
   const leaves = []
   if (turn) {
@@ -800,19 +1004,15 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
                 <div ref={leavesRef} className="fg-leaves" {...inertProps(true)}>
                   {leaves.map((l) => (
                     <div className="fg-leaf" key={`${turn.id}-${l.i}`}>
-                      <div className="fg-leaf-face fg-leaf-recto">
-                        <RightPage spread={l.recto} />
-                        <span className="fg-shade" />
-                      </div>
-                      <div className="fg-leaf-face fg-leaf-verso">
-                        <LeftPage spread={l.verso} />
-                        <span className="fg-shade" />
-                      </div>
-                      {l.tab >= 0 && (
-                        <span className="fg-tab fg-tab--carried" style={{ '--chapter': ink(l.tab) }}>
-                          <TabFaces j={l.tab} />
-                        </span>
-                      )}
+                      {/* Two panels, so the paper can bend as it turns. */}
+                      <LeafPart part="inner" recto={l.recto} verso={l.verso} />
+                      <LeafPart part="outer" recto={l.recto} verso={l.verso}>
+                        {l.tab >= 0 && (
+                          <span className="fg-tab fg-tab--carried" style={{ '--chapter': ink(l.tab), '--j': l.tab }}>
+                            <TabFaces j={l.tab} />
+                          </span>
+                        )}
+                      </LeafPart>
                     </div>
                   ))}
                 </div>

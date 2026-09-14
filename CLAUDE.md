@@ -34,9 +34,10 @@ implementation:
   shadow, border, icon, illustration, motion, z-index
 - `design-system/COMPONENT_RULES.md` — how each component in this product
   looks and behaves, in every state
-- `design-system/MOTION_RULES.md` — timing tiers, the twelve motion verbs,
-  the sanctioned loops and ambient motion, the field guide, and the shared
-  motion library in `src/motion/`
+- `design-system/MOTION_RULES.md` — timing tiers, the motion verbs, the
+  sanctioned loops and ambient motion, the Stage and its sanctioned
+  performances, the field guide, and the shared motion library in
+  `src/motion/`
 - `design-system/ANTI_AI_RULES.md` — prohibited patterns, BAD/BETTER, plus a
   pre-commit checklist
 - `design-system/REFERENCE_ANALYSIS.md` — why the references work and why
@@ -73,12 +74,17 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 - **Typography** — eight sizes, five weights, two families. Fraunces for the
   product's voice, Manrope for the interface's, and they never swap jobs.
 - **Gradients** — effectively none. Flat fills.
-- **Animations** — fourteen verbs, tiered duration tokens and named easings
-  (`MOTION_RULES.md`, revision 4). Every animation is a Response, a Report,
-  an Invitation, a listed Ambient motion or a listed Idle event and goes
-  through `src/motion/`. No literal durations in component CSS; no spring on
-  a Response. Loops and idle events only where that file lists them. Light
-  (glint, sparkle, bloom) only on the economy icons.
+- **Animations** — sixteen verbs, tiered duration tokens and named easings
+  (`MOTION_RULES.md`, revision 5). Every animation is a Response, a Report,
+  an Invitation, a listed Ambient motion, a listed Idle event or a listed
+  Demonstration, and goes through `src/motion/`. Anything that performs on
+  its own registers with the Stage (`src/motion/stage.js` → `usePerformer`);
+  it never keeps its own clock. No literal durations in component CSS; no
+  spring on a Response. Light (glint, sparkle, bloom) only on the economy
+  icons.
+- **Demo data** — landing-page frames run on `ProgressionDemo` learners
+  (real reducer, in memory, never saved). Previews in the app never change
+  the learner's real numbers.
 - **Components** — reuse `.btn`, the card pattern, the row pattern.
 
 ## Rules of engagement

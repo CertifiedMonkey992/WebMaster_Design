@@ -34,6 +34,8 @@ import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import CountUp from '../motion/CountUp'
 import { DUR } from '../motion/timing'
+import { useRef } from 'react'
+import { useAboutPreviews } from '../components/learn/previews'
 
 import '../components/showcase/showcase.css'
 import './AboutPage.css'
@@ -106,6 +108,10 @@ const NAV_LINKS = [
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function AboutPage({ onGoHome, onStartLearning }) {
+  const methodRef = useRef(null)
+  const impactRef = useRef(null)
+  useAboutPreviews(methodRef, impactRef)
+
   return (
     <div className="app">
       <Navbar
@@ -276,7 +282,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
         </section>
 
         {/* ── The course, counted ──────────────────────────────────────────── */}
-        <section className="sc-section ab-section" id="impact" aria-labelledby="impact-heading">
+        <section className="sc-section ab-section" id="impact" aria-labelledby="impact-heading" ref={impactRef}>
           <div className="ab-wrap">
             <Eyebrow index={3}>The course, counted</Eyebrow>
             <div className="ab-impact-head">
@@ -385,7 +391,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
         </section>
 
         {/* ── How it works ─────────────────────────────────────────────────── */}
-        <section className="sc-section ab-section" id="method" aria-labelledby="method-heading">
+        <section className="sc-section ab-section" id="method" aria-labelledby="method-heading" ref={methodRef}>
           <div className="ab-wrap ab-split">
             <div>
               <Eyebrow index={5}>How it works</Eyebrow>

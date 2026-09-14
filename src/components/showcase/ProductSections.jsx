@@ -1,8 +1,15 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ProductSections.jsx — THE MARKETING STORY, TOLD WITH THE REAL PRODUCT
    ---------------------------------------------------------------------------
-   Every panel on this page is the app's own component, mounted through
-   ProgressionShowcase against a demo learner built by the real reducer.
+   Every panel on this page is the app's own component, mounted against a
+   demo learner built by the real reducer.
+
+   Revision 5: each frame has its OWN demo learner (ProgressionDemo) and a
+   SCENE that uses it — the course frame finishes a lesson, the streak frame
+   keeps a day, the bonus frame claims its way along the track, the quest
+   frame completes a quest and is paid — each narrated in the frame's chrome
+   and scheduled by the Stage (MOTION_RULES.md → The Stage). Nothing is
+   saved; the visitor's own progress is never read or written here.
 
    Choreography, per section (MOTION_RULES.md → Scroll):
      · the eyebrow's index number and rule draw in
@@ -14,9 +21,9 @@
      · the real components inside perform their own entrance when seen
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useMemo } from 'react'
-import { ProgressionShowcase, useProgression } from '../../state/ProgressionContext'
-import { getShowcaseState } from '../../data/showcaseState'
+import { useRef } from 'react'
+import { ProgressionDemo, useProgression } from '../../state/ProgressionContext'
+import { getShowcaseState, getBonusShowcaseState } from '../../data/showcaseState'
 import { TOTAL_LESSONS } from '../../data/learnData'
 import { SHOP_ITEMS } from '../../config/shopConfig'
 import { STREAK, QUESTS } from '../../config/progressionConfig'
@@ -28,14 +35,21 @@ import PlayerStatusBar from '../progression/PlayerStatusBar'
 import StreakPanel from '../progression/StreakPanel'
 import { QuestCard } from '../progression/QuestCard'
 import DailyBonusTrack from '../daily/DailyBonusTrack'
+import DailyBonusIndicator from '../daily/DailyBonusIndicator'
 import ShopArt from '../shop/ShopArt'
 import { GemIcon } from '../progression/Icons'
 
 import ProductFrame from './ProductFrame'
+import CourseScene from './scenes/CourseScene'
+import StreakScene from './scenes/StreakScene'
+import BonusScene from './scenes/BonusScene'
+import QuestScene from './scenes/QuestScene'
 import SplitText from '../../motion/SplitText'
 import Reveal from '../../motion/Reveal'
 import useInView from '../../motion/useInView'
 import { useScrollProgress } from '../../motion/scroll'
+import { usePerformer } from '../../motion/stage'
+import { DUR } from '../../motion/timing'
 import './showcase.css'
 
 const noop = () => {}
@@ -72,10 +86,50 @@ export function Eyebrow({ index, children }) {
 function Section({ id, index, eyebrow, heading, children, frame, flip = false }) {
   /* Writes --sp (0 entering → 1 leaving) for the frame's parallax. */
   const parallaxRef = useScrollProgress()
+  const copyRef = useRef(null)
+
+  /* Accent (revision 5): now and then the copy answers the frame beside it —
+     a highlighter stroke is laid again under one of its bold terms, the
+     eyebrow's rule is drawn again, or the heading's emphasised word lifts
+     and settles — never the same gesture twice running. It draws the eye
+     from the demonstration back to the words that explain it. */
+  const lastCopy = useRef(null)
+  usePerformer(copyRef, {
+    id: `copy:${id}`,
+    region: `${id}:copy`,
+    tier: 'accent',
+    weight: 0.6,
+    cooldown: 8000,
+    share: 0.5,
+    run: async (ctx) => {
+      const root = copyRef.current
+      if (!root) return
+      const marks = [...root.querySelectorAll('.mark.is-in')]
+      const words = [...root.querySelectorAll('.sc-heading .st-i')]
+      const options = [
+        marks.length && 'mark',
+        root.querySelector('.sc-eyebrow.is-in') && 'rule',
+        words.length && 'word',
+      ].filter((o) => o && o !== lastCopy.current)
+      const kind = options[Math.floor(Math.random() * options.length)]
+      lastCopy.current = kind
+      const target = kind === 'mark'
+        ? marks[Math.floor(Math.random() * marks.length)]
+        : kind === 'rule'
+          ? root.querySelector('.sc-eyebrow')
+          : words[Math.floor(Math.random() * Math.min(3, words.length))]
+      if (!target) return
+      target.setAttribute('data-relay', '')
+      ctx.onStop(() => target.removeAttribute('data-relay'))
+      await ctx.wait(DUR.celebrate + 200)
+      target.removeAttribute('data-relay')
+    },
+  })
+
   return (
     <section className="sc-section" id={id} aria-labelledby={`${id}-heading`}>
       <div className={`sc-wrap${flip ? ' flip' : ''}`}>
-        <div className="sc-copy">
+        <div className="sc-copy" ref={copyRef}>
           <Eyebrow index={index}>{eyebrow}</Eyebrow>
           <SplitText as="h2" className="sc-heading" id={`${id}-heading`} stagger={48}>
             {heading}
@@ -110,14 +164,17 @@ function LearnSection() {
       eyebrow="The course"
       heading={<>{TOTAL_LESSONS} lessons,<br />one module at a time.</>}
       frame={
-        <ProductFrame
-          path="Learn"
-          caption="The Learn tab with a sample learner’s progress. It scrolls on its own; hover to pause it."
-          maxHeight="30rem"
-          tour={COURSE_TOUR}
-        >
-          <ModuleList onStartLesson={noop} />
-        </ProductFrame>
+        <ProgressionDemo seed={getShowcaseState}>
+          <ProductFrame
+            path="Learn"
+            caption="The Learn tab on a demo learner. It tours the course and finishes a lesson now and then; hover to pause it."
+            maxHeight="30rem"
+            tour={COURSE_TOUR}
+            scene={<CourseScene />}
+          >
+            <ModuleList onStartLesson={noop} />
+          </ProductFrame>
+        </ProgressionDemo>
       }
     >
       <p className="sc-body">
@@ -147,16 +204,23 @@ function StreakSection() {
       heading={<>A day counts once<br />you finish something.</>}
       flip
       frame={
-        <ProductFrame path="Streak" caption="The app’s top bar and streak panel. Hover a number to see what it counts, or click the flame." side="left">
-          <div className="sc-stats-frame">
-            <div className="sc-topbar">
-              <PlayerStatusBar />
+        <ProgressionDemo seed={getShowcaseState}>
+          <ProductFrame
+            path="Streak"
+            caption="The app’s top bar and streak panel on a demo learner, one day at a time. Hover a number to see what it counts."
+            side="left"
+            scene={<StreakScene />}
+          >
+            <div className="sc-stats-frame">
+              <div className="sc-topbar">
+                <PlayerStatusBar />
+              </div>
+              <div className="sc-panel-host">
+                <StreakPanel />
+              </div>
             </div>
-            <div className="sc-panel-host">
-              <StreakPanel />
-            </div>
-          </div>
-        </ProductFrame>
+          </ProductFrame>
+        </ProgressionDemo>
       }
     >
       <p className="sc-body">
@@ -177,10 +241,20 @@ function StreakSection() {
 /* ── 3. Daily bonus ───────────────────────────────────────────────────────── */
 
 function BonusFrame() {
-  const { vm } = useProgression()
+  const { vm, actions } = useProgression()
   return (
-    <ProductFrame path="Daily bonus" caption="The daily bonus panel for a sample learner on day 4.">
-      <DailyBonusTrack view={vm.dailyBonus} variant="showcase" showHeader={false} />
+    <ProductFrame
+      path="Daily bonus"
+      caption="The top bar and daily bonus panel on a demo learner. It claims a day at a time; press Claim to try it yourself."
+      scene={<BonusScene />}
+    >
+      <div className="sc-stats-frame">
+        <div className="sc-topbar">
+          <DailyBonusIndicator onOpen={noop} />
+          <PlayerStatusBar />
+        </div>
+        <DailyBonusTrack view={vm.dailyBonus} variant="showcase" showHeader={false} onClaim={actions.claimDailyBonus} />
+      </div>
     </ProductFrame>
   )
 }
@@ -192,7 +266,7 @@ function BonusSection() {
       index={3}
       eyebrow="Daily bonus"
       heading={<>{DAILY_BONUS.CYCLE_LENGTH} days,<br />{DAILY_BONUS.CYCLE_LENGTH} rewards.</>}
-      frame={<BonusFrame />}
+      frame={<ProgressionDemo seed={getBonusShowcaseState}><BonusFrame /></ProgressionDemo>}
     >
       <p className="sc-body">
         The track pays gems, XP and hearts, with a <Mark>Streak Shield on
@@ -213,16 +287,28 @@ function BonusSection() {
 const FLOAT_K = [1, 1.23, 0.87]
 
 function QuestFrame() {
-  const { vm } = useProgression()
+  const { vm, state } = useProgression()
   const quests = vm.quests.daily.slice(0, 3)
 
   return (
-    <ProductFrame path="Quests" caption="Today’s quests for a sample learner, and everything the shop sells." side="left">
+    <ProductFrame
+      path="Quests"
+      caption="Today’s quests on a demo learner, and everything the shop sells. Claim a finished quest to try it yourself."
+      side="left"
+      scene={<QuestScene />}
+    >
       <div className="sc-stack">
+        <div className="sc-topbar">
+          <PlayerStatusBar />
+        </div>
         <span className="sc-stack-label">Today&apos;s quests</span>
-        {quests.map((quest, i) => (
-          <QuestCard key={quest.id} quest={quest} variant="compact" index={i} />
-        ))}
+        {/* Keyed on the day, so tomorrow's set is dealt in rather than
+            swapped in place. */}
+        <div className="sc-quests" key={state.quests.dailyKey}>
+          {quests.map((quest, i) => (
+            <QuestCard key={quest.id} quest={quest} variant="compact" index={i} />
+          ))}
+        </div>
 
         <span className="sc-stack-label" style={{ marginTop: '0.5rem' }}>
           What gems buy
@@ -258,7 +344,7 @@ function QuestSection() {
       eyebrow="Quests & shop"
       heading={<>Quests earn gems.<br />Gems buy second chances.</>}
       flip
-      frame={<QuestFrame />}
+      frame={<ProgressionDemo seed={getShowcaseState}><QuestFrame /></ProgressionDemo>}
     >
       <p className="sc-body">
         Each day brings {inWords(QUESTS.DAILY_COUNT)} new quests: an easy one, a medium
@@ -279,14 +365,12 @@ function QuestSection() {
 /* ── Root ─────────────────────────────────────────────────────────────────── */
 
 export default function ProductSections() {
-  const state = useMemo(() => getShowcaseState(), [])
-
   return (
-    <ProgressionShowcase state={state}>
+    <>
       <LearnSection />
       <StreakSection />
       <BonusSection />
       <QuestSection />
-    </ProgressionShowcase>
+    </>
   )
 }

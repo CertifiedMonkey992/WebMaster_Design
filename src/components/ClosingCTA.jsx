@@ -4,8 +4,13 @@
    One promise the build actually keeps: the course opens without an account.
    The three figures are read from real course data, and they are TALLIED as
    they arrive — the page counting the course out for you.
+
+   Revision 5: an Accent on the Stage — now and then the button's arrow
+   leans on toward where it goes (an Invitation), in its turn with
+   everything else on the page.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { useRef } from 'react'
 import { TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
 import { DAILY_BONUS } from '../config/dailyBonusConfig'
 import SplitText from '../motion/SplitText'
@@ -13,9 +18,27 @@ import Reveal from '../motion/Reveal'
 import CountUp from '../motion/CountUp'
 import { useScrollProgress } from '../motion/scroll'
 import { DUR, STAGGER } from '../motion/timing'
+import { usePerformer } from '../motion/stage'
 
 export default function ClosingCTA({ onStartLearning }) {
   const planeRef = useScrollProgress()
+  const actionRef = useRef(null)
+
+  usePerformer(actionRef, {
+    id: 'cta:arrow',
+    region: 'cta',
+    tier: 'accent',
+    cooldown: 7000,
+    share: 0.9,
+    run: async (ctx) => {
+      const btn = actionRef.current?.querySelector('.btn')
+      if (!btn) return
+      btn.setAttribute('data-nudge', '')
+      ctx.onStop(() => btn.removeAttribute('data-nudge'))
+      await ctx.wait(DUR.celebrate * 1.5)
+      btn.removeAttribute('data-nudge')
+    },
+  })
   const stats = [
     { value: TOTAL_LESSONS, label: 'interactive lessons', tip: 'Fill-in-the-blank, AI-or-not and multiple-choice questions' },
     { value: TOTAL_SECTIONS, label: 'modules, beginner to advanced', tip: 'Foundations → machine learning → neural networks → tools → ethics' },
@@ -39,6 +62,7 @@ export default function ClosingCTA({ onStartLearning }) {
             this browser as you go.
           </Reveal>
 
+          <div ref={actionRef} className="cta-action">
           <Reveal variant="scale" delay={DUR.move}>
             <button type="button" className="btn btn-next btn-lg fx-shine" onClick={onStartLearning} data-magnetic="8">
               Open the course
@@ -49,6 +73,7 @@ export default function ClosingCTA({ onStartLearning }) {
               </svg>
             </button>
           </Reveal>
+          </div>
         </div>
 
         <div className="cta-stats-plane" ref={planeRef}>

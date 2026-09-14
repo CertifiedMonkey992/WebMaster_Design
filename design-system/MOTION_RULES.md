@@ -1,5 +1,43 @@
 # Motion Rules
 
+> **Revision 5 — the page demonstrates itself (2026-09).** Revision 4 gave
+> objects a life of their own, and each one lived it on its own clock. Two
+> things followed. Between their events the page still read as a photograph
+> for long stretches — and when events did land, two could land at once,
+> because nothing knew about anything else. Worse, none of that life *showed
+> the product working*: a gem catching the light does not tell a visitor what
+> earning gems looks like, and a still quest list does not say what happens
+> when a quest is done.
+>
+> Revision 5 keeps every token, verb, loop and prohibition from revision 4
+> and adds four things:
+>
+> 1. **The Stage** — one attention clock per page (`src/motion/stage.js`).
+>    Everything that performs without being asked — the book, a demo scene, a
+>    preview — asks the stage for a turn. One performance at a time, then the
+>    page settles; the next one comes 1.2–4.6s later, somewhere else, never on
+>    the same rhythm twice. Only what is on screen performs, and the reader's
+>    hand always wins.
+> 2. **Demonstrations** — a sixth category of motion: *"this is what happens
+>    when you…"*. The landing page's product frames run **scenes** on a
+>    time-lapsed demo learner: the real reducer, the real components, a clock
+>    that can skip to tomorrow, and nothing ever saved. Each frame narrates its
+>    scene in its chrome, so a visitor always knows what they are watching.
+> 3. **Previews** inside the app — Demonstrations on the learner's *real*
+>    data that change nothing: a quest row opens to say what is left, a
+>    claimable reward's gem hops toward the counter it will land in, a locked
+>    module shows what unlocks it, an unfinished quest shows its finish as a
+>    ghost.
+> 4. **The field guide's repertoire** — the book performs showcase
+>    variations (one turn, two turns, a skim and back to the front, opening
+>    straight at a chapter, standing ajar, a hesitating page), and its leaves
+>    bend like paper as they turn.
+>
+> Revision 1 → *motion is a cost*. Revision 2 → *the page answers you*.
+> Revision 3 → *the page is alive, and answers you immediately*.
+> Revision 4 → *the page performs, quietly, even when you stop*.
+> Revision 5 → *the page shows you what it does, one thing at a time*.
+
 > **Revision 4 — the page performs between gestures (2026-09).** Revision 3
 > fixed *timing* and it held: responses are immediate, gestures run on one
 > clock, nothing wobbles. But a learner who stopped moving the mouse saw a
@@ -32,7 +70,7 @@
 ## The test
 
 Before writing an animation, answer: **what is this motion telling the
-learner?** Every animation belongs to one of five categories. If it fits none,
+learner?** Every animation belongs to one of six categories. If it fits none,
 it does not ship.
 
 | Category | It says | Examples |
@@ -42,8 +80,16 @@ it does not ship.
 | **Invitation** | "This is waiting for you." | the current lesson's ping, a claimable reward's shine, a spark walking toward the next milestone |
 | **Ambient** | "This is a real object in a real place." | the field guide floating on the desk, its ribbon swaying, the lesson ticker drifting |
 | **Idle event** | "This object has a life of its own." | the book lifting its cover, a gem glinting, a heart's slow beat, an ember rising |
+| **Demonstration** *(rev 5)* | "This is what happens when you…" | the demo learner finishing a quest and its gems flying to the counter; a bonus day claimed and the next one unlocking; the book opening itself and turning a chapter; a ghost fill showing a quest's finish |
 
 Arrival choreography is a **Report** and runs **once**, never on re-render.
+
+A Demonstration is made of Reports — the same roll, crack, fly and stamp a
+real event produces — caused by something the page does rather than something
+the learner did. That is the whole difference, and it is why every
+Demonstration **says what caused it** before the effect lands (the frame's
+cue, a ghost's label), and why it **never changes the learner's real
+progress**.
 
 ---
 
@@ -62,6 +108,10 @@ shown by *amplitude*, never by duration.
 
 Two Level-3 motions never run at once. A Level-3 motion suspends every
 Level-4 motion on the same object while it plays.
+
+Revision 5 makes that page-wide: **two performances never run at once,
+anywhere on the page** (The Stage, below). Idle loops that live in CSS — a
+gem's glint, a heart's beat — are Level 1 and keep their own periods.
 
 ---
 
@@ -195,7 +245,8 @@ in the same direction; nothing further moves.
 
 ## The vocabulary
 
-Twelve verbs from revision 3, plus two for light.
+Twelve verbs from revision 3, two for light (revision 4), and two for
+Demonstrations (revision 5).
 
 | Verb | Means | Timing |
 |---|---|---|
@@ -213,6 +264,8 @@ Twelve verbs from revision 3, plus two for light.
 | **Stamp** | "this is done" | `--dur-reveal` keyframes, rotate-overshoot |
 | **Glint** *(rev 4)* | "this is valuable" | a band of warm light crosses a gem's facets in ~15% of `--idle-glint`; a four-point sparkle twinkles once |
 | **Bloom** *(rev 4)* | "this just grew" | a warm radial light opens behind the icon and fades: `--dur-celebrate`, scale on `--ease-spring`, opacity on `--ease-out` |
+| **Cue** *(rev 5)* | "watch this: here is what is about to happen" | a caption in a frame's chrome changes: the old line leaves up (`--dur-move` `--ease-in`), the new one's words rise in (`--dur-open` `--ease-snap`, `--stagger`); it leads its effect by ≥ `--dur-open` |
+| **Ghost** *(rev 5)* | "this is what finishing it would look like" | a hatched fill in the bar's own colour runs from the real fill to the target (`--dur-settle` `--ease-settle`), a label rises from the reward, both hold ~1.4s, then withdraw (`--dur-open` `--ease-in`); the real figure never moves |
 
 ### Hover, by object
 
@@ -340,7 +393,7 @@ The sanctioned idle events:
 
 | Object | Events |
 |---|---|
-| **Field guide** | cover lifts 9–14° and falls back with a tap · a chapter block lifts and its tab leans out · the thumb tabs riffle top to bottom · the needle swings wide and finds north again · **the tour**: at most once per 30s, only after 5s without input, the book opens at the contents, turns one or two chapters, and closes itself |
+| **Field guide** | its repertoire, scheduled by the Stage since revision 5 (*The field guide → Repertoire*) |
 | **Gem** (live and in price tags) | glint + sparkle |
 | **Heart** (live) | slow beat |
 | **Flame** (live, lit) | embers rising from the tip |
@@ -355,6 +408,125 @@ The sanctioned idle events:
 | **Earned medals** | an unlocked achievement catches the light |
 | **Quest bars in progress** | one band of light along the fill |
 | **Day 7 foil** | the foil sheen crosses the tile |
+
+---
+
+## The Stage (revision 5)
+
+Revision 4's idle events each ran on their own jittered timer. Put five
+living things on one screen and, by chance, two land together; take them away
+and the screen falls silent for ten seconds. The Stage is the page's single
+**attention clock** (`src/motion/stage.js`): anything that performs without
+being asked registers as a **performer** and waits for its turn.
+
+```
+performance ─▶ settle (rest) ─▶ performance ─▶ settle ─▶ …
+     A              1.9s              B            3.1s
+```
+
+### Performers
+
+A performer is `{ element, region, tier, run }`. It is registered while its
+component is mounted — so each page's pool is simply whatever that page has
+mounted, and the landing page, the app's destinations and the About page each
+perform differently without a list of pages anywhere.
+
+| Tier | What | Level | Rest after it | Own cooldown |
+|---|---|---|---|---|
+| **Major** | a Demonstration with an outcome: the book's showcase, a quest completed and paid, a bonus day claimed, a streak extended, a lesson completed | 3 | 2.4–4.6s | ≥ 14s, and never two Majors back to back |
+| **Minor** | a Demonstration of one part: a heart lost and refilled, a quest row opening, a ghost fill, the book standing ajar or peeking, a locked module previewing | 2 | 1.8–3.4s | ≥ 6s |
+| **Accent** | a single gesture: a gem tipping to the light, the scribble re-inked, a highlighter laid again, the thumb tabs riffling, a flame flaring | 1 | 1.2–2.6s | ≥ 3.5s |
+
+- **Rests** are drawn fresh each time and never land within 8% of the last
+  one. About one rest in seven is a long one (+2–3s): the page takes a breath.
+- **One at a time.** A performance ends when its `run` says it has settled,
+  not when its first effect lands. While a *reader-caused* Report is in the
+  air (a flight, a burst on the fx layer), nothing starts.
+- **Choosing.** Among eligible performers, weight × tier × *not the region
+  that just performed* (×0.3) × *near the middle of the screen* (up to ×1.6)
+  × *a region that just scrolled into view and has not performed yet* (×2.4 —
+  the section greets you). The result is a path for the eye: the book, then
+  the copy beside it; the quest frame, then its shop list.
+
+### What may perform
+
+- **On screen**: ≥ 55% of the performer's element is in the viewport (or it
+  covers ≥ 40% of the viewport, for things taller than the screen).
+- **Arrived**: a region that scrolls into view waits 900ms — its own reveal —
+  before its first performance.
+- **Visible tab**, no reduced motion.
+
+### The hand always wins
+
+| The reader is… | The Stage |
+|---|---|
+| scrolling | starts nothing until 600ms after the last scroll; a running performance whose element leaves the screen jumps to its end |
+| pointing at a performer's element | that performer is not eligible; if it is running it stops **at once, leaving things as the hand found them**, and waits 8s after the hand leaves |
+| pressing, typing a key, focusing inside a region | that region waits 8s; the whole stage waits 1.5s |
+| resting the pointer on running text | no Majors (they pull the eye out of the sentence); Accents and Minors elsewhere continue |
+| idle for 25s | rests stretch ×1.6 — a page left open on a desk calms down |
+| in a dialog, a lesson, a popover | the stage pauses; nothing behind a scrim performs |
+| selecting text | the stage pauses |
+
+### Demonstrations on the landing page — demo learners
+
+Every product frame on the landing page has its own **demo learner**
+(`ProgressionDemo`), seeded from the showcase state:
+
+- Its actions run **the real reducer** in memory. Nothing is saved; nothing
+  touches `localStorage`; the visitor's own progress cannot be read or
+  written from the landing page.
+- It keeps its own **clock**, which a scene can move to *tomorrow*: the
+  engine reconciles exactly as it would overnight — quests regenerate, the
+  streak goes at risk, the bonus track moves on, hearts refill.
+- A visitor can use the frame's controls themselves (claim a quest, claim the
+  bonus). The scene yields and the click acts on the demo learner.
+- After a scene has run its course (a week of demo days, or a finished bonus
+  track), the learner resets to its seed **while its frame is off screen**, so
+  nobody watches a number run backwards.
+- **The cue.** The frame's chrome narrates each scene step in ≤ 5 words
+  (*Finishes a lesson* · *Claims 30 gems* · *Next day*), before its effect,
+  and clears when the frame settles. The Live dot beats while a scene plays.
+
+### The sanctioned performances (exhaustive)
+
+**Landing page**
+
+| Region | Performance | Tier |
+|---|---|---|
+| Hero · field guide | its repertoire (see *The field guide → Repertoire*) | Major / Minor / Accent |
+| Hero · heading | the scribble under the italic phrase is re-inked to a new shape | Accent |
+| Hero · copy | a highlighter stroke is laid under one of the four terms — the one matching the chapter the book just showed, when it just showed one | Accent |
+| Course frame | **a lesson completed**: the tour holds on the current lesson; cue; its check stamps; the heading's count and the module's bar move; the next lesson becomes current | Major |
+| Streak frame | **a day kept**: cue *Next day*; the flame goes at risk and today's square pings; cue *Finishes practice*; the flame flares, the number rolls, today's square stamps, the marker walks; at a milestone the stone rings and its gems fly to the gem pill | Major |
+| Streak frame | **a heart spent and refilled**: cue; the heart cracks and drops; the recovery ring runs; the heart blooms back | Minor |
+| Streak frame | the gem pill tips toward the light | Accent |
+| Bonus frame | **a day claimed**: cue; the claim button presses; the real claim sequence; cue *Next day*; the next day's card becomes today | Major |
+| Bonus frame | a locked day lifts to show what it holds | Accent |
+| Quest frame | **a quest finished and paid**: cue *Finishes a lesson*; the bars move, the row that moved opens; a completed row's claim presses; its gems fly to the frame's gem counter | Major |
+| Quest frame | **tomorrow's quests**: cue *Next day*; the list is dealt again | Minor |
+| Quest frame | a shop item the learner can afford lifts from its row | Accent |
+| Section copy | a highlighter stroke is laid again under one bold term | Accent |
+| Closing | the button's arrow leans on; a rule under the tally is drawn again | Accent |
+
+**The app — previews on real data (nothing changes)**
+
+| Destination | Performance | Tier |
+|---|---|---|
+| Learn | the Continue card: the ring is drawn again and the arrow leans on | Minor |
+| Learn | a locked module previews: its lock lifts off and settles, its hint underlines | Minor |
+| Top bar | the gem tips to the light · the flame flares · the waiting gift shakes | Accent |
+| Sidebar | a quest row opens to show its reward and what is left, then closes | Minor |
+| Sidebar | a claimable quest's gem hops toward the gem counter and settles back | Minor |
+| Sidebar | light runs along the XP bar | Accent |
+| Quests | an unfinished quest shows its **ghost** finish | Minor |
+| Shop | an item the learner can afford lifts; its price gem glints | Accent |
+| Profile | the nearest locked achievement shows its ghost; an earned medal catches the light | Minor / Accent |
+| About | *One lesson, start to finish* walks its three steps in turn; the strand bar is swept | Minor / Accent |
+| A lesson | **nothing** — a lesson is where the learner concentrates | — |
+
+A preview may only use Invitation, Ghost and Idle vocabulary. It never rolls
+a real figure, never flies a reward that was not earned, never stamps.
 
 ### Invitations and running Reports (from revision 2, unchanged)
 
@@ -401,12 +573,12 @@ near the viewport.
 
 | Section | As it enters | While in view | As it leaves |
 |---|---|---|---|
-| Hero | assembles on load | the book floats and performs idle events; tabs, needle and pose follow the pointer | the book drifts up slower than the page and turns a few degrees |
+| Hero | assembles on load | the book floats and performs its repertoire; the scribble and the terms are inked again; tabs, needle and pose follow the pointer | the book drifts up slower than the page and turns a few degrees |
 | Lesson ticker | — | drifts; scroll velocity pushes it | — |
-| Course | eyebrow rule draws, words rise, frame stands up | **the frame tours the real course by itself** and floats on a parallax | — |
-| Streaks | frame slides in from its own side | embers rise from the flame, a sheen runs the week, a spark walks to the next milestone | — |
-| Daily bonus | days are dealt when the frame is seen | today's art floats and twinkles, the locked days ripple, day 7's foil sweeps | — |
-| Quests & shop | quest bars fill when seen | bars glint in turn, shop items float, price gems glint | — |
+| Course | eyebrow rule draws, words rise, frame stands up | **the frame tours the real course by itself**, and now and then the demo learner finishes the lesson it is holding on | — |
+| Streaks | frame slides in from its own side | embers rise from the flame, a sheen runs the week; the demo learner keeps a day, spends and refills a heart | — |
+| Daily bonus | days are dealt when the frame is seen | today's art floats and twinkles; the demo learner claims today and moves to tomorrow | — |
+| Quests & shop | quest bars fill when seen | shop items float, price gems glint; the demo learner finishes lessons, completes a quest and is paid | — |
 | Closing | the tally counts, the clock sweeps | the clock ticks each second; the rules under the tally are drawn again in turn; the tally column floats on a slower parallax than the copy | — |
 
 Product frames hold their inner components' entrance animations **paused
@@ -489,30 +661,47 @@ real book on the desk, built from `SECTIONS`.
   travel; content under it is swapped only when it is hidden.
 - **Weight**: the pose follows the pointer on a spring; pressing dips the book;
   closing lands with a 3° rebound; an idle cover lift falls back with a tap.
+- **Paper bends** *(rev 5)*: a turning leaf is two panels hinged at 58% of
+  its width. The outer panel leads the inner one by up to 24° while the leaf
+  lifts (it is lifted by its edge), trails it by up to 12° as it falls (air
+  under the free edge), and lays itself flat as the leaf lands, with a 3°
+  flop past flat. The fold catches the light: a warm band on the outer panel
+  and a shade on the inner one, both keyed to the bend. A page therefore
+  *lifts from its edge* and *lands from its spine*, which is what makes it
+  read as paper rather than a board.
+- **Landing** *(rev 5)*: a closing cover presses the book 3px into the desk
+  and the contact shadow tightens for `--dur-move` — it has weight.
 
-### Idle life (revision 4)
+### Repertoire (revisions 4 and 5)
 
 The book is the page's most interesting object and it behaves like one:
-mostly still, then it does something, then it settles.
+mostly still, then it does something, then it settles. Its gestures are
+Stage performers in the hero region.
 
-| Gesture | Weight | What happens | Length |
+| Gesture | Tier | What happens | Length |
 |---|---|---|---|
-| **lift** | 3 | the cover rises 9–14° on a soft spring and falls back with a tap | ~1.1s |
-| **peek** | 3 | a random chapter's block lifts 16–20°, its tab leans out, it falls back | ~1.5s |
-| **riffle** | 2 | the five thumb tabs lean out one after another, top to bottom | ~0.9s |
-| **north** | 2 | the needle swings 120–220° away and finds north again | ~1.4s |
-| **tour** | rare | opens at the contents; turns one chapter (sometimes two); closes | ~7s |
+| **lift** | Accent | the cover rises 9–14° on a soft spring and falls back with a tap | ~1.1s |
+| **riffle** | Accent | the five thumb tabs lean out one after another, top to bottom, while the cover gives a little | ~0.9s |
+| **north** | Accent | the needle swings 120–220° away and finds north again | ~1.4s |
+| **peek** | Minor | a random chapter's block lifts 16–20°, its tab leans out, the hero list's row answers, it falls back | ~1.5s |
+| **ajar** | Minor | the cover swings open to 48–62° on a slow breath so the contents show beneath it, hangs there, then falls shut with a slap | ~2.2s |
+| **one turn** | Major | opens at the contents; the right page hesitates (lifts ~30° by its corner, bending, and falls back); it turns one or two chapters; holds; closes | ~6s |
+| **two turns** | Major | opens; turns a chapter; turns another; riffles back to the contents; closes | ~7.5s |
+| **skim** | Major | opens; three leaves riffle forward to chapter 3; holds on it; riffles back to the contents; closes | ~6.5s |
+| **at a chapter** | Major | a chapter's block lifts and the book opens straight at it (as if by its thumb tab); turns one more; closes | ~6s |
 
-- First gesture ~2.5s after the book lands; then a rest of 4–9s between
-  gestures, jittered, never the same rest twice.
-- The tour needs ≥ 5s without input anywhere, ≥ 30s since the last tour and
-  ≥ 2 small gestures since.
+- First gesture ~2.4s after the book lands.
+- A Major is never repeated as the next Major; each needs ≥ 16s since the
+  last and ≥ 2 other hero performances in between.
+- Showcases end on the front page: *two turns* and *skim* visibly riffle back
+  to the contents before they close; *one turn* and *at a chapter* close the
+  heavier chapter block directly, which lands harder.
 - **The hand always wins**: pointer on the stage, a key, a hover on the hero's
-  chapter list, or focus cancels the running gesture at once. If the tour had
-  opened the book, it stays open for the learner to use. Idle events resume
+  chapter list, or focus cancels the running gesture at once. If the showcase
+  had opened the book, it stays open for the learner to use. The book waits
   8s after the last interaction.
-- Leaving the screen mid-tour closes the book instantly (no frames spent on
-  something nobody can see).
+- Leaving the screen mid-showcase closes the book instantly (no frames spent
+  on something nobody can see).
 
 ### Timing
 
@@ -572,6 +761,14 @@ More life, no more cost:
 - A loop or idle event that is not listed above.
 - Two idle events on one screen with the same period and no seeded offset.
 - An idle event that runs while its object is handled.
+- *(rev 5)* A performance that does not go through the Stage, or that is not
+  listed under *The sanctioned performances*.
+- *(rev 5)* A performance that runs a timer of its own to decide *when* — the
+  Stage decides when; a performer only decides *what*.
+- *(rev 5)* A Demonstration that writes the learner's real progress, or a
+  preview that rolls a real figure, flies an unearned reward or stamps.
+- *(rev 5)* A demo scene without a cue: the visitor must never wonder whether
+  the product is changing numbers at random.
 - A `position: fixed` dialog inside an element with a *filled* transform
   animation (`backwards`, never `both`).
 - Motion that depends only on `requestAnimationFrame` to reveal content.
@@ -590,6 +787,8 @@ All shared motion lives in `src/motion/`:
 | `FxLayer.jsx` | one document listener: Magnet, Tilt + sheen, tooltips |
 | `ambient.js` | `useAmbient()` — pauses loops while offscreen; `isOnScreen`, `onVisibility` |
 | `idle.js` *(rev 4)* | the page's activity clock (`idleFor()`), `every()` jittered scheduling, `pick()` without repeats, `seedOf()` for per-instance offsets |
+| `stage.js` *(rev 5)* | the Stage: `usePerformer(ref, spec)`, tiers, rests, visibility, the hand's veto, `cue()` |
+| `demo.js` *(rev 5)* | scene helpers: `press(el)` (a programmatic press that looks like one), `ghost()`, `openRow()`; `ProgressionDemo` lives beside `ProgressionShowcase` in `state/ProgressionContext.jsx` |
 | `tour.js` *(rev 4)* | `createTour()` — the self-running course frame |
 | `pageTurn.js` *(rev 4)* | `turnPage(update, dir)` — View Transitions between landing and app |
 | `scroll.js` | `useScrollProgress()` — one listener, per-element progress, scroll velocity |
@@ -619,6 +818,8 @@ fully expressive**, not merely still.
   attach, split text renders assembled, the book changes state without
   travelling, idle events never schedule, the tour does not run (the frame
   scrolls by hand), page turns are instant.
+- The Stage never starts: no performances, no scenes, no previews. Demo
+  frames show their seed state, and their controls still work by hand.
 - Every loop and every ambient motion stops. The ticker becomes a still,
   horizontally scrollable row.
 - Colour and border feedback survives, including the number flash's final

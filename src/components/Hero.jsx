@@ -10,17 +10,28 @@
                        is open, its thumb tab leans out)
      click a module    the book opens at that chapter, or turns to it
 
+   Revision 5 (MOTION_RULES.md → The Stage): the hero's copy performs too,
+   between the book's gestures — the scribble under the italic phrase is
+   inked again to a new shape, and a highlighter is laid under one of the
+   four terms, preferring the one that names the chapter the book just
+   showed. The eye goes book → words → book.
+
    There is deliberately no "start" button here. The landing page has exactly
    two ways into the course — the navbar's button, always on screen, and the
    closing CTA — so the hero is free to be about what the course contains.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { SECTIONS, TOTAL_LESSONS } from '../data/learnData'
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import FieldGuide from './guide/FieldGuide'
 import { CHAPTER_INK, minutesOf, pad } from './guide/guideData'
+import { usePerformer } from '../motion/stage'
+import { DUR } from '../motion/timing'
+
+/* Which hero term names which chapter (by index); Foundations has none. */
+const TERM_OF_CHAPTER = { 1: 0, 2: 1, 3: 2, 4: 3 }
 
 export default function Hero() {
   const guide = useRef(null)
@@ -29,12 +40,71 @@ export default function Hero() {
      the list row answers it more quietly than it answers the hand. */
   const [echo, setEcho] = useState(null)
   const [bookOpen, setBookOpen] = useState(false)
+  const heroRef = useRef(null)
+  const headingRef = useRef(null)
+  const subRef = useRef(null)
+  /* SplitText and Reveal render their own elements; find them once mounted
+     (a layout effect, so the performers below see them). */
+  useLayoutEffect(() => {
+    const h = heroRef.current?.querySelector('.hero-heading') ?? null
+    headingRef.current = h
+    subRef.current = heroRef.current?.querySelector('.hero-sub') ?? null
+    /* The pointer crossing the heading inks it again the same way the Stage
+       does, so the hand and the page never leave the rule half-drawn. */
+    if (!h) return undefined
+    const reink = () => h.setAttribute('data-ink', h.getAttribute('data-ink') === 'b' ? 'a' : 'b')
+    h.addEventListener('pointerenter', reink)
+    return () => h.removeEventListener('pointerenter', reink)
+  }, [])
+  /* The last chapter the book showed on its own, and when. */
+  const shown = useRef({ j: null, at: 0 })
+  const onShow = useCallback((j) => {
+    setEcho(j)
+    if (j != null) shown.current = { j, at: performance.now() }
+  }, [])
+
+  /* Accent: the scribble is inked again, alternating its two hand-drawn
+     shapes (App.css → .hero-heading[data-ink]). */
+  usePerformer(headingRef, {
+    id: 'hero:scribble',
+    region: 'hero:copy',
+    tier: 'accent',
+    weight: 0.8,
+    cooldown: 9000,
+    share: 0.6,
+    run: (ctx) => {
+      const h = headingRef.current
+      if (!h) return 0
+      h.setAttribute('data-ink', h.getAttribute('data-ink') === 'b' ? 'a' : 'b')
+      return DUR.open + DUR.reveal
+    },
+  })
+
+  /* Accent: a highlighter laid under one term — the book's last chapter if
+     it showed one in the last few seconds. */
+  usePerformer(subRef, {
+    id: 'hero:term',
+    region: 'hero:copy',
+    tier: 'accent',
+    share: 0.6,
+    run: async (ctx) => {
+      const terms = [...(subRef.current?.querySelectorAll('.hero-term') ?? [])]
+      if (!terms.length) return
+      const recent = performance.now() - shown.current.at < 7000 ? TERM_OF_CHAPTER[shown.current.j] : undefined
+      const term = terms[recent ?? Math.floor(Math.random() * terms.length)]
+      term.setAttribute('data-marked', '')
+      ctx.onStop(() => term.removeAttribute('data-marked'))
+      await ctx.wait(1500)
+      term.removeAttribute('data-marked')
+      await ctx.wait(DUR.open)
+    },
+  })
 
   const light = (i) => { setLit(i); guide.current?.peek(i) }
   const unlight = () => { setLit(null); guide.current?.peek(null) }
 
   return (
-    <section className="hero" aria-labelledby="hero-heading">
+    <section className="hero" ref={heroRef} aria-labelledby="hero-heading">
       <div className="hero-left">
         {/* Who it is for, how much there is, and the one thing a visitor
             might worry about before clicking. */}
@@ -99,7 +169,7 @@ export default function Hero() {
       </div>
 
       <div className="hero-right">
-        <FieldGuide ref={guide} onOpenChange={setBookOpen} onShow={setEcho} />
+        <FieldGuide ref={guide} onOpenChange={setBookOpen} onShow={onShow} />
       </div>
     </section>
   )

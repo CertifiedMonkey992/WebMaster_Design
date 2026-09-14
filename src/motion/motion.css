@@ -533,6 +533,68 @@
   60%, 100% { transform: translateX(100%); opacity: 0; }
 }
 
+/* ═══ DEMONSTRATIONS (revision 5) ═══════════════════════════════════════════
+   The few pieces of vocabulary a Stage performance needs that a component
+   does not already have. */
+
+/* A press the page performs: the same travel, on the same clock, as :active. */
+[data-pressed] {
+  transform: translateY(1px) scale(0.95) !important;
+  transition-duration: var(--dur-micro) !important;
+  transition-timing-function: var(--ease-press) !important;
+}
+
+/* Ghost: what finishing this would look like. Hatched in the bar's own
+   colour (--ghost, falling back to moss), on top of the real fill, grown
+   from where the real fill ends. Never a glow, never a bead. */
+.fx-ghost {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  transform-origin: 0 50%;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(var(--ghost-rgb, var(--moss-rgb)), 0.42) 0 3px,
+    rgba(var(--ghost-rgb, var(--moss-rgb)), 0.16) 3px 6px
+  );
+  box-shadow: inset 0 0 0 1px rgba(var(--ghost-rgb, var(--moss-rgb)), 0.35);
+}
+
+.fx-ghost-label {
+  position: absolute;
+  left: 0;
+  transform-origin: 0 100%;
+  bottom: calc(100% + 4px);
+  padding: 1px var(--sp-2);
+  border-radius: var(--r-xs);
+  background: var(--surface-raised);
+  border: 1px dashed rgba(var(--ochre-rgb), 0.6);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  color: var(--ochre-ink);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: var(--z-raised);
+}
+
+/* The highlighter laid again under a term (Accent). */
+@keyframes fx-relay {
+  0%   { background-size: 0% 38%; }
+  100% { background-size: 100% 38%; }
+}
+
+/* An arrow leaning on toward where it goes, twice (Accent). */
+@keyframes fx-lean-on {
+  0%, 100% { transform: translateX(0); }
+  22%      { transform: translateX(5px); }
+  44%      { transform: translateX(1px); }
+  66%      { transform: translateX(4px); }
+}
+
 /* ═══ MARQUEE ═══════════════════════════════════════════════════════════════
    Structure only; the drift is a Web Animation in Marquee.jsx. The ends fade
    through a mask so content enters and leaves rather than being cut. */
@@ -680,4 +742,29 @@ html[data-turn='back']::view-transition-old(root)    { animation-name: vt-give-r
   .btn { translate: none; }
   .btn::before { display: none; }
   .fx-tilt { transform: none !important; }
+}
+
+/* Revision 5 — an arrow leaning on toward where its button goes (Accent). */
+.btn[data-nudge] svg.btn-arrow { animation: fx-lean-on calc(var(--dur-celebrate) * 1.5) var(--ease-out); }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn[data-nudge] svg.btn-arrow, [data-pressed] { animation: none; transform: none !important; }
+}
+
+/* Revision 5 — a band of light run once along a fill or a bar by a preview
+   (the quest bars' own idle band, performed on the Stage). */
+[data-sweep] { position: relative; overflow: hidden; }
+[data-sweep]::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(var(--sheen-rgb), 0.6), transparent);
+  transform: translateX(-120%) skewX(-16deg);
+  animation: fx-shine-once var(--dur-celebrate) var(--ease-settle) both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-sweep]::after { display: none; }
 }

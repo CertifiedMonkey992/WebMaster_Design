@@ -366,22 +366,23 @@
   animation: fx-draw var(--dur-celebrate) var(--ease-settle) 900ms forwards;
 }
 
-/* Re-inked to a DIFFERENT hand-drawn shape when the pointer crosses the
-   heading (Roots & Routes' headline rule): the old stroke is wiped away
-   along its length while the new one is drawn in after it. One gesture,
-   one clock — the second stroke simply lags the first. */
-.hero-heading:hover .hero-scribble-a {
-  animation: scribble-wipe var(--dur-open) var(--ease-in) forwards;
-}
+/* Re-inked to a DIFFERENT hand-drawn shape (Roots & Routes' headline rule):
+   the old stroke is wiped away along its length while the new one is drawn
+   in after it. One gesture, one clock — the second stroke simply lags the
+   first. Revision 5: the pointer crossing the heading and the Stage (an
+   Accent) both do it the same way, by flipping data-ink (Hero.jsx) —
+   data-ink="b" wipes the first stroke and draws the second, data-ink="a"
+   wipes the second and draws the first. Each value has its own keyframe
+   names, so every flip restarts the gesture. */
+.hero-heading[data-ink='b'] .hero-scribble-a { animation: scribble-wipe-2 var(--dur-open) var(--ease-in) forwards; }
+.hero-heading[data-ink='b'] .hero-scribble-b { animation: scribble-draw-2 var(--dur-reveal) var(--ease-snap) calc(var(--dur-open) * 0.55) forwards; }
+.hero-heading[data-ink='a'] .hero-scribble-b { stroke-dashoffset: 0; animation: scribble-wipe-3 var(--dur-open) var(--ease-in) forwards; }
+.hero-heading[data-ink='a'] .hero-scribble-a { animation: scribble-draw-3 var(--dur-reveal) var(--ease-snap) calc(var(--dur-open) * 0.55) forwards; }
 
-.hero-heading:hover .hero-scribble-b {
-  animation: fx-draw var(--dur-reveal) var(--ease-snap) calc(var(--dur-open) * 0.55) forwards;
-}
-
-@keyframes scribble-wipe {
-  from { stroke-dashoffset: 0; }
-  to   { stroke-dashoffset: -1; }
-}
+@keyframes scribble-wipe-2 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
+@keyframes scribble-wipe-3 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
+@keyframes scribble-draw-2 { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes scribble-draw-3 { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 
 .hero-sub {
   font-size: var(--fs-lead);
@@ -403,7 +404,12 @@
   transition: background-size var(--dur-open) var(--ease-snap);
 }
 
-.hero-term:hover { background-size: 100% 42%; }
+.hero-term:hover,
+.hero-term[data-marked] { background-size: 100% 42%; }
+
+/* Laid by the Stage (revision 5): a little slower than the hand's, so it
+   reads as a highlighter drawn along the words. */
+.hero-term[data-marked] { transition-duration: var(--dur-reveal); }
 
 /* ── The curriculum list ──────────────────────────────────────────────────────
    Each module is a control that talks to the field guide: hover lifts that

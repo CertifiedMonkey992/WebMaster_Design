@@ -142,7 +142,7 @@ by how *far* something moves, never by how *long* it takes. Ambient motion is
 rationed like the accent: one living object per region of attention, slow,
 small, and it yields the moment a hand touches it.
 
-Durations and easings are tokens (`MOTION_RULES.md`, revision 4). A literal
+Durations and easings are tokens (`MOTION_RULES.md`, revision 5). A literal
 duration in a component is a bug.
 
 Revision 4 adds the fifth kind of motion: an *idle event*. A living object —
@@ -152,6 +152,14 @@ settles. It happens rarely, never in step with anything else, and never while
 a hand is on it. The economy is also allowed to look like treasure: warm
 glints and a brief bloom when a value rises — light as a *report*, never as
 decoration.
+
+Revision 5 adds the sixth: a *demonstration*. The page shows what the
+product does instead of describing it — a demo learner in a product frame
+completes a quest and the gems land in the counter; the field guide opens
+itself and turns a page — and inside the app, previews show the learner what
+finishing something would look like without touching their numbers. All of
+it takes turns on one clock, the Stage: one thing moves, the page settles,
+something else moves somewhere else. Constant does not mean simultaneous.
 
 > Revision 1 of this principle said "Nothing loops. Nothing floats. Nothing
 > breathes." The product that produced read as a printed page that happened

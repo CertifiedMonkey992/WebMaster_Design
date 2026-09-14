@@ -17,14 +17,18 @@ import { formatNumber, getXPProgress } from '../../utils/progressionUtils'
 import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
 import { BoltIcon } from './Icons'
+import { useLevelPreviews } from '../learn/previews'
 
 export default function LevelProgress({ size = 'md', showTitle = true }) {
-  const { vm } = useProgression()
+  const { vm, showcase } = useProgression()
   const xp = useLandedValue('xp', vm.xp)
   const p = getXPProgress(xp)
   const level = p.level
   const fillWidth = useProgressWidth(p.percent)
   const targetRef = useFlightTarget('xp')
+  const blockRef = useRef(null)
+  const setBlock = (node) => { blockRef.current = node; targetRef(node) }
+  useLevelPreviews(blockRef, { disabled: showcase })
 
   /* Turn the badge over when the level changes. */
   const prevLevel = useRef(level)
@@ -49,7 +53,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
     : `${formatNumber(p.xpUntilNextLevel)} XP to level ${level + 1}`
 
   return (
-    <div className={`lv-block lv-${size}`} ref={targetRef}>
+    <div className={`lv-block lv-${size}`} ref={setBlock}>
       <div className={`lv-badge${turning ? ' is-turning' : ''}`} aria-hidden="true" data-tip={`Level ${level} · ${vm.levelTitle}`}>
         <span className="lv-badge-num"><RollingNumber value={level} /></span>
         <span className="lv-badge-bolt fx-zap"><BoltIcon size={12} /></span>

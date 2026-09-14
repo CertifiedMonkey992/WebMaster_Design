@@ -1478,3 +1478,11 @@ html:has(.learn-app) body {
 @media (prefers-reduced-motion: reduce) {
   .badge-dot, .resume-label-dot::after, .qw-reset .ico-hand, .course-tick { animation: none !important; }
 }
+
+/* Revision 5 — a locked module shows what unlocks it (Stage, Minor): its lock
+   lifts off the badge and settles, and the hint naming the module before it
+   is underlined as if pointed at. */
+.badge--locked svg { transition: transform var(--dur-lift) var(--ease-lift); }
+.module--locked[data-shown] .badge--locked svg { transform: translateY(-3px) rotate(-18deg); }
+.module-locked-hint { background-image: linear-gradient(var(--clay-tint), var(--clay-tint)); background-repeat: no-repeat; background-size: 0% 2px; background-position: var(--sp-5) calc(100% - var(--sp-4)); transition: background-size var(--dur-reveal) var(--ease-snap), color var(--dur-hover) var(--ease-out); }
+.module--locked[data-shown] .module-locked-hint { background-size: 60% 2px; color: var(--ink-muted); }

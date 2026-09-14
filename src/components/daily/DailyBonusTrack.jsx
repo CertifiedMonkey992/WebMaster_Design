@@ -165,6 +165,9 @@ export default function DailyBonusTrack({
         size: 22,
         onLand: release,
         allowCovered: true,
+        /* No counter for this reward on screen (XP in a frame without a
+           level bar): the amount rises from the art instead. */
+        orRise: true,
       })
     })
 

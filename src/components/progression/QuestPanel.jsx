@@ -17,6 +17,7 @@ import { msUntilEndOfDay, msUntilEndOfWeek, formatDuration } from '../../utils/d
 import RollingNumber from '../../motion/RollingNumber'
 import SplitText from '../../motion/SplitText'
 import { fly } from '../../motion/flight'
+import { useQuestBoardPreviews } from '../learn/previews'
 
 const TABS = [
   { id: 'today',  label: 'Today',  icon: 'target' },
@@ -39,6 +40,10 @@ export function QuestBoard({ initialTab = 'today', heading = true }) {
   const [tab, setTab] = useState(initialTab)
   const tabsRef = useRef(null)
   const claimAllRef = useRef(null)
+  const boardRef = useRef(null)
+  const questsRef = useRef(null)
+  questsRef.current = [...vm.quests.daily, ...vm.quests.weekly]
+  useQuestBoardPreviews(boardRef, () => questsRef.current)
 
   const dailyDone = vm.quests.daily.filter((q) => q.completed).length
   const weeklyDone = vm.quests.weekly.filter((q) => q.completed).length
@@ -62,7 +67,7 @@ export function QuestBoard({ initialTab = 'today', heading = true }) {
   }
 
   return (
-    <div className="qp-board">
+    <div className="qp-board" ref={boardRef}>
       {heading && (
         <header className="qp-board-head">
           <span className="qp-eyebrow">Quests</span>

@@ -28,7 +28,7 @@ export default function LessonNode({
   lesson, index, isFirst, isLast, prevTitle,
   isPopupOpen, onTogglePopup, onStartLesson, tabbable = true,
 }) {
-  const { state, vm } = useProgression()
+  const { state, vm, showcase } = useProgression()
   const rowRef = useRef(null)
   const markRef = useRef(null)
   const isCurrent = lesson.status === 'current'
@@ -55,7 +55,10 @@ export default function LessonNode({
         timers.push(window.setTimeout(stamp, 150))
         return
       }
-      rowRef.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
+      /* On the landing page the lesson is completed by a demo learner inside
+         a touring frame: the frame brings the row into view, and the page
+         itself must never be scrolled out from under the reader. */
+      if (!showcase) rowRef.current?.scrollIntoView?.({ block: 'center', behavior: 'smooth' })
       timers.push(window.setTimeout(() => {
         setJustDone(true)
         timers.push(window.setTimeout(() => {
@@ -63,7 +66,7 @@ export default function LessonNode({
           burst(markRef.current, { palette: 'moss', count: 14, spread: 46 })
         }, 180))
         timers.push(window.setTimeout(() => setJustDone(false), 1400))
-      }, 420))
+      }, showcase ? 0 : 420))
     }
     stamp()
     return () => timers.forEach(clearTimeout)

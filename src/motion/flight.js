@@ -29,7 +29,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { prefersReducedMotion, fxLayer, centerOf } from './env'
-import { burst, bump } from './burst'
+import { burst, bump, sparkle } from './burst'
 
 const targets = new Map()    // key → element[] (registration order)
 const inFlight = new Map()   // key → number of flights still travelling
@@ -64,17 +64,31 @@ function isShowing(el, allowCovered = false) {
   return Boolean(hit) && (el === hit || el.contains(hit))
 }
 
-export function findTarget(key, allowCovered = false) {
+/* Revision 5: a landing page holds several product frames, each with its own
+   demo learner and its own counters. A reward earned inside a frame
+   ([data-flight-scope]) lands on the counter inside that frame first. */
+const scopeOf = (el) => el?.closest?.('[data-flight-scope]') ?? null
+
+export function findTarget(key, allowCovered = false, near = null) {
   const list = targets.get(key) || []
+  const scope = scopeOf(near)
+  if (scope) {
+    for (let i = list.length - 1; i >= 0; i--) {
+      if (scope.contains(list[i]) && isShowing(list[i], allowCovered)) return list[i]
+    }
+  }
   for (let i = list.length - 1; i >= 0; i--) {
+    /* Never another frame's counter: a scoped flight with no counter of its
+       own simply has nowhere to land. */
+    if (scope && scopeOf(list[i]) && scopeOf(list[i]) !== scope) continue
     if (isShowing(list[i], allowCovered)) return list[i]
   }
   return null
 }
 
-function resolve(point, allowCovered = false) {
+function resolve(point, allowCovered = false, near = null) {
   if (typeof point === 'string') {
-    const el = findTarget(point, allowCovered)
+    const el = findTarget(point, allowCovered, near)
     return el ? { el, p: centerOf(el) } : null
   }
   const p = centerOf(point)
@@ -130,6 +144,25 @@ const SVG = {
 
 const PALETTE_FOR = { gem: 'gem', heart: 'heart', xp: 'xp', flame: 'streak', shield: 'shield', star: 'reward' }
 
+/** The "+20" that rises from where a reward was earned. */
+function riseLabel(p, text, icon) {
+  const tag = document.createElement('span')
+  tag.className = `fx-label fx-label--${icon}`
+  tag.textContent = text
+  tag.style.left = `${p.x}px`
+  tag.style.top = `${p.y}px`
+  fxLayer().appendChild(tag)
+  tag.animate(
+    [
+      { transform: 'translate(-50%, -50%) translateY(6px) scale(0.7)', opacity: 0 },
+      { transform: 'translate(-50%, -50%) translateY(-14px) scale(1.08)', opacity: 1, offset: 0.25 },
+      { transform: 'translate(-50%, -50%) translateY(-26px) scale(1)', opacity: 1, offset: 0.7 },
+      { transform: 'translate(-50%, -50%) translateY(-40px) scale(0.95)', opacity: 0 },
+    ],
+    { duration: 1100, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'forwards' },
+  ).onfinish = () => tag.remove()
+}
+
 /* ── fly ──────────────────────────────────────────────────────────────────── */
 
 const bezier = (a, c, b, t) => (1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b
@@ -144,16 +177,27 @@ export function fly({
   size = 18,
   onLand,
   allowCovered = false,
+  orRise = false,
 } = {}) {
   const key = typeof to === 'string' ? to : null
   if (key) launched.set(key, Date.now())
 
   const src = resolve(from)
-  const dst = resolve(to, allowCovered)
+  const dst = resolve(to, allowCovered, src?.el)
 
   const done = () => { onLand?.() }
 
+  const text = label ?? (amount != null ? `+${amount}` : null)
+
   if (prefersReducedMotion() || !src || !dst) {
+    /* Nowhere on screen to land (XP earned in a frame with no XP counter):
+       with `orRise`, the amount still rises from where it was earned, and
+       light catches it. Off by default — a toast chip already shows its own
+       amount. */
+    if (orRise && src && text && !prefersReducedMotion()) {
+      riseLabel(src.p, text, icon)
+      sparkle(src.el || src.p, { tone: icon === 'heart' ? 'heart' : icon === 'xp' ? 'xp' : 'gem', count: 5, radius: 26 })
+    }
     done()
     return Promise.resolve(false)
   }
@@ -167,24 +211,7 @@ export function fly({
   const n = Math.max(1, Math.min(9, count))
 
   /* A floating "+20" that rises from the source while the particles leave. */
-  const text = label ?? (amount != null ? `+${amount}` : null)
-  if (text) {
-    const tag = document.createElement('span')
-    tag.className = `fx-label fx-label--${icon}`
-    tag.textContent = text
-    tag.style.left = `${src.p.x}px`
-    tag.style.top = `${src.p.y}px`
-    layer.appendChild(tag)
-    tag.animate(
-      [
-        { transform: 'translate(-50%, -50%) translateY(6px) scale(0.7)', opacity: 0 },
-        { transform: 'translate(-50%, -50%) translateY(-14px) scale(1.08)', opacity: 1, offset: 0.25 },
-        { transform: 'translate(-50%, -50%) translateY(-26px) scale(1)', opacity: 1, offset: 0.7 },
-        { transform: 'translate(-50%, -50%) translateY(-40px) scale(0.95)', opacity: 0 },
-      ],
-      { duration: 1100, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)', fill: 'forwards' },
-    ).onfinish = () => tag.remove()
-  }
+  if (text) riseLabel(src.p, text, icon)
 
   return new Promise((resolveFlight) => {
     let landed = 0
@@ -243,7 +270,7 @@ export function fly({
       anim.onfinish = () => {
         node.remove()
         landed++
-        const live = key ? findTarget(key, allowCovered) || dst.el : dst.el
+        const live = key ? findTarget(key, allowCovered, src.el) || dst.el : dst.el
         if (live) bump(live, { to: 1.14 + Math.min(0.1, landed * 0.015) })
         if (landed === n) {
           burst(live || dst.p, { palette: PALETTE_FOR[icon] || 'reward', count: 10, spread: 34, gravity: 14, duration: 560 })

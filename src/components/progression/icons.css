@@ -284,8 +284,10 @@
 }
 
 /* Hover: the stone tips toward the light and catches it at once. */
-.fx-glint-host:hover .gi-glint { animation: gi-glint var(--dur-reveal) var(--ease-out); }
-.fx-glint-host:hover .gi-spark { animation: gi-twinkle-once var(--dur-reveal) var(--ease-out) var(--lag-follow); }
+.fx-glint-host:hover .gi-glint,
+.fx-glint-host[data-shown] .gi-glint { animation: gi-glint var(--dur-reveal) var(--ease-out); }
+.fx-glint-host:hover .gi-spark,
+.fx-glint-host[data-shown] .gi-spark { animation: gi-twinkle-once var(--dur-reveal) var(--ease-out) var(--lag-follow); }
 
 @keyframes gi-glint {
   from { transform: skewX(-22deg) translateX(-4px); }
@@ -552,3 +554,11 @@
   .fx-gleam .si-glint, .fx-zap .bi { animation: none !important; }
   .lf-embers { display: none; }
 }
+
+/* Revision 5 — the top bar's pills performed by the Stage: the same move as
+   the hand's hover, so a preview and a Response never look different. */
+.fx-flare-host[data-shown] .fi-o { scale: 1.1 1.2; }
+.fx-flare-host[data-shown] .fi-m { scale: 1.05 1.26; }
+.pg-pill[data-shown] .live-heart:not(.is-empty) .hi { animation: hi-beat-once var(--dur-reveal) var(--ease-spring); }
+.pg-pill[data-shown] .live-heart { transform: scale(1.12); }
+.pg-pill[data-shown] .live-flame { transform: translateY(-1px); }

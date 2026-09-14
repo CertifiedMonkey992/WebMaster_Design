@@ -23,6 +23,7 @@ import { formatNumber } from '../../utils/progressionUtils'
 import ShopArt from './ShopArt'
 import PurchaseDialog from './PurchaseDialog'
 import SplitText from '../../motion/SplitText'
+import { useShopPreviews } from '../learn/previews'
 import Reveal from '../../motion/Reveal'
 import RollingNumber from '../../motion/RollingNumber'
 import { fly, hold, useLandedValue } from '../../motion/flight'
@@ -146,6 +147,8 @@ export default function ShopView({ onNavigate }) {
   const [receipt, setReceipt] = useState(null)
   const [popped, setPopped] = useState(null)
   const balanceRef = useRef(null)
+  const pageRef = useRef(null)
+  useShopPreviews(pageRef)
   const gems = useLandedValue('gems', vm.gems)
 
   const openConfirm = useCallback((item) => setPending(item), [])
@@ -194,7 +197,7 @@ export default function ShopView({ onNavigate }) {
   let rowIndex = 0
 
   return (
-    <div className="sh-page">
+    <div className="sh-page" ref={pageRef}>
       <header className="sh-header">
         <div className="sh-header-text">
           <span className="sh-eyebrow">Shop</span>

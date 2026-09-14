@@ -16,6 +16,7 @@ import useProgressWidth from '../../hooks/useProgressWidth'
 import CountUp from '../../motion/CountUp'
 import Reveal from '../../motion/Reveal'
 import { shake } from '../../motion/burst'
+import { useAchievementPreviews } from '../learn/previews'
 
 const RING_R = 19
 const RING_C = 2 * Math.PI * RING_R
@@ -60,6 +61,7 @@ function AchievementCard({ achievement: a, style, className = '' }) {
       className={`ac-card ac-${a.tier}${a.unlocked ? ' is-unlocked' : ''} ${className}`.trim()}
       style={style}
       data-tilt={a.unlocked ? '' : undefined}
+      data-achievement={a.id}
       data-tip={tip}
       onClick={press}
       tabIndex={0}
@@ -95,12 +97,16 @@ function AchievementCard({ achievement: a, style, className = '' }) {
 
 export default function AchievementGrid() {
   const { vm } = useProgression()
+  const wrapRef = useRef(null)
+  const listRef = useRef(null)
+  listRef.current = vm.achievements
+  useAchievementPreviews(wrapRef, () => listRef.current)
   const unlocked = vm.achievements.filter((a) => a.unlocked)
   const locked = vm.achievements.filter((a) => !a.unlocked)
   const ordered = [...unlocked, ...locked]
 
   return (
-    <div className="ac-wrap">
+    <div className="ac-wrap" ref={wrapRef}>
       <header className="ac-head">
         <div>
           <h3 className="ac-title">Achievements</h3>

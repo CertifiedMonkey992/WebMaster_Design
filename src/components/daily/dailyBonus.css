@@ -512,7 +512,8 @@
   from { opacity: 0; transform: translateY(24px) rotate(calc((var(--i) - 3) * 3deg)) scale(0.9); }
 }
 
-.db-day:hover {
+.db-day:hover,
+.db-day[data-shown] {
   transform: translateY(-6px) rotate(-1.5deg);
   box-shadow: var(--shadow-lift);
   border-color: var(--line-strong);
@@ -543,7 +544,8 @@
   transition: transform var(--dur-lift) var(--ease-lift);
 }
 
-.db-day:hover .db-day-art > svg { transform: translateY(-3px) scale(1.14) rotate(-6deg); }
+.db-day:hover .db-day-art > svg,
+.db-day[data-shown] .db-day-art > svg { transform: translateY(-3px) scale(1.14) rotate(-6deg); }
 .db-day--final .db-day-art > svg { max-width: 62px; }
 
 .db-day-amount {

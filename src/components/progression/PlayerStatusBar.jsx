@@ -16,7 +16,7 @@
    do not open popovers: the frame they sit in clips anything that floats.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { LiveFlame, LiveGem, LiveHeart } from './LiveIcons'
 import Popover from './Popover'
@@ -28,11 +28,14 @@ import { formatClock } from '../../utils/dateUtils'
 import { getHeartRecoveryTime } from '../../services/currencyService'
 import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
+import { useTopBarPreviews } from '../learn/previews'
 
 export default function PlayerStatusBar({ compact = false, onOpenShop }) {
   const { state, vm, showcase } = useProgression()
   const now = useClock()
   const [openPanel, setOpenPanel] = useState(null)
+  const barRef = useRef(null)
+  useTopBarPreviews(barRef, { disabled: showcase })
   const close = useCallback(() => setOpenPanel(null), [])
   const toggle = (id) => { if (!showcase) setOpenPanel((prev) => (prev === id ? null : id)) }
 
@@ -65,7 +68,7 @@ export default function PlayerStatusBar({ compact = false, onOpenShop }) {
       : `${hearts} of ${vm.maxHearts} hearts · next in ${formatClock(recovery.msUntilNext)}`
 
   return (
-    <div className={`pg-status${compact ? ' pg-status--compact' : ''}`}>
+    <div className={`pg-status${compact ? ' pg-status--compact' : ''}`} ref={barRef}>
       {/* ── Streak ── */}
       <div className="pg-status-item">
         <button

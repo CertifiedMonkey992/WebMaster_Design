@@ -1,9 +1,11 @@
+import { useRef } from 'react'
 import { useCourse, useProgression } from '../../state/ProgressionContext'
 import { getLessonIcon } from './LessonIcons'
 import SectionCard from './SectionCard'
 import SplitText from '../../motion/SplitText'
 import Reveal from '../../motion/Reveal'
 import RollingNumber from '../../motion/RollingNumber'
+import { useCoursePreviews } from './previews'
 
 /**
  * The course map. Derived entirely from real completion state.
@@ -16,6 +18,11 @@ import RollingNumber from '../../motion/RollingNumber'
 export default function ModuleList({ onStartLesson }) {
   const course = useCourse()
   const { showcase } = useProgression()
+  const rootRef = useRef(null)
+  /* Revision 5: previews — on the learner's own map, and on the landing
+     page's course frame between its demo scene's lessons (they change
+     nothing, so they are as true of a demo learner as of a real one). */
+  useCoursePreviews(rootRef)
   const current = course.current
   const allLessons = course.sections.flatMap((s) => s.lessons.map((l) => ({ ...l, section: s.title })))
 
@@ -24,7 +31,7 @@ export default function ModuleList({ onStartLesson }) {
   const C = 2 * Math.PI * R
 
   return (
-    <div className="course">
+    <div className="course" ref={rootRef}>
       <header className="course-head">
         <SplitText as="h1" className="course-title" immediate={!showcase} stagger={46}>
           {course.completedCount === 0 ? (

@@ -111,6 +111,51 @@
   animation: fx-ping 2.6s var(--ease-out) infinite;
 }
 
+/* While a scene plays, the dot beats at the pace of the thing happening. */
+.pf.is-acting .pf-live-dot::after { animation-duration: 1.3s; }
+
+/* ── The cue (revision 5 → Cue) ────────────────────────────────────────────
+   The frame narrating its demo learner: sentence case, the interface's voice,
+   right against the Live label it belongs to. The newest line's words rise
+   out of the chrome's baseline in turn; the line it replaces leaves upward on
+   the same clock. */
+.pf-cue {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 1.4em;
+  overflow: hidden;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  line-height: 1.4;
+  color: var(--ink-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pf-cue-line {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pf-cue-w {
+  display: inline-block;
+  white-space: pre;
+  animation: pf-cue-in var(--dur-open) var(--ease-snap) calc(var(--i, 0) * var(--stagger)) backwards;
+}
+
+.pf-cue-line.is-leaving { animation: pf-cue-out var(--dur-move) var(--ease-in) forwards; }
+
+@keyframes pf-cue-in {
+  from { opacity: 0; transform: translateY(110%) rotate(4deg); }
+}
+
+@keyframes pf-cue-out {
+  to { opacity: 0; transform: translateY(-90%); }
+}
+
 .pf-body {
   padding: var(--sp-4);
   overflow: hidden;
@@ -339,7 +384,8 @@
 .sc-shop-mini-item:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
 .sc-shop-mini-item:last-child { border-radius: 0 0 var(--r-md) var(--r-md); }
 .sc-shop-mini-item + .sc-shop-mini-item { border-top: 1px solid var(--line-faint); }
-.sc-shop-mini-item:hover { background: var(--evergreen-tint); }
+.sc-shop-mini-item:hover,
+.sc-shop-mini-item[data-shown] { background: var(--evergreen-tint); }
 
 .sc-shop-mini-art {
   display: grid;
@@ -350,7 +396,8 @@
 
 /* Shop art is a handled object: it lifts out of its row. The idle float runs
    on the inner span, so the lift and the float compose. */
-.sc-shop-mini-item:hover .sc-shop-mini-art { transform: translateY(-4px) scale(1.2) rotate(-8deg); }
+.sc-shop-mini-item:hover .sc-shop-mini-art,
+.sc-shop-mini-item[data-shown] .sc-shop-mini-art { transform: translateY(-4px) scale(1.2) rotate(-8deg); }
 .sc-shop-mini-art > .fx-float { display: grid; place-items: center; }
 
 .sc-shop-mini-name {
@@ -363,7 +410,8 @@
   transition: transform var(--dur-move) var(--ease-snap) var(--lag-follow);
 }
 
-.sc-shop-mini-item:hover .sc-shop-mini-name { transform: translateX(4px); }
+.sc-shop-mini-item:hover .sc-shop-mini-name,
+.sc-shop-mini-item[data-shown] .sc-shop-mini-name { transform: translateX(4px); }
 
 .sc-shop-mini-price {
   display: inline-flex;
@@ -394,4 +442,34 @@
 @media (prefers-reduced-motion: reduce) {
   .sc-frame { transform: none; }
   .pf:not(.is-seen) .pf-body * { animation-play-state: running !important; }
+}
+
+/* ── Revision 5 — what the demo scenes need of the frame ─────────────────── */
+
+/* The highlighter laid again under a term (Accent). */
+.mark[data-relay] { animation: fx-relay var(--dur-celebrate) var(--ease-snap); }
+
+/* The app's top bar inside a frame: the same spacing as .lt-actions. */
+.sc-topbar { align-items: center; gap: var(--sp-4); }
+
+/* Tomorrow's quests are dealt in. */
+.sc-quests { display: flex; flex-direction: column; gap: var(--sp-2); }
+.sc-quests > * { animation: rv-up var(--dur-reveal) var(--ease-snap) calc(var(--i, 0) * var(--stagger) * 2) backwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mark[data-relay], .sc-quests > * { animation: none; }
+}
+
+/* The eyebrow's rule drawn again, its number kicked once (copy Accent). */
+.sc-eyebrow[data-relay] .sc-eyebrow-rule { animation: sc-rule-redraw var(--dur-celebrate) var(--ease-snap); }
+.sc-eyebrow[data-relay] .sc-eyebrow-num { animation: fx-pop var(--dur-reveal) var(--ease-spring) var(--lag-follow); }
+@keyframes sc-rule-redraw { 0% { transform: scaleX(0); transform-origin: 100% 50%; } 1% { transform-origin: 0 50%; } 100% { transform: scaleX(1); } }
+
+/* A heading word lifting and settling (copy Accent): type nudged off its
+   baseline and let fall back — a Response the page gives itself. */
+.sc-heading .st-i[data-relay] { animation: sc-word-lift var(--dur-celebrate) var(--ease-lift); }
+@keyframes sc-word-lift { 0%, 100% { translate: 0 0; } 35% { translate: 0 -5px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-eyebrow[data-relay] *, .sc-heading .st-i[data-relay] { animation: none; }
 }
