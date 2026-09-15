@@ -58,47 +58,9 @@ function headFor(route) {
 
 const SEO_BLOCK = /<!-- seo:start -->[\s\S]*?<!-- seo:end -->/
 
-/* Each page's own module — the one App.jsx's LOADERS import lazily. */
-const PAGE_MODULES = {
-  learn: 'src/pages/LearnPage.jsx',
-  about: 'src/pages/AboutPage.jsx',
-  contact: 'src/pages/ContactPages.jsx',
-  thanks: 'src/pages/ContactPages.jsx',
-  privacy: 'src/pages/LegalPages.jsx',
-  terms: 'src/pages/LegalPages.jsx',
-  notfound: 'src/pages/NotFoundPage.jsx',
-}
-
-/* A page's HTML names its own code up front: the page's chunk and the chunks
-   it imports as modulepreload, and their stylesheets after the main one (the
-   order they would be added in anyway). The browser fetches them alongside
-   the main bundle instead of after it has run, and Vite's loader finds them
-   already in the document and does not add them again. */
-function pagePreloads(page, bundle, base) {
-  const chunks = Object.values(bundle).filter((c) => c.type === 'chunk')
-  const file = PAGE_MODULES[page]
-  const root = file && chunks.find((c) => c.isDynamicEntry && c.facadeModuleId?.replace(/\\/g, '/').endsWith(file))
-  if (!root) return ''
-  const js = new Set()
-  const css = new Set()
-  const visit = (chunk) => {
-    if (!chunk || chunk.type !== 'chunk' || chunk.isEntry || js.has(chunk.fileName)) return
-    js.add(chunk.fileName)
-    chunk.imports.forEach((name) => visit(bundle[name]))
-    chunk.viteMetadata?.importedCss?.forEach((name) => css.add(name))
-  }
-  visit(root)
-  return [
-    ...[...js].map((name) => `<link rel="modulepreload" crossorigin href="${base}${name}">`),
-    ...[...css].map((name) => `<link rel="preload" as="style" crossorigin href="${base}${name}">`),
-  ].join('\n    ')
-}
-
 function pagesPlugin() {
-  let base = '/'
   return {
     name: 'lunx-pages',
-    configResolved(config) { base = config.base },
     /* Dev and build both get the home page's head from the table. */
     transformIndexHtml(html) {
       return html.replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(ROUTES[0])}\n    <!-- seo:end -->`)
@@ -106,18 +68,13 @@ function pagesPlugin() {
     /* writeBundle, not closeBundle: it runs only after this build has
        written its files, and names the folder it wrote them to. A failed
        build, or one aimed at another folder, never touches docs/. */
-    writeBundle(output, bundle) {
+    writeBundle(output) {
       const outDir = output.dir
       if (!outDir) return
       const indexFile = path.join(outDir, 'index.html')
       if (!fs.existsSync(indexFile)) return
       const shell = fs.readFileSync(indexFile, 'utf8')
-      const render = (route) => {
-        const preloads = pagePreloads(route.page, bundle, base)
-        return shell
-          .replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(route)}\n    <!-- seo:end -->`)
-          .replace('</head>', preloads ? `  ${preloads}\n  </head>` : '</head>')
-      }
+      const render = (route) => shell.replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(route)}\n    <!-- seo:end -->`)
 
       for (const route of ROUTES) {
         if (route.page === 'notfound') {
