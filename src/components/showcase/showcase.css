@@ -171,6 +171,10 @@
   transform: translate3d(0, calc((0.5 - var(--sp, 0.5)) * 72px), 0);
 }
 
+/* Until its frame mounts (a screen before it is seen — ProductSections.jsx),
+   the column holds about a frame's height, so the page below does not jump. */
+.sc-frame:empty { min-height: 34rem; }
+
 .pf-body.is-cropped {
   padding-bottom: var(--sp-10);
   mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);

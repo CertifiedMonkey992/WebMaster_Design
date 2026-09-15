@@ -12,7 +12,6 @@ import ConsentBanner   from './components/ConsentBanner'
 import StickyCta       from './components/StickyCta'
 import PageLoading     from './components/PageLoading'
 
-import { ProgressionProvider } from './state/ProgressionContext'
 import FxLayer from './motion/FxLayer'
 import { turnPage } from './motion/pageTurn'
 import { NavProvider, usePageMeta } from './nav'
@@ -149,9 +148,11 @@ export default function App() {
       </div>
     )
   } else if (currentPage === 'learn') {
+    /* LearnPage brings its own ProgressionProvider, so the learner's state
+       code loads with the course rather than with the home page. */
     const LearnPage = LAZY.learn
     page = (
-      <ProgressionProvider>
+      <>
         <LearnPage
           onGoHome={() => go('landing')}
           onGoAbout={() => go('about')}
@@ -162,7 +163,7 @@ export default function App() {
             <LoginModal onClose={() => setLoginOpen(false)} />
           </Suspense>
         )}
-      </ProgressionProvider>
+      </>
     )
   } else {
     const Page = LAZY[currentPage] ?? LAZY.notfound

@@ -13,7 +13,11 @@
     <link rel="manifest" href="/site.webmanifest">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&amp;family=Manrope:wght@400..800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+    <!-- The fonts' stylesheet loads without holding up the first paint
+         (media flips to "all" once it arrives); display=swap shows the
+         fallback stack until the faces are ready. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&amp;family=Manrope:wght@400..800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&amp;family=Manrope:wght@400..800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap"></noscript>
   </head>
   <body>
     <div id="root"></div>

@@ -14,7 +14,7 @@ import DevPanel        from '../components/progression/DevPanel'
 import DailyBonusIndicator from '../components/daily/DailyBonusIndicator'
 import DailyBonusModal     from '../components/daily/DailyBonusModal'
 
-import { useProgression } from '../state/ProgressionContext'
+import { ProgressionProvider, useProgression } from '../state/ProgressionContext'
 
 import './LearnPage.css'
 import '../components/progression/progression.css'
@@ -54,7 +54,17 @@ function PlaceholderView({ viewId, onNavigate }) {
   )
 }
 
-export default function LearnPage({ onGoHome, onGoAbout, onLoginClick }) {
+/* The learner's state lives with the course: App loads this page lazily, so
+   the progression code is fetched with it, not with the home page. */
+export default function LearnPage(props) {
+  return (
+    <ProgressionProvider>
+      <Course {...props} />
+    </ProgressionProvider>
+  )
+}
+
+function Course({ onGoHome, onGoAbout, onLoginClick }) {
   const { vm } = useProgression()
   const [activeNav, setActiveNav] = useState('learn')
   const [dir, setDir] = useState(1)
@@ -109,7 +119,7 @@ export default function LearnPage({ onGoHome, onGoAbout, onLoginClick }) {
         </div>
       </header>
 
-      <main className="learn-main" id="learn-content">
+      <main className="learn-main" id="main" tabIndex={-1}>
         {/* Keyed on the destination, so each view arrives from the direction
             the nav moved rather than swapping in place. */}
         <div className="view-enter" key={activeNav} style={{ '--dir': dir }}>
