@@ -403,6 +403,31 @@ export function usePerformer(ref, spec) {
 export const isPerforming = () => Boolean(running)
 
 /**
+ * Run `fn` once the page has arrived: loaded, and at least FIRST_TURN into
+ * its life — the moment the Stage gives its first performance. Work that can
+ * wait (fetching the next page's code, the landing page's frames) waits for
+ * this, so it never competes with the page's own arrival. Then it waits for
+ * an idle moment. Returns a cancel function.
+ */
+export function afterArrival(fn) {
+  if (typeof window === 'undefined') return () => {}
+  const idle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 1))
+  const cancelIdle = window.cancelIdleCallback || clearTimeout
+  let t = 0
+  let id = 0
+  const start = () => {
+    t = window.setTimeout(() => { id = idle(() => fn()) }, Math.max(0, FIRST_TURN - now()))
+  }
+  if (document.readyState === 'complete') start()
+  else window.addEventListener('load', start, { once: true })
+  return () => {
+    window.removeEventListener('load', start)
+    clearTimeout(t)
+    if (id) cancelIdle(id)
+  }
+}
+
+/**
  * The hand reached `el` by a route the Stage cannot see (the hero's chapter
  * list steering the book, say): stop its performance now, and hold it off.
  */

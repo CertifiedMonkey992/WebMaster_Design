@@ -32,7 +32,7 @@ import SplitText from '../../motion/SplitText'
 import Reveal from '../../motion/Reveal'
 import useInView from '../../motion/useInView'
 import { useScrollProgress } from '../../motion/scroll'
-import { usePerformer } from '../../motion/stage'
+import { afterArrival, usePerformer } from '../../motion/stage'
 import { DUR } from '../../motion/timing'
 /* The frames' stylesheets are imported here, not only by the lazily loaded
    components that use them, so they stay in the page's first stylesheet in
@@ -42,9 +42,10 @@ import '../daily/dailyBonus.css'
 import './showcase.css'
 
 /* The four live frames (ShowcaseFrames.jsx) are most of this page's code and
-   DOM, and all of them sit below the fold. They are fetched when the browser
-   is idle, and each mounts as its section comes within a screen of view — so
-   the first paint is the page's words and the book, not four apps at once. */
+   DOM, and all of them sit below the fold. Their code is fetched once the
+   page has arrived, and each frame mounts as its column comes into view —
+   where its own entrance plays — so the first paint is the page's words and
+   the book, not four apps at once. */
 const loadFrames = () => import('./ShowcaseFrames')
 const frame = (name) => lazy(() => loadFrames().then((m) => ({ default: m[name] })))
 const CourseFrame = frame('CourseFrame')
@@ -86,8 +87,9 @@ function Section({ id, index, eyebrow, heading, children, frame: Frame, flip = f
   const parallaxRef = useScrollProgress()
   const copyRef = useRef(null)
 
-  /* The frame mounts once its column is within a screen of view. Until then
-     the column is empty and holds the frame's height (showcase.css). */
+  /* The frame mounts when its column comes into view (its code is usually
+     already fetched — see ProductSections below). Until then the column is
+     empty and holds about a frame's height (showcase.css). */
   const frameNode = useRef(null)
   const setFrameNode = useCallback((el) => { frameNode.current = el; parallaxRef(el) }, [parallaxRef])
   const [near, setNear] = useState(false)
@@ -98,7 +100,7 @@ function Section({ id, index, eyebrow, heading, children, frame: Frame, flip = f
       if (!entry.isIntersecting) return
       observer.disconnect()
       setNear(true)
-    }, { rootMargin: '100% 0px' })
+    })
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
@@ -269,14 +271,9 @@ function QuestSection() {
 /* ── Root ─────────────────────────────────────────────────────────────────── */
 
 export default function ProductSections() {
-  /* Fetch the frames' code once the page has settled, so a section's frame
+  /* Fetch the frames' code once the page has arrived, so a section's frame
      is ready by the time the reader scrolls to it. */
-  useEffect(() => {
-    const idle = window.requestIdleCallback || ((fn) => window.setTimeout(fn, 1200))
-    const cancel = window.cancelIdleCallback || clearTimeout
-    const id = idle(() => { loadFrames().catch(() => {}) })
-    return () => cancel(id)
-  }, [])
+  useEffect(() => afterArrival(() => { loadFrames().catch(() => {}) }), [])
 
   return (
     <>

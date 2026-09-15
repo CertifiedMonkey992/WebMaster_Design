@@ -14,6 +14,7 @@ import PageLoading     from './components/PageLoading'
 
 import FxLayer from './motion/FxLayer'
 import { turnPage } from './motion/pageTurn'
+import { afterArrival } from './motion/stage'
 import { NavProvider, usePageMeta } from './nav'
 import { PAGES, routeOf, pageFromLocation } from './site'
 import { initAnalytics, pageview } from './services/analytics'
@@ -114,17 +115,12 @@ export default function App() {
   useEffect(() => { initAnalytics() }, [])
   useEffect(() => { pageview(window.location.pathname) }, [currentPage])
 
-  /* When the browser is idle, fetch the pages a visitor is likely to open
+  /* Once the page has arrived, fetch the pages a visitor is likely to open
      next, so the first page turn does not wait on the network. */
-  useEffect(() => {
-    const idle = window.requestIdleCallback || ((fn) => window.setTimeout(fn, 2500))
-    const cancel = window.cancelIdleCallback || clearTimeout
-    const id = idle(() => {
-      const next = currentPage === 'landing' ? ['learn', 'about'] : currentPage === 'learn' ? [] : ['learn']
-      next.forEach((p) => LOADERS[p]?.().catch(() => {}))
-    })
-    return () => cancel(id)
-  }, [currentPage])
+  useEffect(() => afterArrival(() => {
+    const next = currentPage === 'landing' ? ['learn', 'about'] : currentPage === 'learn' ? [] : ['learn']
+    next.forEach((p) => LOADERS[p]?.().catch(() => {}))
+  }), [currentPage])
 
   let page
   if (currentPage === 'landing') {
