@@ -114,8 +114,27 @@ const FLUTTER = [
   { offset: 1, a: 0, b: 0 },
 ]
 
+/* The paper units on the left animate between stacks, so the property must
+   be typed — and given its transition, which does nothing until it is. Both
+   are set up here rather than in fieldGuide.css only because the W3C CSS
+   validator parses neither @property nor a transition on a custom property. */
+if (typeof CSS !== 'undefined' && typeof CSS.registerProperty === 'function') {
+  try {
+    CSS.registerProperty({ name: '--fg-n', syntax: '<number>', inherits: true, initialValue: '0' })
+  } catch { /* already registered (hot reload) */ }
+  try {
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync('.fg-desk { transition: --fg-n var(--fg-n-dur, var(--dur-move)) var(--ease-swing) var(--fg-n-delay, 0ms); }')
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet]
+  } catch { /* no constructable stylesheets: the stacks change without easing */ }
+}
+
+/* Turning pages is not selecting text. Refused where a selection starts,
+   which every browser honours (Safari ignores an unprefixed user-select). */
+const refuseSelection = (e) => e.preventDefault()
+
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
-const ink = (j) => `var(${CHAPTER_INK[j % CHAPTER_INK.length]})`
+const ink =(j) => `var(${CHAPTER_INK[j % CHAPTER_INK.length]})`
 const inertProps = (hidden) => (hidden ? { inert: '', 'aria-hidden': 'true' } : {})
 
 function useStableSprings(make) {
@@ -802,7 +821,11 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
       stageRef.current?.style.setProperty('--leave', leave.toFixed(3))
     },
   })
-  const setStage = useCallback((node) => { ambientRef(node); scrollRef(node) }, [ambientRef, scrollRef])
+  const setStage = useCallback((node) => {
+    ambientRef(node)
+    scrollRef(node)
+    node?.addEventListener('selectstart', refuseSelection)
+  }, [ambientRef, scrollRef])
 
   /* ── Handling the object ──────────────────────────────────────────────── */
 

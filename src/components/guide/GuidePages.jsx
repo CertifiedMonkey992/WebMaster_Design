@@ -58,10 +58,10 @@ export function Cover() {
         </svg>
       </span>
 
-      <h3 className="fg-cover-title">
+      <p className="fg-cover-title">
         A Field Guide
         <span>to Artificial Intelligence</span>
-      </h3>
+      </p>
       <span className="fg-cover-foot">{TOTAL_LESSONS} lessons · {CHAPTERS.length} chapters</span>
     </div>
   )
@@ -94,7 +94,7 @@ function ChapterOpener({ spread }) {
     <div className="fg-print fg-print--opener" style={{ '--chapter': ink(j) }}>
       <span className="fg-label">Chapter · {s.level}</span>
       <span className="fg-opener-num">{pad(j + 1)}</span>
-      <h4 className="fg-opener-title">{s.title}</h4>
+      <p className="fg-opener-title">{s.title}</p>
       <p className="fg-opener-sub">{s.subtitle}</p>
       <span className="fg-opener-meta">
         {s.lessons.length} lessons · {minutesOf(s)} min

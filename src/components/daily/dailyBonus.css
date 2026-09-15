@@ -447,7 +447,7 @@
   border-radius: 50%;
   background: var(--paper-deep);
   transition: background-color var(--dur-hover) var(--ease-out), width var(--dur-open) var(--ease-snap);
-  transition-delay: calc(var(--i) * 60ms);
+  transition-delay: calc(60ms * var(--i));
 }
 
 .db-pip.is-claimed { background: var(--moss); }
@@ -509,7 +509,7 @@
 }
 
 @keyframes db-deal {
-  from { opacity: 0; transform: translateY(24px) rotate(calc((var(--i) - 3) * 3deg)) scale(0.9); }
+  from { opacity: 0; transform: translateY(24px) rotate(calc(3deg * var(--i) - 9deg)) scale(0.9); }
 }
 
 .db-day:hover,
@@ -606,7 +606,7 @@
    locked reward lifts a little in turn, like a row of things on a shelf
    nudged at one end. `translate`/`rotate`, so a hover's lift still works. */
 .db-day.is-locked .db-day-art > svg {
-  animation: db-wave var(--idle-wave) var(--ease-swing) calc(var(--i, 0) * 110ms + 2s) infinite;
+  animation: db-wave var(--idle-wave) var(--ease-swing) calc(110ms * var(--i, 0) + 2s) infinite;
 }
 
 @keyframes db-wave {

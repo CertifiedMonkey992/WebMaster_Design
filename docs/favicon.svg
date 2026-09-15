@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#646cff"/>
-  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="18" font-family="system-ui" fill="white">W</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#2E4736"/><path d="M9.5 7h4.3v14.4h9.2V25.2H9.5Z" fill="#FBF7F0"/><path d="M21.5 0h4.6v9.6l-2.3-1.9-2.3 1.9Z" fill="#B5502C"/></svg>

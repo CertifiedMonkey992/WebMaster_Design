@@ -1,0 +1,28 @@
+{
+  "name": "LunX · A field guide to how AI works",
+  "short_name": "LunX",
+  "description": "Short, interactive lessons on how AI works, for high school students.",
+  "start_url": "/WebMaster_Design/",
+  "scope": "/WebMaster_Design/",
+  "display": "standalone",
+  "background_color": "#F2EBDF",
+  "theme_color": "#F2EBDF",
+  "icons": [
+    {
+      "src": "/WebMaster_Design/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/WebMaster_Design/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/WebMaster_Design/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

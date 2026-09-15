@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /WebMaster_Design/contact/thanks/
+
+Sitemap: https://certifiedmonkey992.github.io/WebMaster_Design/sitemap.xml

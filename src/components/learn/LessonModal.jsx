@@ -401,7 +401,7 @@ export default function LessonModal({ lessonId, onClose }) {
           <div className="lm-stamp" ref={stampRef} aria-hidden="true">
             <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-              <polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" />
+              <path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" />
             </svg>
           </div>
           <SplitText as="h2" className="lm-complete-title" immediate delay={260} stagger={45}>
@@ -526,7 +526,7 @@ export default function LessonModal({ lessonId, onClose }) {
           <div className="lm-feedback">
             <span className="lm-fb-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" />
+                <path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" />
               </svg>
             </span>
             <div>

@@ -13,7 +13,7 @@ nearest one that does.
 
 ```css
 --font-display: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
---font-ui:      'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
+--font-ui:      'Manrope', 'Segoe UI', system-ui, sans-serif;
 --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
 ```
 
@@ -118,11 +118,19 @@ No grey exists in this system. Every neutral is warm.
 | Token | Value | Contrast on paper | Use |
 |---|---|---|---|
 | `--ink` | `#2B2119` | 13.3:1 | Headings, primary text, numbers |
-| `--ink-muted` | `#736251` | 4.9:1 | Body secondary, descriptions |
-| `--ink-faint` | `#7E6E5A` | 4.2:1 | Micro labels, metadata, disabled |
+| `--ink-muted` | `#675746` | 5.9:1 | Body secondary, descriptions |
+| `--ink-faint` | `#74644F` | 4.8:1 | Micro labels, metadata, captions |
 
-`--ink-faint` is fine for tracked uppercase labels and metadata. It is not
-for paragraphs. If a sentence matters, it gets `--ink-muted` or darker.
+Every ink passes WCAG 2.2 AA (4.5:1) for normal-size text on every ground in
+the system — paper, surface, surface-raised and surface-sunk (4.56:1, the
+lowest). The site-quality pass (2026-09) darkened `--ink-muted` from
+`#736251` and `--ink-faint` from `#7E6E5A` (4.2:1, which failed on paper)
+while keeping the three steps of hierarchy apart.
+
+`--ink-faint` is for tracked uppercase labels, metadata and captions. It is
+not for paragraphs. If a sentence matters, it gets `--ink-muted` or darker.
+Decorative numerals (a module's number) use `--ink-faint` at rest, never a
+tan: text that can be read must pass contrast.
 
 ### Lines
 

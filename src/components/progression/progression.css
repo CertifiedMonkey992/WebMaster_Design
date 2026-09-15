@@ -61,10 +61,9 @@
      counter, a metadata value or a micro-label — the INTERFACE speaking. So
      it resolves to Manrope. --pg-heading is the PRODUCT speaking: panel
      titles, and the few numbers that are an achievement rather than a
-     measurement (a streak length, a level). Those are named explicitly below. */
-  --pg-display:   var(--font-ui);
-  --pg-heading:   var(--font-display);
-  --pg-body:      var(--font-ui);
+     measurement (a streak length, a level). Those are named explicitly below.
+     The three are defined in index.css :root, beside --font-heading, so the
+     landing page's showcases read the same voices as the app. */
 }
 
 /* The product's voice, applied where it belongs. A streak of 12 days is an
@@ -88,7 +87,7 @@
 .pg-sr-only {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -391,7 +390,7 @@
   transition: transform var(--dur-lift) var(--ease-lift);
 }
 
-.pg-heart-slot .hi-level { transition-delay: calc(var(--i) * 110ms); }
+.pg-heart-slot .hi-level { transition-delay: calc(110ms * var(--i)); }
 
 .pg-heart-slot:hover { transform: translateY(-3px) scale(1.15) rotate(-6deg); }
 
@@ -692,13 +691,13 @@
   pointer-events: none;
   background: linear-gradient(105deg, transparent 28%, rgba(var(--sheen-rgb), 0.6) 50%, transparent 72%);
   transform: translateX(-130%);
-  animation: pg-week-run var(--idle-run) var(--ease-settle) calc(var(--i, 0) * 90ms + 1.2s) infinite;
+  animation: pg-week-run var(--idle-run) var(--ease-settle) calc(90ms * var(--i, 0) + 1.2s) infinite;
 }
 
 /* The hop moves the square itself (an HTML box the compositor can run), on
    `translate`/`scale` so the hover's transform still composes. */
 .pg-week.is-running .pg-day.is-active .pg-day-dot {
-  animation: pg-week-hop var(--idle-run) var(--ease-out) calc(var(--i, 0) * 90ms + 1.2s) infinite;
+  animation: pg-week-hop var(--idle-run) var(--ease-out) calc(90ms * var(--i, 0) + 1.2s) infinite;
 }
 
 @keyframes pg-week-run {
@@ -789,7 +788,7 @@
 
 .pg-stone:hover .pg-stone-dot { transform: scale(1.3); }
 
-.pg-stone.is-reached .pg-stone-dot { background: var(--ember); border-color: var(--ember); }
+.pg-stone.is-reached .pg-stone-dot { background: var(--ember); border-color: transparent; }
 .pg-stone.is-next .pg-stone-dot { border-color: var(--ochre); background: var(--ochre-tint); }
 .pg-stone.is-next .pg-stone-dot { animation: pg-stone-beckon 2.4s var(--ease-out) 1.4s infinite; }
 
@@ -867,7 +866,7 @@
   border: 1.5px solid var(--line-strong);
   transition: background-color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
 }
-.pg-shield-pips i.is-on { background: var(--evergreen); border-color: var(--evergreen); }
+.pg-shield-pips i.is-on { background: var(--evergreen); border-color: transparent; }
 
 .pg-shields-note { font-size: var(--fs-caption); color: var(--ink-muted); line-height: var(--lh-snug); }
 
@@ -1058,9 +1057,9 @@
   line-height: 1.35;
   color: var(--ink);
   margin-bottom: 5px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  /* Two lines at most, cut at the line box rather than with a prefixed
+     line-clamp. */
+  max-height: calc(2em * 1.35);
   overflow: hidden;
 }
 
@@ -1100,7 +1099,7 @@
   pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(var(--sheen-rgb), 0.55), transparent);
   transform: translateX(-120%);
-  animation: qc-fill-glint var(--idle-glint) var(--ease-settle) calc(var(--i, 0) * 1.4s + 0.8s) infinite;
+  animation: qc-fill-glint var(--idle-glint) var(--ease-settle) calc(1.4s * var(--i, 0) + 0.8s) infinite;
 }
 
 @keyframes qc-fill-glint {
@@ -1113,7 +1112,7 @@
    twitch still composes. */
 .qc-compact:not(.is-claimed) .qc-compact-icon > svg,
 .qc-card:not(.is-claimed) .qc-card-icon > svg {
-  animation: qc-icon-tick var(--idle-wave) var(--ease-out) calc(var(--i, 0) * 1.9s + 1.6s) infinite;
+  animation: qc-icon-tick var(--idle-wave) var(--ease-out) calc(1.9s * var(--i, 0) + 1.6s) infinite;
 }
 
 @keyframes qc-icon-tick {
@@ -1773,7 +1772,7 @@
 
 /* Idle (revision 4): an earned medal catches the light now and then, each
    card on its own offset; the hand's hover plays the glint at once. */
-.ac-card.is-unlocked::after { animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(var(--i, 0) * -1.7s) infinite; }
+.ac-card.is-unlocked::after { animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(-1.7s * var(--i, 0)) infinite; }
 .ac-card.is-unlocked:hover::after { animation: db-foil var(--dur-celebrate) var(--ease-settle); }
 
 .ac-card.is-unlocked.ac-bronze { border-color: rgba(var(--ochre-rgb), 0.28); }

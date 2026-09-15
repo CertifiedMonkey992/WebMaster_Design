@@ -33,7 +33,9 @@ export default function ModuleList({ onStartLesson }) {
   return (
     <div className="course" ref={rootRef}>
       <header className="course-head">
-        <SplitText as="h1" className="course-title" immediate={!showcase} stagger={46}>
+        {/* One h1 per page: inside a landing-page frame this is a picture of the
+          app's heading, so it steps down a level. */}
+        <SplitText as={showcase ? 'h3' : 'h1'} className="course-title" immediate={!showcase} stagger={46}>
           {course.completedCount === 0 ? (
             <>Start where the machines <em className="em">actually begin</em>.</>
           ) : (

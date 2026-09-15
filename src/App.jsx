@@ -1,124 +1,184 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
+import './components/SiteChrome.css'
 
 import Navbar          from './components/Navbar'
 import Hero            from './components/Hero'
 import LessonTicker    from './components/LessonTicker'
 import ProductSections from './components/showcase/ProductSections'
 import ClosingCTA      from './components/ClosingCTA'
-import LoginModal      from './components/LoginModal'
 import Footer          from './components/Footer'
-import LearnPage       from './pages/LearnPage'
-import AboutPage       from './pages/AboutPage'
+import ConsentBanner   from './components/ConsentBanner'
+import StickyCta       from './components/StickyCta'
+import PageLoading     from './components/PageLoading'
 
 import { ProgressionProvider } from './state/ProgressionContext'
 import FxLayer from './motion/FxLayer'
 import { turnPage } from './motion/pageTurn'
+import { NavProvider, usePageMeta } from './nav'
+import { PAGES, routeOf, pageFromLocation } from './site'
+import { initAnalytics, pageview } from './services/analytics'
 /* Last, so the shared verbs (magnet, press, reveal) sit on top of the
    component stylesheets imported above rather than being overridden by them. */
 import './motion/motion.css'
 
-/* Three pages, each at its own address, so any of them can be linked to,
-   refreshed, or reached with Back. The hash form works on static hosting
-   with no server rewrites. In-page fragments on the landing page (#streak)
-   are not page addresses: they resolve to the landing page and leave it be.
-   The order is the book's order, and sets which way a page turns. */
-const PAGES = ['landing', 'about', 'learn']
-const PAGE_HASH = { landing: '', about: '#/about', learn: '#/learn' }
-const pageFromHash = (hash) => PAGES.find((p) => PAGE_HASH[p] && PAGE_HASH[p] === hash) ?? 'landing'
+/* Every page but the home page is loaded when first needed, so a first visit
+   downloads only what the home page shows. `load` is kept so a page can be
+   fetched BEFORE its page turn starts — a turn must never snapshot a loader. */
+const LOADERS = {
+  learn:    () => import('./pages/LearnPage'),
+  about:    () => import('./pages/AboutPage'),
+  contact:  () => import('./pages/ContactPages').then((m) => ({ default: m.ContactPage })),
+  thanks:   () => import('./pages/ContactPages').then((m) => ({ default: m.ThanksPage })),
+  privacy:  () => import('./pages/LegalPages').then((m) => ({ default: m.PrivacyPage })),
+  terms:    () => import('./pages/LegalPages').then((m) => ({ default: m.TermsPage })),
+  notfound: () => import('./pages/NotFoundPage'),
+}
+const LAZY = Object.fromEntries(Object.entries(LOADERS).map(([k, load]) => [k, lazy(load)]))
+const LoginModal = lazy(() => import('./components/LoginModal'))
+
+const BASE = import.meta.env.BASE_URL
+const hrefOf = (page) => BASE + (routeOf(page).path ?? '')
+
+/* Old hash addresses (#/about) become real ones before anything renders. */
+function initialPage() {
+  const page = pageFromLocation(window.location, BASE)
+  if (/^#\/(about|learn)$/.test(window.location.hash)) {
+    window.history.replaceState(null, '', hrefOf(page))
+  }
+  return page
+}
 
 export default function App() {
   const [loginOpen,    setLoginOpen]    = useState(false)
-  const [currentPage,  setCurrentPage]  = useState(() => pageFromHash(window.location.hash))
+  const [currentPage,  setCurrentPage]  = useState(initialPage)
   /* A section to land on when a page opens (the footer's "TSA compliance"). */
-  const [anchor,       setAnchor]       = useState(null)
+  const [anchor,       setAnchor]       = useState(() => (window.location.hash.length > 1 && !window.location.hash.startsWith('#/') ? window.location.hash.slice(1) : null))
   const pageRef = useRef(currentPage)
   pageRef.current = currentPage
+  const navigated = useRef(false)
 
-  /* The landing page and the app are one book: moving between them turns a
-     page (MOTION_RULES.md → Page turns). 'instant' because the html element
-     scrolls smoothly, and the new page must start at its top, not travel. */
-  const show = useCallback((page, { push = true, section = null } = {}) => {
+  usePageMeta(currentPage)
+
+  /* The landing page and the app are one book: moving between pages turns a
+     page (MOTION_RULES.md → Page turns). The next page's code is fetched
+     first, so the turn shows the real page, not a loader. 'instant' because
+     the html element scrolls smoothly, and the new page must start at its
+     top, not travel. */
+  const go = useCallback((page, { push = true, section = null } = {}) => {
     const from = pageRef.current
-    if (page === from) return
-    if (push) {
-      window.history.pushState(null, '', PAGE_HASH[page] || `${window.location.pathname}${window.location.search}`)
+    if (page === from) {
+      if (section) document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      else window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
     }
-    turnPage(() => {
-      setAnchor(section)
-      setCurrentPage(page)
-      window.scrollTo({ top: 0, behavior: 'instant' })
-    }, { dir: PAGES.indexOf(page) > PAGES.indexOf(from) ? 1 : -1 })
+    if (push) window.history.pushState(null, '', hrefOf(page) + (section ? `#${section}` : ''))
+    navigated.current = true
+    const ready = LOADERS[page] ? LOADERS[page]().catch(() => null) : Promise.resolve()
+    ready.then(() => {
+      turnPage(() => {
+        setAnchor(section)
+        setCurrentPage(page)
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      }, { dir: PAGES.indexOf(page) > PAGES.indexOf(from) ? 1 : -1 })
+    })
   }, [])
+
+  const nav = useMemo(() => ({ page: currentPage, go, href: hrefOf }), [currentPage, go])
 
   /* Back and Forward. */
   useEffect(() => {
-    const onPop = () => show(pageFromHash(window.location.hash), { push: false })
+    const onPop = () => go(pageFromLocation(window.location, BASE), { push: false })
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
-  }, [show])
+  }, [go])
 
-  /* Land on the requested section once the new page is in the document. An
-     effect runs after the commit, so the section exists; no frame is needed. */
+  /* Land on the requested section once the new page is in the document; and
+     after a page change the reader's focus starts at the new page's main
+     content, so a screen reader announces where they are. */
   useEffect(() => {
-    if (!anchor) return
-    document.getElementById(anchor)?.scrollIntoView({ behavior: 'instant', block: 'start' })
-    setAnchor(null)
+    if (anchor) {
+      const t = window.setTimeout(() => {
+        document.getElementById(anchor)?.scrollIntoView({ behavior: 'instant', block: 'start' })
+        setAnchor(null)
+      }, 60)
+      return () => clearTimeout(t)
+    }
+    if (navigated.current) {
+      const t = window.setTimeout(() => document.querySelector('main')?.focus({ preventScroll: true }), 80)
+      return () => clearTimeout(t)
+    }
+    return undefined
   }, [anchor, currentPage])
 
-  const goLearn = () => show('learn')
-  const goHome  = () => show('landing')
-  const goAbout = (section = null) => show('about', { section })
+  /* Visit counting (only with permission; services/analytics.js). */
+  useEffect(() => { initAnalytics() }, [])
+  useEffect(() => { pageview(window.location.pathname) }, [currentPage])
 
-  if (currentPage === 'learn') {
-    return (
+  /* When the browser is idle, fetch the pages a visitor is likely to open
+     next, so the first page turn does not wait on the network. */
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((fn) => window.setTimeout(fn, 2500))
+    const cancel = window.cancelIdleCallback || clearTimeout
+    const id = idle(() => {
+      const next = currentPage === 'landing' ? ['learn', 'about'] : currentPage === 'learn' ? [] : ['learn']
+      next.forEach((p) => LOADERS[p]?.().catch(() => {}))
+    })
+    return () => cancel(id)
+  }, [currentPage])
+
+  let page
+  if (currentPage === 'landing') {
+    /* The hero's button and the closing CTA are the page's ways into the
+       course; the navbar's button is always on screen, and on a phone a
+       sticky button takes over once the hero's has scrolled away.
+       COMPONENT_RULES.md → Links into the course. */
+    page = (
+      <div className="app">
+        <Navbar pageLink={{ label: 'About', page: 'about' }} />
+
+        <main id="main" tabIndex={-1}>
+          <Hero />
+          <LessonTicker />
+          <ProductSections />
+          <ClosingCTA />
+        </main>
+
+        <Footer />
+        <StickyCta />
+      </div>
+    )
+  } else if (currentPage === 'learn') {
+    const LearnPage = LAZY.learn
+    page = (
       <ProgressionProvider>
-        <FxLayer />
         <LearnPage
-          onGoHome={goHome}
-          onGoAbout={() => goAbout()}
+          onGoHome={() => go('landing')}
+          onGoAbout={() => go('about')}
           onLoginClick={() => setLoginOpen(true)}
         />
-        {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
+        {loginOpen && (
+          <Suspense fallback={null}>
+            <LoginModal onClose={() => setLoginOpen(false)} />
+          </Suspense>
+        )}
       </ProgressionProvider>
     )
+  } else {
+    const Page = LAZY[currentPage] ?? LAZY.notfound
+    page = <Page />
   }
 
-  if (currentPage === 'about') {
-    return (
-      <>
-        <FxLayer />
-        <AboutPage onGoHome={goHome} onStartLearning={goLearn} />
-      </>
-    )
-  }
-
-  /* The landing page has exactly two ways into the course: the navbar's
-     button (always on screen) and the closing CTA (the bottom of the page).
-     COMPONENT_RULES.md → Links into the course. The About links are page
-     links, not course links. */
   return (
-    <div className="app">
+    <NavProvider value={nav}>
+      <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); const m = document.querySelector('main'); m?.focus(); m?.scrollIntoView() }}>
+        Skip to content
+      </a>
       <FxLayer />
-      <Navbar onStartLearning={goLearn} pageLink={{ label: 'About', onClick: () => goAbout() }} />
-
-      <main>
-        <Hero />
-        <LessonTicker />
-        <ProductSections />
-        <ClosingCTA onStartLearning={goLearn} />
-      </main>
-
-      <Footer
-        links={[
-          { label: 'About LunX', onClick: () => goAbout() },
-          { label: 'How a lesson works', onClick: () => goAbout('method') },
-          { label: 'Credits', onClick: () => goAbout('credits') },
-          { label: 'TSA compliance', onClick: () => goAbout('compliance') },
-        ]}
-      />
-
-      {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} />}
-    </div>
+      <Suspense fallback={<PageLoading label={currentPage === 'learn' ? 'Opening the course…' : 'Opening the page…'} />}>
+        {page}
+      </Suspense>
+      <ConsentBanner />
+    </NavProvider>
   )
 }

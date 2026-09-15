@@ -355,7 +355,6 @@ kbd,
   font-weight: var(--fw-semi);
   color: var(--ink);
   cursor: grab;
-  user-select: none;
   animation: fx-pop-in var(--dur-lift) var(--ease-spring) backwards;
   animation-delay: calc(200ms + var(--i, 0) * var(--stagger));
   transition: border-color var(--dur-hover), background-color var(--dur-hover), transform var(--dur-lift) var(--ease-lift), box-shadow var(--dur-lift) var(--ease-out), opacity var(--dur-hover) var(--ease-out);

@@ -92,7 +92,7 @@
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   cursor: help;
-  pointer-events: auto;
+  pointer-events: initial;
 }
 
 .pf-live-dot {
@@ -173,14 +173,12 @@
 
 .pf-body.is-cropped {
   padding-bottom: var(--sp-10);
-  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
 }
 
 .pf-viewport { position: relative; }
 
 .pf-body.is-tour {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 84%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0, #000 6%, #000 84%, transparent 100%);
 }
 
@@ -188,7 +186,6 @@
 .pf-body.is-manual {
   overflow-y: auto;
   scrollbar-width: thin;
-  -webkit-mask-image: none;
   mask-image: none;
 }
 
@@ -321,8 +318,6 @@
   background-size: 0% 38%;
   background-position: 0 90%;
   transition: background-size var(--dur-celebrate) var(--ease-snap) 200ms;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
 }
 
 .mark--ochre { background-image: linear-gradient(var(--ochre-tint), var(--ochre-tint)); }

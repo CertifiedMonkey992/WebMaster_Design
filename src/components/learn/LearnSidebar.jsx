@@ -227,7 +227,7 @@ export default function LearnSidebar({ active, onChange, onGoHome, onGoAbout, ba
             className={`ls-group${group.footer ? ' ls-group--footer' : ''}`}
           >
             <div className="ls-group-label">{group.label}</div>
-            <ul className="ls-group-list" role="list">
+            <ul className="ls-group-list">
               {group.items.map(renderItem)}
             </ul>
           </div>

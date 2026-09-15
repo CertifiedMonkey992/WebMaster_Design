@@ -11,7 +11,7 @@
 .pg-sr-only {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
 }
 
 /* ═══ REVEAL — SPLIT TEXT ═══════════════════════════════════════════════════
@@ -84,8 +84,8 @@
     opacity: 0;
     transform:
       perspective(1400px)
-      translateX(calc(var(--side, 0) * 44px))
-      rotateY(calc(var(--side, 0) * -9deg))
+      translateX(calc(44px * var(--side, 0)))
+      rotateY(calc(-9deg * var(--side, 0)))
       rotateX(14deg)
       translateY(48px)
       scale(0.96);
@@ -98,7 +98,7 @@
    clipped over it. Columns carry right-to-left, 35ms apart. */
 
 .rn { display: inline-flex; align-items: baseline; font-variant-numeric: tabular-nums; }
-.rn-track { display: inline-flex; align-items: baseline; user-select: none; }
+.rn-track { display: inline-flex; align-items: baseline; }
 .rn-sym { display: inline-block; white-space: pre; }
 
 .rn-ghost::before,
@@ -127,7 +127,7 @@
 
 .rn.is-live .rn-strip {
   transition: transform var(--dur-settle) var(--ease-settle);
-  transition-delay: calc(var(--c, 0) * 30ms);
+  transition-delay: calc(30ms * var(--c, 0));
 }
 
 /* The kick (transform) and the flash (colour) are one gesture on one clock.
@@ -470,7 +470,7 @@
    `translate` and `rotate` properties, so it composes with any hover or
    Report transform on the same element instead of freezing it. */
 .fx-float {
-  animation: fx-float calc(var(--idle-float) * var(--float-k, 1)) var(--ease-swing) calc(var(--seed, 0) * -6s) infinite alternate;
+  animation: fx-float calc(var(--idle-float) * var(--float-k, 1)) var(--ease-swing) calc(-6s * var(--seed, 0)) infinite alternate;
 }
 
 @keyframes fx-float {
@@ -490,7 +490,7 @@
   pointer-events: none;
   background: linear-gradient(100deg, transparent, rgba(var(--sheen-rgb), 0.62), transparent);
   transform: translateX(0) skewX(-16deg);
-  animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(var(--seed, 0) * -9.7s) infinite;
+  animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(-9.7s * var(--seed, 0)) infinite;
 }
 
 @keyframes fx-sweep {
@@ -511,7 +511,7 @@
 .fx-walk > i {
   position: absolute;
   inset: 0;
-  animation: fx-walk 3.7s var(--ease-swing) calc(var(--seed, 0) * -3.7s) infinite;
+  animation: fx-walk 3.7s var(--ease-swing) calc(-3.7s * var(--seed, 0)) infinite;
 }
 
 .fx-walk > i::before {
@@ -602,7 +602,6 @@
 .mq {
   position: relative;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
 }
 
@@ -610,7 +609,6 @@
 .mq-set { display: flex; flex-shrink: 0; }
 
 .mq--still { overflow-x: auto; scrollbar-width: none; }
-.mq--still::-webkit-scrollbar { display: none; }
 .mq--still .mq-track { will-change: auto; }
 
 /* ═══ SHARED KEYFRAMES ══════════════════════════════════════════════════════ */
@@ -693,7 +691,7 @@
 }
 
 @keyframes view-in {
-  from { opacity: 0; transform: translateY(calc(var(--dir, 1) * 16px)); }
+  from { opacity: 0; transform: translateY(calc(16px * var(--dir, 1))); }
 }
 
 /* ═══ PAGE TURN (revision 4) ════════════════════════════════════════════════
@@ -702,31 +700,8 @@
    gives way a third of the distance and dims. Snap, not swing: it answers a
    click, so it must be visibly moving on its first frame. */
 
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: calc(var(--dur-turn) * 0.85);
-  animation-timing-function: var(--ease-snap);
-  animation-fill-mode: both;
-  mix-blend-mode: normal;
-}
-
-html[data-turn='forward']::view-transition-new(root) { animation-name: vt-in-from-right; }
-html[data-turn='forward']::view-transition-old(root) { animation-name: vt-give-left; }
-html[data-turn='back']::view-transition-new(root)    { animation-name: vt-in-from-left; }
-html[data-turn='back']::view-transition-old(root)    { animation-name: vt-give-right; }
-
-@keyframes vt-in-from-right {
-  from { transform: translateX(100%); box-shadow: -28px 0 56px rgba(var(--ink-rgb), 0.24); }
-  to   { transform: none; box-shadow: -28px 0 56px rgba(var(--ink-rgb), 0); }
-}
-
-@keyframes vt-in-from-left {
-  from { transform: translateX(-100%); box-shadow: 28px 0 56px rgba(var(--ink-rgb), 0.24); }
-  to   { transform: none; box-shadow: 28px 0 56px rgba(var(--ink-rgb), 0); }
-}
-
-@keyframes vt-give-left  { to { transform: translateX(-33%); filter: brightness(0.92); } }
-@keyframes vt-give-right { to { transform: translateX(33%); filter: brightness(0.92); } }
+/* The ::view-transition-* rules and their keyframes live in pageTurn.js, in
+   a stylesheet adopted only by browsers that can turn a page. */
 
 /* ═══ REDUCED MOTION ════════════════════════════════════════════════════════
    The global rule in index.css collapses every duration. These make sure the
@@ -738,7 +713,6 @@ html[data-turn='back']::view-transition-old(root)    { animation-name: vt-give-r
   .rv:not(.is-in), .rv--stagger:not(.is-in) > .rv-item { opacity: 1 !important; }
   .fx-shine::after, .fx-ping::after, .fx-fill-shine::after, .fx-sweep::after, .fx-walk { display: none; }
   .fx-float { animation: none !important; }
-  ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
   .btn { translate: none; }
   .btn::before { display: none; }
   .fx-tilt { transform: none !important; }

@@ -80,6 +80,7 @@ export function QuestCard({ quest, variant = 'full', index = 0, style, className
         ].filter(Boolean).join(' ')}
         style={{ ...style, '--i': index }}
         data-quest={quest.id}
+        role="group"
         tabIndex={claimable ? -1 : 0}
         aria-label={`${quest.description}: ${quest.progress} of ${quest.target}${quest.claimed ? ', claimed' : claimable ? ', ready to claim' : ''}`}
       >

@@ -144,7 +144,7 @@ export default function LessonNode({
         {isDone && (
           <span ref={markRef} className={`lesson-mark lesson-mark--done${justDone ? ' is-stamping' : ''}`} aria-hidden="true">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" />
+              <path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" />
             </svg>
           </span>
         )}

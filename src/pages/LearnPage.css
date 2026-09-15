@@ -51,7 +51,7 @@ html:has(.learn-app) body {
 
 @keyframes lt-arrive { from { opacity: 0; transform: translateY(-12px); } }
 
-.learn-topbar > * { pointer-events: auto; }
+.learn-topbar > * { pointer-events: initial; }
 
 .lt-actions {
   display: flex;
@@ -428,7 +428,7 @@ html:has(.learn-app) body {
     tick-run var(--idle-run) var(--ease-out) infinite;
   animation-delay:
     calc(250ms + var(--i, 0) * var(--stagger)),
-    calc(2.4s + var(--i, 0) * 70ms);
+    calc(2.4s + 70ms * var(--i, 0));
 }
 
 .course-tick.is-current { animation-name: tick-rise, tick-run-here; }
@@ -618,7 +618,7 @@ html:has(.learn-app) body {
   font-size: var(--fs-title);
   font-weight: var(--fw-bold);
   line-height: 1;
-  color: var(--tan-deep);
+  color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
   display: inline-block;
   transform-origin: 0 100%;
@@ -682,7 +682,7 @@ html:has(.learn-app) body {
   pointer-events: none;
 }
 
-.module-progress .track { pointer-events: auto; }
+.module-progress .track { pointer-events: initial; }
 
 .module-progress-count {
   display: inline-flex;
@@ -1298,7 +1298,8 @@ html:has(.learn-app) body {
 .rail-note-link {
   background: none;
   border: none;
-  padding: 0;
+  padding: 3px 0;
+  min-height: 24px;
   cursor: pointer;
   font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
@@ -1401,11 +1402,9 @@ html:has(.learn-app) body {
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    -ms-overflow-style: none;
     animation-name: fx-fade-in;
   }
 
-  .learn-sidebar::-webkit-scrollbar { display: none; }
 
   .ls-logo, .ls-group-label { display: none; }
 

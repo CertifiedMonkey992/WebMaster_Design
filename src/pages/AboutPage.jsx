@@ -107,7 +107,7 @@ const NAV_LINKS = [
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
-export default function AboutPage({ onGoHome, onStartLearning }) {
+export default function AboutPage() {
   const methodRef = useRef(null)
   const impactRef = useRef(null)
   useAboutPreviews(methodRef, impactRef)
@@ -115,14 +115,12 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
   return (
     <div className="app">
       <Navbar
-        onStartLearning={onStartLearning}
         links={NAV_LINKS}
         scrollLinks
-        onLogoClick={onGoHome}
-        pageLink={{ label: 'Home', onClick: onGoHome }}
+        pageLink={{ label: 'Home', page: 'landing' }}
       />
 
-      <main className="about">
+      <main className="about" id="main" tabIndex={-1}>
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <section className="ab-hero" aria-labelledby="about-heading">
           <div className="ab-hero-copy">
@@ -164,7 +162,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
               <div><dt>Theme</dt><dd>Artificial Intelligence (AI) learning portal</dd></div>
               <div><dt>Audience</dt><dd>High school, grades 9–12</dd></div>
               <div><dt>Course</dt><dd className="tnum">{TOTAL_SECTIONS} modules · {TOTAL_LESSONS} lessons · {TOTAL_MINUTES} min</dd></div>
-              <div><dt>Pages</dt><dd>Home, Course, About</dd></div>
+              <div><dt>Pages</dt><dd>Home, Course, About, Contact, Privacy, Terms</dd></div>
               <div><dt>Built with</dt><dd>React 18, Vite 5, hand-written CSS</dd></div>
               <div><dt>Accounts</dt><dd>None — progress stays in this browser</dd></div>
             </dl>
@@ -245,7 +243,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
               </Reveal>
             </div>
 
-            <Reveal as="ol" className="ab-principles" role="list" variant="right" stagger delay={DUR.hover}>
+            <Reveal as="ol" className="ab-principles" variant="right" stagger delay={DUR.hover}>
               <li className="ab-principle">
                 <span className="ab-principle-num">01</span>
                 <div>
@@ -330,7 +328,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
               </div>
               <ol
                 className="ab-strand-key"
-                role="list"
+               
                 style={{ gridTemplateColumns: STRANDS.map((s) => `${s.minutes}fr`).join(' ') }}
               >
                 {STRANDS.map((s) => (
@@ -404,7 +402,7 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
               </Reveal>
             </div>
 
-            <Reveal as="ol" className="ab-steps" role="list" stagger delay={DUR.hover}>
+            <Reveal as="ol" className="ab-steps" stagger delay={DUR.hover}>
               <li className="ab-step">
                 <span className="ab-step-num">1</span>
                 <div className="ab-step-body">
@@ -447,10 +445,10 @@ export default function AboutPage({ onGoHome, onStartLearning }) {
           </div>
         </section>
 
-        <ClosingCTA onStartLearning={onStartLearning} />
+        <ClosingCTA />
       </main>
 
-      <Footer links={[{ label: 'Home', onClick: onGoHome }]} />
+      <Footer />
     </div>
   )
 }

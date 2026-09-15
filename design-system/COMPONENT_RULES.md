@@ -106,11 +106,39 @@ are in.
 
 ### Links into the course (landing page)
 
-Exactly two: the navbar button (top right, always on screen) and the closing
-CTA's button (the bottom of the page). The hero, the section copy and the
-footer do not repeat it — seven routes to one destination read as pleading,
-and dilute the two that matter. In-page section anchors (the navbar's section
-links) are navigation, not course links, and do not count.
+Three, each with a job, and never two on screen at once in the same place:
+
+- **The hero's button** — the page's primary action (`btn-next btn-lg`,
+  "Start lesson one"), above the fold at every width, with one line of
+  facts beside it (free · no account · about five minutes). It is the
+  loudest element on the first screen, as principle 6 asks.
+- **The navbar's button** — always on screen, quieter (`btn-primary`).
+- **The closing CTA** — the bottom of the page.
+- **On phones (≤ 720px)** a sticky bar at the bottom edge takes over once the
+  hero's button has scrolled away, and tucks away while the closing CTA or
+  the privacy banner is on screen (`StickyCta`). A thumb cannot reach the
+  navbar's corner.
+
+The section copy and the footer do not repeat it. In-page section anchors
+(the navbar's section links) are navigation, not course links. Every link
+to a page is a real `<a href>` (`PageLink`), never a button.
+
+### Site pages (contact, thank you, privacy, terms, not found)
+
+- Built on `SitePage`: the navbar without section links, a centre column at
+  the reading measure (46rem), a Fraunces title with at most one italic clay
+  phrase, a lead, then rows on hairlines. No cards; the form's inputs and its
+  error summary are the only edged surfaces.
+- **Forms** never scold before the reader has tried to send. On submit every
+  problem is listed in a berry summary that takes focus and links to its
+  field; each field turns berry (`aria-invalid`), says what is wrong
+  beneath it (`aria-describedby`), and re-checks itself as it changes. A
+  submit button shows a working state (`aria-busy`, a small turning arc).
+- **The privacy banner** is a region, not a dialog: bottom-left, `--r-lg`,
+  `--shadow-float`, never takes focus. It asks only when there is something
+  to consent to; otherwise it states what is stored, once.
+- **The page loader** shows only if a lazily loaded page takes longer than
+  `--dur-reveal` to arrive.
 
 ### The field guide (landing hero)
 

@@ -98,7 +98,7 @@
 .wm-letter {
   display: inline-block;
   transition: transform var(--dur-lift) var(--ease-spring);
-  transition-delay: calc(var(--i) * 28ms);
+  transition-delay: calc(28ms * var(--i));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -423,7 +423,9 @@
   max-width: 30rem;
 }
 
-.hero-path > li { border-bottom: 1px solid var(--line-faint); }
+/* Each item's --chapter is its chapter's ink, set inline (CHAPTER_INK);
+   the first chapter's stands in until it is. */
+.hero-path > li { --chapter: var(--moss); border-bottom: 1px solid var(--line-faint); }
 
 .hero-path-item {
   position: relative;
@@ -677,7 +679,7 @@
   color: var(--ink);
   font-size: var(--fs-body);
   outline: none;
-  -webkit-appearance: none;
+  appearance: none;
   transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
 }
 .form-input::placeholder { color: var(--ink-faint); }
@@ -958,7 +960,7 @@
    one row after another — the course being counted out once more. The hand
    takes over the rule on hover. */
 .cta-stats.is-in .cta-stat::after {
-  animation: cta-tally var(--idle-sweep) var(--ease-snap) calc(3s + var(--i, 0) * 180ms) infinite;
+  animation: cta-tally var(--idle-sweep) var(--ease-snap) calc(3s + 180ms * var(--i, 0)) infinite;
 }
 
 .cta-stats.is-in .cta-stat:hover::after { animation: none; }
@@ -1043,7 +1045,7 @@
   transition: background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-lift) var(--ease-lift);
 }
 
-.footer-top:hover { background: var(--evergreen); border-color: var(--evergreen); color: var(--surface-raised); }
+.footer-top:hover { background: var(--evergreen); border-color: transparent; color: var(--surface-raised); }
 .footer-top:hover svg { animation: footer-lift var(--dur-reveal) var(--ease-snap); }
 .footer-top:active { transform: translateY(1px); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-micro); }
 
@@ -1067,9 +1069,11 @@
   .hero-eyebrow { order: 1; justify-self: start; }
   .hero-heading { order: 2; }
   .hero-sub { order: 3; margin-bottom: var(--sp-2); }
-  .hero-right { order: 4; margin-bottom: var(--sp-6); }
-  .hero-path { order: 5; }
-  .hero-path-meta { order: 6; }
+  /* The primary action stays above the fold: right after the promise. */
+  .hero-cta { order: 4; margin: var(--sp-4) 0 var(--sp-6); }
+  .hero-right { order: 5; margin-bottom: var(--sp-6); }
+  .hero-path { order: 6; }
+  .hero-path-meta { order: 7; }
   .cta-wrap { grid-template-columns: 1fr; gap: var(--sp-8); align-items: start; }
 }
 
@@ -1100,3 +1104,44 @@
   .cta-stat::after, .cta-clock .cta-clock-sweep, .hero-live::after { animation: none !important; }
   .cta-stats-plane { transform: none; }
 }
+
+/* ── The hero's primary action (site-quality pass) ───────────────────────── */
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  margin: calc(var(--sp-8) * -0.5) 0 var(--sp-8);
+}
+
+.hero-cta-note {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink-faint);
+}
+
+@media (max-width: 560px) {
+  .hero-cta .btn { flex: 1 1 100%; justify-content: center; }
+}
+
+/* ── Skip link: the first thing a keyboard reaches ───────────────────────── */
+
+.skip-link {
+  position: fixed;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  z-index: var(--z-fx);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-sm);
+  background: var(--evergreen);
+  color: var(--surface-raised);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  transform: translateY(-160%);
+  transition: transform var(--dur-move) var(--ease-snap);
+}
+
+.skip-link:focus-visible { transform: none; outline: 2px solid var(--clay); outline-offset: 2px; }
+
+main:focus { outline: none; }

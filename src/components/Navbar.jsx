@@ -19,6 +19,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { PageLink, useNav } from '../nav'
 
 const LINKS = [
   { id: 'learn', label: 'Course' },
@@ -32,11 +33,11 @@ const LINKS = [
      scrollLinks  scroll to a section instead of following its fragment —
                   for a page that lives at its own address (#/about), which a
                   fragment would overwrite
-     onLogoClick  what the wordmark does (default: back to the top)
-     pageLink     { label, onClick } — a quiet link to the site's other page,
+     pageLink     { label, page } — a quiet link to the site's other page,
                   beside the one solid button. It stays visible on a phone,
                   where the section links are hidden. */
-export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = false, onLogoClick, pageLink }) {
+export default function Navbar({ links = LINKS, scrollLinks = false, pageLink }) {
+  const { page: currentPage, href } = useNav()
   const navRef = useRef(null)
   const listRef = useRef(null)
   const [scrolled, setScrolled] = useState(false)
@@ -125,7 +126,8 @@ export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = f
       className={`navbar${scrolled ? ' scrolled' : ''}`}
       aria-label="Main navigation"
     >
-      <a href="#" className="nav-logo" aria-label="LunX home" onClick={(e) => { e.preventDefault(); if (onLogoClick) onLogoClick(); else window.scrollTo({ top: 0, behavior: 'smooth' }) }}>
+      {/* The wordmark goes home — or, on the home page, back to its top. */}
+      <PageLink page="landing" className="nav-logo" aria-label="LunX home">
         <span className="nav-logo-mark" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />
@@ -136,11 +138,10 @@ export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = f
             <span key={i} className="wm-letter" style={{ '--i': i }}>{ch}</span>
           ))}
         </span>
-      </a>
+      </PageLink>
 
-      <ul
+      {links.length > 0 && <ul
         className="nav-links"
-        role="list"
         ref={listRef}
         onPointerLeave={() => setHover(null)}
       >
@@ -161,20 +162,19 @@ export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = f
           </li>
         ))}
         <li className="nav-ink" aria-hidden="true" />
-      </ul>
+      </ul>}
 
       {/* No sign-in button: the login form has no backend, so offering it here
           would promise an account the product cannot create. */}
       <div className="nav-actions">
-        {pageLink && (
-          <button type="button" className="btn btn-ghost nav-page-link" onClick={pageLink.onClick}>
+        {pageLink && pageLink.page !== currentPage && (
+          <PageLink page={pageLink.page} className="btn btn-ghost nav-page-link">
             {pageLink.label}
-          </button>
+          </PageLink>
         )}
-        <button
+        <PageLink
+          page="learn"
           className={`btn btn-primary${cued ? ' is-cued' : ''}`}
-          onClick={onStartLearning}
-          aria-label="Start learning: open the course"
           data-magnetic="6"
         >
           Start learning
@@ -183,7 +183,7 @@ export default function Navbar({ onStartLearning, links = LINKS, scrollLinks = f
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
           </svg>
-        </button>
+        </PageLink>
       </div>
 
       <span className="nav-progress" aria-hidden="true" />

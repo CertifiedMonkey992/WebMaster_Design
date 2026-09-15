@@ -1,0 +1,303 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SitePages.css — CONTACT, THANK YOU, PRIVACY, TERMS, NOT FOUND
+   ---------------------------------------------------------------------------
+   Reading pages, built from the system's vocabulary (DESIGN_PHILOSOPHY.md →
+   "Applying this to a page that does not exist yet"): paper ground, a centre
+   column at the reading measure, a Fraunces title, rows on hairlines rather
+   than cards. The only surfaces with an edge of their own are the form's
+   inputs and its error summary. Nothing at rest has a shadow.
+
+   The privacy banner, sticky course button, page loader and form error
+   states live in components/SiteChrome.css, loaded with the app shell.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sp {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: calc(68px + var(--sp-16)) var(--sp-8) var(--sp-20);
+  outline: none;
+}
+
+.sp--wide { max-width: 64rem; }
+
+.sp-head { margin-bottom: var(--sp-10); }
+
+.sp-eyebrow {
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--clay-ink);
+}
+
+.sp-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-page);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.sp-lead {
+  margin-top: var(--sp-5);
+  max-width: 38rem;
+  font-size: var(--fs-lead);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.sp-updated {
+  margin-bottom: var(--sp-8);
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+}
+
+.sp-section {
+  padding: var(--sp-6) 0;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: var(--sp-16);
+}
+
+.sp-h2 {
+  margin-bottom: var(--sp-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
+  color: var(--ink);
+}
+
+.sp-p,
+.sp-list li,
+.sp-defs dd {
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.sp-p + .sp-p { margin-top: var(--sp-3); }
+
+.sp-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.sp-list li {
+  position: relative;
+  padding-left: var(--sp-5);
+}
+
+.sp-list li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--moss);
+}
+
+.sp-defs { display: flex; flex-direction: column; }
+
+.sp-defs > div {
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-faint);
+}
+
+.sp-defs > div:first-child { border-top: none; }
+
+.sp-defs dt {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--ink);
+}
+
+.sp-defs code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  word-break: break-all;
+  color: var(--evergreen);
+}
+
+/* Links in running text read as links: ink, underlined, evergreen on hover. */
+.sp a:not(.btn),
+.consent-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out);
+}
+
+.sp a:not(.btn):hover,
+.consent-link:hover { color: var(--evergreen); text-decoration-color: currentColor; }
+
+.sp-inline-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.sp-note {
+  margin-top: var(--sp-6);
+  font-size: var(--fs-small);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-faint);
+}
+
+.sp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin: var(--sp-2) 0 var(--sp-10);
+}
+
+/* The contents, on the not-found page: rows on hairlines. */
+.sp-rows {
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.sp-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--line-faint);
+}
+
+.sp-row-num {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--ink-faint);
+}
+
+.sp-row-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+
+.sp-row-meta { font-size: var(--fs-small); color: var(--ink-faint); }
+
+/* The thank-you page's stamp: done, in moss, pressed once. */
+.sp-stamp {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: var(--sp-5);
+  border: 2px solid var(--moss);
+  border-radius: 50%;
+  color: var(--moss);
+  animation: fx-stamp var(--dur-reveal) var(--ease-settle) var(--dur-open) backwards;
+}
+
+/* ── Contact ─────────────────────────────────────────────────────────────── */
+
+.ct-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: var(--sp-12);
+  align-items: start;
+}
+
+/* Grid items shrink below their content (a long link must wrap, not widen
+   the column past the screen). */
+.ct-grid > * { min-width: 0; }
+.ct-aside a { overflow-wrap: anywhere; }
+
+.ct-form { display: flex; flex-direction: column; gap: var(--sp-5); }
+
+.ct-req {
+  margin-left: var(--sp-1);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.form-select {
+  padding-right: var(--sp-8);
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-muted) 50%), linear-gradient(135deg, var(--ink-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.form-textarea { min-height: 10rem; resize: vertical; line-height: var(--lh-normal); font-family: var(--font-ui); }
+
+.ct-count {
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+}
+
+.ct-count.is-over { color: var(--berry-ink); }
+
+.ct-submit { align-self: flex-start; gap: var(--sp-2); }
+
+.ct-submit.is-working { cursor: progress; }
+
+/* The working state: a small arc turning inside the button (a Report of
+   work in progress — it stops the moment the work does). */
+.ct-spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid rgba(var(--sheen-rgb), 0.35);
+  border-top-color: var(--surface-raised);
+  border-radius: 50%;
+  animation: sp-turn var(--dur-celebrate) linear infinite;
+}
+
+@keyframes sp-turn { to { transform: rotate(360deg); } }
+
+.ct-how {
+  font-size: var(--fs-small);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-faint);
+  max-width: 34rem;
+}
+
+.ct-how strong { color: var(--ink-muted); }
+
+.ct-aside .sp-defs > div { grid-template-columns: 1fr; gap: var(--sp-1); }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .ct-grid { grid-template-columns: 1fr; gap: var(--sp-10); }
+}
+
+@media (max-width: 720px) {
+  .sp { padding: calc(68px + var(--sp-10)) var(--sp-5) var(--sp-16); }
+  .sp-defs > div { grid-template-columns: 1fr; gap: var(--sp-1); }
+  .sp-actions .btn { flex: 1 1 100%; justify-content: center; }
+  .ct-submit { align-self: stretch; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-spinner { animation: none; }
+  .ct-summary, .sp-stamp { animation: none; }
+}

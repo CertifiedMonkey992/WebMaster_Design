@@ -175,7 +175,7 @@ export default function PracticeSession() {
       <div className="ps-intro">
         <div className="ps-intro-icon ps-done" ref={doneRef}>
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" />
+            <path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" />
           </svg>
         </div>
         <SplitText as="h2" className="ps-title" immediate delay={200}>Session complete</SplitText>
@@ -238,7 +238,7 @@ export default function PracticeSession() {
         <div className="lm-action lm-action--correct ps-action" key="c">
           <div className="lm-feedback">
             <span className="lm-fb-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline className="ico-check" pathLength="1" points="20 6 9 17 4 12" /></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" /></svg>
             </span>
             <div className="lm-fb-title">Correct</div>
           </div>

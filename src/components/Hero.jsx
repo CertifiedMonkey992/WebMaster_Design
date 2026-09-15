@@ -16,9 +16,10 @@
    four terms, preferring the one that names the chapter the book just
    showed. The eye goes book → words → book.
 
-   There is deliberately no "start" button here. The landing page has exactly
-   two ways into the course — the navbar's button, always on screen, and the
-   closing CTA — so the hero is free to be about what the course contains.
+   The hero carries the page's primary action, above the fold on every
+   screen: one button into the course, with the three facts that remove the
+   last hesitation (free, no account, five minutes). COMPONENT_RULES.md →
+   Links into the course.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
@@ -28,6 +29,7 @@ import Reveal from '../motion/Reveal'
 import FieldGuide from './guide/FieldGuide'
 import { CHAPTER_INK, minutesOf, pad } from './guide/guideData'
 import { usePerformer } from '../motion/stage'
+import { PageLink } from '../nav'
 import { DUR } from '../motion/timing'
 
 /* Which hero term names which chapter (by index); Foundations has none. */
@@ -136,7 +138,17 @@ export default function Hero() {
           an ethical line</span>. Earn XP and badges, and keep a daily streak as you go.
         </Reveal>
 
-        <Reveal as="ol" className="hero-path" variant="left" stagger immediate delay={560}>
+        <Reveal className="hero-cta" variant="fade" immediate delay={500}>
+          <PageLink page="learn" className="btn btn-next btn-lg fx-shine" data-magnetic="8">
+            Start lesson one
+            <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+            </svg>
+          </PageLink>
+          <span className="hero-cta-note">Free · no account · about five minutes</span>
+        </Reveal>
+
+        <Reveal as="ol" className="hero-path" variant="left" stagger immediate delay={620}>
           {SECTIONS.map((section, i) => (
             <li key={section.id} style={{ '--chapter': `var(${CHAPTER_INK[i]})` }}>
               <button

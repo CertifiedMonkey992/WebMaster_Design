@@ -19,8 +19,9 @@ import CountUp from '../motion/CountUp'
 import { useScrollProgress } from '../motion/scroll'
 import { DUR, STAGGER } from '../motion/timing'
 import { usePerformer } from '../motion/stage'
+import { PageLink } from '../nav'
 
-export default function ClosingCTA({ onStartLearning }) {
+export default function ClosingCTA() {
   const planeRef = useScrollProgress()
   const actionRef = useRef(null)
 
@@ -64,20 +65,20 @@ export default function ClosingCTA({ onStartLearning }) {
 
           <div ref={actionRef} className="cta-action">
           <Reveal variant="scale" delay={DUR.move}>
-            <button type="button" className="btn btn-next btn-lg fx-shine" onClick={onStartLearning} data-magnetic="8">
+            <PageLink page="learn" className="btn btn-next btn-lg fx-shine" data-magnetic="8">
               Open the course
               <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
               </svg>
-            </button>
+            </PageLink>
           </Reveal>
           </div>
         </div>
 
         <div className="cta-stats-plane" ref={planeRef}>
-          <Reveal as="ul" className="cta-stats" role="list" variant="right" stagger delay={DUR.hover}>
+          <Reveal as="ul" className="cta-stats" variant="right" stagger delay={DUR.hover}>
             {stats.map((s, i) => (
               <li className="cta-stat" key={s.label} data-tip={s.tip}>
                 <span className="cta-stat-value">

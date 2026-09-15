@@ -1,24 +1,37 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    Footer.jsx — THE LAST LINE
    ---------------------------------------------------------------------------
-   What it carries is what is true: the one privacy fact that matters (nothing
-   leaves the browser), and a way back to the top.
+   What it carries is what is true: the one privacy fact that matters (your
+   progress never leaves the browser), the site's pages, and a way back to
+   the top.
 
-   It does not repeat the course links. The page has exactly two ways into the
-   course — the navbar's button and the closing CTA directly above this — and
-   a third, one line below the second, would only dilute them. The section
-   links already live in the navbar, which never hides.
+   It does not repeat the course button. The closing CTA directly above is
+   the way in at the bottom of the page, and a second button one line below
+   it would only dilute it. The page links are real links (nav.jsx), so they
+   work with a middle-click, a keyboard and a crawler alike.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+import { PageLink, useNav } from '../nav'
+import { SITE } from '../site'
+import { reopenChoices } from '../services/analytics'
 
 const LETTERS = ['L', 'u', 'n', 'X']
 const toTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-/* `links` — [{ label, onClick }] — the site's other pages (About from home,
-   Home from About). Page links, not course links, so they do not count
-   against the two ways into the course. */
-export default function Footer({ links = [] }) {
+const PAGES = [
+  { page: 'landing', label: 'Home' },
+  { page: 'about', label: 'About LunX' },
+  { page: 'about', section: 'method', label: 'How a lesson works' },
+  { page: 'about', section: 'compliance', label: 'TSA compliance' },
+  { page: 'contact', label: 'Contact' },
+  { page: 'privacy', label: 'Privacy policy' },
+  { page: 'terms', label: 'Terms of use' },
+]
+
+export default function Footer() {
+  const { page: current } = useNav()
   return (
-    <footer className="footer" role="contentinfo">
+    <footer className="footer">
       <div className="footer-left">
         {/* The wordmark's letters ripple when the pointer crosses them. */}
         <button
@@ -32,19 +45,20 @@ export default function Footer({ links = [] }) {
           ))}
         </button>
         <span className="footer-copy">
-          No accounts, no tracking. Your progress never leaves this browser.
+          No accounts{SITE.analytics.enabled ? '' : ', no tracking'}. Your progress never leaves this browser.
         </span>
       </div>
 
-      {links.length > 0 && (
-        <nav className="footer-links" aria-label="Pages">
-          {links.map((link) => (
-            <button key={link.label} type="button" className="btn btn-ghost btn-sm" onClick={link.onClick}>
-              {link.label}
-            </button>
-          ))}
-        </nav>
-      )}
+      <nav className="footer-links" aria-label="Site pages">
+        {PAGES.filter((l) => l.section || l.page !== current).map((l) => (
+          <PageLink key={l.label} page={l.page} section={l.section} className="btn btn-ghost btn-sm">
+            {l.label}
+          </PageLink>
+        ))}
+        <button type="button" className="btn btn-ghost btn-sm" onClick={reopenChoices}>
+          Privacy choices
+        </button>
+      </nav>
 
       <button
         type="button"

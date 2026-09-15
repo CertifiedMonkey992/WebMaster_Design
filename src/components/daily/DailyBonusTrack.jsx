@@ -208,7 +208,7 @@ export default function DailyBonusTrack({
       )}
 
       {/* ── Today's reward: the focal point ── */}
-      <section
+      <div
         className={`db-hero${showingReady ? ' is-ready' : ' is-done'}${phase ? ` is-${phase}` : ''}`}
         key={showingReady ? 'hero-ready' : 'hero-done'}
       >
@@ -274,7 +274,7 @@ export default function DailyBonusTrack({
             </>
           )}
         </div>
-      </section>
+      </div>
 
       {receipt && (
         <div className="db-receipt" role="status">

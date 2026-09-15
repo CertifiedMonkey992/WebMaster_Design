@@ -143,7 +143,7 @@
 
 /* Idle: a healthy heart beats slowly — a soft lub-dub, then a long rest. */
 .live-heart.is-beating .hi {
-  animation: hi-idle var(--idle-beat) var(--ease-out) calc(var(--seed, 0) * -5.3s) infinite;
+  animation: hi-idle var(--idle-beat) var(--ease-out) calc(-5.3s * var(--seed, 0)) infinite;
 }
 
 @keyframes hi-idle {
@@ -269,8 +269,8 @@
 
 /* Idle: now and then the stone catches the light — a band crosses its
    facets and a sparkle twinkles at the corner of the table. */
-.fx-gleam .gi-glint { animation: gi-gleam var(--idle-glint) var(--ease-out) calc(var(--seed, 0) * -6.7s) infinite; }
-.fx-gleam .gi-spark { animation: gi-twinkle var(--idle-glint) var(--ease-out) calc(var(--seed, 0) * -6.7s) infinite; }
+.fx-gleam .gi-glint { animation: gi-gleam var(--idle-glint) var(--ease-out) calc(-6.7s * var(--seed, 0)) infinite; }
+.fx-gleam .gi-spark { animation: gi-twinkle var(--idle-glint) var(--ease-out) calc(-6.7s * var(--seed, 0)) infinite; }
 
 @keyframes gi-gleam {
   0%, 82%   { transform: skewX(-22deg) translateX(-4px); }
@@ -415,14 +415,14 @@
   border-radius: 50%;
   background: var(--clay-bright);
   opacity: 0;
-  animation: lf-ember 3.1s var(--ease-out) calc(var(--seed, 0) * -3.1s) infinite;
+  animation: lf-ember 3.1s var(--ease-out) calc(-3.1s * var(--seed, 0)) infinite;
 }
 
 .lf-embers i:nth-child(2) {
   --drift: -1;
   background: var(--ochre-bright);
   animation-duration: 4.3s;
-  animation-delay: calc(var(--seed, 0) * -4.3s - 1.7s);
+  animation-delay: calc(-4.3s * var(--seed, 0) - 1.7s);
 }
 
 .lf-embers i:nth-child(3) {
@@ -430,13 +430,13 @@
   width: 2px;
   height: 2px;
   animation-duration: 3.7s;
-  animation-delay: calc(var(--seed, 0) * -3.7s - 2.6s);
+  animation-delay: calc(-3.7s * var(--seed, 0) - 2.6s);
 }
 
 @keyframes lf-ember {
   0%, 58% { opacity: 0; transform: translate(0, 0) scale(1); }
   63%     { opacity: 1; }
-  100%    { opacity: 0; transform: translate(calc(var(--drift, 1) * var(--icon, 20px) * 0.24), calc(var(--icon, 20px) * -0.8)) scale(0.4); }
+  100%    { opacity: 0; transform: translate(calc(var(--icon, 20px) * var(--drift, 1) * 0.24), calc(var(--icon, 20px) * -0.8)) scale(0.4); }
 }
 
 /* Hover: the fire leans up toward the hand. `scale` composes with the
@@ -493,7 +493,7 @@
 /* Idle: the XP bolt flickers twice, like a filament, then rests. */
 .fx-zap .bi {
   transform-origin: 50% 50%;
-  animation: bi-zap var(--idle-zap) linear calc(var(--seed, 0) * -7.9s) infinite;
+  animation: bi-zap var(--idle-zap) linear calc(-7.9s * var(--seed, 0)) infinite;
 }
 
 @keyframes bi-zap {
@@ -515,7 +515,7 @@
   transform: skewX(-22deg) translateX(-4px);
 }
 
-.fx-gleam .si-glint { animation: gi-gleam var(--idle-sweep) var(--ease-out) calc(var(--seed, 0) * -9.7s) infinite; }
+.fx-gleam .si-glint { animation: gi-gleam var(--idle-sweep) var(--ease-out) calc(-9.7s * var(--seed, 0)) infinite; }
 
 /* ═══ LINE ICON PARTS ═══════════════════════════════════════════════════════ */
 

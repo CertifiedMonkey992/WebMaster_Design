@@ -21,14 +21,16 @@
    The serif fallback stack is deliberate: if the webfont fails, headings
    degrade to Iowan/Georgia and the paper identity survives. A sans fallback
    would collapse the two voices into one. */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Manrope:wght@400..800&family=JetBrains+Mono:wght@400;600&display=swap');
+/* The webfonts are linked from index.html (preconnected), not @imported here:
+   an @import is only discovered after this file downloads, which delays the
+   first render of every page. */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   /* ── Typeface ──────────────────────────────────────────────────────────── */
   --font-display: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
-  --font-ui:      'Manrope', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-ui:      'Manrope', 'Segoe UI', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'SF Mono', Consolas, monospace;
 
   /* Legacy aliases. ~80 existing call sites say --font-heading / --font-body;
@@ -36,6 +38,10 @@
      --font-display and --font-ui. */
   --font-heading: var(--font-display);
   --font-body:    var(--font-ui);
+  /* The gamification UI's two voices (progression.css explains them). */
+  --pg-display:   var(--font-ui);
+  --pg-heading:   var(--font-display);
+  --pg-body:      var(--font-ui);
 
   /* ── Type scale ────────────────────────────────────────────────────────────
      Eight sizes. The old scale had twenty, most within 0.02rem of a
@@ -94,13 +100,14 @@
   --surface-sunk:   #EDE5D6;   /* deliberately behind the ground */
 
   /* ── Ink ───────────────────────────────────────────────────────────────────
-     Contrast measured against --paper:
+     Contrast measured against --paper (WCAG AA is 4.5:1; every ink passes on
+     every ground, surface-sunk included):
        --ink        13.3:1
-       --ink-muted   4.9:1   body secondary
-       --ink-faint   4.2:1   labels and metadata, never paragraphs */
+       --ink-muted   5.9:1   body secondary
+       --ink-faint   4.8:1   labels, metadata and captions, never paragraphs */
   --ink:        #2B2119;
-  --ink-muted:  #736251;
-  --ink-faint:  #7E6E5A;
+  --ink-muted:  #675746;
+  --ink-faint:  #74644F;
   --ink-rgb:    43, 33, 25;
 
   /* ── Lines ─────────────────────────────────────────────────────────────── */
@@ -369,8 +376,6 @@ body {
   background: var(--paper);
   color: var(--ink);
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* The one texture in the system: a near-invisible horizontal grain on the
@@ -422,14 +427,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
    countdowns — sits in tabular figures so the layout cannot twitch on a tick. */
 .tnum, [data-tnum] { font-variant-numeric: tabular-nums; }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: var(--paper); }
-::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: var(--r-pill);
-  border: 3px solid var(--paper);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+/* The standard scrollbar properties: a warm thumb on the paper. */
+html { scrollbar-color: var(--line-strong) var(--paper); }
 
 /* Focus never animates — a ring that fades in is a ring that isn't there when
    the keyboard user needs it. */

@@ -97,10 +97,10 @@ export function LiveHeart({ hearts, max = 5, recovery = null, size = 20, classNa
       <span ref={bloomRef} className="li-bloom" aria-hidden="true" />
       {showRing && (
         <svg className="lh-ring" viewBox="0 0 32 32" aria-hidden="true">
-          <circle className="lh-ring-track" cx="16" cy="16" r="14.5" pathLength="1" />
-          <circle
+          <path className="lh-ring-track" d="M30.5 16A14.5 14.5 0 1 1 1.5 16A14.5 14.5 0 1 1 30.5 16" pathLength="1" />
+          <path
             className="lh-ring-fill"
-            cx="16" cy="16" r="14.5" pathLength="1"
+            d="M30.5 16A14.5 14.5 0 1 1 1.5 16A14.5 14.5 0 1 1 30.5 16" pathLength="1"
             style={{ strokeDashoffset: 1 - Math.max(0, Math.min(1, recovery)) }}
           />
         </svg>

@@ -272,6 +272,7 @@
 }
 
 .ab-strand-seg {
+  --chapter: var(--evergreen);   /* set inline to the module's chapter ink */
   background: var(--chapter, var(--evergreen));
   border-radius: var(--r-xs);
   transform-origin: 0 50%;
@@ -281,7 +282,7 @@
 .ab-strands.is-in .ab-strand-seg {
   transform: scaleX(1);
   transition: transform var(--dur-settle) var(--ease-settle);
-  transition-delay: calc(var(--i) * var(--stagger) * 2);
+  transition-delay: calc(var(--stagger) * 2 * var(--i));
 }
 
 .ab-strand-key {

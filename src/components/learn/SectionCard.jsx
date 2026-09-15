@@ -98,7 +98,7 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
 
           {isDone && (
             <span className="badge badge--done">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
               Completed
             </span>
           )}
@@ -149,7 +149,7 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
       {!isLocked && (
         <div className="module-body" id={listId} aria-hidden={!open}>
           <div className="module-body-inner">
-            <ol className="module-lessons" role="list">
+            <ol className="module-lessons">
               {section.lessons.map((lesson, i) => (
                 <LessonNode
                   key={lesson.id}

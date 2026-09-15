@@ -8,6 +8,12 @@
    progress already saves in this browser.
 
    Leaves by fading and settling rather than vanishing.
+
+   Error states: submitting checks the fields first, the way a real sign-in
+   would — an empty or malformed email and an empty password are named
+   beneath their fields (aria-invalid, aria-describedby) and focus moves to
+   the first one. Only a form that would have been valid gets the honest
+   note that there is no account system to sign in to.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -28,6 +34,20 @@ export default function LoginModal({ onClose }) {
   const panelRef = useRef(null)
   const [closing, setClosing] = useState(false)
   const [note, setNote] = useState(0)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [errors, setErrors] = useState({})
+  const [tried, setTried] = useState(false)
+  const emailRef = useRef(null)
+  const passwordRef = useRef(null)
+
+  const check = (e = email, p = password) => {
+    const next = {}
+    if (!e.trim()) next.email = 'Enter your email address.'
+    else if (!/^[^s@]+@[^s@]+.[^s@]{2,}$/.test(e.trim())) next.email = 'Enter an email address like you@school.edu.'
+    if (!p) next.password = 'Enter your password.'
+    return next
+  }
 
   const close = useCallback(() => {
     setClosing(true)
@@ -51,6 +71,16 @@ export default function LoginModal({ onClose }) {
     e?.preventDefault?.()
     shake(panelRef.current, { distance: 6 })
     setNote((n) => n + 1)
+  }
+
+  const submit = (e) => {
+    e.preventDefault()
+    setTried(true)
+    const found = check()
+    setErrors(found)
+    if (found.email) { shake(panelRef.current, { distance: 6 }); emailRef.current?.focus(); return }
+    if (found.password) { shake(panelRef.current, { distance: 6 }); passwordRef.current?.focus(); return }
+    answer()
   }
 
   return (
@@ -80,15 +110,31 @@ export default function LoginModal({ onClose }) {
         <h2 className="modal-heading" id="modal-title">Welcome back</h2>
         <p className="modal-sub">Sign in to continue your learning journey.</p>
 
-        <form className="modal-form" onSubmit={answer} noValidate>
-          <div className="form-field">
-            <label className="form-label" htmlFor="email">Email address</label>
-            <input className="form-input" id="email" type="email" placeholder="you@school.edu" autoComplete="email" />
+        <form className="modal-form" onSubmit={submit} noValidate>
+          <div className={`form-field${errors.email ? ' has-error' : ''}`}>
+            <label className="form-label" htmlFor="login-email">Email address</label>
+            <input
+              ref={emailRef}
+              className="form-input" id="login-email" type="email" placeholder="you@school.edu" autoComplete="email" required
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); if (tried) setErrors(check(e.target.value, password)) }}
+              aria-invalid={errors.email ? 'true' : undefined}
+              aria-describedby={errors.email ? 'login-email-error' : undefined}
+            />
+            {errors.email && <p className="form-error" id="login-email-error">{errors.email}</p>}
           </div>
 
-          <div className="form-field">
-            <label className="form-label" htmlFor="password">Password</label>
-            <input className="form-input" id="password" type="password" placeholder="••••••••" autoComplete="current-password" />
+          <div className={`form-field${errors.password ? ' has-error' : ''}`}>
+            <label className="form-label" htmlFor="login-password">Password</label>
+            <input
+              ref={passwordRef}
+              className="form-input" id="login-password" type="password" placeholder="••••••••" autoComplete="current-password" required
+              value={password}
+              onChange={(e) => { setPassword(e.target.value); if (tried) setErrors(check(email, e.target.value)) }}
+              aria-invalid={errors.password ? 'true' : undefined}
+              aria-describedby={errors.password ? 'login-password-error' : undefined}
+            />
+            {errors.password && <p className="form-error" id="login-password-error">{errors.password}</p>}
           </div>
 
           <div className="form-extras">

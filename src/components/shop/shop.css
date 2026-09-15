@@ -346,7 +346,7 @@
 
 .sh-card:hover:not(.is-disabled) .sh-buy {
   background: var(--evergreen);
-  border-color: var(--evergreen);
+  border-color: transparent;
   color: var(--surface-raised);
 }
 
