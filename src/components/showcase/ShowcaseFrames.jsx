@@ -6,8 +6,9 @@
 
    Loaded apart from the landing page's first bundle: these frames are most of
    its code and DOM, and all of them sit below the fold. ProductSections
-   mounts each one as its section comes within a screen of view, so the first
-   paint is the page's words and the book.
+   fetches this module once the page has arrived and mounts each frame as its
+   column comes into view, so the first paint is the page's words and the
+   book.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { ProgressionDemo, useProgression } from '../../state/ProgressionContext'
