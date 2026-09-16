@@ -108,11 +108,11 @@
   inset: 0;
   border-radius: 50%;
   border: 2px solid var(--moss);
-  animation: fx-ping 2.6s var(--ease-out) infinite;
+  animation: fx-ping var(--loop-live) var(--ease-out) infinite;
 }
 
 /* While a scene plays, the dot beats at the pace of the thing happening. */
-.pf.is-acting .pf-live-dot::after { animation-duration: 1.3s; }
+.pf.is-acting .pf-live-dot::after { animation-duration: var(--loop-live-acting); }
 
 /* ── The cue (revision 5 → Cue) ────────────────────────────────────────────
    The frame narrating its demo learner: sentence case, the interface's voice,

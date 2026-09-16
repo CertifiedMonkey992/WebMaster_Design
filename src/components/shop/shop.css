@@ -149,7 +149,7 @@
   width: 100%;
   background: var(--moss);
   transform-origin: 0 50%;
-  animation: sh-timer 4600ms linear both;
+  animation: sh-timer var(--life-receipt) linear both;
   opacity: 0.4;
 }
 
@@ -598,7 +598,7 @@
   border-radius: 50%;
   border: 2px solid rgba(var(--sheen-rgb), 0.35);
   border-top-color: var(--surface-raised);
-  animation: sh-spin 700ms linear infinite;
+  animation: sh-spin var(--loop-spin) linear infinite;
 }
 
 @keyframes sh-spin { to { transform: rotate(360deg); } }

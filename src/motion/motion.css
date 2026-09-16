@@ -380,7 +380,7 @@
     transparent 100%
   );
   transform: translateX(0) skewX(-16deg);
-  animation: fx-shine 3.8s var(--ease-settle) infinite;
+  animation: fx-shine var(--loop-shine) var(--ease-settle) infinite;
   animation-delay: 1.2s;
 }
 
@@ -405,7 +405,7 @@
   border: 2px solid var(--ping-color, var(--clay));
   pointer-events: none;
   opacity: 0;
-  animation: fx-ping 2.6s var(--ease-out) infinite;
+  animation: fx-ping var(--loop-ping) var(--ease-out) infinite;
 }
 
 @keyframes fx-ping {
@@ -511,7 +511,7 @@
 .fx-walk > i {
   position: absolute;
   inset: 0;
-  animation: fx-walk 3.7s var(--ease-swing) calc(-3.7s * var(--seed, 0)) infinite;
+  animation: fx-walk var(--loop-walk) var(--ease-swing) calc(-1 * var(--loop-walk) * var(--seed, 0)) infinite;
 }
 
 .fx-walk > i::before {

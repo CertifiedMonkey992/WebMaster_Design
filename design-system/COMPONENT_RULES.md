@@ -200,6 +200,44 @@ to a page is a real `<a href>` (`PageLink`), never a button.
   its chapter in a tooltip; scrolling pushes the rows along.
 - Reduced motion: one still row per line, horizontally scrollable.
 
+### Site footer (`Footer`)
+
+The last chapter of the page, not a bin for the links that had nowhere else
+to go. It states plainly what LunX is, what it costs (nothing), and what it
+does with the reader's data — and then gets out of the way.
+
+**Three bands on one `--paper` ground, separated by hairlines. No cards, no
+shadows, no filled buttons** — the closing CTA directly above is the page's
+last action and the footer never competes with it.
+
+1. **Colophon** — the dominant column (~5/3/3; never three equal columns).
+   The wordmark in Fraunces `--fs-title`, one sentence saying what the
+   product is, and the course's real figures (`TOTAL_LESSONS`,
+   `TOTAL_SECTIONS`) as a printed line — never invented numbers. Under it a
+   clay rule the width of the wordmark: the footer's single `--clay`.
+2. **Two link columns** — *The course* and *The project*. Each has a
+   `--fs-micro` `--ls-label` uppercase heading in `--ink-faint` and real
+   `<a href>` links (`PageLink`) at `--fs-small`, one per line. **Links are
+   text, not `btn-ghost` buttons**: a footer full of lozenges reads as a
+   toolbar. An external link (the source repository) carries a 45° arrow and
+   says where it goes; nothing else leaves the site.
+3. **The last line** — the privacy fact in `--ink-faint`, the policy date,
+   `Privacy choices` (a real control, so it stays a `<button>`), and the
+   back-to-top control at the right edge.
+
+- **Hover**, per the row vocabulary: the label nudges 3px on `--dur-move`
+  `--ease-snap` and a hairline underline draws from the left on the same
+  clock. No lift, no background fill, no colour-only hover.
+- **External link**: its arrow travels up-right 2px on the same clock.
+- The wordmark is a button back to the top and keeps the shared
+  `.wm-letter` ripple.
+- Anything that does not exist is not implied: there are no social accounts,
+  no newsletter and no app stores, and the footer shows none. Contact is the
+  contact page plus the repository, because that is all there is
+  (`SITE.contact`).
+- **Mobile**: the columns stack in reading order; the last line wraps above
+  the back-to-top control.
+
 ### Top bar (`learn-topbar`)
 
 - A `--paper` strip with a bottom hairline, not a gradient fade.

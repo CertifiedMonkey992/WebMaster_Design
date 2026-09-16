@@ -321,7 +321,7 @@ kbd,
   cursor: default;
 }
 
-.lm-blank.is-droppable { border-bottom-color: var(--evergreen); background: var(--evergreen-tint); animation: lm-drop-pulse 900ms ease-in-out infinite; }
+.lm-blank.is-droppable { border-bottom-color: var(--evergreen); background: var(--evergreen-tint); animation: lm-drop-pulse var(--loop-pulse) ease-in-out infinite; }
 
 @keyframes lm-drop-pulse { 50% { background: rgba(var(--evergreen-rgb), 0.18); } }
 

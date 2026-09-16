@@ -447,6 +447,15 @@ perform differently without a list of pages anywhere.
   × *a region that just scrolled into view and has not performed yet* (×2.4 —
   the section greets you). The result is a path for the eye: the book, then
   the copy beside it; the quest frame, then its shop list.
+- **Never the same gesture twice running** *(rev 5.1)*. The last four
+  performances are remembered: the one that just played is weighted ×0.06,
+  and one seen earlier in that window ×0.45–0.9 by how long ago. These are
+  weights, not vetoes, so a region holding a single performer still plays
+  eventually instead of falling silent for good.
+- **A thin screen speaks more slowly** *(rev 5.1)*. When only one or two
+  performers are eligible, the rest after each is stretched (×2.1 and ×1.5).
+  Five turns of the same two gestures in half a minute reads as a loop, and
+  a loop the reader can learn is worse than stillness.
 
 ### What may perform
 
@@ -508,6 +517,7 @@ Every product frame on the landing page has its own **demo learner**
 | Quest frame | a shop item the learner can afford lifts from its row | Accent |
 | Section copy | a highlighter stroke is laid again under one bold term | Accent |
 | Closing | the button's arrow leans on; a rule under the tally is drawn again | Accent |
+| Footer | the clay rule under the colophon is drawn again, left to right | Accent |
 
 **The app — previews on real data (nothing changes)**
 

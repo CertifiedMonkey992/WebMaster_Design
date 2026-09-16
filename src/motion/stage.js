@@ -72,6 +72,17 @@ let nextAt = 0
 let lastTier = null
 let lastRegion = null
 let lastRest = 0
+/* What performed most recently, newest first. The Stage leads the eye
+   somewhere new: a performer that just played is all but excluded while
+   anything else is available, and one seen twice in the last few turns is
+   damped. Without this a region holding two performers simply alternates,
+   which is the one thing an idle page must not do — a rhythm you can learn
+   reads as a screensaver, not as life. */
+const recent = []
+const RECENT_KEPT = 4
+/* How many performers were eligible at the last attempt, so a thin screen
+   can space its turns further apart (restAfter). */
+let lastPool = 0
 let lastScrollAt = -Infinity
 let holdUntil = 0
 let pointer = null              // { x, y, target, at }
@@ -216,6 +227,10 @@ function restAfter(tier) {
   /* Now and then the page takes a breath. */
   if (Math.random() < 0.14) r += rand(2000, 3000)
   if (idleFor() > CALM_AFTER) r *= CALM_FACTOR
+  /* A screen with one or two things to show says them further apart. Five
+     turns of the same two gestures in half a minute is worse than silence:
+     it tells the reader the page is on a loop. */
+  if (lastPool && lastPool <= 2) r *= lastPool === 1 ? 2.1 : 1.5
   lastRest = r
   return r
 }
@@ -247,6 +262,12 @@ function eligible(p, t, { noMajor }) {
   else w *= 1 + Math.min(2, Math.max(0, (t - p.lastEnd - cd) / cd))
   /* Vary the texture: the same small tier twice running is less likely. */
   if (tier !== 'major' && tier === lastTier) w *= 0.55
+  /* Never the same gesture twice running, and rarely the same one twice in
+     four turns. Weights, not vetoes: a region with a single performer must
+     still eventually play rather than fall silent for good. */
+  const seenAt = recent.indexOf(spec.id)
+  if (seenAt === 0) w *= 0.06
+  else if (seenAt > 0) w *= 0.45 + 0.15 * seenAt
   /* Near the middle of the screen is where the reader is looking. */
   const r = p.el.getBoundingClientRect()
   const cy = Math.min(Math.max(r.top + r.height / 2, 0), window.innerHeight)
@@ -274,7 +295,8 @@ function attempt() {
     const w = eligible(p, t, opts)
     if (w > 0) { pool.push([p, w]); total += w }
   })
-  if (!total) { schedule(rand(...RETRY)); return }
+  if (!total) { lastPool = 0; schedule(rand(...RETRY)); return }
+  lastPool = pool.length
 
   let pickAt = Math.random() * total
   let choice = pool[pool.length - 1][0]
@@ -307,6 +329,8 @@ function perform(p) {
   const tier = TIERS[spec.tier] ? spec.tier : 'accent'
   running = { p, ctx, timers, stops, tier, started: now() }
   p.greeted = true
+  recent.unshift(spec.id)
+  if (recent.length > RECENT_KEPT) recent.pop()
   if (import.meta.env?.DEV) {
     log.push({ id: spec.id, tier, region: spec.region, at: Math.round(now()) })
     if (log.length > 200) log.shift()

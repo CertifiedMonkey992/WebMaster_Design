@@ -323,7 +323,7 @@
   inset: 0;
   border-radius: 50%;
   border: 2px solid var(--moss);
-  animation: fx-ping 2.6s var(--ease-out) infinite;
+  animation: fx-ping var(--loop-ping) var(--ease-out) infinite;
 }
 
 .hero-heading {
@@ -995,23 +995,34 @@
 .cta-stat:hover .cta-stat-label { transform: translateX(8px); color: var(--ink); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FOOTER
+   FOOTER — the last chapter (COMPONENT_RULES.md → Site footer)
+   ---------------------------------------------------------------------------
+   Three bands on one paper ground, separated by hairlines. No cards, no
+   shadows, no filled buttons: the closing CTA above is the page's last
+   action and the footer never competes with it.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .footer {
   border-top: 1px solid var(--line);
-  padding: var(--sp-8);
   background: var(--paper);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sp-4);
+  padding: var(--sp-16) var(--sp-8) var(--sp-8);
 }
 
-.footer-left { display: flex; align-items: baseline; gap: var(--sp-5); flex-wrap: wrap; }
+/* 5/3/3 — a dominant column, not three equal ones. */
+.ft-main {
+  display: grid;
+  grid-template-columns: 5fr 3fr 3fr;
+  gap: var(--sp-12);
+  align-items: start;
+  max-width: 78rem;
+  margin: 0 auto;
+}
 
-.footer-logo-text {
+/* ── Colophon ─────────────────────────────────────────────────────────────── */
+
+.ft-colophon { max-width: 26rem; }
+
+.ft-mark {
   display: inline-flex;
   background: none;
   border: none;
@@ -1019,20 +1030,154 @@
   cursor: pointer;
   font-family: var(--font-display);
   font-weight: var(--fw-semi);
-  font-size: var(--fs-lead);
+  font-size: var(--fs-title);
   letter-spacing: var(--ls-title);
   color: var(--evergreen);
 }
 
-.footer-logo-text:hover .wm-letter { transform: translateY(-4px) rotate(-6deg); }
+.ft-mark:hover .wm-letter { transform: translateY(-4px) rotate(-6deg); }
 
-.footer-copy { font-size: var(--fs-caption); color: var(--ink-faint); }
+/* The footer's single --clay: a rule the width of the wordmark. The Stage
+   draws it again now and then (MOTION_RULES.md → Footer, Accent). */
+.ft-rule {
+  display: block;
+  width: 3.25rem;
+  height: 2px;
+  margin: var(--sp-3) 0 var(--sp-4);
+  background: var(--clay);
+  transform-origin: 0 50%;
+}
 
-/* Links to the site's other pages sit between the privacy line and the
-   back-to-top control. */
-.footer-links { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-left: auto; }
+.ft-rule[data-draw] { animation: ft-draw var(--dur-celebrate) var(--ease-settle); }
 
-.footer-top {
+@keyframes ft-draw {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+.ft-statement {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+
+.ft-figures {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Link columns ─────────────────────────────────────────────────────────── */
+
+.ft-col-heading {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--sp-4);
+}
+
+.ft-list { list-style: none; display: grid; gap: var(--sp-3); }
+
+/* A row hover, per the vocabulary: the label nudges 3px and a hairline
+   underline draws from the left — one clock, no lift, no fill. */
+.ft-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--ink-muted);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--dur-hover) var(--ease-out);
+}
+
+.ft-link-label {
+  position: relative;
+  display: inline-block;
+  transition: transform var(--dur-move) var(--ease-snap);
+}
+
+.ft-link-label::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -3px;
+  height: 1px;
+  background: var(--line-strong);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform var(--dur-move) var(--ease-snap);
+}
+
+.ft-link:hover,
+.ft-link:focus-visible { color: var(--ink); }
+.ft-link:hover .ft-link-label,
+.ft-link:focus-visible .ft-link-label { transform: translateX(3px); }
+.ft-link:hover .ft-link-label::after,
+.ft-link:focus-visible .ft-link-label::after { transform: scaleX(1); }
+
+/* The arrow leaves with the label: this link leaves LunX. */
+.ft-out {
+  flex: none;
+  color: var(--ink-faint);
+  transition: transform var(--dur-move) var(--ease-snap), color var(--dur-hover) var(--ease-out);
+}
+.ft-link:hover .ft-out,
+.ft-link:focus-visible .ft-out { transform: translate(2px, -2px); color: var(--clay-ink); }
+
+/* ── The last line ────────────────────────────────────────────────────────── */
+
+.ft-last {
+  max-width: 78rem;
+  margin: var(--sp-12) auto 0;
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+}
+
+.ft-privacy { font-size: var(--fs-caption); color: var(--ink-faint); }
+
+.ft-legal {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.ft-legal-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+  text-decoration: none;
+  transition: color var(--dur-hover) var(--ease-out);
+}
+
+.ft-legal-link:hover,
+.ft-legal-link:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+.ft-dot { color: var(--line-strong); font-size: var(--fs-caption); }
+
+.ft-updated {
+  font-size: var(--fs-micro);
+  color: var(--ink-faint);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.ft-top {
   width: 32px; height: 32px;
   display: grid;
   place-items: center;
@@ -1045,9 +1190,9 @@
   transition: background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-lift) var(--ease-lift);
 }
 
-.footer-top:hover { background: var(--evergreen); border-color: transparent; color: var(--surface-raised); }
-.footer-top:hover svg { animation: footer-lift var(--dur-reveal) var(--ease-snap); }
-.footer-top:active { transform: translateY(1px); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-micro); }
+.ft-top:hover { background: var(--evergreen); border-color: transparent; color: var(--surface-raised); }
+.ft-top:hover svg { animation: footer-lift var(--dur-reveal) var(--ease-snap); }
+.ft-top:active { transform: translateY(1px); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-micro); }
 
 @keyframes footer-lift {
   0%   { transform: translateY(0); }
@@ -1082,12 +1227,25 @@
   .navbar { padding: 0 var(--sp-5); }
   .hero { padding: calc(68px + var(--sp-10)) var(--sp-5) var(--sp-12); }
   .cta-section { padding: var(--sp-16) var(--sp-5); }
-  .footer { padding: var(--sp-6) var(--sp-5); align-items: flex-end; }
-  .footer-left { flex-direction: column; gap: var(--sp-1); }
+  /* The footer's columns stack in reading order: what LunX is, then where
+     to go. The last line wraps above the back-to-top control. */
+  .footer { padding: var(--sp-12) var(--sp-5) var(--sp-8); }
+  .ft-main { grid-template-columns: 1fr 1fr; gap: var(--sp-10) var(--sp-6); }
+  .ft-colophon { grid-column: 1 / -1; max-width: none; }
+  .ft-last { margin-top: var(--sp-10); gap: var(--sp-4); }
+  .ft-legal { margin-left: 0; width: 100%; order: 3; }
+  .ft-top { margin-left: auto; order: 2; }
 }
 
 @media (max-width: 560px) {
   .hero-em { white-space: normal; }
+  /* One column: two link columns side by side is too narrow for a phone.
+     Tighter than the desktop rhythm so the footer is not a whole screen. */
+  .footer { padding: var(--sp-10) var(--sp-5) var(--sp-6); }
+  .ft-main { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .ft-col-heading { margin-bottom: var(--sp-2); }
+  .ft-list { gap: var(--sp-2); }
+  .ft-last { margin-top: var(--sp-6); }
   /* The wordmark, the page link and the button share a phone's width. */
   .navbar { gap: var(--sp-3); }
   .nav-actions { gap: var(--sp-1); }

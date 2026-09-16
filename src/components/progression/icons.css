@@ -136,7 +136,7 @@
   stroke-dasharray: 1;
   opacity: 0.55;
   /* Real time, not motion: recovery advances once a second. */
-  transition: stroke-dashoffset 900ms linear;
+  transition: stroke-dashoffset var(--tick) linear;
 }
 
 .live-heart.is-empty .lh-ring-fill { opacity: 0.8; }
@@ -155,7 +155,7 @@
 
 /* One heart left: a strong lub-dub every 2.4s. The only warning before a
    lesson is blocked, and it stops the moment a second heart returns. */
-.live-heart.is-low .hi { animation: hi-beat 2.4s var(--ease-out) infinite; }
+.live-heart.is-low .hi { animation: hi-beat var(--loop-beat-low) var(--ease-out) infinite; }
 
 @keyframes hi-beat {
   0%, 36%, 100% { transform: scale(1); }
@@ -363,11 +363,11 @@
 /* The living flame. Three layers on unrelated periods, so the shape never
    repeats and never reads as a loop. Only inside .fx-alive — a flame in a
    toast or a list stays still. */
-.fx-alive .fi--lit .fi-o { animation: fi-flick-o 2.7s ease-in-out infinite; }
-.fx-alive .fi--lit .fi-m { animation: fi-flick-m 1.9s ease-in-out infinite; }
-.fx-alive .fi--lit .fi-c { animation: fi-flick-c 1.3s ease-in-out infinite; }
-.fx-alive .fi--risk .fi-o { animation: fi-sway 3.4s ease-in-out infinite; }
-.fx-alive .fi--risk .fi-c { animation: fi-flick-c 2.1s ease-in-out infinite; }
+.fx-alive .fi--lit .fi-o { animation: fi-flick-o var(--idle-flame-o) ease-in-out infinite; }
+.fx-alive .fi--lit .fi-m { animation: fi-flick-m var(--idle-flame-m) ease-in-out infinite; }
+.fx-alive .fi--lit .fi-c { animation: fi-flick-c var(--idle-flame-c) ease-in-out infinite; }
+.fx-alive .fi--risk .fi-o { animation: fi-sway var(--idle-flame-sway) ease-in-out infinite; }
+.fx-alive .fi--risk .fi-c { animation: fi-flick-c var(--idle-flame-risk) ease-in-out infinite; }
 
 @keyframes fi-flick-o {
   0%, 100% { transform: scale(1, 1) skewX(0deg); }
@@ -415,22 +415,22 @@
   border-radius: 50%;
   background: var(--clay-bright);
   opacity: 0;
-  animation: lf-ember 3.1s var(--ease-out) calc(-3.1s * var(--seed, 0)) infinite;
+  animation: lf-ember var(--idle-ember-1) var(--ease-out) calc(-1 * var(--idle-ember-1) * var(--seed, 0)) infinite;
 }
 
 .lf-embers i:nth-child(2) {
   --drift: -1;
   background: var(--ochre-bright);
-  animation-duration: 4.3s;
-  animation-delay: calc(-4.3s * var(--seed, 0) - 1.7s);
+  animation-duration: var(--idle-ember-2);
+  animation-delay: calc(-1 * var(--idle-ember-2) * var(--seed, 0) - 1.7s);
 }
 
 .lf-embers i:nth-child(3) {
   --drift: 0.5;
   width: 2px;
   height: 2px;
-  animation-duration: 3.7s;
-  animation-delay: calc(-3.7s * var(--seed, 0) - 2.6s);
+  animation-duration: var(--idle-ember-3);
+  animation-delay: calc(-1 * var(--idle-ember-3) * var(--seed, 0) - 2.6s);
 }
 
 @keyframes lf-ember {

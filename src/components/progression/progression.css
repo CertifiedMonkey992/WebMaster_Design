@@ -399,7 +399,7 @@
 /* The heart that is coming back sits a little lower, filling. */
 .pg-heart-slot.is-next { color: var(--berry); }
 /* Real time, not motion: the refill level advances once a second. */
-.pg-heart-slot.is-next .hi-level { transition: transform 1000ms linear; }
+.pg-heart-slot.is-next .hi-level { transition: transform var(--tick) linear; }
 
 .pg-hearts-row.is-full .pg-heart-slot { animation-name: fx-pop-in; }
 
@@ -493,7 +493,7 @@
   height: 100%;
   background: var(--berry);
   border-radius: var(--r-pill);
-  transition: width 1s linear;
+  transition: width var(--tick) linear;
 }
 
 .pg-recovery-foot {
@@ -790,7 +790,7 @@
 
 .pg-stone.is-reached .pg-stone-dot { background: var(--ember); border-color: transparent; }
 .pg-stone.is-next .pg-stone-dot { border-color: var(--ochre); background: var(--ochre-tint); }
-.pg-stone.is-next .pg-stone-dot { animation: pg-stone-beckon 2.4s var(--ease-out) 1.4s infinite; }
+.pg-stone.is-next .pg-stone-dot { animation: pg-stone-beckon var(--loop-beckon) var(--ease-out) 1.4s infinite; }
 
 @keyframes pg-stone-beckon {
   0%, 30%, 100% { transform: scale(1); }
@@ -1205,7 +1205,7 @@
 
 /* An unclaimed reward's gem bobs — it is waiting for you. */
 .qc-compact-claim .qc-claim-gem,
-.qc-card.is-claimable .qc-claim-gem { animation: qc-bob 2.2s var(--ease-out) infinite; }
+.qc-card.is-claimable .qc-claim-gem { animation: qc-bob var(--loop-bob) var(--ease-out) infinite; }
 
 @keyframes qc-bob {
   0%, 55%, 100% { transform: translateY(0) rotate(0deg); }
@@ -1933,7 +1933,7 @@
   background: currentColor;
   opacity: 0.35;
   transform-origin: 0 50%;
-  animation: rt-life var(--life, 2000ms) linear both;
+  animation: rt-life var(--life, var(--life-toast)) linear both;
 }
 
 @keyframes rt-life { from { transform: scaleX(1); } to { transform: scaleX(0); } }
@@ -2371,7 +2371,7 @@
   font-size: var(--fs-micro);
   font-weight: var(--fw-semi);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--dur-hover) var(--ease-out);
 }
 .dev-buttons button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.12); }
 .dev-buttons button:disabled { opacity: 0.35; cursor: not-allowed; }

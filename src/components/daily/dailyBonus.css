@@ -47,7 +47,7 @@
 /* Waiting: the gift gives a small shake every few seconds. */
 .db-indicator.is-ready .db-indicator-icon svg {
   transform-origin: 50% 90%;
-  animation: db-gift-shake 4.2s var(--ease-out) 1.5s infinite;
+  animation: db-gift-shake var(--loop-shake) var(--ease-out) 1.5s infinite;
 }
 
 @keyframes db-gift-shake {
@@ -88,7 +88,7 @@
   inset: -2px;
   border-radius: 50%;
   border: 2px solid var(--clay);
-  animation: fx-ping 2.6s var(--ease-out) infinite;
+  animation: fx-ping var(--loop-ping) var(--ease-out) infinite;
 }
 
 /* During a claim the top bar is lifted above the scrim, so the reward's
@@ -240,7 +240,7 @@
 /* Waiting: today's art bobs in its tile. The bob moves `translate` and
    `rotate`, so it composes with the hover's transform instead of freezing it. */
 .db-hero.is-ready:not(.is-charging):not(.is-bursting) .db-hero-art > svg {
-  animation: db-bob 3s ease-in-out infinite;
+  animation: db-bob var(--idle-bob) ease-in-out infinite;
 }
 
 @keyframes db-bob {
@@ -259,7 +259,7 @@
   background: var(--ochre-bright);
   clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
   transform: scale(0);
-  animation: db-twinkle 2.9s var(--ease-out) 0.4s infinite;
+  animation: db-twinkle var(--loop-twinkle) var(--ease-out) 0.4s infinite;
 }
 
 .db-twinkles i:nth-child(1) { top: 12%; right: 14%; }
@@ -596,7 +596,7 @@
 }
 
 .db-day.is-today .db-day-num { color: var(--clay-ink); }
-.db-day.is-today .db-day-art > svg { animation: db-bob 3s ease-in-out infinite; }
+.db-day.is-today .db-day-art > svg { animation: db-bob var(--idle-bob) ease-in-out infinite; }
 
 .db-day.is-next { border-color: rgba(var(--evergreen-rgb), 0.35); }
 

@@ -485,7 +485,7 @@ html:has(.learn-app) body {
   inset: 0;
   border-radius: 50%;
   border: 2px solid var(--moss);
-  animation: fx-ping 2.6s var(--ease-out) infinite;
+  animation: fx-ping var(--loop-ping) var(--ease-out) infinite;
 }
 
 .resume-body {
@@ -754,7 +754,7 @@ html:has(.learn-app) body {
   width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--evergreen);
-  animation: badge-breathe 2.4s var(--ease-out) infinite;
+  animation: badge-breathe var(--loop-breathe) var(--ease-out) infinite;
 }
 
 @keyframes badge-breathe { 0%, 60%, 100% { transform: scale(1); } 20% { transform: scale(1.5); } }
