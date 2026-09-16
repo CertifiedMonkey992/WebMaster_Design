@@ -22,7 +22,7 @@ import { show, hide } from '../../../motion/demo'
 import { fly, hold } from '../../../motion/flight'
 import { ring } from '../../../motion/burst'
 import { DUR } from '../../../motion/timing'
-import { useFramePerformer, useLatest, useResetWhenAway, within, allWithin } from './sceneKit'
+import { useFramePerformer, useLatest, useSceneLoop, within, allWithin } from './sceneKit'
 import { useFrame } from '../ProductFrame'
 
 export default function StreakScene() {
@@ -100,7 +100,7 @@ export default function StreakScene() {
     },
   })
 
-  useResetWhenAway(() => demo.days() >= 6)
+  useSceneLoop(() => demo.days() >= 6, { id: 'streak:loop', cue: 'A new week begins' })
 
   return null
 }

@@ -17,7 +17,7 @@
 import { useRef } from 'react'
 import { useProgression, ACTIONS } from '../../../state/ProgressionContext'
 import { DUR } from '../../../motion/timing'
-import { useFramePerformer, useLatest, useResetWhenAway } from './sceneKit'
+import { useFramePerformer, useLatest, useSceneLoop } from './sceneKit'
 import { useFrame } from '../ProductFrame'
 
 /* Three lessons a visit: enough to watch the map fill, not enough to finish
@@ -62,7 +62,7 @@ export default function CourseScene() {
     },
   })
 
-  useResetWhenAway(() => vmRef.current.course.completedCount > seedCount.current)
+  useSceneLoop(() => vmRef.current.course.completedCount > seedCount.current + 2, { id: 'course:loop', cue: 'A new learner starts' })
 
   return null
 }

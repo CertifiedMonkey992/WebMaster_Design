@@ -51,7 +51,7 @@ import { createSpring } from '../../motion/spring'
 import { hasFinePointer, prefersReducedMotion } from '../../motion/env'
 import useAmbient, { isOnScreen, onVisibility } from '../../motion/ambient'
 import { pick } from '../../motion/idle'
-import { usePerformer, yieldTo } from '../../motion/stage'
+import { usePerformer, yieldTo, stageMode } from '../../motion/stage'
 import { useScrollProgress } from '../../motion/scroll'
 import { DUR } from '../../motion/timing'
 import './fieldGuide.css'
@@ -525,6 +525,36 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
         after(t, () => { L.autoOpened = false; close(); onShow?.(null) })
         return settle(t + 900)
       },
+
+      /* THE BOOK READS ITSELF (revision 6). The loudest thing the loudest
+         object on the page can do: it opens at the contents and riffles its
+         way to the last chapter in two cascades — every leaf in the block
+         turning 80ms after the one above it — holds on the end long enough
+         to see where it got to, then riffles the whole block back to the
+         front in one sweep and shuts.
+
+         The cascade is the gesture: turnTo() renders one leaf per spread
+         crossed, so a jump of five spreads IS five pages flipping. */
+      flipThrough() {
+        L.autoOpened = true
+        const leafRun = (n) => LEAF_MS + Math.max(0, n - 1) * LEAF_STAGGER
+        const mid = Math.min(3, SPREADS - 1)
+        const end = SPREADS - 1
+
+        openAt(0)
+        let t = 820
+        /* Forward, in two breaths, so it reads as reading rather than as one
+           mechanical sweep. */
+        after(t, () => { turnTo(mid); onShow?.(mid - 1) })
+        t += leafRun(mid) + 620
+        after(t, () => { turnTo(end); onShow?.(CHAPTERS.length - 1) })
+        t += leafRun(end - mid) + 1150
+        /* …and all the way home in one. */
+        after(t, () => { turnTo(0); onShow?.(null) })
+        t += leafRun(end) + 420
+        after(t, () => { L.autoOpened = false; close() })
+        return settle(t + 900)
+      },
     }
   }, [springs, moveHinge, peek, openAt, turnTo, close, flutter, onShow])
 
@@ -572,20 +602,28 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
     },
   })
 
+  /* In the shop window the book is the exhibit, so it shows its whole self
+     often: one small gesture between showcases instead of two, a shorter
+     cooldown, and flip-through weighted above every other showcase.
+     (MOTION_RULES.md revision 6 → The field guide reads itself.) */
+  const showy = () => stageMode() === 'continuous'
+
   usePerformer(stageRef, {
     id: 'book:showcase',
     region: 'hero:book',
     tier: 'major',
-    cooldown: 16000,
+    get cooldown() { return showy() ? 5200 : 16000 },
     share: 0.7,
+    weight: 1.6,
     busy: handled,
-    when: () => live.current.smallSinceMajor >= 2 && shareInView() > 0.7,
+    when: () => live.current.smallSinceMajor >= (showy() ? 1 : 2) && shareInView() > 0.7,
     run: (ctx) => {
       const L = live.current
       L.smallSinceMajor = 0
-      const options = ['oneTurn', 'twoTurns', 'skim', 'atChapter']
+      const weightOf = (id) => (id === 'flipThrough' ? (showy() ? 5 : 1.2) : 1)
+      const options = ['flipThrough', 'oneTurn', 'twoTurns', 'skim', 'atChapter']
         .filter((id) => id !== L.lastMajor)
-        .map((id) => ({ id, weight: 1 }))
+        .map((id) => ({ id, weight: weightOf(id) }))
       const choice = pick(options, null)
       L.lastMajor = choice?.id ?? null
       return performGesture(ctx, choice ? [choice] : options)

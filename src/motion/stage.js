@@ -63,10 +63,60 @@ const RETRY = [420, 760]        // when nothing may start yet, look again soon
 const rand = (a, b) => a + Math.random() * (b - a)
 const now = () => performance.now()
 
+/* ── Modes (MOTION_RULES.md revision 6 → The shop window) ──────────────────
+   The app speaks one sentence at a time: the reader came to do something and
+   every performance competes with the lesson in front of them. The landing
+   page is a shop window with the machinery running in it — nobody is
+   concentrating yet, and the product's whole argument is that these things
+   happen. Same Stage, same vetoes, two temperaments. */
+
+export const MODES = {
+  considered: {
+    concurrent: 1,           // revision 5: two performances never run at once
+    cooldownScale: 1,
+    restScale: 1,
+    noTwoMajors: true,
+    calm: true,              // a page left open on a desk calms down
+  },
+  continuous: {
+    concurrent: 3,           // at most one per region, up to three regions
+    cooldownScale: 0.26,
+    restScale: 0.22,
+    noTwoMajors: false,
+    calm: false,             // the shop window does not get tired
+  },
+}
+
+let mode = 'considered'
+
+/**
+ * Pick the Stage's temperament for the page that is mounting. A page sets
+ * this once, on mount, and puts it back when it leaves.
+ */
+export function setStageMode(next) {
+  if (!MODES[next] || next === mode) return
+  mode = next
+  /* Take the new rhythm immediately rather than after the current rest. */
+  if (timer) schedule(rand(...RETRY))
+}
+
+export const stageMode = () => mode
+const cfg = () => MODES[mode]
+
 /* ── State ────────────────────────────────────────────────────────────────── */
 
 const performers = new Set()
-let running = null
+/* Records of what is performing right now. One in `considered` mode; in
+   `continuous` mode up to cfg().concurrent, never two in the same region. */
+const running = new Set()
+const runningIn = (region) => {
+  for (const r of running) if ((r.p.spec.region ?? null) === (region ?? null)) return r
+  return null
+}
+const runningOn = (el) => {
+  for (const r of running) if (r.p.el === el) return r
+  return null
+}
 let timer = 0
 let nextAt = 0
 let lastTier = null
@@ -109,7 +159,7 @@ function getObserver() {
       }
       rec.on = on
       seen.set(e.target, rec)
-      if (!on && running?.p.el === e.target) stop('offscreen')
+      if (!on) { const r = runningOn(e.target); if (r) stop('offscreen', r) }
     }
   }, { threshold: [0, 0.2, 0.35, 0.55, 0.8, 1] })
   return observer
@@ -141,8 +191,9 @@ function bind() {
   window.addEventListener('pointermove', (e) => {
     if (e.pointerType === 'touch') return
     pointer = { x: e.clientX, y: e.clientY, target: e.target, at: now() }
-    /* The hand arrives on the thing that is performing: stop it at once. */
-    if (running && running.p.el.contains(e.target)) stop('hand')
+    /* The hand arrives on something that is performing: stop that one at
+       once. Others, elsewhere on the page, carry on. */
+    for (const r of [...running]) if (r.p.el.contains(e.target)) stop('hand', r)
   }, opt)
 
   document.documentElement.addEventListener('pointerleave', () => { pointer = null })
@@ -154,14 +205,16 @@ function bind() {
         p.handsOffUntil = now() + HANDS_OFF
       }
     })
-    if (running && (running.p.el.contains(e.target) || regionOf(e.target) === running.p.spec.region)) stop('hand')
+    for (const r of [...running]) {
+      if (r.p.el.contains(e.target) || regionOf(e.target) === r.p.spec.region) stop('hand', r)
+    }
   }
   window.addEventListener('pointerdown', touch, opt)
   window.addEventListener('keydown', (e) => touch({ target: e.target === document.body ? document.documentElement : e.target }), opt)
   window.addEventListener('focusin', (e) => { if (e.target?.matches?.(':focus-visible')) touch(e) }, opt)
 
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { stop('hidden'); return }
+    if (document.hidden) { stopAll('hidden'); return }
     schedule(rand(900, 1600))
   })
 }
@@ -220,27 +273,37 @@ function schedule(wait) {
 }
 
 function restAfter(tier) {
+  const m = cfg()
   const [a, b] = (TIERS[tier] || TIERS.accent).rest
-  let r = rand(a, b)
+  let r = rand(a, b) * m.restScale
+  const span = (b - a) * m.restScale
   /* Never the same rhythm twice. */
-  if (lastRest && Math.abs(r - lastRest) < (b - a) * 0.08) r = r > (a + b) / 2 ? rand(a, (a + b) / 2) : rand((a + b) / 2, b)
-  /* Now and then the page takes a breath. */
-  if (Math.random() < 0.14) r += rand(2000, 3000)
-  if (idleFor() > CALM_AFTER) r *= CALM_FACTOR
+  if (lastRest && Math.abs(r - lastRest) < span * 0.08) {
+    const mid = (a + b) / 2 * m.restScale
+    r = r > mid ? rand(a * m.restScale, mid) : rand(mid, b * m.restScale)
+  }
+  /* Now and then the page takes a breath. Not in the shop window, which is
+     supposed to idle like an engine. */
+  if (m.calm && Math.random() < 0.14) r += rand(2000, 3000)
+  if (m.calm && idleFor() > CALM_AFTER) r *= CALM_FACTOR
   /* A screen with one or two things to show says them further apart. Five
      turns of the same two gestures in half a minute is worse than silence:
      it tells the reader the page is on a loop. */
-  if (lastPool && lastPool <= 2) r *= lastPool === 1 ? 2.1 : 1.5
+  if (m.calm && lastPool && lastPool <= 2) r *= lastPool === 1 ? 2.1 : 1.5
   lastRest = r
   return r
 }
 
 function eligible(p, t, { noMajor }) {
   const { spec } = p
+  const m = cfg()
   const tier = TIERS[spec.tier] ? spec.tier : 'accent'
-  if (tier === 'major' && (noMajor || lastTier === 'major')) return 0
+  if (tier === 'major' && (noMajor || (m.noTwoMajors && lastTier === 'major'))) return 0
   if (t < p.handsOffUntil) return 0
-  if (t - p.lastEnd < (spec.cooldown ?? TIERS[tier].cooldown)) return 0
+  if (t - p.lastEnd < (spec.cooldown ?? TIERS[tier].cooldown) * m.cooldownScale) return 0
+  /* One performance per region: a frame never talks over itself. */
+  if (runningIn(spec.region)) return 0
+  if (runningOn(p.el)) return 0
   const arrival = seen.get(p.el)
   if (arrival?.on && t - arrival.since < ARRIVAL_WAIT) return 0
   const share = onScreen(p.el)
@@ -261,7 +324,7 @@ function eligible(p, t, { noMajor }) {
   if (p.lastEnd === -Infinity) w *= tier === 'major' ? 1.8 : 1
   else w *= 1 + Math.min(2, Math.max(0, (t - p.lastEnd - cd) / cd))
   /* Vary the texture: the same small tier twice running is less likely. */
-  if (tier !== 'major' && tier === lastTier) w *= 0.55
+  if (tier !== 'major' && tier === lastTier && cfg().calm) w *= 0.55
   /* Never the same gesture twice running, and rarely the same one twice in
      four turns. Weights, not vetoes: a region with a single performer must
      still eventually play rather than fall silent for good. */
@@ -278,7 +341,9 @@ function eligible(p, t, { noMajor }) {
 
 function attempt() {
   timer = 0
-  if (running || prefersReducedMotion()) return
+  if (prefersReducedMotion()) return
+  /* Every slot full: come back when one frees up. */
+  if (running.size >= cfg().concurrent) { schedule(rand(...RETRY)); return }
   /* A hidden tab: look again later. (Not only on visibilitychange — some
      embedded browsers never send it.) */
   if (document.hidden) { schedule(rand(2000, 3000)); return }
@@ -327,7 +392,8 @@ function perform(p) {
   }
 
   const tier = TIERS[spec.tier] ? spec.tier : 'accent'
-  running = { p, ctx, timers, stops, tier, started: now() }
+  const record = { p, ctx, timers, stops, tier, started: now() }
+  running.add(record)
   p.greeted = true
   recent.unshift(spec.id)
   if (recent.length > RECENT_KEPT) recent.pop()
@@ -337,8 +403,8 @@ function perform(p) {
   }
 
   const finish = () => {
-    if (running?.ctx !== ctx) return
-    end(p, ctx, tier)
+    if (!running.has(record)) return
+    end(record)
   }
 
   let result
@@ -351,12 +417,13 @@ function perform(p) {
   } else {
     ctx.after(Math.max(0, Number(result) || 0), finish)
   }
-  ctx.after(MAX_RUN, () => stop('timeout'))
+  ctx.after(MAX_RUN, () => stop('timeout', record))
 }
 
-function end(p, ctx, tier) {
-  running.timers.forEach(clearTimeout)
-  running = null
+function end(record) {
+  const { p, ctx, timers, tier } = record
+  timers.forEach(clearTimeout)
+  running.delete(record)
   ctx.stopped = true
   try { p.spec.cue?.(null) } catch { /* ignore */ }
   p.lastEnd = now()
@@ -365,20 +432,26 @@ function end(p, ctx, tier) {
   schedule(restAfter(tier))
 }
 
-function stop(reason) {
-  if (!running) return
-  const { p, ctx, timers, stops, tier } = running
+function stopAll(reason) {
+  for (const r of [...running]) stop(reason, r)
+}
+
+function stop(reason, record) {
+  const target = record ?? [...running][0]
+  if (!target || !running.has(target)) return
+  const { p, ctx, timers, stops, tier } = target
   ctx.stopped = true
   timers.forEach(clearTimeout)
   stops.forEach((fn) => { try { fn(reason) } catch { /* ignore */ } })
   if (reason === 'hand') p.handsOffUntil = now() + HANDS_OFF
-  running = null
+  running.delete(target)
   try { p.spec.cue?.(null) } catch { /* ignore */ }
   p.lastEnd = now()
   lastTier = tier
   lastRegion = p.spec.region ?? null
   /* Stopped by the reader: give them a moment before anything else starts. */
-  schedule(reason === 'hand' ? rand(2600, 4200) : rand(900, 1600))
+  const m = cfg()
+  schedule(reason === 'hand' ? rand(2600, 4200) * m.restScale : rand(900, 1600) * m.restScale)
 }
 
 /* ── Registration ─────────────────────────────────────────────────────────── */
@@ -388,9 +461,10 @@ function add(record) {
   performers.add(record)
   getObserver()?.observe(record.el)
   /* The page's first turn waits for its arrival choreography. */
-  if (!timer && !running) schedule(Math.max(FIRST_TURN - now(), rand(...RETRY)))
+  if (!timer && !running.size) schedule(Math.max(FIRST_TURN - now(), rand(...RETRY)))
   return () => {
-    if (running?.p === record) stop('unmount')
+    const r = [...running].find((x) => x.p === record)
+    if (r) stop('unmount', r)
     performers.delete(record)
     const shared = [...performers].some((p) => p.el === record.el)
     if (!shared) observer?.unobserve(record.el)
@@ -424,7 +498,7 @@ export function usePerformer(ref, spec) {
 }
 
 /** Is anything performing right now? (A component may want to know.) */
-export const isPerforming = () => Boolean(running)
+export const isPerforming = () => running.size > 0
 
 /**
  * Run `fn` once the page has arrived: loaded, and at least FIRST_TURN into
@@ -458,14 +532,16 @@ export function afterArrival(fn) {
 export function yieldTo(el) {
   if (!el) return
   performers.forEach((p) => { if (p.el === el) p.handsOffUntil = now() + HANDS_OFF })
-  if (running?.p.el === el) stop('hand')
+  const r = runningOn(el)
+  if (r) stop('hand', r)
 }
 
 /** Dev: the recent performance log, for checking the rhythm of a page. */
 if (typeof window !== 'undefined' && import.meta.env?.DEV) {
   window.__stage = {
     log,
-    get running() { return running ? running.p.spec.id : null },
+    get running() { return [...running].map((r) => r.p.spec.id) },
+    get mode() { return mode },
     /** Why each on-screen performer may or may not perform right now. */
     why() {
       const t = now()

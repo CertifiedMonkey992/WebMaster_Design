@@ -19,7 +19,7 @@
 import { useProgression } from '../../../state/ProgressionContext'
 import { press, show, hide } from '../../../motion/demo'
 import { DUR } from '../../../motion/timing'
-import { useFramePerformer, useLatest, useResetWhenAway, within, allWithin } from './sceneKit'
+import { useFramePerformer, useLatest, useSceneLoop, within, allWithin } from './sceneKit'
 import { useFrame } from '../ProductFrame'
 
 export default function BonusScene() {
@@ -75,7 +75,7 @@ export default function BonusScene() {
   })
 
   /* A whole track (and a little) — then start over while nobody is looking. */
-  useResetWhenAway(() => demo.days() >= 5)
+  useSceneLoop(() => demo.days() >= 5, { id: 'bonus:loop', cue: 'A new week begins' })
 
   return null
 }

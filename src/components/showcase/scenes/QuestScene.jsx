@@ -24,7 +24,7 @@ import { SHOP_ITEMS } from '../../../config/shopConfig'
 import { press, show, hide } from '../../../motion/demo'
 import { ring, burst } from '../../../motion/burst'
 import { DUR } from '../../../motion/timing'
-import { useFramePerformer, useLatest, useResetWhenAway, within, allWithin } from './sceneKit'
+import { useFramePerformer, useLatest, useSceneLoop, within, allWithin } from './sceneKit'
 import { useFrame } from '../ProductFrame'
 
 const MAX_STEPS = 3
@@ -164,7 +164,7 @@ export default function QuestScene() {
   })
 
   /* A week of demo days is plenty; start over while nobody is looking. */
-  useResetWhenAway(() => demo.days() >= 4 || vmRef.current.course.completedCount > 12)
+  useSceneLoop(() => demo.days() >= 4 || vmRef.current.course.completedCount > 12, { id: 'quests:loop', cue: 'A new week begins' })
 
   return null
 }

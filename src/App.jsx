@@ -14,7 +14,7 @@ import PageLoading     from './components/PageLoading'
 
 import FxLayer from './motion/FxLayer'
 import { turnPage } from './motion/pageTurn'
-import { afterArrival } from './motion/stage'
+import { afterArrival, setStageMode } from './motion/stage'
 import { NavProvider, usePageMeta } from './nav'
 import { PAGES, routeOf, pageFromLocation } from './site'
 import { initAnalytics, pageview } from './services/analytics'
@@ -114,6 +114,16 @@ export default function App() {
   /* Visit counting (only with permission; services/analytics.js). */
   useEffect(() => { initAnalytics() }, [])
   useEffect(() => { pageview(window.location.pathname) }, [currentPage])
+
+  /* The Stage's temperament, per page (MOTION_RULES.md revision 6 → The shop
+     window). The landing page runs its machinery continuously — overlapping
+     performances, short rests, demonstrations that loop. Everywhere behind
+     the front door speaks one sentence at a time, because that is where the
+     reader is concentrating. */
+  useEffect(() => {
+    setStageMode(currentPage === 'landing' ? 'continuous' : 'considered')
+    return () => setStageMode('considered')
+  }, [currentPage])
 
   /* Once the page has arrived, fetch the pages a visitor is likely to open
      next, so the first page turn does not wait on the network. */

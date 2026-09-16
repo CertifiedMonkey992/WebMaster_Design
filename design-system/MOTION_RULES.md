@@ -1,5 +1,67 @@
 # Motion Rules
 
+> **Revision 6 — the shop window (2026-09).** Revision 5 gave the page one
+> attention clock and made it speak *one sentence at a time*. That is right
+> for the app, where the reader came to do something and every performance
+> competes with the lesson in front of them. It is wrong for the landing
+> page, where the reader came to find out what this thing is and nobody is
+> concentrating on anything yet. There, one gesture every four seconds reads
+> as a page that is mostly still — and the product's best argument (the
+> course being taken, quests being finished, rewards being collected, the
+> guide flipping itself open) was rationed down to almost nothing.
+>
+> Revision 6 keeps every token, verb, loop and prohibition from revision 5
+> and splits the Stage into **two modes**:
+>
+> | Mode | Where | It says |
+> |---|---|---|
+> | **considered** | the app, the About page — every destination behind the front door | "here is one thing, then I will get out of your way" |
+> | **continuous** | the landing page only | "here is everything this does, over and over, for as long as you watch" |
+>
+> In **continuous** mode the page is a shop window with the machinery
+> running in it:
+>
+> 1. **Performances overlap.** Up to three run at once, at most one per
+>    region, so the course frame can be finishing a lesson while the quest
+>    frame is being paid and the book is flipping itself open. Revision 5's
+>    "two performances never run at once" is a `considered`-mode rule.
+> 2. **The rests are short.** 300–1100ms between turns rather than
+>    1.2–4.6s, and a region's own cooldown drops to 2–5s. The page never
+>    fully settles; it idles like an engine.
+> 3. **The demonstrations loop.** A demo learner does not run its scene once
+>    and stop — it keeps going, day after day: finishes lessons, completes
+>    quests, is paid, claims the bonus, keeps the streak, rolls to tomorrow,
+>    and when it reaches the end of its week it resets off screen and starts
+>    again. A visitor who watches for a minute sees the whole loop twice.
+> 4. **The field guide reads itself.** Its showcase repertoire is dominated
+>    by **flip-through**: the book opens at the contents and riffles every
+>    leaf to the last chapter in one staggered cascade, holds there, riffles
+>    all the way back, and shuts. It is the page's loudest object and it now
+>    behaves like one.
+>
+> What revision 6 does **not** change:
+>
+> - **The hand always wins**, exactly as before. Pointing at a performer
+>   stops it where it stands; pressing, typing, selecting text, opening a
+>   dialog or scrolling holds the stage. Continuous does not mean
+>   uninterruptible.
+> - **Nothing performs off screen**, in a hidden tab, or under
+>   `prefers-reduced-motion`. A reader who asked for less still gets a still
+>   page.
+> - **No Demonstration writes real progress.** Demo learners stay in memory;
+>   the visitor's own numbers are never touched, and previews inside the app
+>   still only use Invitation, Ghost and Idle vocabulary.
+> - **The app stays considered.** A lesson is where the learner
+>   concentrates, and revision 5's restraint there is deliberate, not a
+>   limitation to be lifted later.
+>
+> Revision 1 → *motion is a cost*. Revision 2 → *the page answers you*.
+> Revision 3 → *the page is alive, and answers you immediately*.
+> Revision 4 → *the page performs, quietly, even when you stop*.
+> Revision 5 → *the page shows you what it does, one thing at a time*.
+> Revision 6 → *the front page shows you everything it does, continuously.*
+
+
 > **Revision 5 — the page demonstrates itself (2026-09).** Revision 4 gave
 > objects a life of their own, and each one lived it on its own clock. Two
 > things followed. Between their events the page still read as a photograph
