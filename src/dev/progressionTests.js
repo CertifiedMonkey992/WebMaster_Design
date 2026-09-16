@@ -109,27 +109,116 @@ export async function runProgressionTests() {
     ok('T3b answer XP capped at budget', s.xp === budget, `${s.xp} vs ${budget}`)
   }
 
-  /* ── TEST 4 + 5: quest completion, claim, and double-claim guard ── */
+  /* ── TEST 4 + 5: quest completion, claim, and double-claim guard ──────────
+     Daily quests are generated from a seed seeded on the date key, so which
+     three templates appear changes from one day to the next. This block used
+     to look for an EARN_XP quest and skip everything if it was not dealt,
+     which made it pass or fail by the calendar. What it is actually testing —
+     a quest completing, paying once, and never paying twice — is true of any
+     quest, so it now drives whichever one it was given. */
   {
     let s = fresh()
-    // Force an XP quest we can satisfy
-    const xpQuest = s.quests.daily.find(q => q.type === 'EARN_XP')
-    ok('T4 xp quest exists', !!xpQuest, s.quests.daily.map(q => q.type).join())
-    if (xpQuest) {
-      s = run(s, A.AWARD_XP, { amount: xpQuest.target, reason: 'test' }, T0).state
-      const q = quests.findQuest(s, xpQuest.id)
-      ok('T4 quest completed', q.completed, `${q.progress}/${q.target}`)
-      ok('T4 not auto-claimed', !q.claimed)
+
+    /* Move a quest's own metric to its target, using the same actions the app
+       dispatches. Returns the new state, or null for a type this cannot
+       satisfy in a single day at T0. */
+    const satisfy = (state, quest) => {
+      const step = (st, type, payload) => run(st, type, payload, T0).state
+      const target = quest.target
+
+      switch (quest.type) {
+        case 'EARN_XP':
+          return step(state, A.AWARD_XP, { amount: target, reason: 'test' })
+
+        case 'EARN_GEMS':
+          return step(state, A.AWARD_GEMS, { amount: target, reason: 'test' })
+
+        case 'COMPLETE_DAILY_GOAL':
+          return step(state, A.AWARD_XP, { amount: state.goals.dailyXP, reason: 'test' })
+
+        case 'SPEND_TIME': {
+          /* ADD_PRACTICE_TIME clamps each call to an hour. */
+          let st = state
+          let left = target * 60
+          while (left > 0) {
+            const chunk = Math.min(left, 3600)
+            st = step(st, A.ADD_PRACTICE_TIME, { seconds: chunk })
+            left -= chunk
+          }
+          return st
+        }
+
+        case 'COMPLETE_PRACTICE': {
+          let st = state
+          for (let i = 0; i < target; i += 1) {
+            st = step(st, A.COMPLETE_PRACTICE, { seconds: 60, correct: 4, total: 4 })
+          }
+          return st
+        }
+
+        case 'MAINTAIN_STREAK':
+          return step(state, A.COMPLETE_LESSON, { lessonId: learn.ALL_LESSONS[0].id, seconds: 30 })
+
+        case 'COMPLETE_LESSONS':
+        case 'PERFECT_LESSON': {
+          /* Re-completing one lesson never counts twice, so each pass needs a
+             lesson of its own. */
+          const perfect = quest.type === 'PERFECT_LESSON'
+          if (learn.ALL_LESSONS.length < target) return null
+          let st = state
+          for (let i = 0; i < target; i += 1) {
+            st = step(st, A.COMPLETE_LESSON, { lessonId: learn.ALL_LESSONS[i].id, seconds: 30, perfect, accuracy: perfect ? 1 : 0.8 })
+          }
+          return st
+        }
+
+        case 'COMPLETE_SECTION': {
+          const section = learn.SECTIONS[0]
+          if (!section || target > 1) return null
+          let st = state
+          for (const lesson of section.lessons) {
+            st = step(st, A.COMPLETE_LESSON, { lessonId: lesson.id, seconds: 30 })
+          }
+          return st
+        }
+
+        default:
+          return null
+      }
+    }
+
+    /* Take the first quest this can drive. EARN_XP first, so the common case
+       reads the same as it always did. */
+    const candidates = [...s.quests.daily].sort((a, b) =>
+      (a.type === 'EARN_XP' ? -1 : 0) - (b.type === 'EARN_XP' ? -1 : 0))
+
+    let picked = null
+    let driven = null
+    for (const quest of candidates) {
+      const after = satisfy(s, quest)
+      if (!after) continue
+      const q = quests.findQuest(after, quest.id)
+      if (q?.completed) { picked = quest; driven = after; break }
+    }
+
+    ok('T4 a daily quest could be driven to completion', !!picked,
+       s.quests.daily.map(q => `${q.type}:${q.target}`).join())
+
+    if (picked) {
+      s = driven
+      const q = quests.findQuest(s, picked.id)
+      ok('T4 quest completed', q.completed, `${picked.type} ${q.progress}/${q.target}`)
+      ok('T4 not auto-claimed', !q.claimed, picked.type)
 
       const gemsBefore = s.gems
-      const r1 = run(s, A.CLAIM_QUEST, { questId: xpQuest.id }, T0)
+      const r1 = run(s, A.CLAIM_QUEST, { questId: picked.id }, T0)
       s = r1.state
       ok('T4 gems increased by exact reward', s.gems === gemsBefore + q.reward.gems,
          `${gemsBefore} + ${q.reward.gems} -> ${s.gems}`)
-      ok('T4 quest marked claimed', quests.findQuest(s, xpQuest.id).claimed)
+      ok('T4 quest marked claimed', quests.findQuest(s, picked.id).claimed)
 
       const gemsAfterClaim = s.gems
-      const r2 = run(s, A.CLAIM_QUEST, { questId: xpQuest.id }, T0)
+      const r2 = run(s, A.CLAIM_QUEST, { questId: picked.id }, T0)
       s = r2.state
       ok('T5 second claim pays nothing', s.gems === gemsAfterClaim, `${gemsAfterClaim} -> ${s.gems}`)
       ok('T5 second claim emits no gem event', !r2.events.some(e => e.type === 'GEMS_AWARDED'))
