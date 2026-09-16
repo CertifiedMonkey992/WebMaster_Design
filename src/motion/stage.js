@@ -59,6 +59,7 @@ const CALM_AFTER = 25000        // idle this long and rests stretch…
 const CALM_FACTOR = 1.6         // …by this much
 const MAX_RUN = 14000           // a performance that never settles is ended
 const RETRY = [420, 760]        // when nothing may start yet, look again soon
+const OVERLAP_GAP = [500, 1200] // continuous: how long before a second region joins in
 
 const rand = (a, b) => a + Math.random() * (b - a)
 const now = () => performance.now()
@@ -80,7 +81,12 @@ export const MODES = {
   },
   continuous: {
     concurrent: 3,           // at most one per region, up to three regions
-    cooldownScale: 0.26,
+    /* Rests shrink hard — that is what fills the page. Cooldowns shrink far
+       less: a cooldown is how long before THIS gesture is worth seeing
+       again, and a highlighter re-laying itself every second reads as a
+       machine, not as life. Frequency comes from having many things to
+       show, never from showing one thing over and over. */
+    cooldownScale: 0.5,
     restScale: 0.22,
     noTwoMajors: false,
     calm: false,             // the shop window does not get tired
@@ -370,6 +376,12 @@ function attempt() {
     if (pickAt <= 0) { choice = p; break }
   }
   perform(choice)
+  /* Overlap (revision 6). In `considered` mode the next attempt is scheduled
+     by whichever performance finishes, which is what keeps the page to one
+     thing at a time. In `continuous` mode look again while this one is still
+     running, so a second region can join in — otherwise `concurrent` is a
+     ceiling nothing ever reaches. */
+  if (running.size < cfg().concurrent) schedule(rand(...OVERLAP_GAP))
 }
 
 function perform(p) {

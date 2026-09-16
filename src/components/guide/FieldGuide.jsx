@@ -583,6 +583,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
     region: 'hero:book',
     tier: 'accent',
     share: 0.5,
+    get weight() { return showy() ? 1.7 : 1 },
     busy: handled,
     run: (ctx) => {
       live.current.smallSinceMajor += 1
@@ -595,6 +596,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
     region: 'hero:book',
     tier: 'minor',
     share: 0.5,
+    get weight() { return showy() ? 2.2 : 1 },
     busy: handled,
     run: (ctx) => {
       live.current.smallSinceMajor += 1
@@ -614,7 +616,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
     tier: 'major',
     get cooldown() { return showy() ? 5200 : 16000 },
     share: 0.7,
-    weight: 1.6,
+    get weight() { return showy() ? 2.6 : 1.6 },
     busy: handled,
     when: () => live.current.smallSinceMajor >= (showy() ? 1 : 2) && shareInView() > 0.7,
     run: (ctx) => {

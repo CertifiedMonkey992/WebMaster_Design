@@ -88,6 +88,11 @@ export default function Hero() {
     id: 'hero:term',
     region: 'hero:copy',
     tier: 'accent',
+    /* There are only four terms to mark, so this is the page's most easily
+       over-used gesture: without a cooldown of its own it would out-play the
+       book, which is the thing worth watching. */
+    weight: 0.75,
+    cooldown: 7000,
     share: 0.6,
     run: async (ctx) => {
       const terms = [...(subRef.current?.querySelectorAll('.hero-term') ?? [])]
