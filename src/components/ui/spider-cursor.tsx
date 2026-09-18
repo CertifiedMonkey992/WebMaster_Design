@@ -6,11 +6,11 @@ import { cn } from "@/lib/utils"
 /* Two spiders that walk after the pointer, drawn in the site's --ink (a token
    in index.css) on a transparent canvas, so they read as ink on the paper.
 
-   The canvas lies on the page ground, beneath everything else: text, cards,
-   buttons and the nav all sit on top of it. It paints just above whatever
-   paints the paper in its stacking context — body on most pages; the course
-   page paints its own, so it mounts one inside .learn-app. It never takes a
-   click. Under reduced motion it draws nothing.
+   The canvas is viewport-sized and pinned, one step above the site's top
+   layer (--z-fx), so the spiders cross every page, section, card, dialog
+   and toast as the reader scrolls. It never takes a click. In a page turn it
+   keeps its own layer, so the spiders stay put while the page slides under
+   them. Under reduced motion it draws nothing.
 
    The web's anchor points stay out of sight until a spider comes near one:
    inside SIGHT a point fades in, small and faint; when a leg reaches it, it
@@ -19,13 +19,13 @@ import { cn } from "@/lib/utils"
 
 type Anchor = { x: number; y: number; len: number; vis: number }
 
-/* Where the pointer last was, so a spider mounted by a new page walks
-   straight to it instead of waiting for the next move. */
-let lastPointer: { x: number; y: number } | null = null
-
-const REACH = 1 / 10 // a leg can take hold of a point this close (× viewport width)
+const SIZE = 0.7 // the spiders' scale; 1 is the original component's size
+const REACH = SIZE / 10 // a leg can take hold of a point this close (× viewport width)
 const SIGHT = 1.6 // a point starts to show at this multiple of REACH
 const NEAR_VIS = 0.45 // how far a point can bolden before a leg takes it
+/* Points per spider: more as the spiders shrink, so a smaller reach still
+   finds as many points to hold. */
+const ANCHORS = Math.round(333 / (SIZE * SIZE))
 
 export function SpiderCursor({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -45,7 +45,7 @@ export function SpiderCursor({ className }: { className?: string }) {
     const ink = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()
 
     function spawn() {
-      const pts = many<Anchor>(333, () => {
+      const pts = many<Anchor>(ANCHORS, () => {
         return {
           x: rnd(window.innerWidth),
           y: rnd(window.innerHeight),
@@ -62,14 +62,14 @@ export function SpiderCursor({ className }: { className?: string }) {
       })
 
       const seed = rnd(100)
-      let tx = lastPointer ? lastPointer.x : rnd(window.innerWidth)
-      let ty = lastPointer ? lastPointer.y : rnd(window.innerHeight)
+      let tx = rnd(window.innerWidth)
+      let ty = rnd(window.innerHeight)
       let x = rnd(window.innerWidth)
       let y = rnd(window.innerHeight)
       const kx = rnd(0.5, 0.5)
       const ky = rnd(0.5, 0.5)
-      const walkRadius = pt(rnd(50, 50), rnd(50, 50))
-      const r = window.innerWidth / rnd(100, 150)
+      const walkRadius = pt(rnd(50, 50) * SIZE, rnd(50, 50) * SIZE)
+      const r = (window.innerWidth / rnd(100, 150)) * SIZE
 
       function paintPt(pt: Anchor) {
         pts2.forEach((pt2) => {
@@ -83,7 +83,7 @@ export function SpiderCursor({ className }: { className?: string }) {
         })
         if (pt.vis < 0.02) return
         ctx.globalAlpha = pt.vis
-        drawCircle(pt.x, pt.y, 1 + 2 * pt.vis)
+        drawCircle(pt.x, pt.y, (1 + 2 * pt.vis) * SIZE)
         ctx.globalAlpha = 1
       }
 
@@ -135,7 +135,6 @@ export function SpiderCursor({ className }: { className?: string }) {
     let spiders: ReturnType<typeof spawn>[] = []
 
     const handlePointerMove = (e: PointerEvent) => {
-      lastPointer = { x: e.clientX, y: e.clientY }
       spiders.forEach((spider) => {
         spider.follow(e.clientX, e.clientY)
       })
@@ -181,7 +180,7 @@ export function SpiderCursor({ className }: { className?: string }) {
         const i = step / 100
         const x = lerp(x0, x1, i)
         const y = lerp(y0, y1, i)
-        const k = noise(x / 5 + x0, y / 5 + y0) * 2
+        const k = noise(x / 5 + x0, y / 5 + y0) * 2 * SIZE
         ctx.lineTo(x + k, y + k)
       }
       ctx.stroke()
@@ -218,8 +217,9 @@ export function SpiderCursor({ className }: { className?: string }) {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
+      style={{ viewTransitionName: "spider-cursor" }}
       className={cn(
-        "pointer-events-none fixed inset-0 -z-1 block h-full w-full",
+        "pointer-events-none fixed inset-0 z-[calc(var(--z-fx)+1)] block h-full w-full",
         className,
       )}
     />

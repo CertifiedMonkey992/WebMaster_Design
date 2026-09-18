@@ -15,7 +15,6 @@ import DailyBonusIndicator from '../components/daily/DailyBonusIndicator'
 import DailyBonusModal     from '../components/daily/DailyBonusModal'
 
 import { ProgressionProvider, useProgression } from '../state/ProgressionContext'
-import { SpiderCursor } from '@/components/ui/spider-cursor'
 
 import './LearnPage.css'
 import '../components/progression/progression.css'
@@ -97,9 +96,6 @@ function Course({ onGoHome, onGoAbout, onLoginClick }) {
 
   return (
     <div className="learn-app">
-      {/* Inside, not in App: .learn-app paints its own paper, so the spiders
-          must sit on it, beneath the course. */}
-      <SpiderCursor />
       <LearnSidebar
         active={activeNav}
         onChange={navigate}

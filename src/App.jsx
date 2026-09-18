@@ -183,8 +183,7 @@ export default function App() {
         Skip to content
       </a>
       <FxLayer />
-      {/* The course page mounts its own, on its own paper (LearnPage). */}
-      {currentPage !== 'learn' && <SpiderCursor />}
+      <SpiderCursor />
       <Suspense fallback={<PageLoading label={currentPage === 'learn' ? 'Opening the course…' : 'Opening the page…'} />}>
         {page}
       </Suspense>
