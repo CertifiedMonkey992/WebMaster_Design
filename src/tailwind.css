@@ -1,0 +1,24 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   tailwind.css — TAILWIND FOR shadcn/ui COMPONENTS
+   ---------------------------------------------------------------------------
+   Tailwind's theme and utilities, without Preflight (its base reset), so the
+   site's own styles are untouched: headings, lists, buttons and forms keep
+   what index.css gives them. Everything here sits in cascade layers, and the
+   site's CSS is unlayered, so a site rule always wins over a utility.
+
+   Utilities are generated only for classes found in the TypeScript side of
+   the project (src/components/ui, src/lib) — the .jsx site is never scanned,
+   so none of its class names can turn into a Tailwind utility by accident.
+
+   Scanning reads comments and strings too: a word in a .tsx comment that is
+   also a utility name (hidden, flex, grid, table, contents…) ships that
+   utility to every page. Word comments in those files around them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "./components/ui";
+@source "./lib";
