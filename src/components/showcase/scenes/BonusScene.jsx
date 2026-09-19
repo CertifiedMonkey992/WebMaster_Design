@@ -35,7 +35,7 @@ export default function BonusScene() {
       const { nextDay, todayReward } = vmRef.current.dailyBonus
       ctx.cue(`Claims day ${nextDay}: ${todayReward?.label ?? 'reward'}`)
       await ctx.wait(DUR.open + 380)
-      const ok = await press(within(figureRef, '.db-hero .db-claim-btn'))
+      const ok = await press(within(figureRef, '.db-hero .db-claim-btn'), ctx)
       if (!ok) return
       /* charge 300 → burst and flight → the card turns → the receipt. */
       await ctx.wait(1500)

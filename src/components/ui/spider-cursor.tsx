@@ -6,11 +6,16 @@ import { cn } from "@/lib/utils"
 /* Two spiders that walk after the pointer, drawn in the site's --ink (a token
    in index.css) on a transparent canvas, so they read as ink on the paper.
 
-   The canvas is viewport-sized and pinned, one step above the site's top
-   layer (--z-fx), so the spiders cross every page, section, card, dialog
-   and toast as the reader scrolls. It never takes a click. In a page turn it
-   keeps its own layer, so the spiders stay put while the page slides under
-   them. Under reduced motion it draws nothing.
+   The canvas is viewport-sized and pinned, one step below the dialog layer
+   (--z-modal), so the spiders cross every page, section and card as the
+   reader scrolls, but never walk over a dialog or a toast. It never takes a
+   click. In a page turn it keeps its own layer, so the spiders stay put
+   while the page slides under them. Under reduced motion it draws nothing.
+
+   The frame loop runs only while something is changing (MOTION_RULES.md →
+   prohibited: a per-frame loop that runs while nothing is changing): a
+   pointer move wakes it, and it stops IDLE_MS after the last one, or while
+   the tab is hidden.
 
    The web's anchor points stay out of sight until a spider comes near one:
    inside SIGHT a point fades in, small and faint; when a leg reaches it, it
@@ -26,6 +31,8 @@ const NEAR_VIS = 0.45 // how far a point can bolden before a leg takes it
 /* Points per spider: more as the spiders shrink, so a smaller reach still
    finds as many points to hold. */
 const ANCHORS = Math.round(333 / (SIZE * SIZE))
+/* How long the spiders keep walking after the pointer last moved. */
+const IDLE_MS = 2500
 
 export function SpiderCursor({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -133,11 +140,25 @@ export function SpiderCursor({ className }: { className?: string }) {
     /* Spawned on the first frame with a real viewport: a page opened in a
        background tab or a collapsed frame can mount at 0×0. */
     let spiders: ReturnType<typeof spawn>[] = []
+    let running = false
+    let lastMove = 0
+
+    function wake() {
+      lastMove = performance.now()
+      if (running || document.hidden) return
+      running = true
+      frame = requestAnimationFrame(anim)
+    }
 
     const handlePointerMove = (e: PointerEvent) => {
       spiders.forEach((spider) => {
         spider.follow(e.clientX, e.clientY)
       })
+      wake()
+    }
+
+    const handleVisibility = () => {
+      if (!document.hidden) wake()
     }
 
     function anim(t: number) {
@@ -160,6 +181,10 @@ export function SpiderCursor({ className }: { className?: string }) {
       ctx.strokeStyle = ctx.fillStyle = ink
       t /= 1000
       spiders.forEach((spider) => spider.tick(t))
+      if (document.hidden || performance.now() - lastMove > IDLE_MS) {
+        running = false
+        return
+      }
       frame = requestAnimationFrame(anim)
     }
 
@@ -205,11 +230,13 @@ export function SpiderCursor({ className }: { className?: string }) {
     }
 
     window.addEventListener("pointermove", handlePointerMove)
-    frame = requestAnimationFrame(anim)
+    document.addEventListener("visibilitychange", handleVisibility)
+    wake()
 
     return () => {
       cancelAnimationFrame(frame)
       window.removeEventListener("pointermove", handlePointerMove)
+      document.removeEventListener("visibilitychange", handleVisibility)
     }
   }, [])
 
@@ -219,7 +246,7 @@ export function SpiderCursor({ className }: { className?: string }) {
       aria-hidden="true"
       style={{ viewTransitionName: "spider-cursor" }}
       className={cn(
-        "pointer-events-none fixed inset-0 z-[calc(var(--z-fx)+1)] block h-full w-full",
+        "pointer-events-none fixed inset-0 z-[calc(var(--z-modal)-1)] block h-full w-full",
         className,
       )}
     />

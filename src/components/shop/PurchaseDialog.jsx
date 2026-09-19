@@ -17,6 +17,7 @@ import { GemIcon, Icon } from '../progression/Icons'
 import ShopArt from './ShopArt'
 import CountUp from '../../motion/CountUp'
 import { REASONS } from '../../services/shopService'
+import useDialog from '../../hooks/useDialog'
 
 let txnSeq = 0
 
@@ -25,6 +26,7 @@ export default function PurchaseDialog({ item, balance, owned, onConfirm, onClos
   const [settling, setSettling] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const confirmRef = useRef(null)
+  const dialogRef = useRef(null)
   const [openBalance] = useState(balance)
 
   const close = () => {
@@ -33,15 +35,8 @@ export default function PurchaseDialog({ item, balance, owned, onConfirm, onClos
     window.setTimeout(onClose, 180)
   }
 
-  useEffect(() => {
-    confirmRef.current?.focus()
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); close() }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  useDialog(dialogRef, { onClose: close })
+  useEffect(() => { confirmRef.current?.focus() }, [])
 
   const affordable = item.ok || item.reason !== REASONS.INSUFFICIENT_GEMS
   const after = Math.max(0, openBalance - item.price)
@@ -60,6 +55,7 @@ export default function PurchaseDialog({ item, balance, owned, onConfirm, onClos
         role="dialog"
         aria-modal="true"
         aria-labelledby="sh-dialog-title"
+        ref={dialogRef}
       >
         <button className="sh-dialog-close" onClick={close} aria-label="Cancel purchase">
           <Icon name="close" size={15} strokeWidth={2.5} />

@@ -18,6 +18,7 @@ import RollingNumber from '../../motion/RollingNumber'
 import SplitText from '../../motion/SplitText'
 import { fly } from '../../motion/flight'
 import { useQuestBoardPreviews } from '../learn/previews'
+import useDialog from '../../hooks/useDialog'
 
 const TABS = [
   { id: 'today',  label: 'Today',  icon: 'target' },
@@ -162,12 +163,11 @@ export default function QuestPanel({ open, onClose, initialTab = 'today' }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
+  const panelRef = useRef(null)
+  useDialog(panelRef, { open, onClose })
   useEffect(() => {
-    if (!open) return undefined
-    const onKey = (e) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [open, onClose])
+    if (open) panelRef.current?.querySelector('.qp-modal-close')?.focus()
+  }, [open])
 
   if (!mounted) return null
 
@@ -178,6 +178,7 @@ export default function QuestPanel({ open, onClose, initialTab = 'today' }) {
         role="dialog"
         aria-modal="true"
         aria-label="All quests"
+        ref={panelRef}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="qp-modal-head">

@@ -98,7 +98,7 @@ export default function TeamMissionCard() {
           <GemIcon size={14} /> +{team.rewardGems} each
         </span>
         {team.claimable && (
-          <button className="qc-claim-btn" onClick={claim} disabled={claiming}>Claim reward</button>
+          <button className="btn btn-primary btn-sm qc-claim-btn" onClick={claim} disabled={claiming}>Claim reward</button>
         )}
         {team.claimed && (
           <span className="qc-claimed-tag"><Icon name="check" size={12} strokeWidth={3} /> Claimed</span>

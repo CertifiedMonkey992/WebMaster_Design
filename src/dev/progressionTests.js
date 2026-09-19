@@ -890,6 +890,76 @@ export async function runProgressionTests() {
       store.sanitizeState({ xp: 500, gems: 300, streak: { current: 4 } }, T0).dailyBonus.totalClaimed === 0)
   }
 
+  /* ── TEST 32: a completed daily quest left unclaimed is paid at the reset ── */
+  {
+    const s = fresh()
+    const quest = s.quests.daily[0]
+    const done = {
+      ...s,
+      quests: { ...s.quests, daily: s.quests.daily.map((q, i) => (i === 0 ? { ...q, completed: true, progress: q.target } : q)) },
+    }
+    const r = run(done, A.RECONCILE, {}, T0 + DAY)
+    ok('T32 the daily set rolled over', r.state.quests.dailyKey === putils_today(T0 + DAY), r.state.quests.dailyKey)
+    ok('T32 the unclaimed reward was paid', r.state.gems === done.gems + quest.reward.gems, `${r.state.gems} vs ${done.gems + quest.reward.gems}`)
+    ok('T32 the payout is announced as automatic',
+      r.events.some(e => e.type === 'QUEST_CLAIMED' && e.auto === true && e.quest.id === quest.id))
+    ok('T32 the archive shows it claimed', r.state.quests.archive[0]?.quests.find(q => q.id === quest.id)?.claimed === true)
+    ok('T32 the claim counts in stats', r.state.stats.totalQuestsClaimed === 1, r.state.stats.totalQuestsClaimed)
+    /* An unfinished quest is NOT paid. */
+    const idle = run(s, A.RECONCILE, {}, T0 + DAY)
+    ok('T32 an unfinished quest pays nothing', idle.state.gems === s.gems && !idle.events.some(e => e.type === 'QUEST_CLAIMED'))
+  }
+
+  /* ── TEST 33: a finished team mission left unclaimed is paid when the week ends ── */
+  {
+    const s = fresh()
+    const done = { ...s, team: { ...s.team, contribution: s.team.goal } }
+    const r = run(done, A.RECONCILE, {}, T0 + 7 * DAY)
+    ok('T33 a new mission was drawn', r.state.team.weekKey !== done.team.weekKey && r.state.team.claimed === false)
+    /* The ledger carries the mission payout itself; the first completed
+       mission also unlocks the team-player achievement, which pays on top. */
+    ok('T33 the shared reward was paid',
+      r.state.ledger.some(e => e.reason === 'team-mission' && e.amount === cfg.TEAM.REWARD_GEMS) && r.state.gems >= done.gems + cfg.TEAM.REWARD_GEMS,
+      `${r.state.gems} gems`)
+    ok('T33 the payout is announced as automatic', r.events.some(e => e.type === 'TEAM_MISSION_CLAIMED' && e.auto === true))
+    ok('T33 the mission counts as completed', r.state.stats.totalTeamMissionsCompleted === 1)
+    /* Already claimed → not paid twice. */
+    const claimed = { ...done, team: { ...done.team, claimed: true } }
+    const again = run(claimed, A.RECONCILE, {}, T0 + 7 * DAY)
+    ok('T33 a claimed mission is not paid again', again.state.gems === claimed.gems)
+  }
+
+  /* ── TEST 34: an action a moment after midnight lands in the new day ── */
+  {
+    const s = fresh()                       // reconciled at noon
+    const justPastMidnight = T0 + 12 * 3600000 + 60000
+    const r = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: false, seconds: 60, accuracy: 1 }, justPastMidnight)
+    ok('T34 the day rolled over first', r.events[0]?.type === 'DAY_ROLLOVER', r.events[0]?.type)
+    ok('T34 the lesson is in today\'s bucket', r.state.daily.dateKey === putils_today(justPastMidnight) && r.state.daily.lessons === 1,
+      `${r.state.daily.dateKey} lessons=${r.state.daily.lessons}`)
+    ok('T34 today\'s XP is not zero', r.state.daily.xp > 0, r.state.daily.xp)
+    ok('T34 the daily quests are today\'s', r.state.quests.dailyKey === putils_today(justPastMidnight))
+    /* A later reconcile changes nothing — the work was not wiped. */
+    const later = run(r.state, A.RECONCILE, {}, justPastMidnight + 15000)
+    ok('T34 a reconcile keeps the work', later.state.daily.lessons === 1 && later.state.daily.xp === r.state.daily.xp)
+    /* Same day: no rollover is inserted. */
+    const sameDay = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: false, seconds: 60, accuracy: 1 }, T0 + 60000)
+    ok('T34 no rollover on the same day', !sameDay.events.some(e => e.type === 'DAY_ROLLOVER'))
+  }
+
+  /* ── TEST 35: a corrupt team record cannot take the app down ── */
+  {
+    const bad = store.sanitizeState({ team: { missionKey: 'reach-the-moon', members: 'nope' } }, T0)
+    ok('T35 a malformed mission record is dropped', bad.team === null)
+    let threw = false
+    let settled = null
+    try { settled = prog.reconcile(bad, T0).state; prog.buildViewModel(settled, T0) } catch { threw = true }
+    ok('T35 reconcile and the view model survive', !threw)
+    ok('T35 a fresh mission is drawn', !!settled?.team?.missionKey, settled?.team?.missionKey)
+    const good = store.sanitizeState({ team: fresh().team }, T0)
+    ok('T35 a valid record is kept', good.team?.missionKey === fresh().team.missionKey)
+  }
+
   const passed = results.filter((r) => r.pass).length
   const failures = results.filter((r) => !r.pass)
   return {

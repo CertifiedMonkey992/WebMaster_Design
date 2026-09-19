@@ -10,7 +10,6 @@ export const LESSON_CONTENT = {
   default: {
     title:'What is Artificial Intelligence?',
     subtitle:'Traditional Programming vs AI',
-    gemReward: 15,
     tabs: [
       {
         id:'lesson', label:'Lesson',

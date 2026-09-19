@@ -120,7 +120,7 @@ export default function QuestScene() {
       open(row)
       ctx.cue(`Claims ${quest.reward.gems} gems`)
       await ctx.wait(DUR.open + 180)
-      await press(row?.querySelector('.qc-compact-claim'))
+      await press(row?.querySelector('.qc-compact-claim'), ctx)
       /* The gems leave the button, arc to the counter and land; it rolls. */
       await ctx.wait(1650)
       opened.forEach(hide)

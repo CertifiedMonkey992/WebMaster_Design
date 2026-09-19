@@ -29,7 +29,9 @@ import './LessonModal.css'
 import { useProgression } from '../../state/ProgressionContext'
 import { getLessonContent, countSteps } from '../../data/lessonContent'
 import { getLessonById } from '../../data/learnData'
-import { XP, HEARTS } from '../../config/progressionConfig'
+import { XP, HEARTS, CURRENCY } from '../../config/progressionConfig'
+import useActiveTime from '../../hooks/useActiveTime'
+import useDialog from '../../hooks/useDialog'
 import { HeartIcon, GemIcon, FlameIcon, BoltIcon, Icon } from '../progression/Icons'
 import { LiveHeart, LiveGem, LiveFlame } from '../progression/LiveIcons'
 import { formatClock } from '../../utils/dateUtils'
@@ -82,9 +84,12 @@ export default function LessonModal({ lessonId, onClose }) {
   const [sessionGems, setSessionGems] = useState(0)
   const [leaving, setLeaving] = useState(false)
 
-  const startedAtRef = useRef(null)
+  /* Learning time is measured between interactions, not by the wall clock —
+     an abandoned tab earns one idle window at most (MISC.MAX_IDLE_SECONDS). */
+  const time = useActiveTime()
   const committedRef = useRef(false)
   const earnedRef = useRef({ xp: 0, gems: 0 })
+  const overlayRef = useRef(null)
   const bodyRef = useRef(null)
   const tabsRef = useRef(null)
   const stampRef = useRef(null)
@@ -122,10 +127,12 @@ export default function LessonModal({ lessonId, onClose }) {
     window.setTimeout(onClose, 240)
   }, [leaving, onClose])
 
+  useDialog(overlayRef, { onClose: requestClose })
+
   useEffect(() => () => {
-    if (startedAtRef.current && !committedRef.current) {
-      const seconds = Math.round((Date.now() - startedAtRef.current) / 1000)
-      if (seconds > 20) actions.addPracticeTime(Math.min(seconds, 1800))
+    if (time.started() && !committedRef.current) {
+      const seconds = time.seconds()
+      if (seconds > 20) actions.addPracticeTime(seconds)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -134,16 +141,14 @@ export default function LessonModal({ lessonId, onClose }) {
 
   function start() {
     if (blocked) return
-    startedAtRef.current = Date.now()
+    time.start()
     setScreen('step')
   }
 
   function commitCompletion() {
     if (committedRef.current) return
     committedRef.current = true
-    const seconds = startedAtRef.current
-      ? Math.round((Date.now() - startedAtRef.current) / 1000)
-      : 0
+    const seconds = time.started() ? time.seconds() : 0
     tally(actions.completeLesson({
       lessonId,
       perfect,
@@ -155,6 +160,7 @@ export default function LessonModal({ lessonId, onClose }) {
   }
 
   function advance() {
+    time.touch()
     if (vm.hearts <= 0) {
       setScreen('welcome')
       return
@@ -183,6 +189,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
   function check() {
     if (!canCheckStep(currentStep, { filled, selected })) return
+    time.touch()
     const ok = isAnswerCorrect(currentStep, { filled, selected })
 
     tally(actions.recordAnswer({ lessonId, correct: ok, maxAnswerXP }))
@@ -213,6 +220,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
   const chipClick = useCallback((chip, fromEl) => {
     if (stepPhase !== 'answering') return
+    time.touch()
     const arr = [...filled]
     let slot = -1
     for (let i = 0; i < currentStep.answers.length; i++) { if (!arr[i]) { arr[i] = chip; slot = i; break } }
@@ -236,11 +244,17 @@ export default function LessonModal({ lessonId, onClose }) {
         )
       })
     }
-  }, [stepPhase, filled, currentStep])
+  }, [stepPhase, filled, currentStep, time])
 
   function blankClick(idx) {
     if (stepPhase !== 'answering') return
+    time.touch()
     const arr = [...filled]; arr[idx] = null; setFilled(arr)
+  }
+
+  function select(value) {
+    time.touch()
+    setSelected(value)
   }
 
   function dropChip(idx) {
@@ -248,12 +262,15 @@ export default function LessonModal({ lessonId, onClose }) {
     const arr = [...filled]; arr[idx] = draggedChip; setFilled(arr); setDraggedChip(null)
   }
 
-  /* Keyboard: numbers choose, Enter checks / continues. */
+  /* Keyboard: numbers choose, Enter checks / continues. Only keys aimed at
+     the lesson count — a key typed into a form or a panel open over the
+     lesson is that control's business, not an answer. Escape is the dialog
+     hook's (useDialog). */
   useEffect(() => {
     if (screen !== 'step' || leaving) return undefined
     const onKey = (e) => {
+      if (e.target !== document.body && !overlayRef.current?.contains(e.target)) return
       if (e.target instanceof HTMLElement && e.target.matches('input, textarea')) return
-      if (e.key === 'Escape') { requestClose(); return }
       if (e.key === 'Enter') {
         if (e.target instanceof HTMLElement && e.target.matches('button') && !e.target.matches('.lm-btn-check, .lm-btn-continue')) return
         e.preventDefault()
@@ -264,8 +281,8 @@ export default function LessonModal({ lessonId, onClose }) {
       if (stepPhase !== 'answering' || !currentStep) return
       const n = Number(e.key)
       if (!Number.isInteger(n) || n < 1) return
-      if (currentStep.type === 'binary' && currentStep.options[n - 1]) setSelected(currentStep.options[n - 1].value)
-      if (currentStep.type === 'mcq' && currentStep.options[n - 1]) setSelected(currentStep.options[n - 1].id)
+      if (currentStep.type === 'binary' && currentStep.options[n - 1]) select(currentStep.options[n - 1].value)
+      if (currentStep.type === 'mcq' && currentStep.options[n - 1]) select(currentStep.options[n - 1].id)
       if (currentStep.type === 'fill-blank') {
         const used = filled.filter(Boolean)
         const avail = currentStep.choices.filter((c) => !used.includes(c))
@@ -300,7 +317,7 @@ export default function LessonModal({ lessonId, onClose }) {
   useEffect(() => {
     if (screen !== 'welcome' || leaving) return undefined
     const onKey = (e) => {
-      if (e.key === 'Escape') requestClose()
+      if (e.target !== document.body && !overlayRef.current?.contains(e.target)) return
       if (e.key !== 'Enter' || blocked) return
       const onOtherButton = e.target instanceof HTMLButtonElement && e.target !== startRef.current
       if (onOtherButton) return
@@ -321,7 +338,7 @@ export default function LessonModal({ lessonId, onClose }) {
   }, [screen, blocked])
 
   const overlayCls = `lm-overlay${leaving ? ' is-leaving' : ''}`
-  const dialogProps = { role: 'dialog', 'aria-modal': true, 'aria-label': meta?.title ?? lesson.title }
+  const dialogProps = { ref: overlayRef, role: 'dialog', 'aria-modal': true, 'aria-label': meta?.title ?? lesson.title }
 
   /* ── Out of hearts ── */
   if (screen === 'welcome' && blocked) {
@@ -370,7 +387,7 @@ export default function LessonModal({ lessonId, onClose }) {
           </div>
           <div className="lm-welcome-meta">
             <span data-tip="Each wrong answer costs one"><HeartIcon size={15} fill={vm.hearts / vm.maxHearts} /> {vm.hearts} hearts</span>
-            <span data-tip={isReplay ? 'Rewards are paid once per lesson' : 'Finish without losing a heart'}><GemIcon size={15} /> {isReplay ? 'Already earned' : `+${lesson.gemReward} on a perfect run`}</span>
+            <span data-tip={isReplay ? 'Rewards are paid once per lesson' : 'Finish without losing a heart'}><GemIcon size={15} /> {isReplay ? 'Already earned' : `+${CURRENCY.PERFECT_LESSON_GEMS} on a perfect run`}</span>
             <span data-tip="Finishing counts as today's activity"><FlameIcon size={15} /> Build your streak</span>
           </div>
           {isReplay && (
@@ -498,12 +515,20 @@ export default function LessonModal({ lessonId, onClose }) {
             draggedChip={draggedChip}
             onChipClick={chipClick}
             onBlankClick={blankClick}
-            onSelect={setSelected}
+            onSelect={select}
             onDropChip={dropChip}
             onDragChip={setDraggedChip}
           />
         </div>
       </div>
+
+      {/* The verdict, for screen readers: the feedback bar below is inserted
+          with its text already in it, so a live region there would not be
+          announced. This one is always present and only its text changes. */}
+      <span className="pg-sr-only" role="status" aria-live="polite">
+        {stepPhase === 'correct' && 'Correct.'}
+        {stepPhase === 'wrong' && `Not correct — one heart spent. The answer is ${correctLabel(currentStep)}.`}
+      </span>
 
       {stepPhase === 'answering' && (
         <div className="lm-action lm-action--neutral" key="answering">

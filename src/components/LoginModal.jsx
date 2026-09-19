@@ -18,6 +18,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { shake } from '../motion/burst'
+import useDialog from '../hooks/useDialog'
 
 function GoogleIcon() {
   return (
@@ -44,7 +45,7 @@ export default function LoginModal({ onClose }) {
   const check = (e = email, p = password) => {
     const next = {}
     if (!e.trim()) next.email = 'Enter your email address.'
-    else if (!/^[^s@]+@[^s@]+.[^s@]{2,}$/.test(e.trim())) next.email = 'Enter an email address like you@school.edu.'
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e.trim())) next.email = 'Enter an email address like you@school.edu.'
     if (!p) next.password = 'Enter your password.'
     return next
   }
@@ -54,18 +55,9 @@ export default function LoginModal({ onClose }) {
     window.setTimeout(onClose, 190)
   }, [onClose])
 
-  useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') close() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [close])
+  useDialog(panelRef, { onClose: close })
 
   useEffect(() => { panelRef.current?.focus() }, [])
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
 
   const answer = (e) => {
     e?.preventDefault?.()

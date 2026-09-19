@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import { SHOP_SECTIONS, SHOP_ITEMS } from '../../config/shopConfig'
 import { REASONS } from '../../services/shopService'
+import { QUESTS } from '../../config/progressionConfig'
 import { GemIcon, Icon } from '../progression/Icons'
 import { formatNumber } from '../../utils/progressionUtils'
 import ShopArt from './ShopArt'
@@ -38,7 +39,7 @@ function unavailable(item) {
     case REASONS.MAX_OWNED:
       return { text: `You already hold the maximum of ${item.owned}`, hint: 'One is spent automatically when you miss a day.', nav: null }
     case REASONS.INSUFFICIENT_GEMS:
-      return { text: `Not enough gems — you need ${item.shortfall} more`, hint: 'Daily quests pay 10–30 gems each.', nav: { id: 'quests', label: 'Go to quests' } }
+      return { text: `Not enough gems — you need ${item.shortfall} more`, hint: `Daily quests pay ${QUESTS.REWARD.easy}–${QUESTS.REWARD.hard} gems each.`, nav: { id: 'quests', label: 'Go to quests' } }
     default:
       return { text: 'Unavailable right now', hint: '', nav: null }
   }

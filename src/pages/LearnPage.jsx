@@ -79,11 +79,12 @@ function Course({ onGoHome, onGoAbout, onLoginClick }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /* Show the waiting reward once per visit — never claim it. */
+  /* Show the waiting reward once per visit — never claim it, and never over
+     a lesson in progress: it waits until the lesson has closed. */
   const bonusShown = useRef(false)
   const bonusReady = vm.dailyBonus.available
   useEffect(() => {
-    if (bonusShown.current || !bonusReady) return undefined
+    if (bonusShown.current || !bonusReady || activeLessonId) return undefined
     /* The flag is set when the panel actually opens, not when the timer is
        scheduled — StrictMode's mount/unmount/mount would otherwise cancel
        the timer and leave the flag saying it had already been shown. */
@@ -92,7 +93,7 @@ function Course({ onGoHome, onGoAbout, onLoginClick }) {
       setBonusOpen(true)
     }, 900)
     return () => clearTimeout(t)
-  }, [bonusReady])
+  }, [bonusReady, activeLessonId])
 
   return (
     <div className="learn-app">

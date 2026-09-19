@@ -39,7 +39,18 @@ const LAZY = Object.fromEntries(Object.entries(LOADERS).map(([k, load]) => [k, l
 const LoginModal = lazy(() => import('./components/LoginModal'))
 
 const BASE = import.meta.env.BASE_URL
-const hrefOf = (page) => BASE + (routeOf(page).path ?? '')
+/* `?dev=1` travels with the reader from page to page, so the developer panel
+   does not vanish on the first page turn. */
+const devQuery = () => {
+  try {
+    const q = new URLSearchParams(window.location.search)
+    return q.has('dev') ? `?${q}` : ''
+  } catch { return '' }
+}
+const hrefOf = (page) => BASE + (routeOf(page).path ?? '') + devQuery()
+/* The section named by the address's fragment, if any (#streak → 'streak').
+   Old hash addresses (#/about) are pages, not sections. */
+const sectionOf = (hash) => (hash.length > 1 && !hash.startsWith('#/') ? hash.slice(1) : null)
 
 /* Old hash addresses (#/about) become real ones before anything renders. */
 function initialPage() {
@@ -54,7 +65,7 @@ export default function App() {
   const [loginOpen,    setLoginOpen]    = useState(false)
   const [currentPage,  setCurrentPage]  = useState(initialPage)
   /* A section to land on when a page opens (the footer's "TSA compliance"). */
-  const [anchor,       setAnchor]       = useState(() => (window.location.hash.length > 1 && !window.location.hash.startsWith('#/') ? window.location.hash.slice(1) : null))
+  const [anchor,       setAnchor]       = useState(() => sectionOf(window.location.hash))
   const pageRef = useRef(currentPage)
   pageRef.current = currentPage
   const navigated = useRef(false)
@@ -87,9 +98,10 @@ export default function App() {
 
   const nav = useMemo(() => ({ page: currentPage, go, href: hrefOf }), [currentPage, go])
 
-  /* Back and Forward. */
+  /* Back and Forward — including between sections of one page (#streak,
+     #quests), which land on the section rather than at the top. */
   useEffect(() => {
-    const onPop = () => go(pageFromLocation(window.location, BASE), { push: false })
+    const onPop = () => go(pageFromLocation(window.location, BASE), { push: false, section: sectionOf(window.location.hash) })
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [go])

@@ -281,7 +281,7 @@ export function sanitizeState(raw, now = Date.now()) {
     }
   }
 
-  if (isObj(raw.team)) s.team = raw.team
+  if (isValidTeam(raw.team)) s.team = raw.team
 
   if (isObj(raw.stats)) {
     s.stats = { ...base.stats }
@@ -312,6 +312,18 @@ function pickNumbers(source, template) {
 
 function isValidQuest(q) {
   return isObj(q) && typeof q.id === 'string' && typeof q.type === 'string' && Number.isFinite(q.target)
+}
+
+/** A mission record the team service can read without throwing. Anything
+ *  else is dropped and ensureMission draws a fresh one. */
+function isValidTeam(t) {
+  return isObj(t)
+    && typeof t.missionKey === 'string'
+    && typeof t.weekKey === 'string'
+    && Number.isFinite(t.startsAt) && Number.isFinite(t.endsAt)
+    && Number.isFinite(t.goal) && Number.isFinite(t.goalPerMember)
+    && Number.isFinite(t.contribution)
+    && Array.isArray(t.members) && t.members.every((m) => isObj(m) && Number.isFinite(m.rate) && Number.isFinite(m.offsetHours))
 }
 
 /* ── Migrations ──────────────────────────────────────────────────────────────
@@ -377,16 +389,34 @@ export function load(now = Date.now()) {
   return { state, isNew: false, recovered: !isObj(parsed) }
 }
 
-/** Persist progression state. Failures are non-fatal — the session keeps
+/** The `updatedAt` stamp of whatever is in storage right now, or 0 when
+ *  there is nothing readable. Lets a tab find out whether another tab has
+ *  written since it last did, before it overwrites anything. */
+export function peekUpdatedAt() {
+  const store = getStorage()
+  if (!store) return 0
+  try {
+    const text = store.getItem(STORAGE_KEY)
+    if (!text) return 0
+    const parsed = JSON.parse(text)
+    return isObj(parsed) && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : 0
+  } catch {
+    return 0
+  }
+}
+
+/** Persist progression state. Returns the `updatedAt` stamp written, or 0
+ *  when nothing was written. Failures are non-fatal — the session keeps
  *  working in memory even when storage is unavailable or full. */
 export function save(state) {
   const store = getStorage()
-  if (!store) return false
+  if (!store) return 0
   try {
-    store.setItem(STORAGE_KEY, JSON.stringify({ ...state, updatedAt: Date.now() }))
-    return true
+    const updatedAt = Date.now()
+    store.setItem(STORAGE_KEY, JSON.stringify({ ...state, updatedAt }))
+    return updatedAt
   } catch {
-    return false
+    return 0
   }
 }
 
@@ -407,4 +437,4 @@ export function exportState(state) {
   return JSON.stringify(state, null, 2)
 }
 
-export default { load, save, clear, createDefaultState, sanitizeState, migrate, exportState }
+export default { load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState }

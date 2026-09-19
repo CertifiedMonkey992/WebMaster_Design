@@ -14,6 +14,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import { buildPracticeDeck } from '../../data/lessonContent'
 import { XP } from '../../config/progressionConfig'
+import useActiveTime from '../../hooks/useActiveTime'
 import { Icon, HeartIcon, GemIcon, FlameIcon, BoltIcon } from '../progression/Icons'
 import StepBody, { correctLabel, isAnswerCorrect, canCheckStep } from './StepRenderer'
 import SplitText from '../../motion/SplitText'
@@ -37,7 +38,9 @@ export default function PracticeSession() {
   const [correct, setCorrect] = useState(0)
   const [earned, setEarned] = useState({ xp: 0, gems: 0 })
 
-  const startedAt = useRef(null)
+  /* Session time is counted between interactions, capped per idle gap
+     (MISC.MAX_IDLE_SECONDS) — a deck left open is not an hour of practice. */
+  const time = useActiveTime()
   const committed = useRef(false)
   const bodyRef = useRef(null)
   const doneRef = useRef(null)
@@ -54,18 +57,25 @@ export default function PracticeSession() {
     setIdx(0); setCorrect(0); setFilled([]); setSelected(null)
     setStepPhase('answering')
     committed.current = false
-    startedAt.current = Date.now()
+    time.start()
     setPhase('running')
   }
 
   function check() {
     if (!canCheckStep(step, { filled, selected })) return
+    time.touch()
     const ok = isAnswerCorrect(step, { filled, selected })
     if (ok) setCorrect((c) => c + 1)
     setStepPhase(ok ? 'correct' : 'wrong')
   }
 
+  function select(value) {
+    time.touch()
+    setSelected(value)
+  }
+
   function next() {
+    time.touch()
     if (idx + 1 < deck.length) {
       setIdx((i) => i + 1)
       setFilled([]); setSelected(null); setStepPhase('answering')
@@ -77,7 +87,7 @@ export default function PracticeSession() {
   function finish() {
     if (committed.current) return
     committed.current = true
-    const seconds = startedAt.current ? Math.round((Date.now() - startedAt.current) / 1000) : 0
+    const seconds = time.started() ? time.seconds() : 0
     const events = actions.completePractice({ seconds, correct, total: deck.length })
     setEarned({
       xp: events.filter((e) => e.type === 'XP_AWARDED').reduce((s, e) => s + e.amount, 0),
@@ -88,6 +98,7 @@ export default function PracticeSession() {
 
   const placeChip = (chip) => {
     if (stepPhase !== 'answering') return
+    time.touch()
     const arr = [...filled]
     for (let i = 0; i < step.answers.length; i++) { if (!arr[i]) { arr[i] = chip; break } }
     setFilled(arr)
@@ -116,6 +127,8 @@ export default function PracticeSession() {
   useEffect(() => {
     if (phase !== 'running') return undefined
     const onKey = (e) => {
+      /* Keys typed into a form or a dialog over the page are not answers. */
+      if (e.target instanceof HTMLElement && (e.target.matches('input, textarea, select') || e.target.closest('[role="dialog"]'))) return
       if (e.key === 'Enter') {
         if (e.target instanceof HTMLElement && e.target.matches('button') && !e.target.matches('.lm-btn-check, .lm-btn-continue')) return
         e.preventDefault()
@@ -125,8 +138,8 @@ export default function PracticeSession() {
       if (stepPhase !== 'answering' || !step) return
       const n = Number(e.key)
       if (!Number.isInteger(n) || n < 1) return
-      if (step.type === 'binary' && step.options[n - 1]) setSelected(step.options[n - 1].value)
-      if (step.type === 'mcq' && step.options[n - 1]) setSelected(step.options[n - 1].id)
+      if (step.type === 'binary' && step.options[n - 1]) select(step.options[n - 1].value)
+      if (step.type === 'mcq' && step.options[n - 1]) select(step.options[n - 1].id)
       if (step.type === 'fill-blank' && step.choices[n - 1] && !filled.includes(step.choices[n - 1])) placeChip(step.choices[n - 1])
     }
     window.addEventListener('keydown', onKey)
@@ -216,7 +229,7 @@ export default function PracticeSession() {
               if (stepPhase !== 'answering') return
               const arr = [...filled]; arr[i] = null; setFilled(arr)
             }}
-            onSelect={setSelected}
+            onSelect={select}
             onDropChip={(i) => {
               if (!draggedChip) return
               const arr = [...filled]; arr[i] = draggedChip; setFilled(arr); setDraggedChip(null)
@@ -225,6 +238,11 @@ export default function PracticeSession() {
           />
         </div>
       </div>
+
+      <span className="pg-sr-only" role="status" aria-live="polite">
+        {stepPhase === 'correct' && 'Correct.'}
+        {stepPhase === 'wrong' && `Not quite. The answer is ${correctLabel(step)}. No heart lost.`}
+      </span>
 
       {stepPhase === 'answering' && (
         <div className="lm-action lm-action--neutral ps-action" key="a">

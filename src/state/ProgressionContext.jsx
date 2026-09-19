@@ -20,8 +20,9 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react'
 
-import { load, save, clear, createDefaultState } from '../services/storageService'
+import { load, save, peekUpdatedAt, clear, createDefaultState } from '../services/storageService'
 import progression, { ACTIONS, reduce, reconcile, buildViewModel } from '../services/progressionService'
+import { STORAGE_KEY } from '../config/progressionConfig'
 import { getLocalDateKey } from '../utils/dateUtils'
 
 /* Split contexts: progression state changes rarely, the clock changes every
@@ -88,7 +89,15 @@ export function ProgressionProvider({ children }) {
   if (bootRef.current === null) {
     const loaded = load()
     const settled = reconcile(loaded.state, Date.now())
-    bootRef.current = { state: settled.state, isNew: loaded.isNew, recovered: loaded.recovered }
+    bootRef.current = {
+      state: settled.state,
+      /* What reconciling the stored state did — a shield spent overnight, a
+         streak lost — is shown once the toaster has mounted. */
+      events: settled.events,
+      isNew: loaded.isNew,
+      recovered: loaded.recovered,
+      savedAt: loaded.isNew ? 0 : loaded.state.updatedAt,
+    }
   }
 
   const stateRef = useRef(bootRef.current.state)
@@ -96,11 +105,17 @@ export function ProgressionProvider({ children }) {
   const [now, setNow] = useState(() => Date.now())
   const [rewards, setRewards] = useState([])
 
-  /* Persist the reconciled boot state so a first-ever visit is durable
-     immediately, without waiting for the learner to do anything. */
-  useEffect(() => {
-    save(stateRef.current)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  /* The `updatedAt` this tab last wrote (or loaded). Storage holding a NEWER
+     stamp means another tab has saved since, and this tab's state is stale:
+     writing it would roll the learner back, so the write is refused and the
+     newer state is adopted instead. */
+  const savedAtRef = useRef(bootRef.current.savedAt)
+
+  const persist = useCallback((next) => {
+    if (peekUpdatedAt() > savedAtRef.current) return false
+    const at = save(next)
+    if (at) savedAtRef.current = at
+    return at > 0
   }, [])
 
   const pushRewards = useCallback((events) => {
@@ -117,6 +132,18 @@ export function ProgressionProvider({ children }) {
     setRewards((prev) => prev.filter((r) => r.key !== key))
   }, [])
 
+  /* Persist the reconciled boot state so a first-ever visit is durable
+     immediately, without waiting for the learner to do anything — and report
+     what the boot reconcile did. */
+  useEffect(() => {
+    persist(stateRef.current)
+    /* Taken once: StrictMode mounts twice in dev, and the second pass must
+       not show the same shield or streak toast again. */
+    pushRewards(bootRef.current.events)
+    bootRef.current.events = []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   /**
    * The single entry point for the whole UI.
    * Returns the emitted events so a caller can react to, say, a refused claim.
@@ -127,11 +154,11 @@ export function ProgressionProvider({ children }) {
     if (result.state !== stateRef.current) {
       stateRef.current = result.state
       setState(result.state)
-      save(result.state)
+      persist(result.state)
     }
     pushRewards(result.events)
     return result.events
-  }, [pushRewards])
+  }, [pushRewards, persist])
 
   /* ── Clock ── */
   useEffect(() => {
@@ -170,15 +197,33 @@ export function ProgressionProvider({ children }) {
     }
   }, [now, dispatch])
 
-  /* Flush on unload so a mid-session close never loses progress. */
+  /* Flush on unload so a mid-session close never loses progress. Goes
+     through `persist`, so a tab that was left behind cannot overwrite what a
+     newer tab has saved as it closes. */
   useEffect(() => {
-    const flush = () => save(stateRef.current)
+    const flush = () => persist(stateRef.current)
     window.addEventListener('pagehide', flush)
     window.addEventListener('beforeunload', flush)
     return () => {
       window.removeEventListener('pagehide', flush)
       window.removeEventListener('beforeunload', flush)
     }
+  }, [persist])
+
+  /* Another tab saved: adopt its state rather than carry on from a stale
+     copy. The `storage` event only fires in OTHER tabs, never the writer. */
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== STORAGE_KEY || e.storageArea !== window.localStorage) return
+      if (peekUpdatedAt() <= savedAtRef.current) return
+      const loaded = load()
+      const settled = reconcile(loaded.state, Date.now())
+      savedAtRef.current = loaded.state.updatedAt
+      stateRef.current = settled.state
+      setState(settled.state)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   /* ── Action creators ── */
@@ -250,12 +295,12 @@ export function ProgressionProvider({ children }) {
         const fresh = reconcile(createDefaultState(), Date.now()).state
         stateRef.current = fresh
         setState(fresh)
-        save(fresh)
+        persist(fresh)
         setRewards([])
       },
       raw: () => stateRef.current,
     },
-  }), [dispatch])
+  }), [dispatch, persist])
 
   /* ── Derived view model ───────────────────────────────────────────────────
      Rebuilt when state changes, or once every 30s so heart-recovery timings

@@ -55,12 +55,16 @@ export function PrivacyPage() {
 
       <Section id="stored" title="What LunX stores, and where">
         <p className="sp-p">
-          LunX uses your browser’s local storage, which stays on your device. It keeps two entries:
+          LunX uses your browser’s local storage, which stays on your device. It keeps two entries, and a third only if something goes wrong:
         </p>
         <dl className="sp-defs">
           <div>
             <dt><code>{STORAGE_KEY}</code></dt>
             <dd>Your course progress: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily bonus track, shop items and achievements. It contains no name, email address or other personal detail.</dd>
+          </div>
+          <div>
+            <dt><code>{STORAGE_KEY}__corrupt</code></dt>
+            <dd>Written only if the saved progress above could not be read. The unreadable text is kept here, so nothing is silently destroyed, and a fresh progress record is started.</dd>
           </div>
           <div>
             <dt><code>{CONSENT_KEY}</code></dt>

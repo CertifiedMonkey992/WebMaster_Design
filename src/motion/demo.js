@@ -53,14 +53,20 @@ export function inView(el, share = 0.8) {
   return h / r.height >= share && w / r.width >= Math.min(share, 0.9)
 }
 
-/** Press a control the way a finger would, then click it. */
-export async function press(el) {
+/** Press a control the way a finger would, then click it. Given the
+ *  performance's `ctx`, the hold waits on the Stage's clock — so a scene
+ *  stopped mid-press (the reader scrolled away, or touched the frame) lets
+ *  go without ever clicking. */
+export async function press(el, ctx = null) {
   if (!el?.isConnected) return false
   if (!prefersReducedMotion()) {
     el.setAttribute('data-pressed', '')
-    await sleep(DUR.micro + DUR.press)
-    el.removeAttribute('data-pressed')
+    const release = () => el.removeAttribute('data-pressed')
+    ctx?.onStop(release)
+    await (ctx ? ctx.wait(DUR.micro + DUR.press) : sleep(DUR.micro + DUR.press))
+    release()
   }
+  if (ctx?.stopped) return false
   if (!el.isConnected || el.disabled) return false
   el.click()
   return true

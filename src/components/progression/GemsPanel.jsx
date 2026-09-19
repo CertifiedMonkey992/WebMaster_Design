@@ -12,7 +12,7 @@
 import { useProgression } from '../../state/ProgressionContext'
 import { GemIcon, BoltIcon, ShieldIcon, HeartIcon, Icon } from './Icons'
 import { CURRENCY, QUESTS } from '../../config/progressionConfig'
-import { HEART_REFILL_COST, STREAK_SHIELD_COST } from '../../config/shopConfig'
+import { HEART_REFILL_COST, STREAK_SHIELD_COST, getShopItem } from '../../config/shopConfig'
 import { formatNumber } from '../../utils/progressionUtils'
 import RollingNumber from '../../motion/RollingNumber'
 
@@ -25,8 +25,17 @@ const REASON_LABELS = {
   achievement: 'Achievement',
   'team-mission': 'Team mission',
   'heart-refill': 'Heart refill',
-  'daily-bonus': 'Daily bonus',
   manual: 'Adjustment',
+}
+
+/** The ledger's reasons as the services write them: shop purchases are
+ *  `shop:<item id>` and bonus claims `daily-bonus-day-<n>`. */
+function reasonLabel(entry) {
+  if (entry.questTitle) return entry.questTitle
+  if (REASON_LABELS[entry.reason]) return REASON_LABELS[entry.reason]
+  if (entry.reason.startsWith('shop:')) return getShopItem(entry.reason.slice(5))?.name ?? 'Shop purchase'
+  if (entry.reason.startsWith('daily-bonus')) return 'Daily bonus'
+  return entry.reason
 }
 
 function timeAgo(ts) {
@@ -97,7 +106,7 @@ export default function GemsPanel({ onClose, onOpenShop }) {
           {history.map((entry, i) => (
             <div className="pg-ledger-row" key={`${entry.ts}-${i}`} style={{ '--i': i }}>
               <span className="pg-ledger-reason">
-                {entry.questTitle ?? REASON_LABELS[entry.reason] ?? entry.reason}
+                {reasonLabel(entry)}
               </span>
               <span className="pg-ledger-time">{timeAgo(entry.ts)}</span>
               <span className={`pg-ledger-amount${entry.amount < 0 ? ' is-negative' : ''}`}>

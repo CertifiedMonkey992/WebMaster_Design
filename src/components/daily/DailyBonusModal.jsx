@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { Icon } from '../progression/Icons'
 import DailyBonusTrack from './DailyBonusTrack'
+import useDialog from '../../hooks/useDialog'
 import './dailyBonus.css'
 
 const EXIT_MS = 220
@@ -36,32 +37,9 @@ export default function DailyBonusModal({ open, onClose }) {
 
   const claim = useCallback(() => actions.claimDailyBonus(), [actions])
 
+  useDialog(panelRef, { open, onClose })
   useEffect(() => {
-    if (!open) return undefined
-    const onKey = (e) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', onKey)
-    closeRef.current?.focus()
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  useEffect(() => {
-    if (!open) return undefined
-    const onTab = (e) => {
-      if (e.key !== 'Tab' || !panelRef.current) return
-      const focusable = panelRef.current.querySelectorAll(
-        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      )
-      if (!focusable.length) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault(); last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault(); first.focus()
-      }
-    }
-    window.addEventListener('keydown', onTab)
-    return () => window.removeEventListener('keydown', onTab)
+    if (open) closeRef.current?.focus()
   }, [open])
 
   if (!mounted) return null

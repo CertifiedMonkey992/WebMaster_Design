@@ -89,6 +89,12 @@ const SIM_NAMES = [
   'Nova', 'Kai', 'Ines', 'Milo', 'Zara', 'Theo', 'Ada', 'Rune', 'Juno', 'Oskar',
 ]
 
+/* Roster colours are design-system tokens (VISUAL_SYSTEM.md: no cool hues,
+   no hex literals outside index.css), resolved at view time so a stored
+   record never pins a colour. */
+const YOUR_ACCENT = 'var(--evergreen)'
+const SQUAD_ACCENTS = ['var(--clay)', 'var(--ochre)', 'var(--moss)', 'var(--berry)']
+
 /* ── Mission lifecycle ───────────────────────────────────────────────────── */
 
 /** Create the mission record for a given week. Deterministic per week+account. */
@@ -115,7 +121,6 @@ export function createMission(state, now = Date.now()) {
     simulated: true,
     rate: 0.35 + random() * 0.9,      // share of goalPerMember earned per day
     offsetHours: Math.floor(random() * 10),
-    accent: ['#6D4CF1', '#0EA5E9', '#D97706', '#17A34A', '#EC4899'][i % 5],
   }))
 
   return {
@@ -153,10 +158,11 @@ export function getMissionView(state, now = Date.now()) {
   const mission = MISSIONS.find((m) => m.key === record.missionKey)
   if (!mission) return null
 
-  const members = record.members.map((m) => ({
+  const members = record.members.map((m, i) => ({
     ...m,
     contribution: simulatedContribution(m, record, now),
     isYou: false,
+    accent: SQUAD_ACCENTS[i % SQUAD_ACCENTS.length],
   }))
 
   const you = {
@@ -164,7 +170,7 @@ export function getMissionView(state, now = Date.now()) {
     name: 'You',
     simulated: false,
     isYou: true,
-    accent: '#6D4CF1',
+    accent: YOUR_ACCENT,
     contribution: record.contribution,
   }
 
@@ -196,11 +202,21 @@ export function ensureMission(state, now = Date.now()) {
   const weekKey = getWeekKey(new Date(now))
   if (state.team && state.team.weekKey === weekKey) return { state, events: [] }
 
-  const record = createMission(state, now)
-  return {
-    state: { ...state, team: record },
-    events: [{ type: 'TEAM_MISSION_STARTED', missionKey: record.missionKey }],
+  /* A mission the squad finished but the learner never claimed is still
+     theirs: pay it before the week's record is replaced. */
+  let next = state
+  const events = []
+  if (state.team) {
+    const paid = claimMissionReward(state, now)
+    if (paid.ok) {
+      next = paid.state
+      events.push(...paid.events.map((e) => (e.type === 'TEAM_MISSION_CLAIMED' ? { ...e, auto: true } : e)))
+    }
   }
+
+  const record = createMission(next, now)
+  events.push({ type: 'TEAM_MISSION_STARTED', missionKey: record.missionKey })
+  return { state: { ...next, team: record }, events }
 }
 
 /**

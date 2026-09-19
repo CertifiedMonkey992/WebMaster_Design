@@ -431,8 +431,26 @@ export function addPracticeTime(state, seconds, now = Date.now()) {
 /**
  * The single entry point used by the React layer.
  * Always returns `{ state, events }` — never mutates its input.
+ *
+ * If the calendar has moved on since the state was last reconciled — an
+ * answer given a moment after midnight, before the next poll — the period
+ * is rolled over FIRST, so the action lands in today's buckets rather than
+ * in yesterday's, which the next reconcile would wipe.
  */
 export function reduce(state, action, now = Date.now()) {
+  if (action.type !== ACTIONS.RECONCILE && !action.type.startsWith('DEV_')) {
+    const stale = state.daily.dateKey !== getLocalDateKey(new Date(now))
+      || state.weekly.weekKey !== getWeekKey(new Date(now))
+    if (stale) {
+      const settled = reconcile(state, now)
+      const result = reduceAction(settled.state, action, now)
+      return { state: result.state, events: [...settled.events, ...result.events] }
+    }
+  }
+  return reduceAction(state, action, now)
+}
+
+function reduceAction(state, action, now) {
   const payload = action.payload ?? {}
   const acc = { state, events: [] }
 

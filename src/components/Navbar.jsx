@@ -102,6 +102,8 @@ export default function Navbar({ links = LINKS, scrollLinks = false, pageLink })
     const target = document.getElementById(id)
     if (!target) return
     e.preventDefault()
+    /* A real history entry, so Back and Forward return to the section. */
+    if (window.location.hash !== `#${id}`) window.history.pushState(null, '', `#${id}`)
     target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 

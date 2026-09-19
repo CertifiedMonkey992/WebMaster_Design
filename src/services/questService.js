@@ -178,8 +178,23 @@ export function ensureQuests(state, now = Date.now()) {
   const dateKey = getLocalDateKey(new Date(now))
   const weekKey = getWeekKey(new Date(now))
   const events = []
-  let quests = state.quests
   let next = state
+
+  /* A finished quest the learner never clicked "Claim" on is still earned:
+     pay it out before its set is replaced, so a reset can never take a
+     reward away. */
+  if (next.quests.dailyKey !== dateKey) {
+    const paid = autoClaim(next, next.quests.daily, now)
+    next = paid.state
+    events.push(...paid.events)
+  }
+  if (next.quests.weeklyKey !== weekKey) {
+    const paid = autoClaim(next, next.quests.weekly, now)
+    next = paid.state
+    events.push(...paid.events)
+  }
+
+  let quests = next.quests
 
   if (quests.dailyKey !== dateKey) {
     const archive = quests.dailyKey
@@ -210,8 +225,23 @@ export function ensureQuests(state, now = Date.now()) {
     events.push({ type: 'WEEKLY_QUESTS_GENERATED', weekKey })
   }
 
-  if (quests === state.quests) return { state, events }
-  return { state: { ...state, quests }, events }
+  if (quests === next.quests) return { state: next, events }
+  return { state: { ...next, quests }, events }
+}
+
+/** Claim every completed-but-unclaimed quest in `list` on the learner's
+ *  behalf. Each payout is a normal claim, flagged `auto` for the toaster. */
+function autoClaim(state, list, now) {
+  let next = state
+  const events = []
+  for (const quest of list) {
+    if (!quest.completed || quest.claimed) continue
+    const result = claimQuest(next, quest.id, now)
+    if (!result.ok) continue
+    next = result.state
+    events.push(...result.events.map((e) => (e.type === 'QUEST_CLAIMED' ? { ...e, auto: true } : e)))
+  }
+  return { state: next, events }
 }
 
 function stripForArchive(q) {

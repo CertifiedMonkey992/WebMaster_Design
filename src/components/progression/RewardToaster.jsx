@@ -128,6 +128,16 @@ function Toast({ reward }) {
         </div>
       )
     case 'QUEST_CLAIMED':
+      if (reward.auto) {
+        /* Paid at the reset because the learner never pressed Claim: say
+           where the gems came from, or the balance jumps for no reason. */
+        return (
+          <div className="rt-toast rt-toast--quest">
+            <span className="rt-toast-icon"><QuestIcon name={reward.quest.icon} size={20} /></span>
+            <span><b>Quest reward paid — {reward.quest.title}</b><em>+{reward.quest.reward.gems} gems, claimed for you before the reset</em></span>
+          </div>
+        )
+      }
       return <div className="rt-chip rt-chip--gem"><GemIcon size={15} />+{reward.quest.reward.gems}</div>
     case 'ACHIEVEMENT_UNLOCKED':
       return (
@@ -168,7 +178,10 @@ function Toast({ reward }) {
       return (
         <div className="rt-toast rt-toast--quest">
           <span className="rt-toast-icon"><Icon name="users" size={20} /></span>
-          <span><b>Shared reward claimed</b></span>
+          <span>
+            <b>Shared reward claimed</b>
+            {reward.auto && <em>{reward.mission.title} — paid for you before the week ended</em>}
+          </span>
         </div>
       )
     case 'DAILY_CYCLE_COMPLETE':
@@ -198,7 +211,7 @@ function StreamItem({ reward, leaving }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const isChip = Boolean(CHIP_FLIGHT[reward.type]) || reward.type === 'GEMS_SPENT' || reward.type === 'HEART_LOST' || reward.type === 'QUEST_CLAIMED'
+  const isChip = Boolean(CHIP_FLIGHT[reward.type]) || reward.type === 'GEMS_SPENT' || reward.type === 'HEART_LOST' || (reward.type === 'QUEST_CLAIMED' && !reward.auto)
 
   return (
     <div
@@ -252,20 +265,29 @@ export default function RewardToaster() {
   const levelUp = useMemo(() => rewards.find((r) => r.type === 'LEVEL_UP'), [rewards])
   const stream = useMemo(() => rewards.filter((r) => r.type !== 'LEVEL_UP').slice(-5), [rewards])
 
+  /* Each toast's clock is set ONCE, when it enters the stream, and measured
+     from when the reward happened. Re-running this effect for a new arrival
+     must not touch the timers of the toasts already showing — otherwise one
+     lesson's six events keep resetting each other and the first stays up
+     for as long as the last. */
+  const timersRef = useRef(new Map())
   useEffect(() => {
-    if (!stream.length) return undefined
-    const timers = stream.flatMap((reward) => {
-      const life = LIFETIME[reward.type] ?? 2000
-      return [
+    for (const reward of stream) {
+      if (timersRef.current.has(reward.key)) continue
+      const life = Math.max(0, (LIFETIME[reward.type] ?? 2000) - (Date.now() - reward.at))
+      timersRef.current.set(reward.key, [
         window.setTimeout(() => setLeaving((s) => new Set(s).add(reward.key)), Math.max(0, life - EXIT_MS)),
         window.setTimeout(() => {
+          timersRef.current.delete(reward.key)
           dismissReward(reward.key)
           setLeaving((s) => { const n = new Set(s); n.delete(reward.key); return n })
         }, life),
-      ]
-    })
-    return () => timers.forEach(window.clearTimeout)
+      ])
+    }
   }, [stream, dismissReward])
+  useEffect(() => () => {
+    timersRef.current.forEach((timers) => timers.forEach(window.clearTimeout))
+  }, [])
 
   return (
     <>
