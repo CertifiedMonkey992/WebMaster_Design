@@ -104,7 +104,8 @@ export function PrivacyPage() {
         <p className="sp-p">
           Clear this site’s data in your browser settings (or clear local storage for this site)
           and every trace of your progress is gone. Because LunX holds no copy, nobody else can
-          delete, export or see it for you.
+          delete, export or see it for you; the export on the Profile page is the only copy that
+          ever exists, and it goes where you save it.
         </p>
       </Section>
 
@@ -161,7 +162,8 @@ export function TermsPage() {
         <p className="sp-p">
           Progress, XP, gems, streaks and badges are saved only in your browser (see
           the <PageLink page="privacy">privacy policy</PageLink>). They can be lost if you clear your
-          browser data, switch devices or use private browsing. Gems and rewards have no money value
+          browser data, switch devices or use private browsing — the Profile page can export a
+          backup file and import it again on another browser. Gems and rewards have no money value
           and cannot be bought, sold or exchanged.
         </p>
       </Section>

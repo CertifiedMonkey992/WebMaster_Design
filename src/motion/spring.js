@@ -26,7 +26,7 @@
 
 const STEP = 1 / 240
 
-export function stepSpring(state, cfg, dt) {
+function stepSpring(state, cfg, dt) {
   const { stiffness, damping, mass = 1, min, max, restitution = 0, force } = cfg
   let { x, v } = state
   let acc = dt

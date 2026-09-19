@@ -20,7 +20,7 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react'
 
-import { load, save, peekUpdatedAt, clear, createDefaultState } from '../services/storageService'
+import { load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState } from '../services/storageService'
 import progression, { ACTIONS, reduce, reconcile, buildViewModel } from '../services/progressionService'
 import { STORAGE_KEY } from '../config/progressionConfig'
 import { getLocalDateKey } from '../utils/dateUtils'
@@ -230,6 +230,29 @@ export function ProgressionProvider({ children }) {
   const actions = useMemo(() => ({
     ...createActions(dispatch),
 
+    /** The learner's progress as a JSON document they can keep. */
+    exportProgress: () => exportState(stateRef.current),
+
+    /** Replace the learner's progress with a previously exported document.
+     *  The file goes through the same repair path as a stored blob, so a
+     *  hand-edited or partly corrupt file becomes a valid state rather than a
+     *  crash. Returns false when the text is not a progress document at all. */
+    importProgress: (text) => {
+      let parsed
+      try { parsed = JSON.parse(text) } catch { return false }
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return false
+      if (typeof parsed.version !== 'number' || typeof parsed.xp !== 'number') return false
+      const settled = reconcile(sanitizeState(migrate(parsed), Date.now()), Date.now())
+      stateRef.current = settled.state
+      setState(settled.state)
+      /* A restore is the learner's deliberate choice: it wins over whatever
+         another tab last saved. */
+      savedAtRef.current = Number.MAX_SAFE_INTEGER
+      persist(settled.state)
+      setRewards([])
+      return true
+    },
+
     /* ── Developer-only helpers ── */
     dev: {
       set: (patch) => dispatch(ACTIONS.DEV_SET, patch),
@@ -353,6 +376,7 @@ const NOOP_ACTIONS = {
   purchaseItem: NOOP, claimDailyBonus: NOOP,
   claimQuest: NOOP, claimAllQuests: NOOP, claimTeamReward: NOOP, rerollTeamMission: NOOP,
   setDailyGoal: NOOP, reconcileNow: NOOP,
+  exportProgress: () => '', importProgress: () => false,
   dev: { set: NOOP, resetDailyQuests: NOOP, resetWeeklyQuests: NOOP, setBonusDay: NOOP,
          resetDailyBonus: NOOP, completeBonusCycle: NOOP, shiftDays: NOOP, reset: NOOP, raw: () => null },
 }
@@ -400,8 +424,10 @@ export function ProgressionShowcase({ state, children }) {
      · nothing here calls save() or touches storage — the visitor's own
        progress is neither read nor written
      · each frame gets its own learner, so one scene cannot disturb another
-     · reset() returns to the seed; scenes only call it while off screen, so
-       nobody watches a figure run backwards
+     · reset() returns to the seed; in considered mode scenes call it only
+       while off screen, and in continuous mode only after cueing the
+       restart (sceneKit.js → useSceneLoop), so nobody watches a figure run
+       backwards unannounced
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const DAY_MS = 86400000

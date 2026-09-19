@@ -866,7 +866,7 @@ html:has(.learn-app) body {
 
 .lesson-tile svg { transition: transform var(--dur-move) var(--ease-spring); }
 
-.lesson-row:not(.lesson-row--locked):hover .lesson-tile { color: var(--evergreen); transform: translateY(-2px); }
+.lesson-row:not(.lesson-row--locked):hover .lesson-tile { color: var(--evergreen); }
 .lesson-row:not(.lesson-row--locked):hover .lesson-tile svg { transform: scale(1.14) rotate(-8deg); }
 
 .lesson-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }

@@ -70,7 +70,7 @@ export default function LessonNode({
     }
     stamp()
     return () => timers.forEach(clearTimeout)
-  }, [lesson.status])
+  }, [lesson.status, showcase])
 
   const deny = () => {
     shake(rowRef.current, { distance: 4 })

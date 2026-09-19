@@ -105,11 +105,7 @@ export function getShopItem(id) {
   return SHOP_ITEMS.find((item) => item.id === id) ?? null
 }
 
-export function getItemsBySection(sectionId) {
-  return SHOP_ITEMS.filter((item) => item.section === sectionId)
-}
-
 export default {
   HEART_REFILL_COST, EXTRA_HEART_COST, STREAK_SHIELD_COST,
-  SHIELD, ITEM_TYPES, SHOP_SECTIONS, SHOP_ITEMS, getShopItem, getItemsBySection,
+  SHIELD, ITEM_TYPES, SHOP_SECTIONS, SHOP_ITEMS, getShopItem,
 }

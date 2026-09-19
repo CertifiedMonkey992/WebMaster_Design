@@ -21,7 +21,6 @@
 import { createDefaultState } from '../services/storageService'
 import { reconcile, reduce, ACTIONS } from '../services/progressionService'
 import { getLocalDateKey, addDays } from '../utils/dateUtils'
-import { SECTIONS } from './learnData'
 
 /* Lessons the demo learner has finished. Split across two days on purpose:
    if everything lands in one tick, today's quests are all already complete and
@@ -119,8 +118,5 @@ export function getBonusShowcaseState() {
   bonusCached = state
   return bonusCached
 }
-
-/** The section a visitor sees on the course map, used to caption it honestly. */
-export const SHOWCASE_SECTION_COUNT = SECTIONS.length
 
 export default getShowcaseState

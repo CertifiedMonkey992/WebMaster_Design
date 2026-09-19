@@ -11,13 +11,6 @@
                               scroll anywhere on the page. One set of passive
                               listeners for the whole app.
 
-     every({ min, max, run, first })
-                              calls run() after a random wait in [min, max],
-                              then again after a NEW random wait — never the
-                              same interval twice. Paused while the tab is
-                              hidden. Returns a cancel function. Nothing is
-                              scheduled under reduced motion.
-
      pick(options, last)      weighted choice that never repeats `last`.
 
      seedOf(string)           0–1, stable per string — a per-instance offset
@@ -26,8 +19,6 @@
 
    Timers, not frames: nothing here costs anything between events.
    ═══════════════════════════════════════════════════════════════════════════ */
-
-import { prefersReducedMotion } from './env'
 
 let lastActivity = typeof performance !== 'undefined' ? performance.now() : 0
 let bound = false
@@ -47,54 +38,6 @@ function bind() {
 export function idleFor() {
   bind()
   return performance.now() - lastActivity
-}
-
-const rand = (a, b) => a + Math.random() * (b - a)
-
-/**
- * Run `run` at jittered intervals. `first` overrides the first wait.
- * `run` may return a number of ms to add to the next wait (a long gesture
- * buys itself a longer rest afterwards).
- */
-export function every({ min, max, run, first }) {
-  bind()
-  if (typeof window === 'undefined' || prefersReducedMotion()) return () => {}
-  let timer = 0
-  let cancelled = false
-  let lastWait = -1
-
-  const schedule = (wait) => {
-    if (cancelled) return
-    timer = window.setTimeout(tick, wait)
-  }
-
-  const nextWait = () => {
-    let w = rand(min, max)
-    /* Never the same rhythm twice: if the draw lands within 8% of the last
-       wait, push it to the other side of the range. */
-    if (lastWait > 0 && Math.abs(w - lastWait) < (max - min) * 0.08) {
-      w = w > (min + max) / 2 ? rand(min, (min + max) / 2) : rand((min + max) / 2, max)
-    }
-    lastWait = w
-    return w
-  }
-
-  function tick() {
-    if (cancelled) return
-    if (document.hidden) {
-      const resume = () => {
-        document.removeEventListener('visibilitychange', resume)
-        schedule(rand(600, 1400))
-      }
-      document.addEventListener('visibilitychange', resume)
-      return
-    }
-    const extra = Number(run()) || 0
-    schedule(nextWait() + extra)
-  }
-
-  schedule(first ?? nextWait())
-  return () => { cancelled = true; clearTimeout(timer) }
 }
 
 /**

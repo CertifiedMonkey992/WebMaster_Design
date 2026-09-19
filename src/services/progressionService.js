@@ -488,11 +488,11 @@ function reduceAction(state, action, now) {
       return acc
 
     case ACTIONS.RESTORE_ALL_HEARTS:
-      merge(acc, currency.restoreAllHearts(acc.state, payload.reason ?? 'refill', now))
+      merge(acc, currency.restoreAllHearts(acc.state, payload.reason ?? 'refill'))
       return acc
 
     case ACTIONS.REFILL_HEARTS_GEMS: {
-      const result = currency.refillHeartsWithGems(acc.state, now)
+      const result = currency.refillHeartsWithGems(acc.state)
       acc.state = result.state
       acc.events.push(...result.events)
       merge(acc, runPipeline(acc.state, now))

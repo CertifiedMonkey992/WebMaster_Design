@@ -30,10 +30,6 @@ export function parseDateKey(key) {
   return Number.isNaN(d.getTime()) ? null : d
 }
 
-export function isValidDateKey(key) {
-  return parseDateKey(key) !== null
-}
-
 /** Whole calendar days from `fromKey` to `toKey`. Positive when `toKey` is later. */
 export function getDaysBetween(fromKey, toKey) {
   const a = parseDateKey(fromKey)
@@ -45,10 +41,6 @@ export function getDaysBetween(fromKey, toKey) {
 
 export function isToday(key, now = new Date()) {
   return key === getLocalDateKey(now)
-}
-
-export function isYesterday(key, now = new Date()) {
-  return getDaysBetween(key, getLocalDateKey(now)) === 1
 }
 
 /** Shift a date key by N days (negative goes backwards). */
@@ -125,12 +117,6 @@ export function formatClock(ms) {
   const m = Math.floor(totalSec / 60)
   const s = totalSec % 60
   return `${m}:${String(s).padStart(2, '0')}`
-}
-
-/** "Mon", "Tue"… for a date key. */
-export function getShortWeekday(key) {
-  const d = parseDateKey(key)
-  return d ? d.toLocaleDateString(undefined, { weekday: 'short' }) : ''
 }
 
 /** "Sep 4" for a date key. */

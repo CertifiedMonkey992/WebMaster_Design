@@ -27,7 +27,6 @@ export default function DevPanel() {
     try {
       const mod = await import('../../dev/progressionTests.js')
       const result = await mod.runProgressionTests()
-      // eslint-disable-next-line no-console
       console.table(result.results)
       setTestResult(result)
     } catch (error) {

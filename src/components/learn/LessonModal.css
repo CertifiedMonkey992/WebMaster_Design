@@ -448,12 +448,12 @@ kbd,
 
 .lm-opt-text { flex: 1; }
 
-.lm-binary-btn:hover:not(:disabled),
-.lm-mcq-btn:hover:not(:disabled) {
+/* Buttons tint on hover; they do not lift (ANTI_AI_RULES.md → lift only on
+   handled objects). An option that already carries a verdict keeps it. */
+.lm-binary-btn:hover:not(:disabled):not(.lm-opt--correct):not(.lm-opt--wrong):not(.lm-opt--selected),
+.lm-mcq-btn:hover:not(:disabled):not(.lm-opt--correct):not(.lm-opt--wrong):not(.lm-opt--selected) {
   border-color: var(--evergreen);
   background: var(--evergreen-tint);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-raised);
 }
 
 .lm-mcq-btn:hover:not(:disabled) .lm-opt-text { transform: translateX(3px); }
@@ -503,16 +503,22 @@ kbd,
 .lm-opt-mark.is-wrong::after { display: none; }
 .lm-opt-mark .ico-check { animation: fx-draw var(--dur-open) var(--ease-out) 120ms both; }
 
-/* ── Option states ── */
-.lm-opt--selected { border-color: var(--evergreen) !important; background: var(--evergreen-tint) !important; }
+/* ── Option states ──
+   Each state names the button it decorates, so it outranks the button's own
+   :hover and :disabled rules above without !important. */
+.lm-binary-btn.lm-opt--selected,
+.lm-mcq-btn.lm-opt--selected { border-color: var(--evergreen); background: var(--evergreen-tint); }
 .lm-opt--selected .lm-key { border-color: var(--evergreen); color: var(--evergreen); }
 
-.lm-opt--correct {
-  border-color: var(--moss) !important;
-  background: var(--moss-tint) !important;
-  color: var(--moss) !important;
-  opacity: 1 !important;
-  animation: lm-correct var(--dur-reveal) var(--ease-spring) !important;
+.lm-binary-btn.lm-opt--correct,
+.lm-mcq-btn.lm-opt--correct,
+.lm-binary-btn.lm-opt--correct:disabled,
+.lm-mcq-btn.lm-opt--correct:disabled {
+  border-color: var(--moss);
+  background: var(--moss-tint);
+  color: var(--moss);
+  opacity: 1;
+  animation: lm-correct var(--dur-reveal) var(--ease-spring);
 }
 
 @keyframes lm-correct {
@@ -521,11 +527,14 @@ kbd,
   100% { transform: scale(1); }
 }
 
-.lm-opt--wrong {
-  border-color: var(--berry) !important;
-  background: var(--berry-tint) !important;
-  color: var(--berry-ink) !important;
-  opacity: 1 !important;
+.lm-binary-btn.lm-opt--wrong,
+.lm-mcq-btn.lm-opt--wrong,
+.lm-binary-btn.lm-opt--wrong:disabled,
+.lm-mcq-btn.lm-opt--wrong:disabled {
+  border-color: var(--berry);
+  background: var(--berry-tint);
+  color: var(--berry-ink);
+  opacity: 1;
 }
 
 /* ── Action bar: the verdict rises from the bottom ── */
@@ -783,16 +792,12 @@ kbd,
   border-radius: var(--r-md);
   padding: var(--sp-4) var(--sp-6);
   min-width: 7rem;
-  box-shadow: var(--shadow-float);
   /* The rewards are dealt in order — the order is the point, so they are a
      full --lag-finish apart, and each tile's figure starts counting as it lands
      (LessonModal.jsx reads the same numbers from timing.js). */
   animation: lm-reward-rise var(--dur-modal) var(--ease-snap) backwards;
   animation-delay: calc(470ms + var(--i, 0) * var(--lag-finish));
-  transition: transform var(--dur-lift) var(--ease-lift), box-shadow var(--dur-lift) var(--ease-out);
 }
-
-.lm-reward:hover { transform: translateY(-4px) rotate(-1.5deg); box-shadow: var(--shadow-lift); }
 
 @keyframes lm-reward-rise {
   from { opacity: 0; transform: translateY(40px) scale(0.85); }

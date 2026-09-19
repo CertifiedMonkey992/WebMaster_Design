@@ -31,8 +31,10 @@
 > 3. **The demonstrations loop.** A demo learner does not run its scene once
 >    and stop — it keeps going, day after day: finishes lessons, completes
 >    quests, is paid, claims the bonus, keeps the streak, rolls to tomorrow,
->    and when it reaches the end of its week it resets off screen and starts
->    again. A visitor who watches for a minute sees the whole loop twice.
+>    and when it reaches the end of its week the frame cues *Back to the
+>    start* and the learner returns to its seed in view (`useSceneLoop`),
+>    then starts again. A visitor who watches for a minute sees the whole
+>    loop twice.
 > 4. **The field guide reads itself.** Its showcase repertoire is dominated
 >    by **flip-through**: the book opens at the contents and riffles every
 >    leaf to the last chapter in one staggered cascade, holds there, riffles
@@ -553,8 +555,12 @@ Every product frame on the landing page has its own **demo learner**
 - A visitor can use the frame's controls themselves (claim a quest, claim the
   bonus). The scene yields and the click acts on the demo learner.
 - After a scene has run its course (a week of demo days, or a finished bonus
-  track), the learner resets to its seed **while its frame is off screen**, so
-  nobody watches a number run backwards.
+  track), the learner resets to its seed. In `considered` mode that happens
+  **while its frame is off screen**, so nobody watches a number run
+  backwards. In `continuous` mode (revision 6) the reset is a narrated step
+  of its own: the frame cues *Back to the start*, then the learner returns to
+  its seed in view and the loop begins again (`useSceneLoop` in
+  `sceneKit.js`).
 - **The cue.** The frame's chrome narrates each scene step in ≤ 5 words
   (*Finishes a lesson* · *Claims 30 gems* · *Next day*), before its effect,
   and clears when the frame settles. The Live dot beats while a scene plays.

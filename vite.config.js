@@ -250,6 +250,7 @@ export default defineConfig(({ command }) => ({
   /* shadcn/ui imports: @/components/ui/…, @/lib/utils (components.json). */
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   base: SITE.base,
+  server: { port: 5176 },
   build: {
     outDir: 'docs',
     /* The browsers the motion system already needs (individual transform

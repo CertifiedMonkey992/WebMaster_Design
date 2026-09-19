@@ -94,7 +94,6 @@ const LEAF_EASE = 'cubic-bezier(0.42, 0.02, 0.2, 1)'
    while the leaf lifts (the page is lifted by its edge), trails as it falls
    (air under the free edge), and flops a little past flat as it lands. Signs
    are for a forward turn; a backward turn mirrors them. */
-const FOLD = 0.58
 const BEND = [
   { offset: 0, b: 0 },
   { offset: 0.18, b: -24 },

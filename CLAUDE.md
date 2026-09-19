@@ -16,8 +16,11 @@ shop. No accounts — progress persists in `localStorage`.
   values.
 
 ```bash
-npm run dev      # vite dev server (see .claude/launch.json — port 5176)
-npm run build
+npm run dev        # vite dev server on port 5176 (vite.config.js → server.port)
+npm run build      # writes the published site to docs/
+npm test           # the progression engine's self-check suite, under Node
+npm run lint       # eslint
+npm run typecheck  # tsc
 ```
 
 ---

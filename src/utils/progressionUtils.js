@@ -79,11 +79,6 @@ export function getXPProgress(xp) {
   }
 }
 
-/** XP still required before the next level-up. */
-export function getXPUntilNextLevel(xp) {
-  return getXPProgress(xp).xpUntilNextLevel
-}
-
 /** Flavour title for a level ("Explorer", "Architect"…). */
 export function getLevelTitle(level) {
   let title = LEVELS.TITLES[0]?.title ?? 'Learner'
@@ -127,12 +122,6 @@ export function shuffleWith(random, arr) {
     ;[out[i], out[j]] = [out[j], out[i]]
   }
   return out
-}
-
-/** Pick one item using a seeded random source. */
-export function pickWith(random, arr) {
-  if (!arr.length) return undefined
-  return arr[Math.floor(random() * arr.length)]
 }
 
 /** Round a target to a friendly number (5s below 50, 10s below 200, 25s above). */

@@ -73,8 +73,8 @@ export function getOwnedCount(state, itemId) {
    for the effect — gems have already been taken by the time it runs. */
 
 const EFFECTS = {
-  [ITEM_TYPES.HEART_REFILL]: (state, item, now) =>
-    currency.restoreAllHearts(state, 'shop-heart-refill', now),
+  [ITEM_TYPES.HEART_REFILL]: (state) =>
+    currency.restoreAllHearts(state, 'shop-heart-refill'),
 
   [ITEM_TYPES.EXTRA_HEART]: (state, item, now) =>
     currency.restoreHeart(state, 1, 'shop-extra-heart', now),

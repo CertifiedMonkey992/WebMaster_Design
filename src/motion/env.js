@@ -16,13 +16,6 @@ export const prefersReducedMotion = () => mq('(prefers-reduced-motion: reduce)')
 /** A mouse or trackpad: somewhere hover and pointer-following make sense. */
 export const hasFinePointer = () => mq('(hover: hover) and (pointer: fine)')
 
-/** Read a CSS custom property off :root, e.g. token('--clay'). */
-export function token(name, fallback = '') {
-  if (typeof window === 'undefined') return fallback
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-  return v || fallback
-}
-
 /** The fixed, non-interactive layer every flight, burst and tooltip lives on. */
 export function fxLayer() {
   let el = document.getElementById('fx-layer')

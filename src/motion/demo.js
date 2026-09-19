@@ -7,12 +7,10 @@
    needs that a component cannot do to itself:
 
      show(el) / hide(el)  the hover-revealed state, performed (data-shown)
-     press(el)            the control goes down and comes back up exactly as
+     press(el, ctx)       the control goes down and comes back up exactly as
                           it does under a finger, then is clicked — its own
-                          click handler runs the real sequence
-     reveal(el, ms, ctx)  a hover-revealed detail shown for a while (a quest
-                          row opening), withdrawn when the performance ends or
-                          is stopped
+                          click handler runs the real sequence; never clicks
+                          once the performance has been stopped
      ghost(fillEl, {...}) a preview on REAL data: a hatched fill runs from the
                           real fill to the target, a label rises, both
                           withdraw. The real figure never moves.
@@ -70,23 +68,6 @@ export async function press(el, ctx = null) {
   if (!el.isConnected || el.disabled) return false
   el.click()
   return true
-}
-
-/**
- * Show a hover-revealed state on `el` for `ms` — `data-shown`, an attribute
- * rather than a class, because React rewrites className when the component
- * re-renders mid-scene. Withdrawn early if the performance is stopped.
- * Resolves when it has closed again.
- */
-export function reveal(el, ms, ctx) {
-  if (!el) return Promise.resolve()
-  el.setAttribute('data-shown', '')
-  const close = () => el.removeAttribute('data-shown')
-  ctx?.onStop(close)
-  return new Promise((resolve) => {
-    const run = ctx ? ctx.after.bind(ctx) : (t, fn) => window.setTimeout(fn, t)
-    run(ms, () => { close(); resolve() })
-  })
 }
 
 /**

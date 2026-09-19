@@ -106,11 +106,6 @@ export function getSectionById(sectionId) {
   return SECTIONS.find((s) => s.id === sectionId) ?? null
 }
 
-/** All lesson ids belonging to a section. */
-export function getSectionLessonIds(sectionId) {
-  return getSectionById(sectionId)?.lessons.map((l) => l.id) ?? []
-}
-
 /**
  * Derive the whole course view from the set of completed lesson ids.
  *
@@ -203,14 +198,4 @@ function toSet(completedLessons) {
   if (completedLessons instanceof Set) return completedLessons
   if (Array.isArray(completedLessons)) return new Set(completedLessons)
   return new Set(Object.keys(completedLessons))
-}
-
-/** Progress numbers for one derived section (kept for backwards compatibility
- *  with components that received a raw section). */
-export function getSectionProgress(section) {
-  const lessons = section.lessons ?? []
-  const completed = lessons.filter((l) => l.status === 'completed').length
-  const total = lessons.length
-  const totalDuration = lessons.reduce((sum, l) => sum + (parseInt(l.duration, 10) || 5), 0)
-  return { completed, total, pct: total ? Math.round((completed / total) * 100) : 0, totalDuration }
 }

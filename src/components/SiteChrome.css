@@ -32,11 +32,10 @@
   border-left-width: 3px;
   border-radius: var(--r-md);
   background: var(--berry-tint);
-  outline: none;
   animation: fx-slide-up var(--dur-enter) var(--ease-snap);
 }
 
-.ct-summary:focus-visible { box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--berry); }
+.ct-summary:focus-visible { outline: 2px solid var(--evergreen); outline-offset: 2px; }
 
 .ct-summary-title {
   display: flex;

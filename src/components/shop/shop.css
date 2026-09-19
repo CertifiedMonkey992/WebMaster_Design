@@ -485,14 +485,16 @@
 .sh-dialog-close:hover { background: rgba(var(--ink-rgb), 0.06); color: var(--ink); transform: rotate(90deg); }
 
 /* The item drops onto the dialog. */
-.sh-dialog-art {
+/* Written as a child of the dialog so it outranks the dialog's generic
+   child slide-up above. */
+.sh-dialog > .sh-dialog-art {
   display: grid;
   place-items: center;
   width: 112px;
   height: 112px;
   margin: 0 auto var(--sp-3);
   border-radius: var(--r-lg);
-  animation: sh-art-drop var(--dur-reveal) var(--ease-spring) 60ms backwards !important;
+  animation: sh-art-drop var(--dur-reveal) var(--ease-spring) 60ms backwards;
 }
 
 .sh-dialog-art svg { transition: transform var(--dur-move) var(--ease-spring); }

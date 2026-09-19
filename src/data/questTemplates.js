@@ -260,10 +260,3 @@ export const WEEKLY_TEMPLATES = [
     available: (c) => c.level >= 2,
   },
 ]
-
-export const ALL_TEMPLATES = [...DAILY_TEMPLATES, ...WEEKLY_TEMPLATES]
-
-export function getTemplate(key, scope) {
-  const pool = scope === 'weekly' ? WEEKLY_TEMPLATES : DAILY_TEMPLATES
-  return pool.find((t) => t.key === key) ?? ALL_TEMPLATES.find((t) => t.key === key)
-}

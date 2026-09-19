@@ -74,7 +74,7 @@ export default function Hero() {
     weight: 0.8,
     cooldown: 9000,
     share: 0.6,
-    run: (ctx) => {
+    run: () => {
       const h = headingRef.current
       if (!h) return 0
       h.setAttribute('data-ink', h.getAttribute('data-ink') === 'b' ? 'a' : 'b')

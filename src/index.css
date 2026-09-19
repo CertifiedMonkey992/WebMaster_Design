@@ -342,78 +342,6 @@
   --z-tooltip: var(--z-popover);
   --z-nav:     var(--z-raised);
   --z-overlay: var(--z-toast);
-
-  /* ═════════════════════════════════════════════════════════════════════════
-     COMPATIBILITY LAYER
-     -------------------------------------------------------------------------
-     ~70 components were written against the previous cyan/navy token names.
-     Rather than a rename sweep that would touch every file and risk breaking
-     working progression UI, the old names are re-pointed at the new palette.
-     Every one of these resolves to a token above; none introduces a value.
-
-     New code uses the names above. These stay until the last call site is
-     migrated, and then they go.
-     ═════════════════════════════════════════════════════════════════════════ */
-
-  /* --lx-accent maps to EVERGREEN, not clay. It is the default accent for the
-     mass of existing call sites, and the default must be structural — mapping
-     it to clay would put the rationed accent on forty surfaces at once. The
-     handful of genuinely "do this next" surfaces name --clay directly. */
-  --lx-accent:        var(--evergreen);
-  --lx-accent-rgb:    var(--evergreen-rgb);
-  --lx-accent-bright: #3D5C48;
-  --lx-accent-soft:   #6E8C76;
-  --lx-accent-wash:   #EDF1EC;
-  --lx-accent-strong: var(--evergreen-deep);
-  --lx-accent-ink:    var(--evergreen);
-  --lx-accent-deep:   var(--evergreen-deep);
-  --lx-on-accent:     #FBF7F0;   /* 10.1:1 on evergreen */
-
-  --lx-navy:      var(--ink);
-  --lx-navy-soft: var(--ink-muted);
-
-  --lx-gold:        var(--ochre);
-  --lx-gold-ink:    var(--ochre-ink);
-  --lx-streak:      var(--ember);
-  --lx-streak-ink:  var(--clay-ink);
-  --lx-success:     var(--moss);
-  --lx-success-ink: #2F5434;
-  --lx-heart:       var(--berry);
-  --lx-heart-ink:   var(--berry-ink);
-
-  --lx-shadow-navy-rgb: var(--ink-rgb);
-
-  /* Resting surfaces lose their shadow entirely — that is the point of the
-     warm ground. The remaining levels map onto the four real elevations. */
-  --lx-shadow-1:           none;
-  --lx-shadow-2:           var(--shadow-raised);
-  --lx-shadow-3:           var(--shadow-float);
-  --lx-shadow-pop:         var(--shadow-modal);
-  --lx-shadow-accent:      none;
-  --lx-shadow-accent-lift: var(--shadow-raised);
-
-  --lx-ease-settle: var(--ease-settle);
-  --lx-ease-out:    var(--ease-out);
-  --lx-lift:        var(--dur-hover);
-
-  /* Landing-page names. The landing page used to be near-black with an indigo
-     accent while the app was a light cyan dashboard — two products wearing
-     different clothes. Both now resolve to the one palette. */
-  --bg:           var(--paper);
-  --hero-bg:      var(--paper);
-  --bg-card:      var(--surface);
-  --bg-card-2:    var(--surface-sunk);
-  --border:       var(--line);
-  --border-hover: var(--line-strong);
-  --text:         var(--ink);
-  --muted:        var(--ink-muted);
-  --faint:        var(--ink-faint);
-  --accent:       var(--evergreen);
-  --accent-dim:   var(--evergreen-tint);
-  --cyan:         var(--clay-ink);   /* section eyebrows — an earned accent spot */
-  --success:      var(--moss);
-  --warning:      var(--ochre);
-  --error:        var(--berry);
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -498,8 +426,6 @@ html { scrollbar-color: var(--line-strong) var(--paper); }
    reduced-motion user still gets a clear "this is interactive" signal and a
    clear right/wrong answer. */
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1 !important; transform: none !important; }
-
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

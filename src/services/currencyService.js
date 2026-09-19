@@ -177,7 +177,7 @@ export function restoreHeart(state, count = 1, reason = 'restore', now = Date.no
 }
 
 /** Refill to maximum. */
-export function restoreAllHearts(state, reason = 'refill', now = Date.now()) {
+export function restoreAllHearts(state, reason = 'refill') {
   if (state.hearts >= state.maxHearts) return { state, events: [] }
   const gained = state.maxHearts - state.hearts
   return {
@@ -187,14 +187,14 @@ export function restoreAllHearts(state, reason = 'refill', now = Date.now()) {
 }
 
 /** Buy a full refill with gems. Atomic: either both sides happen or neither. */
-export function refillHeartsWithGems(state, now = Date.now()) {
+export function refillHeartsWithGems(state) {
   if (state.hearts >= state.maxHearts) {
     return { state, events: [{ type: 'HEARTS_ALREADY_FULL' }], ok: false }
   }
   const spend = spendGems(state, HEART_REFILL_COST, 'heart-refill')
   if (!spend.ok) return { state, events: spend.events, ok: false }
 
-  const refill = restoreAllHearts(spend.state, 'gem-refill', now)
+  const refill = restoreAllHearts(spend.state, 'gem-refill')
   return { state: refill.state, events: [...spend.events, ...refill.events], ok: true }
 }
 

@@ -509,9 +509,6 @@ export function usePerformer(ref, spec) {
   }, [ref, id, disabled])
 }
 
-/** Is anything performing right now? (A component may want to know.) */
-export const isPerforming = () => running.size > 0
-
 /**
  * Run `fn` once the page has arrived: loaded, and at least FIRST_TURN into
  * its life — the moment the Stage gives its first performance. Work that can

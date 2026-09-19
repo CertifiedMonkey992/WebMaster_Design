@@ -37,7 +37,7 @@ const LINKS = [
                   beside the one solid button. It stays visible on a phone,
                   where the section links are hidden. */
 export default function Navbar({ links = LINKS, scrollLinks = false, pageLink }) {
-  const { page: currentPage, href } = useNav()
+  const { page: currentPage } = useNav()
   const navRef = useRef(null)
   const listRef = useRef(null)
   const [scrolled, setScrolled] = useState(false)

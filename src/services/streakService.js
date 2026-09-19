@@ -15,13 +15,6 @@ import { STREAK } from '../config/progressionConfig'
 import { SHIELD } from '../config/shopConfig'
 import { getLocalDateKey, getDaysBetween, addDays } from '../utils/dateUtils'
 
-/** Activities that count toward a streak. Opening the site does NOT. */
-export const QUALIFYING_ACTIVITIES = ['lesson', 'practice']
-
-export function isQualifyingActivity(kind) {
-  return QUALIFYING_ACTIVITIES.includes(kind)
-}
-
 /* ── Streak shields ──────────────────────────────────────────────────────────
    A shield bridges a missed day so the streak survives. Two rules keep a long
    absence from quietly draining the whole stock:
@@ -244,5 +237,5 @@ export function hasMaxShields(state) {
 export default {
   updateStreak, reconcileStreak, recordHistory, hasActivityToday,
   getNextMilestone, getActivityMap, grantShield, hasMaxShields,
-  canConsumeShield, isQualifyingActivity,
+  canConsumeShield,
 }

@@ -384,8 +384,6 @@
   animation-delay: 1.2s;
 }
 
-.fx-shine--once::after { animation-iteration-count: 1; }
-
 @keyframes fx-shine {
   0%, 58% { transform: translateX(0) skewX(-16deg); }
   100%    { transform: translateX(520%) skewX(-16deg); }
@@ -414,21 +412,10 @@
   100% { opacity: 0; transform: scale(1.55); }
 }
 
-/* ═══ TILT + SHEEN ══════════════════════════════════════════════════════════
-   `.fx-tilt` applies the tilt to itself; `.fx-sheen` lays the pointer's warm
-   reflection over the surface. --tilt-max is set per component. */
-
-.fx-tilt {
-  transform:
-    perspective(1100px)
-    rotateX(calc(var(--tilt-y, 0) * -1 * var(--tilt-max, 5deg)))
-    rotateY(calc(var(--tilt-x, 0) * var(--tilt-max, 5deg)));
-  transition: transform var(--dur-reveal) var(--ease-snap);
-}
-
-/* Following the pointer: fast enough to feel attached, slow enough to smooth
-   a trackpad's steps. The release (above) glides back. */
-.fx-tilt.is-tilting { transition-duration: var(--dur-press); transition-timing-function: var(--ease-out); }
+/* ═══ SHEEN ═════════════════════════════════════════════════════════════════
+   `.fx-sheen` lays the pointer's warm reflection over a tilting surface
+   ([data-tilt]; each component writes its own transform and `.is-tilting`
+   timing). --tilt-max is set per component. */
 
 .fx-sheen { position: relative; }
 
@@ -478,21 +465,7 @@
   to   { translate: 0 -3px; rotate: -2deg; }
 }
 
-/* Light crossing a surface now and then — day 7's foil, a shield's face. */
-.fx-sweep { position: relative; overflow: hidden; isolation: isolate; }
-
-.fx-sweep::after {
-  content: '';
-  position: absolute;
-  top: -30%; bottom: -30%;
-  left: -60%;
-  width: 40%;
-  pointer-events: none;
-  background: linear-gradient(100deg, transparent, rgba(var(--sheen-rgb), 0.62), transparent);
-  transform: translateX(0) skewX(-16deg);
-  animation: fx-sweep var(--idle-sweep) var(--ease-settle) calc(-9.7s * var(--seed, 0)) infinite;
-}
-
+/* Light crossing a surface now and then — day 7's foil (dailyBonus.css). */
 @keyframes fx-sweep {
   0%, 80% { transform: translateX(0) skewX(-16deg); }
   100%    { transform: translateX(460%) skewX(-16deg); }
@@ -711,11 +684,10 @@
 @media (prefers-reduced-motion: reduce) {
   .st-i { transform: none !important; opacity: 1 !important; }
   .rv:not(.is-in), .rv--stagger:not(.is-in) > .rv-item { opacity: 1 !important; }
-  .fx-shine::after, .fx-ping::after, .fx-fill-shine::after, .fx-sweep::after, .fx-walk { display: none; }
+  .fx-shine::after, .fx-ping::after, .fx-fill-shine::after, .fx-walk { display: none; }
   .fx-float { animation: none !important; }
   .btn { translate: none; }
   .btn::before { display: none; }
-  .fx-tilt { transform: none !important; }
 }
 
 /* Revision 5 — an arrow leaning on toward where its button goes (Accent). */

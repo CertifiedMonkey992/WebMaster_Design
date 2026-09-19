@@ -23,35 +23,33 @@
   --pg-faint:     var(--ink-muted);              /* tertiary / metadata text */
 
   /* ── Brand ── (aliases onto the LunX palette defined in index.css) */
-  --pg-accent:      var(--lx-accent);        /* brand turquoise */
-  --pg-accent-2:    var(--lx-accent-bright); /* lighter aqua, for tints/gradients */
-  --pg-accent-deep: var(--lx-accent-ink);    /* accent text on light surfaces */
-  --pg-cyan:        var(--lx-accent);
-  --pg-cyan-deep:   var(--lx-accent-ink);
+  --pg-accent:      var(--evergreen);
+  --pg-accent-2:    var(--evergreen-deep);
+  --pg-accent-deep: var(--evergreen);
+  --pg-cyan:        var(--evergreen);
+  --pg-cyan-deep:   var(--evergreen);
 
   /* ── Semantic ── */
-  --pg-xp:        var(--lx-gold);        /* amber */
-  --pg-xp-deep:   var(--lx-gold-ink);
-  --pg-heart:     var(--lx-heart);       /* coral red */
-  --pg-heart-deep:var(--lx-heart-ink);
-  --pg-gem:       var(--lx-gold);        /* gems read as treasure, not as brand */
-  --pg-gem-deep:  var(--lx-gold-ink);
-  --pg-flame:     var(--lx-streak);      /* orange */
-  --pg-flame-deep:var(--lx-streak-ink);
-  --pg-green:     var(--lx-success);
+  --pg-xp:        var(--ochre);
+  --pg-xp-deep:   var(--ochre-ink);
+  --pg-heart:     var(--berry);
+  --pg-heart-deep:var(--berry-ink);
+  --pg-gem:       var(--ochre);          /* gems read as treasure, not as brand */
+  --pg-gem-deep:  var(--ochre-ink);
+  --pg-flame:     var(--ember);
+  --pg-flame-deep:var(--clay-ink);
+  --pg-green:     var(--moss);
   --pg-green-fill:var(--moss);
-  --pg-gold:      var(--lx-gold-ink);
+  --pg-gold:      var(--ochre-ink);
 
   /* ── Elevation ──
      Aliased onto the shared tinted set in index.css so the dashboard and the
-     rest of the app can't drift apart. All navy-mixed rather than neutral
-     black: on this cool off-white ground a black penumbra reads as grey
-     smudge, a navy one reads as air. */
-  --pg-shadow-1:     var(--lx-shadow-1);
-  --pg-shadow-2:     var(--lx-shadow-2);
-  --pg-shadow-3:     var(--lx-shadow-pop);
-  --pg-shadow-hover: var(--lx-shadow-3);
-  --pg-shadow-pop:   var(--lx-shadow-pop);
+     rest of the app can't drift apart. Resting surfaces have no shadow. */
+  --pg-shadow-1:     none;
+  --pg-shadow-2:     var(--shadow-raised);
+  --pg-shadow-3:     var(--shadow-modal);
+  --pg-shadow-hover: var(--shadow-float);
+  --pg-shadow-pop:   var(--shadow-modal);
 
   --pg-gradient-brand: var(--evergreen);
   --pg-gradient-brand-soft: var(--evergreen-tint);
@@ -69,7 +67,6 @@
 /* The product's voice, applied where it belongs. A streak of 12 days is an
    achievement and takes the serif; "0 / 100 XP" is a measurement and does
    not. */
-.pg-panel-title,
 .pg-streak-hero-value,
 .pg-gem-hero-value,
 .rt-levelup-title,
@@ -306,12 +303,6 @@
   border-top: 1px solid var(--line-faint);
 }
 
-.pg-panel-warn {
-  font-size: var(--fs-caption);
-  color: var(--ochre-ink);
-  margin: 0;
-}
-
 .pg-subhead {
   font-size: var(--fs-micro);
   font-weight: var(--fw-bold);
@@ -348,29 +339,6 @@
 
 .pg-panel-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
 .pg-panel-actions .btn { flex: 1 1 auto; }
-
-/* Legacy panel buttons (TeamMissionCard, DevPanel). */
-.pg-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-1);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-sm);
-  border: 1px solid transparent;
-  font-family: var(--pg-display);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-bold);
-  cursor: pointer;
-  transition: background-color var(--dur-hover), border-color var(--dur-hover), transform var(--dur-move) var(--ease-snap);
-}
-.pg-btn:active:not(:disabled) { transform: translateY(1px) scale(0.97); }
-.pg-btn--primary { background: var(--evergreen-tint); border-color: rgba(var(--evergreen-rgb), 0.25); color: var(--evergreen); }
-.pg-btn--primary:hover:not(:disabled) { background: rgba(var(--evergreen-rgb), 0.16); }
-.pg-btn--primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.pg-btn--ghost { background: transparent; border-color: var(--line); color: var(--ink-muted); flex: 0 0 auto; }
-.pg-btn--ghost:hover { color: var(--ink); background: var(--paper); }
 
 /* ── Hearts panel ── */
 
@@ -1023,7 +991,6 @@
   padding: var(--sp-2);
   margin: 0 calc(var(--sp-2) * -1);
   border-radius: var(--r-sm);
-  outline: none;
   transition: background-color var(--dur-hover) var(--ease-out);
 }
 
@@ -1032,7 +999,7 @@
 .qc-compact:focus-within,
 .qc-compact[data-shown] { background: rgba(var(--ink-rgb), 0.035); }
 
-.qc-compact:focus-visible { box-shadow: inset 0 0 0 2px var(--evergreen); }
+.qc-compact:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -2px; }
 
 .qc-compact-icon {
   width: 28px; height: 28px;
@@ -1398,7 +1365,6 @@
   transform: translateX(var(--tab-x, 0px));
   background: var(--surface-raised);
   border-radius: var(--r-sm);
-  box-shadow: var(--shadow-raised);
   transition: transform var(--dur-open) var(--ease-snap), width var(--dur-open) var(--ease-snap);
 }
 
@@ -1740,14 +1706,13 @@
   position: relative;
   overflow: hidden;
   cursor: default;
-  outline: none;
   transition: border-color var(--dur-hover), box-shadow var(--dur-lift) var(--ease-out), transform var(--dur-reveal) var(--ease-snap);
 }
 
 .ac-card:not(.is-unlocked) { background: var(--paper); }
 .ac-card:not(.is-unlocked) > :not(.ac-icon):not(.ac-reward) { opacity: 0.78; }
 .ac-card:not(.is-unlocked):hover { border-color: var(--line-strong); }
-.ac-card:focus-visible { box-shadow: 0 0 0 2px var(--evergreen); }
+.ac-card:focus-visible { outline: 2px solid var(--evergreen); outline-offset: 2px; }
 
 /* A medal: it turns toward the pointer and a glint crosses it. */
 .ac-card.is-unlocked {
@@ -2159,8 +2124,10 @@
 
 .ps-runner-body { min-height: 240px; }
 
-.ps-action {
-  position: static !important;
+/* Inside the practice page the bar is part of the flow, not stuck to the
+   bottom of an overlay. */
+.lm-action.ps-action {
+  position: static;
   margin-top: var(--sp-6);
   border-radius: var(--r-md);
 }
@@ -2231,6 +2198,33 @@
 }
 
 .pv-level:hover { border-color: var(--line-strong); }
+
+/* ── Your data: export / import ── */
+.pv-data {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+.pv-data-title { margin: 0 0 var(--sp-1); font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--ink); }
+.pv-data-desc { margin: 0; font-size: var(--fs-caption); color: var(--ink-muted); line-height: var(--lh-normal); max-width: 52ch; }
+.pv-data-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.pv-data-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--clay-tint);
+}
+.pv-data-confirm p { margin: 0; font-size: var(--fs-caption); color: var(--ink); }
+.pv-data-note { margin: 0; min-height: 1.2em; font-size: var(--fs-caption); color: var(--ink-muted); }
+.pv-data-note.is-ok  { color: var(--moss); }
+.pv-data-note.is-bad { color: var(--berry-ink); }
 
 .pv-tiles {
   display: grid;

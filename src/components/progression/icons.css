@@ -165,8 +165,7 @@
 }
 
 /* Hover: it beats once for the hand. */
-.pg-pill:hover .live-heart:not(.is-empty) .hi,
-.fx-beat-host:hover .live-heart:not(.is-empty) .hi { animation: hi-beat-once var(--dur-reveal) var(--ease-spring); }
+.pg-pill:hover .live-heart:not(.is-empty) .hi { animation: hi-beat-once var(--dur-reveal) var(--ease-spring); }
 
 /* Lost: the crack flashes, the halves part and tilt, then close again as the
    fill level drains. The whole icon shakes once. */
