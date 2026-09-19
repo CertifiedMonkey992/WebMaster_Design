@@ -1,5 +1,33 @@
 # Motion Rules
 
+> **Revision 7 — the page is read by scrolling (2026-09-19).** Revision 6
+> made the front page a shop window, but the reader still had to *watch*: the
+> book opened when the Stage said so, and the four product frames sat one
+> under another like brochure pages. Revision 7 hands the front page to the
+> reader's scroll. The landing page is now two **scroll scenes** — pinned
+> stages whose progress is driven by the scroll (see **Scroll → Scenes**):
+>
+> 1. **The guide.** The hero's copy steps aside, the field guide travels to
+>    the middle of the screen, its cover opens, and its pages turn through
+>    the contents and all five chapters — every turn scrubbed by the scroll,
+>    forwards and backwards, with the same leaf keyframes, paper bend, light
+>    and cast shadows as a turn by hand. A caption beside the book names the
+>    open spread, and the page's ground takes the chapter's ink.
+> 2. **The tour.** The four product frames — the course, streaks, the daily
+>    bonus, quests and the shop — become one pinned stage. Scrolling hands
+>    each frame to the next: the outgoing frame lifts away and dims, the next
+>    one rises and stands up out of a tilt, the copy and the counter change
+>    with it, and the page's ground takes the section's tint.
+>
+> What revision 7 does **not** change: every token, verb, loop, prohibition,
+> tier and demonstration from revisions 1–6; the Stage and its two modes; the
+> hand always wins (the scroll *is* the hand in a scene); nothing performs
+> off screen or under `prefers-reduced-motion`, where the page is the
+> unpinned revision 6 layout, still and complete.
+>
+> Revision 6 → *the front page shows you everything it does, continuously.*
+> Revision 7 → *the front page is read, page by page, by your scroll.*
+
 > **Revision 6 — the shop window (2026-09).** Revision 5 gave the page one
 > attention clock and made it speak *one sentence at a time*. That is right
 > for the app, where the reader came to do something and every performance
@@ -660,6 +688,83 @@ ambient host, so its loops stop offscreen.
 The navbar never hides: after 24px it compresses and draws a clay
 reading-progress rule.
 
+**Revision 7:** the Hero and the four product sections above are the
+*reduced-motion and phone* layout. Everywhere else they are the two scenes
+below.
+
+### Scenes (revision 7)
+
+A **scene** is a tall *track* with a `position: sticky` *stage* inside it,
+one screen high. Its progress `p` runs 0 → 1 while the stage is pinned.
+Scenes go through `useScrollScene()` in `src/motion/scroll.js`:
+
+- **Weighted.** The displayed progress follows the scroll on a spring
+  (`SCENE_WEIGHT`: stiffness 170, damping 26, about critically damped: it
+  settles in ~400ms and never overshoots). The scrub moves on the first
+  pixel of scroll and glides to rest after the last. The spring sleeps
+  when settled, so a still page costs nothing.
+- **One variable.** Everything in a scene is derived from `p`, either by the
+  scene's `onProgress` (writing CSS variables and scrubbing paused Web
+  Animations) or in CSS from those variables. Nothing in a scene runs on its
+  own clock while the scroll drives it.
+- **Reversible.** Scrolling back plays everything backwards through the same
+  states. No scroll-driven effect is a one-shot.
+- **Anchors.** A scene's parts (a chapter, a slide) have scroll positions.
+  Links, rails and the book's own controls *scroll to* a position — smoothly,
+  so the scene plays on the way — rather than changing state behind the
+  scroll's back.
+- **Transitions inside a scene** are scroll-linked, so the "longer than
+  `--dur-celebrate`" prohibition does not apply to them; their easing is
+  applied to `p`, never as a CSS transition on top of it.
+- **Reduced motion, or no JavaScript:** no track, no pinning. The scene's
+  content renders as the revision 6 section it replaced.
+
+**Scene 1 — the guide** (`Hero`, ≥ 721px and on phones)
+
+| `p` | What happens |
+|---|---|
+| 0 | the revision 6 hero: copy left, the closed book right, its repertoire playing |
+| 0 → 0.10 | the copy steps aside (moves left 6vw, fades); the book travels to the middle and grows to 1.3× (1.08× on phones) |
+| 0.10 → 0.20 | the cover opens, 0 → 180°, eased with `--ease-swing` |
+| 0.20 → 0.96 | six spreads (contents, five chapters) **hold** and five leaves **turn** between them; a turn takes 0.8× a hold |
+| 0.96 → 1 | the last chapter holds; the caption fades as the stage unpins |
+
+- A turn is the revision 5 leaf (same keyframes, bend, light and cast
+  shadows) held paused and scrubbed: `currentTime = t × duration`.
+- The **caption** (left of the book): *Chapter 02 / 05*, a rule, the chapter
+  title in Fraunces, its subtitle, and *4 lessons · 22 min*. It fades out
+  over the first 40% of a turn and the next one fades in over the last 40%.
+- The **ground** takes the open chapter's ink at 5% over `--paper` (the
+  contents take none), crossfading on the caption's schedule — never a
+  gradient.
+- The **rail** on the right edge: one tick per spread, the open one in its
+  chapter's ink; each tick scrolls to its spread.
+- The book's repertoire plays **only at p = 0**. The first scroll takes the
+  book (`takeOver`), and a showcase in progress stops where it is while the
+  scroll sets the book's state.
+- Clicking the cover, a page or a thumb tab, the hero's chapter list, and
+  ← / → on the book all scroll to the matching spread.
+
+**Scene 2 — the tour** (`ProductSections`, ≥ 721px)
+
+Four slides — course, streaks, daily bonus, quests & shop. With `q = p × 4`,
+slide `i` is fully shown for `q ∈ [i + 0.18, i + 0.82]`; the hand-over takes
+0.36 of a slide on each boundary.
+
+| Layer | Outgoing | Incoming |
+|---|---|---|
+| Frame (front, travels most) | lifts 6vh, scales to 0.96, fades | rises from 8vh below, stands up from `rotateX(8deg)`, scales 0.96 → 1 |
+| Copy (behind it, travels less) | lifts 2vh, fades | rises from 3vh, fades in |
+| Counter *01 / 04* | the digits change with the copy | — |
+| Ground | the section's tint fades | the next tint fades in: `--moss`, `--clay`, `--ochre`, `--berry` at 5% over `--paper` |
+
+- A rail of four segments under the copy fills with the slide's progress;
+  each segment scrolls to its slide. The navbar's section links scroll to the
+  same positions, and its underline rests on the slide on screen.
+- **Only the slide on screen performs.** The others are `inert`: the Stage
+  treats anything inside `[inert]` as off screen, and their CSS loops pause.
+- Phones (≤ 720px): no tour — the four sections scroll as in revision 6.
+
 ### Auto-tour (revision 4)
 
 The course frame used to scrub its content with the page scroll, which meant
@@ -774,6 +879,8 @@ Stage performers in the hero region.
   8s after the last interaction.
 - Leaving the screen mid-showcase closes the book instantly (no frames spent
   on something nobody can see).
+- *(rev 7)* Inside the guide scene the repertoire plays only while the scene
+  rests at its top; past that the scroll holds the book (**Scroll → Scenes**).
 
 ### Timing
 
@@ -863,7 +970,7 @@ All shared motion lives in `src/motion/`:
 | `demo.js` *(rev 5)* | scene helpers: `press(el)` (a programmatic press that looks like one), `ghost()`, `openRow()`; `ProgressionDemo` lives beside `ProgressionShowcase` in `state/ProgressionContext.jsx` |
 | `tour.js` *(rev 4)* | `createTour()` — the self-running course frame |
 | `pageTurn.js` *(rev 4)* | `turnPage(update, dir)` — View Transitions between landing and app |
-| `scroll.js` | `useScrollProgress()` — one listener, per-element progress, scroll velocity |
+| `scroll.js` | `useScrollProgress()` — one listener, per-element progress, scroll velocity; *(rev 7)* `useScrollScene()` — a pinned track's weighted progress, and `scrollToScene(track, p)` |
 | `spring.js` | a tiny spring integrator that sleeps when settled |
 | `Marquee.jsx` | the ticker |
 | `SplitText.jsx` | Reveal by word |

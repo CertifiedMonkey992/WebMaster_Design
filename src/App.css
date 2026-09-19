@@ -1303,3 +1303,275 @@
 .skip-link:focus-visible { transform: none; outline: 2px solid var(--clay); outline-offset: 2px; }
 
 main:focus { outline: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE HERO AS A SCROLL SCENE (revision 7)
+   MOTION_RULES.md → Scroll → Scenes → the guide. Hero.jsx writes --aside
+   (0 → 1 as the copy steps aside), --bx / --by / --bs (where the book goes
+   and how large it grows) on the track, and --o on each caption. Without
+   .is-scene (reduced motion) none of this applies: the hero is revision 6.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hero-track.is-scene {
+  position: relative;
+  height: 560vh;
+  height: 560svh;
+}
+
+.hero-track.is-scene .hero-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.hero-track.is-scene .hero {
+  position: relative;
+  z-index: var(--z-base);
+  height: 100%;
+  padding-top: 68px;
+  padding-bottom: 0;
+}
+
+/* The copy steps aside as one block. */
+.hero-track.is-scene .hero-left {
+  display: block;
+  opacity: calc(1 - var(--aside, 0));
+  translate: calc(var(--aside, 0) * -6vw) 0;
+  will-change: opacity, translate;
+}
+
+/* The book travels to the middle and grows, about its own centre. */
+.hero-track.is-scene .hero-book {
+  transform:
+    translate(calc(var(--bx, 0px) * var(--aside, 0)), calc(var(--by, 0px) * var(--aside, 0)))
+    scale(calc(1 + (var(--bs, 1) - 1) * var(--aside, 0)));
+  transform-origin: 50% calc(50% - 1.5rem);
+  will-change: transform;
+}
+
+/* The scroll holds the book: its stacks follow the leaf, not a transition,
+   and the controls under it give way to the rail. */
+.hero-track.is-scene .fg-stage.is-scrubbed .fg-desk { transition: none; }
+.hero-track.is-scene .fg-stage.is-scrubbed .fg-controls { opacity: 0; visibility: hidden; }
+
+/* The ground takes the open chapter's ink. */
+.hero-ground {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-ground span {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: color-mix(in srgb, var(--chapter, transparent) 5%, transparent);
+}
+
+/* ── The caption: what lies open ─────────────────────────────────────────── */
+
+.hero-captions {
+  position: absolute;
+  z-index: var(--z-base);
+  left: max(var(--sp-8), 5vw);
+  top: calc(50% + 34px);
+  width: clamp(14rem, 19vw, 20rem);
+  pointer-events: none;
+}
+
+.hero-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  opacity: var(--o, 0);
+  transform: translateY(calc(-50% + (1 - var(--o, 0)) * 0.75rem));
+  visibility: hidden;
+}
+
+.hero-caption.is-on { visibility: visible; }
+
+.hero-caption-kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.hero-caption-kicker span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* The chapter's ink, as a printed swatch. */
+.hero-caption-kicker span::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--r-xs);
+  background: var(--chapter, var(--evergreen));
+}
+
+.hero-caption-kicker::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-strong);
+}
+
+.hero-caption-title {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  font-size: var(--fs-section);
+  line-height: var(--lh-tight);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.hero-caption-sub {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.hero-caption-meta {
+  margin: 0;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--ink-faint);
+}
+
+/* ── The rail: where you are ─────────────────────────────────────────────── */
+
+.hero-rail {
+  position: absolute;
+  z-index: var(--z-base);
+  right: max(var(--sp-6), 3vw);
+  top: calc(50% + 34px);
+  translate: 0 -50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-hover) var(--ease-out);
+}
+
+.hero-rail.is-on { opacity: 1; pointer-events: auto; }
+
+.hero-rail ol {
+  display: grid;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero-rail-tick {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--ink-faint);
+  transition: color var(--dur-hover) var(--ease-out);
+}
+
+.hero-rail-tick::before {
+  content: "";
+  width: 1.25rem;
+  height: 2px;
+  border-radius: var(--r-xs);
+  background: var(--line-strong);
+  transition: width var(--dur-move) var(--ease-snap), background-color var(--dur-hover) var(--ease-out);
+}
+
+.hero-rail-tick { position: relative; }
+
+/* The caption already names the open spread; a tick names its own only
+   when it is pointed at or focused, outside the rail's width. */
+.hero-rail-label {
+  position: absolute;
+  right: calc(100% + var(--sp-2));
+  white-space: nowrap;
+  opacity: 0;
+  text-transform: uppercase;
+  transition: opacity var(--dur-hover) var(--ease-out);
+}
+
+.hero-rail-tick:hover,
+.hero-rail-tick:focus-visible { color: var(--ink); }
+.hero-rail-tick:hover .hero-rail-label,
+.hero-rail-tick:focus-visible .hero-rail-label { opacity: 1; }
+
+.hero-rail-tick.is-active { color: var(--chapter, var(--evergreen)); }
+.hero-rail-tick.is-active::before {
+  width: 2.25rem;
+  background: var(--chapter, var(--evergreen));
+}
+
+/* ── Narrower screens ────────────────────────────────────────────────────── */
+
+/* The stage is one screen high, so the copy keeps its column and the
+   chapter list (which the rail replaces) stays in the unpinned layout. */
+@media (max-width: 1100px) {
+  .hero-track.is-scene .hero { grid-template-columns: 7fr 5fr; gap: var(--sp-8); }
+  .hero-track.is-scene .hero-right { margin-bottom: 0; }
+  .hero-track.is-scene .hero-path,
+  .hero-track.is-scene .hero-path-meta { display: none; }
+}
+
+@media (max-width: 820px) {
+  .hero-track.is-scene .hero { padding-top: 68px; padding-bottom: 0; }
+}
+
+/* Below 1000px there is no room beside the open book: the caption sits at
+   the foot of the screen and the book above it (Hero.jsx → measure). */
+@media (max-width: 999px) {
+  .hero-track.is-scene .hero-captions {
+    left: var(--sp-6);
+    right: var(--sp-6);
+    top: auto;
+    bottom: var(--sp-8);
+    width: auto;
+  }
+  .hero-track.is-scene .hero-caption {
+    top: auto;
+    bottom: 0;
+    transform: translateY(calc((1 - var(--o, 0)) * 0.75rem));
+    text-align: center;
+  }
+  .hero-track.is-scene .hero-caption-kicker { justify-content: center; margin-bottom: var(--sp-2); }
+  .hero-track.is-scene .hero-caption-kicker::after { display: none; }
+  .hero-track.is-scene .hero-caption-title { margin-bottom: var(--sp-2); }
+}
+
+/* Phones: the book comes up under the copy and opens across the width; the
+   caption sits at the foot of the screen; the rail is left out. */
+@media (max-width: 720px) {
+  .hero-track.is-scene { height: 460vh; height: 460svh; }
+  .hero-track.is-scene .hero {
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 0;
+    padding-top: calc(68px + var(--sp-6));
+  }
+  .hero-track.is-scene .hero-captions { left: var(--sp-5); right: var(--sp-5); bottom: var(--sp-6); }
+  .hero-track.is-scene .hero-caption-sub { display: none; }
+  .hero-rail { display: none; }
+}

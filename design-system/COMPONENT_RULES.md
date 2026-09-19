@@ -165,6 +165,14 @@ to a page is a real `<a href>` (`PageLink`), never a button.
   lands hard presses the book into the desk.
 - ≤ 1100px it sits under the copy, centred; ≤ 560px the open book shows its
   right-hand page with the left page cropped at the stage edge.
+- **Revision 7 — read by scrolling.** The hero is a scroll scene
+  (`MOTION_RULES.md` → *Scroll → Scenes*): scrolling moves the copy aside,
+  brings the book to the middle, opens it and turns every spread. Beside it,
+  a **caption** names the spread (Manrope `--fs-micro` caps kicker with a
+  `--line-strong` rule, Fraunces `--fs-section` title, `--ink-muted` subtitle,
+  `--ink-faint` meta). The ground takes the chapter's ink at 5%. A **rail** of six ticks on the right edge is navigation.
+  The hero's button stays the first screen's loudest element; it leaves with
+  the copy.
 
 ### Product frame (landing)
 
@@ -186,6 +194,22 @@ to a page is a real `<a href>` (`PageLink`), never a button.
 - Frames whose scene pays rewards carry the app's real top bar
   (`PlayerStatusBar`, and `DailyBonusIndicator` for the bonus frame) as the
   place those rewards land.
+
+### The tour (landing, revision 7)
+
+- The four product sections as one pinned stage (`MOTION_RULES.md` →
+  *Scroll → Scenes → Scene 2*): copy column left, the live frame right,
+  the frame always on the right (the revision 6 alternation was for a page
+  you scroll past, not a stage you stay on).
+- Above the copy, a **counter**: the slide number in Fraunces `--fs-section`,
+  then `/ 04` in `--ink-faint`. Under the copy, a **rail** of four hairline
+  segments that fill in the section's colour; each is a button that scrolls
+  to its slide.
+- The ground takes the slide's tint (`--moss`, `--clay`, `--ochre`,
+  `--berry` at 5% over `--paper`), never a gradient.
+- Slides not on screen are `inert`: nothing in them can be focused, and
+  nothing in them performs.
+- ≤ 720px, and under reduced motion, it is the four sections of revision 6.
 
 ### Lesson ticker (landing)
 
