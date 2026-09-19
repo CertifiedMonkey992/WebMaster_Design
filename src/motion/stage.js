@@ -171,11 +171,9 @@ function getObserver() {
   return observer
 }
 
-/** Share of an element on screen, or of the screen it covers, 0–1. Anything
-    inside an `inert` subtree — a tour slide that is not the one on screen
-    (revision 7) — counts as off screen, whatever its geometry says. */
+/** Share of an element on screen, or of the screen it covers, 0–1. */
 function onScreen(el) {
-  if (!el?.isConnected || el.closest('[inert]')) return 0
+  if (!el?.isConnected) return 0
   const r = el.getBoundingClientRect()
   if (!r.width || !r.height) return 0
   const vh = window.innerHeight

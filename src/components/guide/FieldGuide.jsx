@@ -163,17 +163,7 @@ function LeafPart({ part, recto, verso, children }) {
   )
 }
 
-/* Scroll mode (revision 7, MOTION_RULES.md → Scroll → Scenes → the guide).
-   With `scene`, the hero's scroll scene drives the book through `scrub()` on
-   the imperative handle, and every control the book has — the cover, a page,
-   a thumb tab, the keys, the buttons under it — asks the scene to scroll to
-   a spread through `onSeek(spread)` (−1 is the closed book) instead of
-   changing the book behind the scroll's back. */
-const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene = false, onSeek }, apiRef) {
-  const sceneRef = useRef(scene)
-  sceneRef.current = scene
-  const seekRef = useRef(onSeek)
-  seekRef.current = onSeek
+const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiRef) {
   const stageRef = useRef(null)
   const deskRef = useRef(null)
   const floatRef = useRef(null)
@@ -186,9 +176,6 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
   const [open, setOpen] = useState(false)
   const [spread, setSpread] = useState(0)
   const [turn, setTurn] = useState(null)
-  /* The scroll holds the book (revision 7): state, so the class survives
-     the renders that rewrite the stage's className. */
-  const [scrubbing, setScrubbing] = useState(false)
 
   /* Mirrors of state for the event handlers and spring callbacks, which are
      created once and must not close over stale values. */
@@ -199,8 +186,6 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
     lastTouch: -Infinity, performing: null, gTimers: [], lastGesture: null,
     lastMajor: null, smallSinceMajor: 1, autoOpened: false,
     fallSpeed: 0, thumpTimer: 0,
-    /* The scroll holds the book (revision 7). */
-    scrubbing: false,
   })
   live.current.open = open
   live.current.spread = spread
@@ -353,85 +338,10 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
     }
   }, [stopPerforming])
 
-  /* ── Scroll mode ──────────────────────────────────────────────────────────
-     The scene hands over the cover's angle and a spread POSITION: 2.4 is
-     spread 2 with the leaf to spread 3 turned 40% of the way. The leaf is
-     the ordinary turn (same keyframes, bend, light and cast shadows) held
-     paused, with its currentTime set from the fraction. */
-  const scrubbed = useRef({ t: 0, anims: [], total: 0 })
-
-  const applyScrub = useCallback(() => {
-    const S = scrubbed.current
-    const time = S.t * S.total
-    S.anims.forEach((a) => { a.currentTime = time })
-    const t = live.current.turn
-    if (t?.scrub) {
-      /* The paper moves from one stack to the other with the leaf. */
-      const n = leftUnits(t.from) + (leftUnits(t.to) - leftUnits(t.from)) * S.t
-      deskRef.current?.style.setProperty('--fg-n', n.toFixed(3))
-    }
-  }, [])
-
-  const scrub = useCallback(({ angle, pos, held }) => {
-    const L = live.current
-    /* held: the scene has left its top. At the top the book is still the
-       book: its repertoire and the hand keep it. */
-    const top = !held
-    if (!L.scrubbing) {
-      if (top) return
-      takeOver()
-      L.scrubbing = true
-      L.pendingPeek = undefined
-      setScrubbing(true)
-    }
-
-    springs.hinge.jump(clamp(angle, 0, 180))
-    const isOpen = angle >= 90
-    if (isOpen !== L.open) {
-      L.open = isOpen
-      setOpen(isOpen)
-      onOpenChange?.(isOpen)
-    }
-
-    const s = clamp(pos, 0, SPREADS - 1)
-    let from = Math.floor(s + 1e-4)
-    let t = s - from
-    if (from >= SPREADS - 1) { from = SPREADS - 1; t = 0 }
-    if (t < 0.002) {
-      if (L.turn) { L.turn = null; setTurn(null) }
-      if (L.spread !== from) { L.spread = from; setSpread(from) }
-      scrubbed.current.t = 0
-      deskRef.current?.style.setProperty('--fg-n', String(leftUnits(from)))
-    } else {
-      const key = `${from}>${from + 1}`
-      if (!L.turn?.scrub || L.turn.key !== key) {
-        const next = { id: Date.now(), from, to: from + 1, scrub: true, key }
-        L.turn = next
-        L.spread = from
-        setSpread(from)
-        setTurn(next)
-      }
-      scrubbed.current.t = t
-      applyScrub()
-    }
-
-    if (top) {
-      L.scrubbing = false
-      setScrubbing(false)
-    }
-  }, [springs, takeOver, onOpenChange, applyScrub])
-
-  /* In a scene, the book's own controls move the scroll. */
-  const seek = useCallback((target) => {
-    takeOver()
-    seekRef.current?.(clamp(target, -1, SPREADS - 1))
-  }, [takeOver])
-
   useImperativeHandle(apiRef, () => ({
-    peek: (j) => { takeOver(); if (!live.current.scrubbing) peek(j) },
-    go: (j) => { if (sceneRef.current) seek(j + 1); else { takeOver(); turnTo(j + 1) } },
-    scrub,
-  }), [peek, turnTo, takeOver, scrub, seek])
+    peek: (j) => { takeOver(); peek(j) },
+    go: (j) => { takeOver(); turnTo(j + 1) },
+  }), [peek, turnTo, takeOver])
 
   /* ── Repertoire (MOTION_RULES.md → The field guide → Repertoire) ─────────
      The book no longer keeps its own clock: its gestures are Stage
@@ -452,7 +362,6 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
     const L = live.current
     const stage = stageRef.current
     if (!stage) return true
-    if (L.scrubbing) return true
     if (performance.now() - L.lastTouch < HANDS_OFF_MS) return true
     /* Open, turning, moving, or a block held up by the hand (a chapter in the
        hero list hovered for a long time): not the book's turn. */
@@ -740,18 +649,14 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
 
   useLayoutEffect(() => {
     if (!turn) return undefined
-    const { from, to, flutter: hesitating, scrub: scrubbing } = turn
+    const { from, to, flutter: hesitating } = turn
     const forward = to > from
     const count = Math.abs(to - from)
     const nodes = [...(leavesRef.current?.querySelectorAll('.fg-leaf') || [])]
     const duration = hesitating ? FLUTTER_MS : LEAF_MS
     const total = duration + (count - 1) * LEAF_STAGGER
     const desk = deskRef.current
-    /* Every animation this turn makes, so a scrubbed turn can be held and
-       scrubbed, and a turn replaced mid-air can be cancelled. */
-    const created = []
-    const track = (a) => { if (a) created.push(a); return a }
-    if (!hesitating && !scrubbing) {
+    if (!hesitating) {
       desk?.style.setProperty('--fg-n-delay', `${(count - 1) * LEAF_STAGGER}ms`)
       desk?.style.setProperty('--fg-n-dur', `${LEAF_MS}ms`)
     }
@@ -781,12 +686,12 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
 
       if (hesitating) {
         const z = rightTop(from) + 0.6
-        const main = track(node.animate(
+        const main = node.animate(
           FLUTTER.map((k) => ({ offset: k.offset, transform: `translateZ(${z + Math.abs(k.a) * 0.08}px) rotateY(${k.a}deg)` })),
           timing,
-        ))
-        track(outer?.animate(FLUTTER.map((k) => ({ offset: k.offset, transform: `rotateY(${k.b}deg)` })), timing))
-        folds.forEach((f) => track(f.animate(FLUTTER.map((k) => ({ offset: k.offset, opacity: Math.min(1, Math.abs(k.b) / 18) })), timing)))
+        )
+        outer?.animate(FLUTTER.map((k) => ({ offset: k.offset, transform: `rotateY(${k.b}deg)` })), timing)
+        folds.forEach((f) => f.animate(FLUTTER.map((k) => ({ offset: k.offset, opacity: Math.min(1, Math.abs(k.b) / 18) })), timing))
         return main
       }
 
@@ -794,7 +699,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
       const z1 = (forward ? leftTop(to) : rightTop(to)) + 0.6 + i * 0.5
       const a0 = forward ? 0 : -180
       const a1 = forward ? -180 : 0
-      const main = track(node.animate(
+      const main = node.animate(
         [
           { transform: `translateZ(${z0}px) rotateY(${a0}deg)` },
           /* Lifted clear of both stacks at the top of its arc. */
@@ -802,17 +707,17 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
           { transform: `translateZ(${z1}px) rotateY(${a1}deg)` },
         ],
         timing,
-      ))
+      )
       /* The paper bends: the outer panel leads, trails, and flops flat. */
-      track(outer?.animate(BEND.map((k) => ({ offset: k.offset, transform: `rotateY(${k.b * sign}deg)` })), timing))
-      folds.forEach((f) => track(f.animate(BEND.map((k) => ({ offset: k.offset, opacity: Math.min(1, Math.abs(k.b) / 20) })), timing)))
+      outer?.animate(BEND.map((k) => ({ offset: k.offset, transform: `rotateY(${k.b * sign}deg)` })), timing)
+      folds.forEach((f) => f.animate(BEND.map((k) => ({ offset: k.offset, opacity: Math.min(1, Math.abs(k.b) / 20) })), timing))
 
       /* Light: a face darkens as it turns away from the light and brightens
          as it lands face-up. Keyed to the same progress as the rotation. */
       node.querySelectorAll(forward ? '.fg-leaf-recto .fg-shade' : '.fg-leaf-verso .fg-shade')
-        .forEach((s) => track(s.animate([{ opacity: 0 }, { opacity: 0.34, offset: 0.5 }, { opacity: 0.34 }], timing)))
+        .forEach((s) => s.animate([{ opacity: 0 }, { opacity: 0.34, offset: 0.5 }, { opacity: 0.34 }], timing))
       node.querySelectorAll(forward ? '.fg-leaf-verso .fg-shade' : '.fg-leaf-recto .fg-shade')
-        .forEach((s) => track(s.animate([{ opacity: 0.3 }, { opacity: 0.3, offset: 0.5 }, { opacity: 0 }], timing)))
+        .forEach((s) => s.animate([{ opacity: 0.3 }, { opacity: 0.3, offset: 0.5 }, { opacity: 0 }], timing))
       return main
     })
 
@@ -822,39 +727,18 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
     const under = forward ? rightCastRef.current : leftCastRef.current
     const over = forward ? leftCastRef.current : rightCastRef.current
     if (hesitating) {
-      track(under?.animate([{ opacity: 0 }, { opacity: 0.2, offset: 0.38 }, { opacity: 0 }], { duration: total, easing: 'ease-in-out' }))
+      under?.animate([{ opacity: 0 }, { opacity: 0.2, offset: 0.38 }, { opacity: 0 }], { duration: total, easing: 'ease-in-out' })
     } else {
-      track(under?.animate([{ opacity: 0 }, { opacity: 0.26, offset: 0.3 }, { opacity: 0.18, offset: 0.7 }, { opacity: 0 }], { duration: total, easing: 'linear', fill: scrubbing ? 'both' : 'auto' }))
-      track(over?.animate([{ opacity: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0.22, offset: 0.8 }, { opacity: 0 }], { duration: total, easing: 'linear', fill: scrubbing ? 'both' : 'auto' }))
-    }
-
-    /* Scrubbed by the scroll: hold every part of the turn where the scene
-       puts it, and let the scene move it. */
-    if (scrubbing) {
-      created.forEach((a) => a.pause())
-      scrubbed.current.anims = created
-      scrubbed.current.total = total
-      applyScrub()
-      return () => {
-        created.forEach((a) => a.cancel())
-        if (scrubbed.current.anims === created) scrubbed.current.anims = []
-      }
+      under?.animate([{ opacity: 0 }, { opacity: 0.26, offset: 0.3 }, { opacity: 0.18, offset: 0.7 }, { opacity: 0 }], { duration: total, easing: 'linear' })
+      over?.animate([{ opacity: 0 }, { opacity: 0, offset: 0.45 }, { opacity: 0.22, offset: 0.8 }, { opacity: 0 }], { duration: total, easing: 'linear' })
     }
 
     const last = anims[anims.length - 1]
     if (last) last.onfinish = finish
     /* A hidden tab renders no frames: the turn must still complete. */
     const fallback = window.setTimeout(finish, total + 250)
-    return () => {
-      clearTimeout(fallback)
-      /* Replaced before it landed (the scroll took the book mid-turn): its
-         ending is no longer this turn's to write. */
-      if (!done) {
-        if (last) last.onfinish = null
-        created.forEach((a) => a.cancel())
-      }
-    }
-  }, [turn, applyScrub])
+    return () => { clearTimeout(fallback) }
+  }, [turn])
 
   /* Run a turn that was asked for while another was in the air. */
   useEffect(() => {
@@ -988,15 +872,13 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
   const onBookEnter = () => {
     takeOver()
     stageRef.current?.classList.add('is-held')
-    /* The scroll holds the cover in a scene; the hand only leans the book. */
-    if (live.current.scrubbing) return
     /* Unless a chapter is already lifted (from the hero list), the hand on
        the book lifts the cover. */
     if (!live.current.open && springs.hinge.target < PEEK_ANGLE && live.current.pendingPeek === undefined) peek('cover')
   }
   const onBookLeave = () => {
     stageRef.current?.classList.remove('is-held', 'is-pressed')
-    if (live.current.open || live.current.scrubbing) return
+    if (live.current.open) return
     live.current.pendingPeek = undefined
     moveHinge(0, LIFT)
   }
@@ -1014,11 +896,6 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
     const dx = e.clientX - s.x
     if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(e.clientY - s.y)) {
       s.used = true
-      if (sceneRef.current) {
-        const at = live.current.open ? live.current.spread : -1
-        seek(dx < 0 ? at + 1 : at - 1)
-        return
-      }
       if (!live.current.open) { if (dx < 0) openAt(0); return }
       if (dx < 0) turnTo(live.current.spread + 1)
       else if (live.current.spread === 0) close()
@@ -1032,17 +909,14 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
 
   const onCoverClick = () => {
     if (swallowSwipe()) return
-    if (sceneRef.current) { seek(0); return }
     if (!live.current.open) openAt(live.current.spread)
   }
   const onRightPageClick = () => {
     if (swallowSwipe() || !live.current.open) return
-    if (sceneRef.current) { seek(live.current.spread + 1); return }
     turnTo(live.current.spread + 1)
   }
   const onLeftPageClick = () => {
     if (swallowSwipe() || !live.current.open) return
-    if (sceneRef.current) { seek(live.current.spread - 1); return }
     if (live.current.spread === 0) close()
     else turnTo(live.current.spread - 1)
   }
@@ -1051,15 +925,6 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
     takeOver()
     const { open: isOpen, spread: at } = live.current
     if (e.target !== e.currentTarget && (e.key === 'Enter' || e.key === ' ')) return
-    /* In a scene the keys move the scroll to a spread (−1: the closed book). */
-    if (sceneRef.current) {
-      const here = isOpen ? at : -1
-      const to = { Enter: isOpen ? -1 : 0, ' ': isOpen ? -1 : 0, ArrowRight: here + 1, ArrowLeft: here - 1, Home: 0, Escape: -1 }[e.key]
-      if (to === undefined || (e.key === 'ArrowLeft' && !isOpen) || (e.key === 'Escape' && !isOpen)) return
-      e.preventDefault()
-      seek(to)
-      return
-    }
     switch (e.key) {
       case 'Enter':
       case ' ':
@@ -1121,9 +986,9 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
       }}
       tabIndex={open && where === 'right' ? 0 : -1}
       aria-label={`Chapter ${j + 1}: ${CHAPTERS[j].title}`}
-      onClick={(e) => { e.stopPropagation(); if (sceneRef.current) seek(j + 1); else turnTo(j + 1) }}
-      onPointerEnter={() => { if (!live.current.open && !live.current.scrubbing && where === 'right') peek(j) }}
-      onPointerLeave={() => { if (!live.current.open && !live.current.scrubbing && where === 'right') peek('cover') }}
+      onClick={(e) => { e.stopPropagation(); turnTo(j + 1) }}
+      onPointerEnter={() => { if (!live.current.open && where === 'right') peek(j) }}
+      onPointerLeave={() => { if (!live.current.open && where === 'right') peek('cover') }}
     >
       <TabFaces j={j} />
     </button>
@@ -1132,7 +997,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
   return (
     <div
       ref={setStage}
-      className={`fg-stage${open ? ' is-open' : ''}${turn ? ' is-turning' : ''}${scrubbing ? ' is-scrubbed' : ''}`}
+      className={`fg-stage${open ? ' is-open' : ''}${turn ? ' is-turning' : ''}`}
       data-last={open && spread >= SPREADS - 1 ? '' : undefined}
       role="group"
       aria-roledescription="book"
@@ -1223,20 +1088,20 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow, scene 
       <div className="fg-controls" onPointerDown={takeOver}>
         {open ? (
           <>
-            <button type="button" className="fg-ctl" onClick={() => (scene ? seek(spread - 1) : spread === 0 ? close() : turnTo(spread - 1))} aria-label={spread === 0 ? 'Close the book' : 'Previous chapter'}>
+            <button type="button" className="fg-ctl" onClick={() => (spread === 0 ? close() : turnTo(spread - 1))} aria-label={spread === 0 ? 'Close the book' : 'Previous chapter'}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
             </button>
-            <button type="button" className="fg-ctl fg-ctl--text" onClick={() => (scene ? seek(-1) : close())}>Close book</button>
-            <button type="button" className="fg-ctl" onClick={() => (scene ? seek(spread + 1) : turnTo(spread + 1))} disabled={spread >= SPREADS - 1} aria-label="Next chapter">
+            <button type="button" className="fg-ctl fg-ctl--text" onClick={close}>Close book</button>
+            <button type="button" className="fg-ctl" onClick={() => turnTo(spread + 1)} disabled={spread >= SPREADS - 1} aria-label="Next chapter">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
             </button>
           </>
         ) : (
           <p className="fg-hint">
             <span className="fg-hint--pointer">
-              {scene ? 'Scroll to open the guide' : 'Click the cover to open'} <span className="fg-hint-sep" aria-hidden="true">·</span> <kbd>←</kbd><kbd>→</kbd> turn chapters
+              Click the cover to open <span className="fg-hint-sep" aria-hidden="true">·</span> <kbd>←</kbd><kbd>→</kbd> turn chapters
             </span>
-            <span className="fg-hint--touch">{scene ? 'Scroll to open the guide' : 'Tap the cover to open · swipe to turn'}</span>
+            <span className="fg-hint--touch">Tap the cover to open · swipe to turn</span>
           </p>
         )}
       </div>
