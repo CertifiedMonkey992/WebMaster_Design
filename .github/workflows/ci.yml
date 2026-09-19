@@ -17,7 +17,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      # The engine is calendar-based, so the suite runs in two timezones: the
+      # runner's UTC and one well west of it.
       - run: npm test
+      - run: npm test
+        env:
+          TZ: America/Los_Angeles
       # The published site lives in docs/ and is rebuilt by hand before a
       # release commit; CI only proves the build still succeeds.
       - run: npm run build

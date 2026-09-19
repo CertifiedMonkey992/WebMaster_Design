@@ -300,7 +300,15 @@ export async function runProgressionTests() {
     ok('T10 daily xp reset', next.daily.xp === 0, next.daily.xp)
     ok('T10 daily lessons reset', next.daily.lessons === 0)
     ok('T10 total xp preserved', next.xp === xpBefore, `${xpBefore} -> ${next.xp}`)
-    ok('T10 gems preserved', next.gems === gemsBefore)
+    /* A rollover never takes gems away. The only gems it may ADD are quest
+       rewards the learner finished but never claimed (paid automatically
+       before the set resets) and anything those payouts unlock — which
+       quests the day's seed happens to generate depends on the timezone. */
+    const added = next.ledger.slice(0, next.ledger.length - s.ledger.length).filter(e => e.kind === 'gems')
+    ok('T10 gems preserved (only auto-claimed rewards may be added)',
+      next.gems === gemsBefore + added.reduce((n, e) => n + e.amount, 0)
+        && added.every(e => ['quest', 'achievement', 'team-mission'].includes(e.reason)),
+      `${gemsBefore} -> ${next.gems}, added: ${added.map(e => `${e.reason}+${e.amount}`).join(' ') || 'none'}`)
     ok('T10 streak preserved (yesterday active)', next.streak.current === streakBefore, next.streak.current)
     ok('T10 new daily quests', next.quests.daily.map(q => q.id).join() !== dailyIdsBefore)
     ok('T10 old quests archived', next.quests.archive.length === 1, next.quests.archive.length)
@@ -801,7 +809,10 @@ export async function runProgressionTests() {
     const day8 = bonusSvc.getBonusView(s, T0 + 7 * DAY)
     ok('T28 the new cycle opens at day 1', day8.nextDay === 1 && day8.available === true, day8.nextDay)
     const r8 = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + 7 * DAY)
-    ok('T28 day 1 of cycle 2 pays 20 gems again', r8.state.gems === s.gems + 20)
+    /* Measured against the state AFTER day 8's rollover, which may itself
+       pay out a quest the week's bonus gems completed but nobody claimed. */
+    const rolled8 = prog.reconcile(s, T0 + 7 * DAY).state
+    ok('T28 day 1 of cycle 2 pays 20 gems again', r8.state.gems === rolled8.gems + 20, `${rolled8.gems} -> ${r8.state.gems}`)
     ok('T28 progression is untouched by the reset',
       r8.state.xp === s.xp && r8.state.streak.shields === s.streak.shields &&
       r8.state.stats.totalGemsEarned > 0,
