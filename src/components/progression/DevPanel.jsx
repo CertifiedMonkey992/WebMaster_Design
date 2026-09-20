@@ -21,8 +21,13 @@ export default function DevPanel() {
   const enabled = isDevMode()
 
   /* Runs the pure-function suite in src/dev/progressionTests.js against the
-     real services. Imported lazily so it is never in the production bundle. */
+     real services. The import sits behind a DEV check so the production
+     build drops the chunk entirely (`npm test` covers it there). */
   const runSelfTests = async () => {
+    if (!import.meta.env.DEV) {
+      setTestResult({ summary: 'Self-tests run in a dev build (npm run dev) or with npm test.', failures: [] })
+      return
+    }
     setTestResult({ summary: 'running…' })
     try {
       const mod = await import('../../dev/progressionTests.js')

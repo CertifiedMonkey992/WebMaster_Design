@@ -10,10 +10,21 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "allowJs": true,
-    "checkJs": false,
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "checkJs": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/components",
+    "src/data",
+    "src/dev",
+    "src/hooks",
+    "src/motion",
+    "src/pages",
+    "src/services",
+    "src/state",
+    "src/App.jsx",
+    "src/main.jsx",
+    "src/nav.jsx",
+    "src/site.js"
+  ]
 }

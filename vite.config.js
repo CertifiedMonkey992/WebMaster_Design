@@ -1,9 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 import { SITE, ROUTES, structuredData } from './src/site.js'
 import { SECTIONS, TOTAL_LESSONS } from './src/data/learnData.js'
 
@@ -245,10 +243,8 @@ function quotedFontFamilies() {
 }
 
 export default defineConfig(({ command }) => ({
-  plugins: [react(), tailwindcss(), pagesPlugin(), quotedFontFamilies()],
+  plugins: [react(), pagesPlugin(), quotedFontFamilies()],
   css: { postcss: { plugins: command === 'build' ? [inlineStaticTokens()] : [] } },
-  /* shadcn/ui imports: @/components/ui/…, @/lib/utils (components.json). */
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   base: SITE.base,
   server: { port: 5176 },
   build: {

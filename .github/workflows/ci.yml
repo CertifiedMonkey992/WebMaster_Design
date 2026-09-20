@@ -5,12 +5,10 @@ on:
     branches: [main]
   pull_request:
 
-# contents: read for the checkout; pages/id-token for the deploy job's
-# OIDC handshake with GitHub Pages.
+# contents: read is all the checkout needs; the deploy job asks for the
+# Pages and OIDC permissions itself.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   check:
@@ -45,6 +43,9 @@ jobs:
     needs: check
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     # One deployment at a time, and a run that is already publishing is
     # allowed to finish rather than being cancelled.
     concurrency:

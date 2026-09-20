@@ -123,12 +123,14 @@ export const CYCLE = [
   },
 ]
 
-/** The reward for a given cycle day, or null when the day is out of range. */
+/** The reward for a given cycle day, or null when the day is out of range.
+ *  @param {number} day */
 export function getReward(day) {
   return CYCLE.find((r) => r.day === day) ?? null
 }
 
-/** Wrap any integer into a valid 1..CYCLE_LENGTH position. */
+/** Wrap any integer into a valid 1..CYCLE_LENGTH position.
+ *  @param {unknown} day */
 export function normalizeDay(day) {
   const n = Math.floor(Number(day))
   if (!Number.isFinite(n) || n < 1) return 1

@@ -3,10 +3,8 @@ import globals from 'globals'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 
-/* The .tsx components are checked by `npm run typecheck` (tsc); eslint covers
-   the JavaScript side of the project. */
 export default [
-  { ignores: ['docs/**', 'node_modules/**', '**/*.ts', '**/*.tsx'] },
+  { ignores: ['docs/**', 'node_modules/**'] },
   js.configs.recommended,
   {
     files: ['src/**/*.{js,jsx}'],

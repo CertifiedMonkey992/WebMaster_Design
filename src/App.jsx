@@ -13,7 +13,7 @@ import StickyCta       from './components/StickyCta'
 import PageLoading     from './components/PageLoading'
 
 import FxLayer from './motion/FxLayer'
-import { SpiderCursor } from '@/components/ui/spider-cursor'
+import { SpiderCursor } from './components/ui/spider-cursor'
 import { turnPage } from './motion/pageTurn'
 import { afterArrival, setStageMode } from './motion/stage'
 import { NavProvider, usePageMeta } from './nav'

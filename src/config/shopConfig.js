@@ -101,6 +101,7 @@ export const SHOP_ITEMS = [
   },
 ]
 
+/** @param {string} id */
 export function getShopItem(id) {
   return SHOP_ITEMS.find((item) => item.id === id) ?? null
 }

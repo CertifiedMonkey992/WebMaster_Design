@@ -35,7 +35,7 @@ const RewardContext = createContext(null)
 /** Developer tooling is enabled in dev builds, or via ?dev=1 on any build. */
 export function isDevMode() {
   try {
-    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('dev')) return true
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dev') === '1') return true
   } catch { /* ignore */ }
   return Boolean(import.meta.env?.DEV)
 }

@@ -12,16 +12,19 @@
 
 import { MISC } from '../config/progressionConfig'
 
+/** @param {number} n */
 const pad = (n) => String(n).padStart(2, '0')
 
-/** "YYYY-MM-DD" for a Date (or now), in LOCAL time. */
+/** "YYYY-MM-DD" for a Date (or now), in LOCAL time.
+ *  @param {Date | number} [date] */
 export function getLocalDateKey(date = new Date()) {
   const d = date instanceof Date ? date : new Date(date)
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 /** Parse "YYYY-MM-DD" into a local Date at midnight. Avoids the classic
- *  `new Date("2025-01-01")` UTC-parsing bug that shifts the day. */
+ *  `new Date("2025-01-01")` UTC-parsing bug that shifts the day.
+ *  @param {unknown} key */
 export function parseDateKey(key) {
   if (typeof key !== 'string') return null
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key)
@@ -30,7 +33,8 @@ export function parseDateKey(key) {
   return Number.isNaN(d.getTime()) ? null : d
 }
 
-/** Whole calendar days from `fromKey` to `toKey`. Positive when `toKey` is later. */
+/** Whole calendar days from `fromKey` to `toKey`. Positive when `toKey` is later.
+ *  @param {string | null} fromKey @param {string | null} toKey */
 export function getDaysBetween(fromKey, toKey) {
   const a = parseDateKey(fromKey)
   const b = parseDateKey(toKey)
@@ -39,11 +43,13 @@ export function getDaysBetween(fromKey, toKey) {
   return Math.round((b.getTime() - a.getTime()) / 86400000)
 }
 
+/** @param {string | null} key @param {Date | number} [now] */
 export function isToday(key, now = new Date()) {
   return key === getLocalDateKey(now)
 }
 
-/** Shift a date key by N days (negative goes backwards). */
+/** Shift a date key by N days (negative goes backwards).
+ *  @param {string | null} key @param {number} days */
 export function addDays(key, days) {
   const d = parseDateKey(key)
   if (!d) return null
@@ -94,10 +100,13 @@ export function msUntilEndOfDay(now = new Date()) {
 export function msUntilEndOfWeek(now = new Date()) {
   const startKey = getWeekStartKey(now)
   const nextStart = parseDateKey(addDays(startKey, 7))
+  /* A week-start key always parses; the guard only satisfies the type. */
+  if (!nextStart) return 0
   return Math.max(0, nextStart.getTime() - now.getTime())
 }
 
-/** "5h 42m" / "3d 4h" / "48s" — compact human countdown. */
+/** "5h 42m" / "3d 4h" / "48s" — compact human countdown.
+ *  @param {number | null | undefined} ms */
 export function formatDuration(ms, { compact = true } = {}) {
   if (ms == null || ms < 0) ms = 0
   const totalSec = Math.floor(ms / 1000)
@@ -111,7 +120,8 @@ export function formatDuration(ms, { compact = true } = {}) {
   return `${s}s`
 }
 
-/** "mm:ss" — used for the heart recovery countdown. */
+/** "mm:ss" — used for the heart recovery countdown.
+ *  @param {number} ms */
 export function formatClock(ms) {
   const totalSec = Math.max(0, Math.ceil(ms / 1000))
   const m = Math.floor(totalSec / 60)
@@ -119,7 +129,8 @@ export function formatClock(ms) {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
-/** "Sep 4" for a date key. */
+/** "Sep 4" for a date key.
+ *  @param {string | null} key */
 export function getShortDate(key) {
   const d = parseDateKey(key)
   return d ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''

@@ -9,14 +9,17 @@ import { LEVELS } from '../config/progressionConfig'
 
 /* ── Small helpers ───────────────────────────────────────────────────────── */
 
+/** @param {number} n @param {number} min @param {number} max */
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
 
+/** @param {unknown} n */
 export const safeInt = (n, fallback = 0) =>
-  Number.isFinite(n) ? Math.trunc(n) : fallback
+  typeof n === 'number' && Number.isFinite(n) ? Math.trunc(n) : fallback
 
-/** 1240 → "1,240" */
+/** 1240 → "1,240"
+ *  @param {unknown} n */
 export const formatNumber = (n) =>
-  Number.isFinite(n) ? n.toLocaleString() : '0'
+  typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString() : '0'
 
 /* ── Level curve ─────────────────────────────────────────────────────────────
    Cumulative XP required to REACH level L:
@@ -28,7 +31,8 @@ export const formatNumber = (n) =>
    Each level costs STEP more XP than the one before it.
    ─────────────────────────────────────────────────────────────────────────── */
 
-/** Total cumulative XP needed to reach `level`. Level 1 costs 0. */
+/** Total cumulative XP needed to reach `level`. Level 1 costs 0.
+ *  @param {number} level */
 export function getXPForLevel(level) {
   const L = clamp(Math.floor(level), 1, LEVELS.MAX_LEVEL + 1)
   if (L <= 1) return 0
@@ -37,7 +41,8 @@ export function getXPForLevel(level) {
 
 /** The level a given lifetime XP total corresponds to.
  *  Closed-form inverse of the quadratic above, then verified/corrected by a
- *  bounded walk so floating point can never put us on the wrong side. */
+ *  bounded walk so floating point can never put us on the wrong side.
+ *  @param {number} xp */
 export function getLevelFromXP(xp) {
   const total = Math.max(0, safeInt(xp))
   if (total < LEVELS.BASE) return 1
@@ -57,7 +62,8 @@ export function getLevelFromXP(xp) {
   return level
 }
 
-/** XP earned inside the current level, and how much that level costs. */
+/** XP earned inside the current level, and how much that level costs.
+ *  @param {number} xp */
 export function getXPProgress(xp) {
   const total = Math.max(0, safeInt(xp))
   const level = getLevelFromXP(total)
@@ -79,7 +85,8 @@ export function getXPProgress(xp) {
   }
 }
 
-/** Flavour title for a level ("Explorer", "Architect"…). */
+/** Flavour title for a level ("Explorer", "Architect"…).
+ *  @param {number} level */
 export function getLevelTitle(level) {
   let title = LEVELS.TITLES[0]?.title ?? 'Learner'
   for (const t of LEVELS.TITLES) if (level >= t.level) title = t.title
@@ -92,7 +99,8 @@ export function getLevelTitle(level) {
    key rather than using Math.random().
    ─────────────────────────────────────────────────────────────────────────── */
 
-/** 32-bit string hash (FNV-1a style) used to seed the PRNG. */
+/** 32-bit string hash (FNV-1a style) used to seed the PRNG.
+ *  @param {string} str */
 export function hashString(str) {
   let h = 2166136261
   for (let i = 0; i < str.length; i++) {
@@ -102,7 +110,8 @@ export function hashString(str) {
   return h >>> 0
 }
 
-/** mulberry32 — small, fast, well-distributed seeded PRNG. */
+/** mulberry32 — small, fast, well-distributed seeded PRNG.
+ *  @param {string | number} seed */
 export function createRandom(seed) {
   let a = typeof seed === 'string' ? hashString(seed) : seed >>> 0
   return function random() {
@@ -114,7 +123,10 @@ export function createRandom(seed) {
   }
 }
 
-/** Fisher–Yates using a seeded random source. Does not mutate the input. */
+/** Fisher–Yates using a seeded random source. Does not mutate the input.
+ *  @template T
+ *  @param {() => number} random @param {readonly T[]} arr
+ *  @returns {T[]} */
 export function shuffleWith(random, arr) {
   const out = [...arr]
   for (let i = out.length - 1; i > 0; i--) {
@@ -124,7 +136,8 @@ export function shuffleWith(random, arr) {
   return out
 }
 
-/** Round a target to a friendly number (5s below 50, 10s below 200, 25s above). */
+/** Round a target to a friendly number (5s below 50, 10s below 200, 25s above).
+ *  @param {number} n */
 export function roundTarget(n) {
   const v = Math.max(1, Math.round(n))
   if (v <= 10) return v
@@ -133,9 +146,11 @@ export function roundTarget(n) {
   return Math.round(v / 25) * 25
 }
 
-/** Progress ratio 0..1, guarding divide-by-zero. */
+/** Progress ratio 0..1, guarding divide-by-zero.
+ *  @param {number} current @param {number} target */
 export const ratio = (current, target) =>
   target > 0 ? clamp(current / target, 0, 1) : 0
 
-/** Percent 0..100 for progress bars. */
+/** Percent 0..100 for progress bars.
+ *  @param {number} current @param {number} target */
 export const percent = (current, target) => Math.round(ratio(current, target) * 100)

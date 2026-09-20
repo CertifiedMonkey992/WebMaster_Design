@@ -434,33 +434,57 @@ export async function runProgressionTests() {
     ok('T15 new weekly quests', later.quests.weekly.length > 0)
   }
 
+  /* Which quests are dealt depends on the calendar date in the seed, so a
+     test that needs "a quest" picks whichever of these was dealt and drives
+     that one to its target: EARN_XP by awarding XP, COMPLETE_LESSONS by
+     finishing lessons. Every learner is dealt at least one of the two. */
+  const driveQuest = (state) => {
+    const active = quests.getActiveQuests(state)
+    const xpQuest = active.find(q => q.type === 'EARN_XP')
+    if (xpQuest) {
+      return { quest: xpQuest, state: run(state, A.AWARD_XP, { amount: xpQuest.target, reason: 'test' }, T0).state }
+    }
+    const lessonQuest = active.find(q => q.type === 'COMPLETE_LESSONS')
+    if (!lessonQuest) return { quest: null, state }
+    let s = state
+    const ids = learn.SECTIONS.flatMap(sec => sec.lessons.map(l => l.id))
+    for (const id of ids.slice(0, lessonQuest.target)) {
+      s = run(s, A.COMPLETE_LESSON, { lessonId: id, perfect: false, seconds: 60, accuracy: 1 }, T0).state
+    }
+    return { quest: lessonQuest, state: s }
+  }
+
   /* ── TEST 16: quest progress is derived, never double-counted ── */
   {
-    let s = fresh()
-    const q = s.quests.daily.find(x => x.type === 'EARN_XP')
-    if (q) {
-      s = run(s, A.AWARD_XP, { amount: 10, reason: 'test' }, T0).state
-      const after1 = quests.findQuest(s, q.id).progress
-      // Re-running evaluation many times must not move the bar
-      let t = s
-      for (let i = 0; i < 5; i++) t = prog.runPipeline(t, T0).state
-      ok('T16 repeated evaluation is stable', quests.findQuest(t, q.id).progress === after1,
-         `${after1} -> ${quests.findQuest(t, q.id).progress}`)
-    }
+    const { quest: q, state: s } = driveQuest(fresh())
+    ok('T16 a drivable quest was dealt', Boolean(q), quests.getActiveQuests(fresh()).map(x => x.type).join())
+    const after1 = quests.findQuest(s, q.id).progress
+    ok('T16 the metric drove the bar to its target', after1 === q.target, `${after1}/${q.target}`)
+    // Re-running evaluation many times must not move the bar
+    let t = s
+    for (let i = 0; i < 5; i++) t = prog.runPipeline(t, T0).state
+    ok('T16 repeated evaluation is stable', quests.findQuest(t, q.id).progress === after1,
+       `${after1} -> ${quests.findQuest(t, q.id).progress}`)
     ok('T16 evaluation is reference-stable',
        prog.reconcile(s, T0).state === s, 'reconcile returned a new object when nothing changed')
   }
 
   /* ── TEST 17: claim-all is idempotent ── */
   {
-    let s = fresh()
-    s = run(s, A.AWARD_XP, { amount: 400, reason: 'test' }, T0).state
-    s = prog.runPipeline(s, T0).state
-    const claimable = quests.getClaimableQuests(s).length
+    const { quest: q, state: s } = driveQuest(fresh())
+    ok('T17 the driven quest is claimable', Boolean(q) && quests.getClaimableQuests(s).some(x => x.id === q.id),
+       quests.getClaimableQuests(s).map(x => x.id).join())
+    /* Driving one metric can finish other quests too (XP toward a daily
+       goal, say); claim-all pays every one of them, plus anything those
+       payouts unlock. Check the driven quest's reward is in the ledger and
+       nothing was paid twice. */
     const r1 = run(s, A.CLAIM_ALL_QUESTS, {}, T0)
     const gemsAfter = r1.state.gems
+    ok('T17 claim-all paid the driven quest',
+       r1.state.ledger.filter(e => e.reason === 'quest' && e.questId === q.id).length === 1
+         && gemsAfter >= s.gems + q.reward.gems,
+       `${s.gems} -> ${gemsAfter}`)
     const r2 = run(r1.state, A.CLAIM_ALL_QUESTS, {}, T0)
-    ok('T17 something was claimable', claimable > 0, claimable)
     ok('T17 second claim-all is a no-op', r2.state.gems === gemsAfter, `${gemsAfter} -> ${r2.state.gems}`)
   }
 
