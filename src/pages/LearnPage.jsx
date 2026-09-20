@@ -19,40 +19,8 @@ import { ProgressionProvider, useProgression } from '../state/ProgressionContext
 import './LearnPage.css'
 import '../components/progression/progression.css'
 
-/* These two destinations are not built, and say so. */
-const PLACEHOLDER_VIEWS = {
-  leaderboards: {
-    title: 'No leaderboards yet',
-    desc: 'Ranking needs accounts, and LunX does not have them. Your progress lives in this browser and is not sent anywhere.',
-    action: { label: 'See your own progress', nav: 'profile' },
-  },
-  more: {
-    title: 'Nothing to set yet',
-    desc: 'There are no preferences to change. The one thing that persists is your course progress, and the dev panel can reset it.',
-    action: { label: 'Back to the course', nav: 'learn' },
-  },
-}
-
 /* Destination order, so a view change knows which way it travelled. */
-const NAV_ORDER = ['learn', 'practice', 'leaderboards', 'quests', 'shop', 'profile', 'more']
-
-function PlaceholderView({ viewId, onNavigate }) {
-  const v = PLACEHOLDER_VIEWS[viewId]
-  if (!v) return null
-  return (
-    <div className="lp-placeholder">
-      <span className="lp-placeholder-badge">Not built</span>
-      <h2 className="lp-placeholder-title">{v.title}</h2>
-      <p className="lp-placeholder-desc">{v.desc}</p>
-      <button type="button" className="btn btn-outline" onClick={() => onNavigate(v.action.nav)}>
-        {v.action.label}
-        <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
-        </svg>
-      </button>
-    </div>
-  )
-}
+const NAV_ORDER = ['learn', 'practice', 'quests', 'shop', 'profile']
 
 /* The learner's state lives with the course: App loads this page lazily, so
    the progression code is fetched with it, not with the home page. */
@@ -129,7 +97,6 @@ function Course({ onGoHome, onGoAbout }) {
           {activeNav === 'quests'   && <QuestBoard />}
           {activeNav === 'shop'     && <ShopView onNavigate={navigate} />}
           {activeNav === 'profile'  && <ProfileView />}
-          {PLACEHOLDER_VIEWS[activeNav] && <PlaceholderView viewId={activeNav} onNavigate={navigate} />}
         </div>
       </main>
 

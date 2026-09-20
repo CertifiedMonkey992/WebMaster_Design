@@ -105,8 +105,8 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
   demo state via `ProgressionShowcase`. Do not replace working UI with
   mockups or invent figures for a stat row.
 - **Features that do not exist are not implied.** There are no accounts and
-  no leaderboard. The UI says so plainly rather than showing a disabled
-  facsimile.
+  no leaderboard, so nothing in the UI offers, mentions or stands in for
+  either. Absence is the whole statement.
 
 ## Quick reference
 

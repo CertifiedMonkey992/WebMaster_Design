@@ -6,9 +6,8 @@
    the destination is — played on hover, and held while active:
 
      Home        the roof lifts            Learn     the pages open
-     Practice    the rings close in        Boards    the bars grow
-     Quests      the star turns            Shop      the bag handle hops
-     Profile     the head nods             More      the dots wave
+     Practice    the rings close in        Quests    the star turns
+     Shop        the bag handle hops       Profile   the head nods
 
    Two moving objects replace per-item tints:
      · a HOVER GHOST that slides between items under the pointer
@@ -65,15 +64,6 @@ const PracticeIcon = () => (
   </svg>
 )
 
-const LeaderboardIcon = () => (
-  <svg {...ico} className="ni ni-board">
-    <path d="M4.5 20h15" />
-    <path className="ni-bar ni-bar--1" d="M6 20v-6h4v6" />
-    <path className="ni-bar ni-bar--2" d="M14 20V9h4v11" />
-    <path className="ni-bar ni-bar--3" d="M10 20v-9" />
-  </svg>
-)
-
 const QuestIcon = () => (
   <svg {...ico} className="ni ni-quest">
     <path className="ni-star" d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z" />
@@ -95,14 +85,6 @@ const ProfileIcon = () => (
   </svg>
 )
 
-const MoreIcon = () => (
-  <svg {...ico} className="ni ni-more">
-    <circle className="ni-dot ni-dot--1" cx="12" cy="5.5" r="1.5" fill="currentColor" stroke="none" />
-    <circle className="ni-dot ni-dot--2" cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    <circle className="ni-dot ni-dot--3" cx="12" cy="18.5" r="1.5" fill="currentColor" stroke="none" />
-  </svg>
-)
-
 const NAV_GROUPS = [
   {
     id: 'primary',
@@ -118,9 +100,8 @@ const NAV_GROUPS = [
     id: 'secondary',
     label: 'Progress',
     items: [
-      { id: 'leaderboards', label: 'Leaderboards', Icon: LeaderboardIcon, tip: 'Needs accounts — not built' },
-      { id: 'quests',       label: 'Quests',       Icon: QuestIcon },
-      { id: 'shop',         label: 'Shop',         Icon: ShopIcon },
+      { id: 'quests', label: 'Quests', Icon: QuestIcon },
+      { id: 'shop',   label: 'Shop',   Icon: ShopIcon },
     ],
   },
   {
@@ -129,7 +110,6 @@ const NAV_GROUPS = [
     footer: true,
     items: [
       { id: 'profile', label: 'Profile', Icon: ProfileIcon },
-      { id: 'more',    label: 'More',    Icon: MoreIcon },
     ],
   },
 ]
