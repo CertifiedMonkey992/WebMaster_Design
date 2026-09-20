@@ -20,7 +20,12 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), selec
 /** Open dialogs, bottom to top. */
 const stack = []
 
-export default function useDialog(ref, { open = true, onClose } = {}) {
+/**
+ * `modal: false` is for an anchored popover: it joins the Escape stack and
+ * gives focus back on close, but neither traps Tab nor locks the page's
+ * scroll, because the page behind it stays usable.
+ */
+export default function useDialog(ref, { open = true, onClose, modal = true } = {}) {
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
@@ -31,8 +36,11 @@ export default function useDialog(ref, { open = true, onClose } = {}) {
     const isTop = () => stack[stack.length - 1] === entry
 
     const opener = document.activeElement
+    /* If the opener is gone by the time this closes (a lesson row re-rendered
+       as completed), focus goes to that lesson's new row, or to the page. */
+    const openerLesson = opener instanceof HTMLElement ? opener.closest('[data-lesson-id]')?.getAttribute('data-lesson-id') : null
     const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    if (modal) document.body.style.overflow = 'hidden'
 
     const onKey = (e) => {
       if (!isTop()) return
@@ -40,7 +48,7 @@ export default function useDialog(ref, { open = true, onClose } = {}) {
         if (onCloseRef.current) { e.preventDefault(); onCloseRef.current() }
         return
       }
-      if (e.key !== 'Tab') return
+      if (e.key !== 'Tab' || !modal) return
       const node = ref.current
       if (!node) return
       const focusable = [...node.querySelectorAll(FOCUSABLE)].filter((el) => el.offsetParent !== null || el === document.activeElement)
@@ -57,8 +65,11 @@ export default function useDialog(ref, { open = true, onClose } = {}) {
     return () => {
       document.removeEventListener('keydown', onKey)
       stack.splice(stack.indexOf(entry), 1)
-      document.body.style.overflow = previousOverflow
-      if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true })
+      if (modal) document.body.style.overflow = previousOverflow
+      const back = opener instanceof HTMLElement && opener.isConnected
+        ? opener
+        : (openerLesson && document.querySelector(`[data-lesson-id="${openerLesson}"]`)) || document.querySelector('main')
+      if (back instanceof HTMLElement) back.focus({ preventScroll: true })
     }
-  }, [open, ref])
+  }, [open, ref, modal])
 }

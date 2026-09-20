@@ -9,7 +9,8 @@ import { Icon } from '../progression/Icons'
  * A course module: its header and its lessons, as ONE container.
  *
  * Revision 2:
- *   · the module COLLAPSES — in-progress opens, completed and locked close —
+ *   · the module COLLAPSES — in-progress opens itself, locked closes itself,
+ *     and a completed one stays as the reader left it —
  *     and the header is the toggle, with a chevron that turns
  *   · a locked header refuses: it shakes, the lock rattles, and the hint says
  *     which module unlocks it

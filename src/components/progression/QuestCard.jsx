@@ -28,14 +28,20 @@ import RollingNumber from '../../motion/RollingNumber'
 
 const DIFFICULTY_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Challenge' }
 
+/* True from the frame after `progress` changes: the shine class comes off
+   for one frame and goes back on, so the fill is never remounted and its
+   width transition (--dur-settle) gets to play. */
 function useProgressShine(progress) {
   const prev = useRef(progress)
-  const [key, setKey] = useState(0)
+  const [shining, setShining] = useState(false)
   useEffect(() => {
-    if (prev.current !== progress) setKey((k) => k + 1)
+    if (prev.current === progress) return undefined
     prev.current = progress
+    setShining(false)
+    const raf = requestAnimationFrame(() => setShining(true))
+    return () => cancelAnimationFrame(raf)
   }, [progress])
-  return key
+  return shining
 }
 
 export function QuestCard({ quest, variant = 'full', index = 0, style, className = '' }) {
@@ -48,7 +54,7 @@ export function QuestCard({ quest, variant = 'full', index = 0, style, className
   const pct = percent(quest.progress, quest.target)
   const fillWidth = useProgressWidth(pct)
   const claimable = quest.completed && !quest.claimed
-  const shineKey = useProgressShine(quest.progress)
+  const shining = useProgressShine(quest.progress)
   const remaining = Math.max(0, quest.target - quest.progress)
 
   const claim = () => {
@@ -96,8 +102,7 @@ export function QuestCard({ quest, variant = 'full', index = 0, style, className
             aria-label={quest.description}
           >
             <div
-              key={shineKey}
-              className={`qc-compact-fill${quest.completed ? ' is-done' : ''}${shineKey ? ' fx-fill-shine' : ''}`}
+              className={`qc-compact-fill${quest.completed ? ' is-done' : ''}${shining ? ' fx-fill-shine' : ''}`}
               style={{ width: `${fillWidth}%` }}
             />
           </div>
@@ -168,8 +173,7 @@ export function QuestCard({ quest, variant = 'full', index = 0, style, className
           data-tip={`${pct}% · ${remaining} to go`}
         >
           <div
-            key={shineKey}
-            className={`qc-card-fill${quest.completed ? ' is-done' : ''}${shineKey ? ' fx-fill-shine' : ''}`}
+            className={`qc-card-fill${quest.completed ? ' is-done' : ''}${shining ? ' fx-fill-shine' : ''}`}
             style={{ width: `${fillWidth}%` }}
           />
         </div>

@@ -104,6 +104,7 @@ export default function LessonNode({
       <div
         ref={rowRef}
         className={`lesson-row lesson-row--${lesson.status}`}
+        data-lesson-id={lesson.id}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
         role="button"

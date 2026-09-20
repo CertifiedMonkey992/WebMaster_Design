@@ -13,7 +13,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import useProgressWidth from '../../hooks/useProgressWidth'
-import { formatNumber, getXPProgress } from '../../utils/progressionUtils'
+import { formatNumber, getXPProgress, getLevelTitle } from '../../utils/progressionUtils'
 import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
 import { BoltIcon } from './Icons'
@@ -24,6 +24,9 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
   const xp = useLandedValue('xp', vm.xp)
   const p = getXPProgress(xp)
   const level = p.level
+  /* The badge, the label and the title all read the LANDED level, so none
+     of them can run ahead of the others while XP is still in the air. */
+  const levelTitle = getLevelTitle(level)
   const fillWidth = useProgressWidth(p.percent)
   const targetRef = useFlightTarget('xp')
   const blockRef = useRef(null)
@@ -41,11 +44,16 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
     return () => clearTimeout(t)
   }, [level])
 
+  /* The shine restarts by dropping its class for one frame, so the fill is
+     never remounted and its width transition (--dur-settle) gets to play. */
   const prevXp = useRef(xp)
-  const [shineKey, setShineKey] = useState(0)
+  const [shining, setShining] = useState(false)
   useEffect(() => {
-    if (prevXp.current !== xp) setShineKey((k) => k + 1)
+    if (prevXp.current === xp) return undefined
     prevXp.current = xp
+    setShining(false)
+    const raf = requestAnimationFrame(() => setShining(true))
+    return () => cancelAnimationFrame(raf)
   }, [xp])
 
   const tip = p.isMaxLevel
@@ -54,7 +62,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
 
   return (
     <div className={`lv-block lv-${size}`} ref={setBlock}>
-      <div className={`lv-badge${turning ? ' is-turning' : ''}`} aria-hidden="true" data-tip={`Level ${level} · ${vm.levelTitle}`}>
+      <div className={`lv-badge${turning ? ' is-turning' : ''}`} aria-hidden="true" data-tip={`Level ${level} · ${levelTitle}`}>
         <span className="lv-badge-num"><RollingNumber value={level} /></span>
         <span className="lv-badge-bolt fx-zap"><BoltIcon size={12} /></span>
       </div>
@@ -62,7 +70,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
       <div className="lv-col">
         <div className="lv-top">
           <span className="lv-label">Level {level}</span>
-          {showTitle && <span className="lv-title">{vm.levelTitle}</span>}
+          {showTitle && <span className="lv-title">{levelTitle}</span>}
         </div>
 
         <div
@@ -74,7 +82,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
           aria-label={`Level ${level} progress`}
           data-tip={tip}
         >
-          <div key={shineKey} className={`lv-fill${shineKey ? ' fx-fill-shine' : ''}`} style={{ width: `${fillWidth}%` }} />
+          <div className={`lv-fill${shining ? ' fx-fill-shine' : ''}`} style={{ width: `${fillWidth}%` }} />
         </div>
 
         <div className="lv-meta">

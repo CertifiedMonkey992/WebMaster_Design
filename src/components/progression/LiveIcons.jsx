@@ -24,7 +24,7 @@
    sparkles open at --lag-finish and fade last.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState, useCallback } from 'react'
 import { HeartIcon, FlameIcon, GemIcon, ShieldIcon } from './Icons'
 import { bloom, burst, ring, sparkle } from '../../motion/burst'
 import { drop } from '../../motion/flight'
@@ -54,7 +54,15 @@ function useChange(value, ms = 800) {
 function useLater() {
   const timers = useRef([])
   useEffect(() => () => timers.current.forEach(clearTimeout), [])
-  return (fn, ms = LAG.finish) => { timers.current.push(window.setTimeout(fn, ms)) }
+  return useCallback((fn, ms = LAG.finish) => { timers.current.push(window.setTimeout(fn, ms)) }, [])
+}
+
+/** The latest render's values, for an effect that runs on a change tick
+ *  and must read them without re-running when they alone change. */
+function useLatest(value) {
+  const ref = useRef(value)
+  ref.current = value
+  return ref
 }
 
 export function LiveHeart({ hearts, max = 5, recovery = null, size = 20, className = '' }) {
@@ -62,8 +70,10 @@ export function LiveHeart({ hearts, max = 5, recovery = null, size = 20, classNa
   const bloomRef = useRef(null)
   const later = useLater()
   const { dir, tick } = useChange(hearts, 820)
+  const latest = useLatest({ dir, size })
 
   useEffect(() => {
+    const { dir, size } = latest.current
     if (!tick || !ref.current) return
     if (dir === 'down') {
       drop({ from: ref.current, icon: 'heart', size: Math.round(size * 0.7) })
@@ -76,8 +86,7 @@ export function LiveHeart({ hearts, max = 5, recovery = null, size = 20, classNa
         burst(ref.current, { palette: 'heart', count: 8, spread: size * 1.4, gravity: 4, duration: 560 })
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick])
+  }, [tick, later, latest])
 
   const fill = hearts <= 0 ? 0 : Math.max(0.2, hearts / Math.max(1, max))
   const showRing = recovery != null && hearts < max
@@ -116,8 +125,10 @@ export function LiveFlame({ streak, activeToday = true, shields = 0, size = 20, 
   const later = useLater()
   const seed = seedOf(useId())
   const { dir, tick } = useChange(streak, 1000)
+  const latest = useLatest({ dir, size, streak })
 
   useEffect(() => {
+    const { dir, size, streak } = latest.current
     if (!tick || dir !== 'up' || !ref.current) return
     burst(ref.current, { palette: 'streak', up: true, count: 12, spread: size * 1.6, gravity: -6, duration: 700 })
     later(() => {
@@ -128,8 +139,7 @@ export function LiveFlame({ streak, activeToday = true, shields = 0, size = 20, 
       ring(ref.current, { color: '--clay', size: size * 3.2, duration: 800 })
       later(() => burst(ref.current, { palette: 'reward', count: 18, spread: size * 2.6, gravity: 18 }), 160)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick])
+  }, [tick, later, latest])
 
   const state = streak <= 0 ? 'out' : activeToday ? 'lit' : 'risk'
 
@@ -156,15 +166,16 @@ export function LiveGem({ gems, size = 20, className = '' }) {
   const bloomRef = useRef(null)
   const later = useLater()
   const { dir, tick } = useChange(gems, 900)
+  const latest = useLatest({ dir, size })
 
   useEffect(() => {
+    const { dir, size } = latest.current
     if (!tick || dir !== 'up' || !ref.current) return
     later(() => {
       bloom(bloomRef.current)
       sparkle(ref.current, { tone: 'gem', count: 5, radius: size * 0.95, size: Math.max(6, size * 0.45) })
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tick])
+  }, [tick, later, latest])
 
   return (
     <span

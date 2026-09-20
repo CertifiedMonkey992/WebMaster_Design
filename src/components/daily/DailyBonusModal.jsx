@@ -32,15 +32,15 @@ export default function DailyBonusModal({ open, onClose }) {
     setLeaving(true)
     const t = window.setTimeout(() => { setMounted(false); setLeaving(false) }, EXIT_MS)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [open, mounted])
 
   const claim = useCallback(() => actions.claimDailyBonus(), [actions])
 
   useDialog(panelRef, { open, onClose })
+  /* Runs once the panel is in the DOM, not on the render that asked for it. */
   useEffect(() => {
-    if (open) closeRef.current?.focus()
-  }, [open])
+    if (open && mounted) closeRef.current?.focus()
+  }, [open, mounted])
 
   if (!mounted) return null
 

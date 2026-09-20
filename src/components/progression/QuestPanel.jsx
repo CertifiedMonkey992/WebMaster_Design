@@ -59,7 +59,10 @@ export function QuestBoard({ initialTab = 'today', heading = true }) {
   }, [tab])
 
   const claimAll = () => {
-    const source = claimAllRef.current
+    /* The button disappears once nothing is claimable, so its position is
+       captured before the dispatch and the flight leaves from there. */
+    const rect = claimAllRef.current?.getBoundingClientRect()
+    const source = rect ? { getBoundingClientRect: () => rect } : null
     const events = actions.claimAllQuests() ?? []
     const paid = events.filter((e) => e.type === 'QUEST_CLAIMED')
     paid.forEach((e, i) => {
@@ -160,14 +163,14 @@ export default function QuestPanel({ open, onClose, initialTab = 'today' }) {
     setLeaving(true)
     const t = window.setTimeout(() => { setMounted(false); setLeaving(false) }, 220)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [open, mounted])
 
   const panelRef = useRef(null)
   useDialog(panelRef, { open, onClose })
+  /* Runs once the panel is in the DOM, not on the render that asked for it. */
   useEffect(() => {
-    if (open) panelRef.current?.querySelector('.qp-modal-close')?.focus()
-  }, [open])
+    if (open && mounted) panelRef.current?.querySelector('.qp-modal-close')?.focus()
+  }, [open, mounted])
 
   if (!mounted) return null
 

@@ -26,6 +26,8 @@ const REASON_LABELS = {
   'team-mission': 'Team mission',
   'heart-refill': 'Heart refill',
   manual: 'Adjustment',
+  dev: 'Adjustment',
+  unknown: 'Adjustment',
 }
 
 /** The ledger's reasons as the services write them: shop purchases are

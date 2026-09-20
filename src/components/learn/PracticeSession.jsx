@@ -30,6 +30,8 @@ export default function PracticeSession() {
   const { vm, actions } = useProgression()
   const [phase, setPhase] = useState('intro')
   const [deck, setDeck] = useState([])
+  /* Counts sessions, so "Practice again" keys a fresh first question. */
+  const [round, setRound] = useState(0)
   const [idx, setIdx] = useState(0)
   const [stepPhase, setStepPhase] = useState('answering')
   const [filled, setFilled] = useState([])
@@ -54,6 +56,7 @@ export default function PracticeSession() {
 
   function start() {
     setDeck(buildPracticeDeck(completedIds, DECK_SIZE))
+    setRound((r) => r + 1)
     setIdx(0); setCorrect(0); setFilled([]); setSelected(null)
     setStepPhase('answering')
     committed.current = false
@@ -217,7 +220,7 @@ export default function PracticeSession() {
       </div>
 
       <div className="ps-runner-body" ref={bodyRef}>
-        <div className="lm-step" key={idx}>
+        <div className="lm-step" key={`${round}:${idx}`}>
           <StepBody
             step={step}
             phase={stepPhase}

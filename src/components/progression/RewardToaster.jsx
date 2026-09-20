@@ -208,8 +208,7 @@ function StreamItem({ reward, leaving }) {
     const r = route(reward)
     if (recentlyLaunched(r.to, 900)) return
     fly({ from: ref.current, ...r })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [reward])
 
   const isChip = Boolean(CHIP_FLIGHT[reward.type]) || reward.type === 'GEMS_SPENT' || reward.type === 'HEART_LOST' || (reward.type === 'QUEST_CLAIMED' && !reward.auto)
 
@@ -229,6 +228,10 @@ function LevelUpBanner({ reward, onDismiss }) {
   const badgeRef = useRef(null)
   const [shown, setShown] = useState(Math.max(1, reward.level - 1))
   const [leaving, setLeaving] = useState(false)
+  /* The dismiss callback is a fresh function each render; read it through a
+     ref so the banner's timers are set once, for the level it announces. */
+  const dismissRef = useRef(onDismiss)
+  dismissRef.current = onDismiss
 
   useEffect(() => {
     const t1 = window.setTimeout(() => {
@@ -237,10 +240,9 @@ function LevelUpBanner({ reward, onDismiss }) {
       burst(badgeRef.current, { palette: 'reward', count: 30, spread: 170, gravity: 70, duration: 1100 })
     }, 520)
     const t2 = window.setTimeout(() => setLeaving(true), LIFETIME.LEVEL_UP - 300)
-    const t3 = window.setTimeout(onDismiss, LIFETIME.LEVEL_UP)
+    const t3 = window.setTimeout(() => dismissRef.current(), LIFETIME.LEVEL_UP)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [reward.level])
 
   return (
     <div className={`rt-levelup${leaving ? ' is-leaving' : ''}`} role="status">
@@ -265,16 +267,17 @@ export default function RewardToaster() {
   const levelUp = useMemo(() => rewards.find((r) => r.type === 'LEVEL_UP'), [rewards])
   const stream = useMemo(() => rewards.filter((r) => r.type !== 'LEVEL_UP').slice(-5), [rewards])
 
-  /* Each toast's clock is set ONCE, when it enters the stream, and measured
-     from when the reward happened. Re-running this effect for a new arrival
-     must not touch the timers of the toasts already showing — otherwise one
-     lesson's six events keep resetting each other and the first stays up
-     for as long as the last. */
+  /* Each toast's clock is set ONCE, when it enters the visible window, and
+     runs its full lifetime from there — a toast that queued behind five
+     others is not shown for the time it spent waiting. Re-running this
+     effect for a new arrival must not touch the timers of the toasts already
+     showing — otherwise one lesson's six events keep resetting each other
+     and the first stays up for as long as the last. */
   const timersRef = useRef(new Map())
   useEffect(() => {
     for (const reward of stream) {
       if (timersRef.current.has(reward.key)) continue
-      const life = Math.max(0, (LIFETIME[reward.type] ?? 2000) - (Date.now() - reward.at))
+      const life = LIFETIME[reward.type] ?? 2000
       timersRef.current.set(reward.key, [
         window.setTimeout(() => setLeaving((s) => new Set(s).add(reward.key)), Math.max(0, life - EXIT_MS)),
         window.setTimeout(() => {

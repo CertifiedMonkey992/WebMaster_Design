@@ -17,10 +17,13 @@ import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import './SitePages.css'
 
+/* One shared empty list, so the navbar's props are stable between renders. */
+const NO_LINKS = []
+
 export default function SitePage({ eyebrow, title, lead, children, wide = false, headingId = 'page-heading' }) {
   return (
     <div className="app">
-      <Navbar links={[]} pageLink={{ label: 'Home', page: 'landing' }} />
+      <Navbar links={NO_LINKS} pageLink={{ label: 'Home', page: 'landing' }} />
       <main className={`sp${wide ? ' sp--wide' : ''}`} id="main" tabIndex={-1}>
         <header className="sp-head">
           {eyebrow && (

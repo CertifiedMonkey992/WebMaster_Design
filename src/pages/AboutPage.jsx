@@ -328,7 +328,6 @@ export default function AboutPage() {
               </div>
               <ol
                 className="ab-strand-key"
-               
                 style={{ gridTemplateColumns: STRANDS.map((s) => `${s.minutes}fr`).join(' ') }}
               >
                 {STRANDS.map((s) => (

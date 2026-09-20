@@ -11,8 +11,10 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useId, useRef, useState } from 'react'
+import useDialog from '../../hooks/useDialog'
 
 const EXIT_MS = 170
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 export default function Popover({ open, onClose, title, children, align = 'right', className = '', tone }) {
   const ref = useRef(null)
@@ -30,8 +32,16 @@ export default function Popover({ open, onClose, title, children, align = 'right
     setLeaving(true)
     const t = window.setTimeout(() => { setMounted(false); setLeaving(false) }, EXIT_MS)
     return () => clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open])
+  }, [open, mounted])
+
+  /* Escape goes through the same stack every dialog uses, and focus returns
+     to the pill on close. Not modal: the page behind stays scrollable. */
+  useDialog(ref, { open, onClose, modal: false })
+
+  /* Focus moves into the panel once it is in the DOM. */
+  useEffect(() => {
+    if (open && mounted) ref.current?.querySelector(FOCUSABLE)?.focus()
+  }, [open, mounted])
 
   useEffect(() => {
     if (!open) return undefined
@@ -42,14 +52,9 @@ export default function Popover({ open, onClose, title, children, align = 'right
       if (e.target.closest?.('[data-popover-trigger]')) return
       if (!el.contains(e.target)) onClose()
     }
-    const onKeyDown = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose() } }
 
     document.addEventListener('mousedown', onPointerDown)
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown)
-      document.removeEventListener('keydown', onKeyDown)
-    }
+    return () => document.removeEventListener('mousedown', onPointerDown)
   }, [open, onClose])
 
   if (!mounted) return null

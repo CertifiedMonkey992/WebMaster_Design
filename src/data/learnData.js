@@ -144,10 +144,7 @@ export function deriveCourse(completedLessons) {
     const sectionComplete = completed === total
     if (sectionComplete) completedSections++
 
-    const status = !unlocked ? 'locked'
-      : sectionComplete ? 'completed'
-      : completed > 0 || lessons.some((l) => l.status === 'current') ? 'in-progress'
-      : 'in-progress'
+    const status = !unlocked ? 'locked' : sectionComplete ? 'completed' : 'in-progress'
 
     previousSectionComplete = sectionComplete
 

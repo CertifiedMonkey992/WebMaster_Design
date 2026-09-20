@@ -56,7 +56,10 @@ function dayTip(reward, view) {
     case 'claimed': return `Day ${reward.day} · ${reward.label} · claimed`
     case 'today':   return `Day ${reward.day} · ${reward.label} · ready now`
     case 'next':    return `Day ${reward.day} · ${reward.label} · unlocks tomorrow`
-    default:        return `Day ${reward.day} · ${reward.label}${away > 0 ? ` · in ${away + (view.available ? 0 : 1)} days` : ''}`
+    default: {
+      const days = away + (view.available ? 0 : 1)
+      return `Day ${reward.day} · ${reward.label}${away > 0 ? ` · in ${days} day${days === 1 ? '' : 's'}` : ''}`
+    }
   }
 }
 

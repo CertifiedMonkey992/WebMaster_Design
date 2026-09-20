@@ -26,7 +26,9 @@ export default function ModuleList({ onStartLesson }) {
   const current = course.current
   const allLessons = course.sections.flatMap((s) => s.lessons.map((l) => ({ ...l, section: s.title })))
 
-  const ringPct = current ? current.lessonIndex / current.section.lessons.length : 1
+  /* The ring shows how much of the section is DONE, which is not the same
+     as where the next lesson sits once earlier lessons have been skipped. */
+  const ringPct = current ? current.section.completed / current.section.total : 1
   const R = 25
   const C = 2 * Math.PI * R
 
@@ -54,7 +56,7 @@ export default function ModuleList({ onStartLesson }) {
                 key={l.id}
                 className={`course-tick is-${l.status}`}
                 style={{ '--i': i }}
-                data-tip={`${l.title} · ${l.status === 'completed' ? 'done' : l.status === 'current' ? 'up next' : 'locked'}`}
+                data-tip={`${l.title} · ${{ completed: 'done', current: 'up next', available: 'available' }[l.status] ?? 'locked'}`}
               />
             ))}
           </ol>
@@ -71,7 +73,7 @@ export default function ModuleList({ onStartLesson }) {
           <div className="resume-body">
             <span
               className="resume-tile"
-              data-tip={`${current.lessonIndex} of ${current.section.lessons.length} done in ${current.section.title}`}
+              data-tip={`${current.section.completed} of ${current.section.total} done in ${current.section.title}`}
             >
               <svg className="resume-ring" viewBox="0 0 56 56" aria-hidden="true">
                 <circle className="resume-ring-track" cx="28" cy="28" r={R} />
