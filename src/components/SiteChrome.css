@@ -62,7 +62,10 @@
   position: fixed;
   left: var(--sp-5);
   bottom: var(--sp-5);
-  z-index: var(--z-toast);
+  /* Below the dialog layer: a lesson, the daily bonus or a purchase must
+     never have its bottom edge — the Check or Claim button — hidden under
+     the banner, which on a phone spans the whole width. */
+  z-index: calc(var(--z-modal) - 1);
   width: min(26rem, calc(100vw - var(--sp-10)));
   padding: var(--sp-4) var(--sp-5);
   border: 1px solid var(--line);
@@ -100,6 +103,10 @@
 }
 
 .consent-link { font-size: var(--fs-small); margin-left: auto; }
+
+@media (pointer: coarse) {
+  .consent-link { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+}
 
 /* ── Sticky course button (phones) ───────────────────────────────────────── */
 
@@ -139,12 +146,18 @@
 
   .sticky-cta .btn { flex-shrink: 0; }
 
+  /* On a phone the banner spans the width, so it is kept short: tighter
+     padding and the note in the small size, so it covers as little of the
+     page as it can while it waits for OK. */
   .consent {
     left: var(--sp-3);
     right: var(--sp-3);
     bottom: calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
     width: auto;
+    padding: var(--sp-3) var(--sp-4);
   }
+  .consent-text { font-size: var(--fs-caption); }
+  .consent-actions { margin-top: var(--sp-2); }
 }
 
 /* ── Loading a page ──────────────────────────────────────────────────────── */

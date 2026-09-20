@@ -112,7 +112,7 @@ function Course({ onGoHome, onGoAbout, onLoginClick }) {
               <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />
             </svg>
           </span>
-          LunX
+          <span className="lt-brand-text">LunX</span>
         </button>
         <div className="lt-actions">
           <DailyBonusIndicator onOpen={() => setBonusOpen(true)} />

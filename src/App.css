@@ -66,6 +66,15 @@
 .btn-sm { padding: var(--sp-1) var(--sp-3); font-size: var(--fs-small); }
 .btn-lg { padding: var(--sp-3) var(--sp-6); font-size: var(--fs-lead); }
 
+/* On a touch screen every button and footer link is tall enough for a
+   finger. The type stays the same size; only the hit area grows. */
+@media (pointer: coarse) {
+  .btn { min-height: var(--tap-min); }
+  .nav-links a,
+  .ft-link,
+  .ft-legal-link { display: inline-flex; align-items: center; min-height: var(--tap-min); }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    PAGE SHELL
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -1228,6 +1237,14 @@
   .navbar { gap: var(--sp-3); }
   .nav-actions { gap: var(--sp-1); }
   .nav-page-link { padding-left: var(--sp-2); padding-right: var(--sp-2); }
+}
+
+/* The narrowest phones (320px): the wordmark and the one solid button are
+   all that fit; the page link is in the footer and the course's sidebar. */
+@media (max-width: 380px) {
+  .navbar { padding: 0 var(--sp-4); }
+  .nav-page-link { display: none; }
+  .nav-actions .btn { padding-left: var(--sp-3); padding-right: var(--sp-3); }
 }
 
 /* Touch: the hover-revealed count and arrow are simply shown. */

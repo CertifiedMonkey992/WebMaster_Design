@@ -12,6 +12,7 @@
 .db-indicator {
   position: relative;
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--sp-2);
   padding: 5px var(--sp-3);
@@ -158,10 +159,12 @@
 
 .db-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--sp-4);
-  padding-right: var(--sp-10);
+  gap: var(--sp-2) var(--sp-4);
+  /* Room for the close button in the corner, at its touch size. */
+  padding-right: calc(var(--tap-min) + var(--sp-4));
 }
 
 .db-eyebrow {
@@ -657,6 +660,12 @@
 .db-day-claim:hover { background: var(--clay-deep); transform: scale(1.06); }
 .db-day-claim:active { transform: scale(0.94); }
 
+/* A finger needs more than a 23px button. */
+@media (pointer: coarse) {
+  .db-day-claim { min-height: var(--tap-min); padding-inline: var(--sp-4); }
+  .db-close { width: var(--tap-min); height: var(--tap-min); }
+}
+
 /* The card that just paid out turns over to its claimed face. */
 .db-day.is-flashing { animation: db-turn var(--dur-celebrate) var(--ease-spring) both; }
 
@@ -703,7 +712,7 @@
     max-height: 92vh;
     animation-name: fx-rise-sheet;
   }
-  .db-head { padding-right: var(--sp-8); }
+  .db-head { padding-right: calc(var(--tap-min) + var(--sp-3)); }
   .db-title { font-size: var(--fs-lead); }
 
   .db-hero { flex-direction: column; align-items: flex-start; padding: var(--sp-4); }

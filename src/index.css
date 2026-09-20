@@ -176,6 +176,10 @@
   --clay-bright-rgb:  222, 108, 58;
 
   /* ── Spacing (8pt, with 4px for the inside of small controls) ──────────── */
+  /* The smallest control a finger can hit reliably (44px, WCAG 2.5.8).
+     Applied under `pointer: coarse` only; a mouse needs no such room. */
+  --tap-min: 2.75rem;
+
   --sp-1:  0.25rem;
   --sp-2:  0.5rem;
   --sp-3:  0.75rem;

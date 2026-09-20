@@ -41,6 +41,9 @@ export function SpiderCursor({ className }: { className?: string }) {
     const canvas = canvasRef.current
     if (!canvas) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    /* A finger is not a pointer to follow: on a touch screen the spiders
+       would sit wherever they spawned and draw ink over the content. */
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return
 
     let w = 0,
       h = 0,

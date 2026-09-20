@@ -1474,6 +1474,24 @@ html:has(.learn-app) body {
   .mf-hint { opacity: 1; transform: none; }
 }
 
+/* …and every small text button is tall enough for a finger. */
+@media (pointer: coarse) {
+  .qw-view-all,
+  .rail-note-link,
+  .lt-brand { min-height: var(--tap-min); }
+  .lt-brand { min-width: var(--tap-min); justify-content: center; }
+}
+
+/* The narrowest phones (320px): the top bar keeps the mark, the bonus
+   button and the three counters, and drops the wordmark's letters, so
+   nothing in it is squeezed. */
+@media (max-width: 380px) {
+  .learn-topbar { padding: 0 var(--sp-3); }
+  .lt-brand-text { display: none; }
+  .lt-actions { gap: var(--sp-2); }
+  .pg-pill { padding-left: var(--sp-2); padding-right: var(--sp-2); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .badge-dot, .resume-label-dot::after, .qw-reset .ico-hand, .course-tick { animation: none !important; }
 }
