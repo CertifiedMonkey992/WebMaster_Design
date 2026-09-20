@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+# contents: read for the checkout; pages/id-token for the deploy job's
+# OIDC handshake with GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -23,6 +30,29 @@ jobs:
       - run: npm test
         env:
           TZ: America/Los_Angeles
-      # The published site lives in docs/ and is rebuilt by hand before a
-      # release commit; CI only proves the build still succeeds.
+      # The published site is built here and nowhere else: docs/ is not
+      # committed, so this is the only copy that reaches Pages.
       - run: npm run build
+      - name: Keep the built site for the deploy job
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  # Publishes what `check` built — so a push that fails lint, the typecheck,
+  # either timezone's test run or the build never reaches the live site.
+  deploy:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # One deployment at a time, and a run that is already publishing is
+    # allowed to finish rather than being cancelled.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
