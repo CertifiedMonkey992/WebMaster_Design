@@ -68,11 +68,11 @@ export const ACHIEVEMENTS = [
   {
     id: 'scholar',
     title: 'Scholar',
-    description: 'Complete 25 lessons',
+    description: 'Complete 20 lessons',
     icon: 'book',
     tier: ACHIEVEMENT_TIER.SILVER,
     gems: 75,
-    progress: (s) => ({ current: s.stats.totalLessonsCompleted, target: 25 }),
+    progress: (s) => ({ current: s.stats.totalLessonsCompleted, target: 20 }),
   },
   {
     id: 'xp-machine',

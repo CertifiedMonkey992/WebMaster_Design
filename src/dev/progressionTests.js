@@ -25,6 +25,7 @@ import * as shopSvc from '../services/shopService'
 import * as bonusSvc from '../services/dailyBonusService'
 import * as dbCfg from '../config/dailyBonusConfig'
 import * as putils from '../utils/progressionUtils'
+import * as showcase from '../data/showcaseState'
 import { getLocalDateKey } from '../utils/dateUtils'
 
 /** The local date key for an injected timestamp — used all over the bonus tests. */
@@ -1053,6 +1054,37 @@ export async function runProgressionTests() {
     ok('T42 a nameless member drops the record', store.sanitizeState({ team: nameless }, T0).team === null)
     const seconds = store.sanitizeState({ team: { ...base, contributionSeconds: undefined } }, T0).team
     ok('T42 missing seconds default to 0', seconds?.contributionSeconds === 0)
+  }
+
+  /* ── TEST 43: every dealt quest is reachable, at every level and course position ── */
+  {
+    const order = learn.SECTIONS.flatMap(sec => sec.lessons.map(l => l.id))
+    const total = order.length
+    const violations = []
+    for (let level = 1; level <= 30; level++) {
+      for (let remaining = 0; remaining <= total; remaining++) {
+        const lessons = {}
+        for (const id of order.slice(0, total - remaining)) lessons[id] = { firstCompletedAt: T0, lastCompletedAt: T0, attempts: 1, perfect: true, bestAccuracy: 1 }
+        const xp = 25 * (level - 1) * (level + 2)
+        const s = { ...fresh(), xp, level, lessons, createdAt: T0 + level * 7 + remaining }
+        const ctx = quests.buildContext(s)
+        for (const q of [...quests.generateDailyQuests(s, T0), ...quests.generateWeeklyQuests(s, T0)]) {
+          if (q.type === 'COMPLETE_LESSONS' && q.target > ctx.lessonsRemaining) violations.push(`${q.id} L${level} rem${remaining} target ${q.target}`)
+          if (q.type === 'COMPLETE_SECTION' && q.target > ctx.sectionsRemaining) violations.push(`${q.id} L${level} rem${remaining} target ${q.target}/${ctx.sectionsRemaining}`)
+        }
+      }
+    }
+    ok('T43 no dealt quest asks for more than the course has left', violations.length === 0, violations.slice(0, 4).join(' | '))
+  }
+
+  /* ── TEST 44: the demo learner is settled — nothing pays out on its first tick ── */
+  {
+    const seeds = [['showcase', showcase.getShowcaseState()], ['bonus', showcase.getBonusShowcaseState()]]
+    for (const [name, seed] of seeds) {
+      const r = prog.reduce(seed, { type: A.RECONCILE }, Date.now())
+      ok(`T44 ${name} seed unlocks nothing on reconcile`, !r.events.some(e => e.type === 'ACHIEVEMENT_UNLOCKED'), r.events.map(e => e.type).join())
+      ok(`T44 ${name} seed keeps its gems`, r.state.gems === seed.gems && seed.gems === 410, `${seed.gems} -> ${r.state.gems}`)
+    }
   }
 
   const passed = results.filter((r) => r.pass).length

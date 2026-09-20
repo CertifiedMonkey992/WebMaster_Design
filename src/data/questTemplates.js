@@ -38,6 +38,14 @@ export const QUEST_CATEGORY = {
  *  Grows slowly and caps out, so quests stay achievable in one sitting. */
 const scale = (level) => clamp(1 + (level - 1) * 0.06, 1, 2.2)
 
+/* Lesson targets are capped at what the course has left, so a learner on
+   the last two lessons is never dealt "complete 4 lessons today". */
+const INTO_GEAR_TARGETS = {
+  easy:   () => 1,
+  medium: (c) => Math.min(clamp(Math.round(2 * scale(c.level)), 2, 4), c.lessonsRemaining),
+  hard:   (c) => Math.min(clamp(Math.round(4 * scale(c.level)), 4, 7), c.lessonsRemaining),
+}
+
 /* ── Daily quest templates ───────────────────────────────────────────────── */
 export const DAILY_TEMPLATES = [
   {
@@ -62,14 +70,9 @@ export const DAILY_TEMPLATES = [
     title: { easy: 'Getting Into Gear', medium: 'Steady Climb', hard: 'Deep Dive' },
     describe: (t) => `Complete ${t} lesson${t === 1 ? '' : 's'} today`,
     unit: 'lessons',
-    targets: {
-      easy:   () => 1,
-      medium: (c) => clamp(Math.round(2 * scale(c.level)), 2, 4),
-      hard:   (c) => clamp(Math.round(4 * scale(c.level)), 4, 7),
-    },
+    targets: INTO_GEAR_TARGETS,
     /* Never ask for more lessons than the learner can actually reach. */
-    available: (c, tier) =>
-      c.lessonsRemaining >= (tier === 'hard' ? 4 : tier === 'medium' ? 2 : 1),
+    available: (c, tier) => c.lessonsRemaining >= Math.max(1, INTO_GEAR_TARGETS[tier](c)),
   },
   {
     key: 'practice-makes-progress',
@@ -155,7 +158,8 @@ export const DAILY_TEMPLATES = [
     fixedTier: 'hard',
     /* Only offered when a section is genuinely within reach today. */
     available: (c) =>
-      c.lessonsLeftInCurrentSection > 0 && c.lessonsLeftInCurrentSection <= 3,
+      c.lessonsLeftInCurrentSection > 0 && c.lessonsLeftInCurrentSection <= 3
+        && c.sectionsRemaining >= 2,
   },
 ]
 

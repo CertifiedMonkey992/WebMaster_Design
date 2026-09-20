@@ -33,6 +33,11 @@ const COMPLETED_TODAY = ['training-data']
 
 const STREAK_DAYS = 12
 
+/* The gem count the frames display. The seed is settled through the real
+   reducer after its overrides, so the achievements the overrides satisfy are
+   paid before anybody is watching — then the balance is pinned here. */
+const DISPLAY_GEMS = 410
+
 /** Per-day activity for the last N days, so the streak calendar is populated. */
 function buildHistory(today, days) {
   const history = {}
@@ -97,6 +102,10 @@ export function getShowcaseState() {
     },
   }
 
+  /* Settle what the overrides changed (a 12-day streak meets streak
+     achievements), so the first demo action does not also pay those out. */
+  state = { ...reconcile(state, now).state, gems: DISPLAY_GEMS }
+
   cached = state
   return cached
 }
@@ -115,6 +124,7 @@ export function getBonusShowcaseState() {
   let state = getShowcaseState()
   state = reduce(state, { type: ACTIONS.LOSE_HEART, payload: { reason: 'mistake' } }, now).state
   state = reduce(state, { type: ACTIONS.LOSE_HEART, payload: { reason: 'mistake' } }, now).state
+  state = { ...reconcile(state, now).state, gems: DISPLAY_GEMS }
   bonusCached = state
   return bonusCached
 }
