@@ -546,106 +546,12 @@
 .hero-right { position: relative; min-width: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LOGIN MODAL
+   THE INPUT
+   ---------------------------------------------------------------------------
+   The one field style in the product, used by the contact form: label above,
+   evergreen focus rule drawn across the bottom (COMPONENT_RULES.md → the
+   input). Error states live in SiteChrome.css beside the form that has them.
    ═══════════════════════════════════════════════════════════════════════════ */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  background: rgba(var(--ink-rgb), 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-4);
-  animation: overlayIn var(--dur-enter) var(--ease-out) both;
-}
-
-.modal-overlay.is-closing { animation: overlayOut var(--dur-hover) var(--ease-in) both; }
-.modal-overlay.is-closing .modal-panel { animation: modalOut var(--dur-hover) var(--ease-in) both; }
-
-@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes overlayOut { to { opacity: 0; } }
-
-.modal-panel {
-  position: relative;
-  width: 100%;
-  max-width: 25rem;
-  padding: var(--sp-8);
-  background: var(--surface-raised);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-modal);
-  animation: modalIn var(--dur-modal) var(--ease-snap) both;
-}
-
-/* Depth by amplitude: the panel rises 16px, its contents 8px, on the same
-   clock — the form arrives as one object with layers, not as a queue. */
-.modal-panel > * { animation: modal-layer var(--dur-modal) var(--ease-snap) both; }
-
-@keyframes modal-layer { from { opacity: 0; transform: translateY(8px); } }
-
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: none; }
-}
-
-@keyframes modalOut { to { opacity: 0; transform: translateY(10px) scale(0.98); } }
-
-.modal-close {
-  position: absolute;
-  top: var(--sp-4); right: var(--sp-4);
-  width: 28px; height: 28px;
-  display: grid;
-  place-items: center;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  color: var(--ink-muted);
-  cursor: pointer;
-  transition: border-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-snap);
-}
-.modal-close:hover { border-color: var(--line-strong); color: var(--ink); transform: rotate(90deg); }
-.modal-close:active { transform: rotate(90deg) scale(0.9); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-micro); }
-
-.modal-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-6);
-}
-
-.modal-logo-mark {
-  width: 26px; height: 26px;
-  background: var(--evergreen);
-  border-radius: var(--r-sm);
-  display: grid;
-  place-items: center;
-}
-
-.modal-logo-text {
-  font-family: var(--font-display);
-  font-size: var(--fs-lead);
-  font-weight: var(--fw-semi);
-  color: var(--evergreen);
-}
-
-.modal-heading {
-  font-family: var(--font-display);
-  font-size: var(--fs-title);
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-title);
-  color: var(--ink);
-  margin-bottom: var(--sp-1);
-}
-
-.modal-sub {
-  font-size: var(--fs-small);
-  color: var(--ink-muted);
-  margin-bottom: var(--sp-6);
-}
-
-.modal-form { display: flex; flex-direction: column; gap: var(--sp-4); }
 
 .form-field { position: relative; display: flex; flex-direction: column; gap: var(--sp-1); }
 
@@ -687,83 +593,6 @@
 }
 
 .form-field:focus-within::after { transform: scaleX(1); }
-
-.form-extras { display: flex; justify-content: flex-end; }
-
-.form-forgot {
-  font-size: var(--fs-small);
-  color: var(--ink-faint);
-  cursor: pointer;
-  background: none;
-  border: none;
-  transition: color var(--dur-hover) var(--ease-out);
-}
-.form-forgot:hover { color: var(--ink); }
-
-.modal-submit { width: 100%; }
-
-/* The honest answer: accounts are not built. It slides in where the error
-   would be, in the voice of a note rather than an error. */
-.modal-note {
-  display: flex;
-  gap: var(--sp-2);
-  align-items: flex-start;
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-sm);
-  background: var(--ochre-tint);
-  color: var(--ochre-ink);
-  font-size: var(--fs-small);
-  line-height: var(--lh-normal);
-  animation: fx-slide-up var(--dur-lift) var(--ease-snap) both;
-}
-
-.modal-note svg { flex-shrink: 0; margin-top: 2px; }
-
-.modal-divider {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  margin: var(--sp-5) 0;
-}
-.modal-div-line { flex: 1; height: 1px; background: var(--line); }
-.modal-div-text { font-size: var(--fs-caption); color: var(--ink-faint); }
-
-.modal-google {
-  width: 100%;
-  padding: var(--sp-2) var(--sp-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-2);
-  background: transparent;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--r-sm);
-  color: var(--ink);
-  font-size: var(--fs-body);
-  font-weight: var(--fw-semi);
-  cursor: pointer;
-  transition: background-color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-lift) var(--ease-lift);
-}
-.modal-google:hover { background: var(--evergreen-tint); border-color: var(--evergreen); }
-.modal-google:active { transform: translateY(1px) scale(0.98); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-micro); }
-
-.modal-footer-note {
-  text-align: center;
-  margin-top: var(--sp-5);
-  font-size: var(--fs-small);
-  color: var(--ink-faint);
-}
-.modal-footer-note button {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: var(--ink-muted);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color var(--dur-hover) var(--ease-out);
-}
-.modal-footer-note button:hover { color: var(--clay-ink); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    LESSON TICKER

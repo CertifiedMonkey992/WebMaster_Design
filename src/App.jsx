@@ -36,7 +36,6 @@ const LOADERS = {
   notfound: () => import('./pages/NotFoundPage'),
 }
 const LAZY = Object.fromEntries(Object.entries(LOADERS).map(([k, load]) => [k, lazy(load)]))
-const LoginModal = lazy(() => import('./components/LoginModal'))
 
 const BASE = import.meta.env.BASE_URL
 /* `?dev=1` travels with the reader from page to page, so the developer panel
@@ -62,7 +61,6 @@ function initialPage() {
 }
 
 export default function App() {
-  const [loginOpen,    setLoginOpen]    = useState(false)
   const [currentPage,  setCurrentPage]  = useState(initialPage)
   /* A section to land on when a page opens (the footer's "TSA compliance"). */
   const [anchor,       setAnchor]       = useState(() => sectionOf(window.location.hash))
@@ -171,18 +169,10 @@ export default function App() {
        code loads with the course rather than with the home page. */
     const LearnPage = LAZY.learn
     page = (
-      <>
-        <LearnPage
-          onGoHome={() => go('landing')}
-          onGoAbout={() => go('about')}
-          onLoginClick={() => setLoginOpen(true)}
-        />
-        {loginOpen && (
-          <Suspense fallback={null}>
-            <LoginModal onClose={() => setLoginOpen(false)} />
-          </Suspense>
-        )}
-      </>
+      <LearnPage
+        onGoHome={() => go('landing')}
+        onGoAbout={() => go('about')}
+      />
     )
   } else {
     const Page = LAZY[currentPage] ?? LAZY.notfound

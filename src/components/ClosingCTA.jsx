@@ -59,7 +59,7 @@ export default function ClosingCTA() {
           </SplitText>
           <Reveal as="p" className="cta-body" delay={DUR.move * 0.5}>
             It covers what makes a system AI rather than ordinary code. There is
-            nothing to sign up for: open the course, and your progress saves in
+            nothing to register for: open the course, and your progress saves in
             this browser as you go.
           </Reveal>
 

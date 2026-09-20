@@ -48,7 +48,7 @@ Six bespoke button implementations existed before this pass (`.cl-btn`,
 ## Global: the input
 
 - Ground `--surface`, `1px --line`, `--r-sm`, `--sp-2 --sp-3`. Implemented as
-  `.form-label` / `.form-input` in `App.css` — the login form is the only form
+  `.form-label` / `.form-input` in `App.css` — the contact form is the only form
   in the product, so there is deliberately no second `.field-*` set.
 - Label above, `--fs-small`, `--fw-semi`, `--ink-muted`, `--sp-1` gap.
 - Focus: border `--evergreen`, plus the standard focus ring. No glow.

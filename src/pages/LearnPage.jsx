@@ -64,7 +64,7 @@ export default function LearnPage(props) {
   )
 }
 
-function Course({ onGoHome, onGoAbout, onLoginClick }) {
+function Course({ onGoHome, onGoAbout }) {
   const { vm } = useProgression()
   const [activeNav, setActiveNav] = useState('learn')
   const [dir, setDir] = useState(1)
@@ -134,7 +134,7 @@ function Course({ onGoHome, onGoAbout, onLoginClick }) {
       </main>
 
       <RightSidebar
-        onSignup={onLoginClick}
+        onNavigate={navigate}
         onViewAllQuests={() => setQuestPanelOpen(true)}
       />
 

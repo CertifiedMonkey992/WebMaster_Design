@@ -43,7 +43,7 @@ export function PrivacyPage() {
 
       <Section id="summary" title="In short">
         <ul className="sp-list">
-          <li>No sign-up, no account, no password. The sign-in panel in the course is a placeholder that collects and sends nothing.</li>
+          <li>No account and nothing to register for.</li>
           <li>Your course progress is saved in this browser only, and is never sent anywhere.</li>
           <li>LunX sets no cookies.</li>
           <li>{analytics

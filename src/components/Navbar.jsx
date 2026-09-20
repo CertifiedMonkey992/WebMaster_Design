@@ -166,8 +166,8 @@ export default function Navbar({ links = LINKS, scrollLinks = false, pageLink })
         <li className="nav-ink" aria-hidden="true" />
       </ul>}
 
-      {/* No sign-in button: the login form has no backend, so offering it here
-          would promise an account the product cannot create. */}
+      {/* No account button: there are no accounts, so offering one here would
+          promise something the product cannot do. */}
       <div className="nav-actions">
         {pageLink && pageLink.page !== currentPage && (
           <PageLink page={pageLink.page} className="btn btn-ghost nav-page-link">
