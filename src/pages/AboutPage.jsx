@@ -366,7 +366,7 @@ export default function AboutPage() {
               <Reveal stagger delay={220}>
                 <p className="sc-body">
                   LunX loads no template, theme, UI kit, icon library or stock image.
-                  What it does use is listed here with its licence.
+                  What it does use is listed here with its license.
                 </p>
                 <p className="ab-note">
                   Product names taught in the {strand('tools').sections[0].title} module —{' '}

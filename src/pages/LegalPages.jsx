@@ -172,7 +172,7 @@ export function TermsPage() {
         <p className="sp-p">
           The lessons, illustrations, field guide and code of LunX belong to the team that made it.
           The typefaces are used under the SIL Open Font License, and the software libraries under
-          their own licences, listed on the <PageLink page="about" section="credits">About page</PageLink>.
+          their own licenses, listed on the <PageLink page="about" section="credits">About page</PageLink>.
           Product names mentioned in lessons, such as ChatGPT, Claude and Gemini, are trademarks of
           their owners; LunX is not affiliated with or endorsed by them.
         </p>
@@ -187,7 +187,7 @@ export function TermsPage() {
 
       <Section id="warranty" title="No warranty">
         <p className="sp-p">
-          LunX is provided as it is, without guarantees that it will always be available, error-free
+          LunX is provided as is, without guarantees that it will always be available, error-free
           or suited to a particular purpose. To the extent the law allows, the team is not liable for
           any loss that comes from using it, including lost progress.
         </p>

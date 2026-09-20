@@ -62,7 +62,7 @@ export const SECTIONS = [
     moduleTheme: 'blue',
     lessons: [
       { id: 'prompt-eng',    title: 'Prompt Engineering', desc: 'Write prompts that consistently get the results you actually need.', duration: '8 min' },
-      { id: 'chatgpt',       title: 'ChatGPT Deep Dive',  desc: 'Capabilities, real limits, and the best use cases for GPT-4.', duration: '7 min' },
+      { id: 'chatgpt',       title: 'ChatGPT Deep Dive',  desc: 'Capabilities, real limits, and the best use cases for a chatbot.', duration: '7 min' },
       { id: 'claude-gemini', title: 'Claude & Gemini',    desc: 'Compare leading LLMs and understand when to use each.', duration: '6 min' },
       { id: 'image-gen',     title: 'AI Image Generation', desc: 'Midjourney, DALL-E, and Stable Diffusion explored end-to-end.', duration: '8 min' },
       { id: 'copilot',       title: 'GitHub Copilot',      desc: 'AI pair programming for faster, more thoughtful code.', duration: '7 min' },

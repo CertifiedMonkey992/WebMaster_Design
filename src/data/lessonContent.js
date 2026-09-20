@@ -78,7 +78,7 @@ export const LESSON_CONTENT = {
           },
           {
             id:'q3', type:'mcq',
-            prompt:'Tricky! A weather app shows  when temperature > 25°C. This is...',
+            prompt:'A weather app shows a sun icon when the temperature is above 25 °C. This is...',
             options: [
               { id:'a', text:'AI — it analyzed historical weather patterns' },
               { id:'b', text:'AI — temperature data trained a model' },

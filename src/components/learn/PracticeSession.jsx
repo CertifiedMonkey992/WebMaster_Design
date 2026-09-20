@@ -175,7 +175,7 @@ export default function PracticeSession() {
 
         <div className="ps-stats">
           <div><b><CountUp value={vm.stats.totalPracticeSessions} immediate delay={700} /></b><span>sessions</span></div>
-          <div><b><CountUp value={Math.floor(vm.stats.totalPracticeSeconds / 60)} immediate delay={780} /></b><span>minutes practised</span></div>
+          <div><b><CountUp value={Math.floor(vm.stats.totalPracticeSeconds / 60)} immediate delay={780} /></b><span>minutes practiced</span></div>
           <div><b><CountUp value={vm.daily.practiceSessions} immediate delay={860} /></b><span>today</span></div>
         </div>
       </div>
