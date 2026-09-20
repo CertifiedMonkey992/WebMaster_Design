@@ -575,7 +575,9 @@
 .mq {
   position: relative;
   overflow: hidden;
-  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  /* A mask reads only alpha, so any opaque colour will do: the ink token
+     keeps the stylesheet free of raw hex. */
+  mask-image: linear-gradient(90deg, transparent, var(--ink) 7%, var(--ink) 93%, transparent);
 }
 
 .mq-track { display: flex; width: max-content; will-change: transform; }
