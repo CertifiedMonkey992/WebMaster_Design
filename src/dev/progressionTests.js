@@ -971,6 +971,90 @@ export async function runProgressionTests() {
     ok('T35 a valid record is kept', good.team?.missionKey === fresh().team.missionKey)
   }
 
+  /* ── TEST 36: a heart the clock already returned is not sold again ── */
+  {
+    const s = { ...fresh(), hearts: 4, heartAnchor: T0 - 31 * 60000 }
+    ok('T36 availability sees the regenerated heart', shopSvc.getAvailability(s, 'extra_heart', T0).ok === false
+      && shopSvc.getAvailability(s, 'extra_heart', T0).reason === 'hearts-full')
+    const r = run(s, A.PURCHASE_ITEM, { itemId: 'extra_heart', txnId: 'regen1' }, T0)
+    ok('T36 the purchase is refused as hearts-full',
+      r.events.some(e => e.type === 'PURCHASE_FAILED' && e.reason === 'hearts-full'), r.events.map(e => e.type).join())
+    ok('T36 no gems were spent', r.state.gems === s.gems, r.state.gems)
+    ok('T36 the regenerated heart is kept', r.state.hearts === 5 && r.state.heartAnchor === null, `${r.state.hearts} anchor=${r.state.heartAnchor}`)
+    /* Genuinely short by one heart, the purchase still works. */
+    const short = { ...fresh(), hearts: 4, heartAnchor: T0 - 5 * 60000 }
+    const bought = run(short, A.PURCHASE_ITEM, { itemId: 'extra_heart', txnId: 'regen2' }, T0)
+    ok('T36 a real gap is still sold', bought.state.hearts === 5 && bought.state.gems === short.gems - shop.EXTRA_HEART_COST)
+  }
+
+  /* ── TEST 37: the day-4 hearts bonus falls back once regen has refilled ── */
+  {
+    const s = { ...fresh(), hearts: 4, heartAnchor: T0 - 31 * 60000, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } }
+    const r = run(s, A.CLAIM_DAILY_BONUS, {}, T0)
+    const claimed = r.events.find(e => e.type === 'DAILY_BONUS_CLAIMED')
+    ok('T37 day 4 pays hearts', claimed?.reward?.type === dbCfg.REWARD_TYPES.HEARTS, claimed?.reward?.type)
+    ok('T37 hearts are full after regen', r.state.hearts === 5, r.state.hearts)
+    ok('T37 the fallback was paid instead', claimed?.substituted === true)
+    ok('T37 fallback gems landed', r.state.gems === s.gems + (claimed?.reward?.fallback?.amount ?? -1), `${s.gems} -> ${r.state.gems}`)
+  }
+
+  /* ── TEST 38: a minutes mission counts seconds, not per-lesson floors ── */
+  {
+    let s = fresh()
+    s = { ...s, team: { ...s.team, missionKey: 'study-squad', contribution: 0, contributionSeconds: 0 } }
+    const ids = learn.SECTIONS[0].lessons.slice(0, 3).map(l => l.id)
+    for (const id of ids) s = run(s, A.COMPLETE_LESSON, { lessonId: id, perfect: false, seconds: 50, accuracy: 1 }, T0).state
+    ok('T38 150 seconds contribute 2 minutes', s.team.contribution === 2 && s.team.contributionSeconds === 150,
+      `${s.team.contribution} min, ${s.team.contributionSeconds} s`)
+    ok('T38 matches the solo time metric', quests.METRICS.SPEND_TIME(s, 'daily') === 2, quests.METRICS.SPEND_TIME(s, 'daily'))
+  }
+
+  /* ── TEST 39: calendar, squad and daily XP all read the XP actually paid ── */
+  {
+    let s = fresh()
+    s = { ...s, team: { ...s.team, missionKey: 'reach-the-moon', contribution: 0 } }
+    for (let i = 0; i < 4; i++) s = run(s, A.RECORD_ANSWER, { lessonId: 'what-is-ai', correct: true, maxAnswerXP: 35 }, T0).state
+    ok('T39 four answers pay 20 XP', s.xp === 20, s.xp)
+    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 120, accuracy: 1 }, T0).state
+    const today = putils_today(T0)
+    ok('T39 daily XP is 70', s.daily.xp === 70, s.daily.xp)
+    ok('T39 the calendar shows 70', s.streak.history[today]?.xp === 70, s.streak.history[today]?.xp)
+    ok('T39 the squad shows 70', s.team.contribution === 70, s.team.contribution)
+  }
+
+  /* ── TEST 40: the stored level is re-derived from XP on load ── */
+  {
+    const inflated = store.sanitizeState({ xp: 0, level: 40, levelRewardedUpTo: 40 }, T0)
+    ok('T40 level 40 with no XP loads as level 1', inflated.level === 1, inflated.level)
+    ok('T40 the reward marker cannot exceed the level', inflated.levelRewardedUpTo === 1, inflated.levelRewardedUpTo)
+    const earned = store.sanitizeState({ xp: 250, level: 1, levelRewardedUpTo: 3 }, T0)
+    ok('T40 250 XP loads as level 3', earned.level === 3 && earned.levelRewardedUpTo === 3, `${earned.level}/${earned.levelRewardedUpTo}`)
+  }
+
+  /* ── TEST 41: gems the rollover pays out belong to the old day ── */
+  {
+    const s = fresh()
+    const done = {
+      ...s,
+      quests: { ...s.quests, daily: s.quests.daily.map((q, i) => (i === 0 ? { ...q, completed: true, progress: q.target } : q)) },
+    }
+    const r = run(done, A.RECONCILE, {}, T0 + DAY)
+    ok('T41 the reward was paid', r.state.gems > done.gems, `${done.gems} -> ${r.state.gems}`)
+    ok('T41 the new day starts with no gems earned', r.state.daily.gems === 0, r.state.daily.gems)
+    ok('T41 rollover events keep their order',
+      r.events[0]?.type === 'DAY_ROLLOVER' && r.events.findIndex(e => e.type === 'QUEST_CLAIMED') < r.events.findIndex(e => e.type === 'DAILY_QUESTS_GENERATED'),
+      r.events.map(e => e.type).join())
+  }
+
+  /* ── TEST 42: a squad member without a name is a corrupt record ── */
+  {
+    const base = fresh().team
+    const nameless = { ...base, members: base.members.map(({ name: _name, ...m }) => m) }
+    ok('T42 a nameless member drops the record', store.sanitizeState({ team: nameless }, T0).team === null)
+    const seconds = store.sanitizeState({ team: { ...base, contributionSeconds: undefined } }, T0).team
+    ok('T42 missing seconds default to 0', seconds?.contributionSeconds === 0)
+  }
+
   const passed = results.filter((r) => r.pass).length
   const failures = results.filter((r) => !r.pass)
   return {

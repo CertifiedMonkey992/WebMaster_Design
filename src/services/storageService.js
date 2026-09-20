@@ -16,6 +16,7 @@ import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS } from '../config/p
 import { SHIELD } from '../config/shopConfig'
 import { normalizeDay } from '../config/dailyBonusConfig'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
+import { getLevelFromXP } from '../utils/progressionUtils'
 
 /** How many recent purchase ids are remembered for the duplicate guard. */
 export const TXN_HISTORY = 40
@@ -188,8 +189,9 @@ export function sanitizeState(raw, now = Date.now()) {
   s.maxHearts = Math.max(1, Math.floor(num(raw.maxHearts, HEARTS.MAX)))
   s.hearts = Math.min(s.maxHearts, Math.max(0, Math.floor(num(raw.hearts, s.maxHearts))))
   s.heartAnchor = Number.isFinite(raw.heartAnchor) ? raw.heartAnchor : null
-  s.level = Math.max(1, Math.floor(num(raw.level, 1)))
-  s.levelRewardedUpTo = Math.max(1, Math.floor(num(raw.levelRewardedUpTo, 1)))
+  /* The level is a function of XP, never a stored number to be trusted. */
+  s.level = getLevelFromXP(s.xp)
+  s.levelRewardedUpTo = Math.min(s.level, Math.max(1, Math.floor(num(raw.levelRewardedUpTo, 1))))
 
   if (isObj(raw.streak)) {
     s.streak = {
@@ -281,7 +283,7 @@ export function sanitizeState(raw, now = Date.now()) {
     }
   }
 
-  if (isValidTeam(raw.team)) s.team = raw.team
+  if (isValidTeam(raw.team)) s.team = { ...raw.team, contributionSeconds: num(raw.team.contributionSeconds, 0) }
 
   if (isObj(raw.stats)) {
     s.stats = { ...base.stats }
@@ -323,7 +325,10 @@ function isValidTeam(t) {
     && Number.isFinite(t.startsAt) && Number.isFinite(t.endsAt)
     && Number.isFinite(t.goal) && Number.isFinite(t.goalPerMember)
     && Number.isFinite(t.contribution)
-    && Array.isArray(t.members) && t.members.every((m) => isObj(m) && Number.isFinite(m.rate) && Number.isFinite(m.offsetHours))
+    && (t.contributionSeconds === undefined || Number.isFinite(t.contributionSeconds))
+    && Array.isArray(t.members) && t.members.every((m) =>
+      isObj(m) && typeof m.id === 'string' && typeof m.name === 'string'
+        && Number.isFinite(m.rate) && Number.isFinite(m.offsetHours))
 }
 
 /* ── Migrations ──────────────────────────────────────────────────────────────

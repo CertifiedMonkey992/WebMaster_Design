@@ -156,18 +156,19 @@ export function applyRollover(state, now = Date.now()) {
   const events = []
   let next = state
 
-  if (next.daily.dateKey !== dateKey) {
-    events.push({ type: 'DAY_ROLLOVER', from: next.daily.dateKey, to: dateKey })
-    next = { ...next, daily: emptyDaily(dateKey) }
-  }
+  const dayOver = next.daily.dateKey !== dateKey
+  const weekOver = next.weekly.weekKey !== weekKey
+  if (dayOver) events.push({ type: 'DAY_ROLLOVER', from: next.daily.dateKey, to: dateKey })
+  if (weekOver) events.push({ type: 'WEEK_ROLLOVER', from: next.weekly.weekKey, to: weekKey })
 
-  if (next.weekly.weekKey !== weekKey) {
-    events.push({ type: 'WEEK_ROLLOVER', from: next.weekly.weekKey, to: weekKey })
-    next = { ...next, weekly: emptyWeekly(weekKey) }
-  }
-
+  /* Quests first, while the old buckets are still in place: a reward the
+     rollover pays on the learner's behalf belongs to the period it was
+     earned in, not to the new day's gem count. */
   const quests = questService.ensureQuests(next, now)
   next = quests.state
+
+  if (dayOver) next = { ...next, daily: emptyDaily(dateKey) }
+  if (weekOver) next = { ...next, weekly: emptyWeekly(weekKey) }
   events.push(...quests.events)
 
   const team = teamService.ensureMission(next, now)
@@ -204,7 +205,11 @@ export function reconcile(state, now = Date.now()) {
 
 /* ── Qualifying activity (streak + history + team) ───────────────────────── */
 
-function recordActivity(state, { xp = 0, lessons = 0, seconds = 0, minutes = 0, perfect = 0 }, now) {
+/** The XP an action has paid so far: every XP_AWARDED it emitted, including
+ *  answer XP, the perfect bonus, a section bonus and the daily-goal bonus. */
+const xpAwarded = (events) => events.reduce((sum, e) => (e.type === 'XP_AWARDED' ? sum + e.amount : sum), 0)
+
+function recordActivity(state, { xp = 0, lessons = 0, seconds = 0, perfect = 0 }, now) {
   const acc = { state, events: [] }
   const today = getLocalDateKey(new Date(now))
   const isFirstActivityToday = acc.state.streak.lastActivityDate !== today
@@ -217,7 +222,7 @@ function recordActivity(state, { xp = 0, lessons = 0, seconds = 0, minutes = 0, 
 
   acc.state = streakService.recordHistory(acc.state, { xp, lessons, seconds }, now)
 
-  merge(acc, teamService.contribute(acc.state, { xp, lessons, minutes, perfect }, now))
+  merge(acc, teamService.contribute(acc.state, { xp, lessons, seconds, perfect }, now))
 
   /* A streak milestone pays gems — routed through the currency service so it
      lands in the ledger and counts toward gem quests like any other award. */
@@ -300,6 +305,14 @@ export function recordAnswer(state, { lessonId, correct, maxAnswerXP = 0 }, now 
     merge(acc, awardXP(acc.state, award, 'correct-answer', { lessonId }))
   }
 
+  /* Answer XP is real XP: it shows in the streak calendar and counts toward
+     the squad's XP mission, though answering alone does not keep a streak. */
+  const earned = xpAwarded(acc.events)
+  if (earned > 0) {
+    acc.state = streakService.recordHistory(acc.state, { xp: earned }, now)
+    merge(acc, teamService.contribute(acc.state, { xp: earned }, now))
+  }
+
   merge(acc, runPipeline(acc.state, now))
   return acc
 }
@@ -321,7 +334,6 @@ export function completeLesson(state, payload, now = Date.now()) {
   const existing = acc.state.lessons[lessonId]
   const isReplay = Boolean(existing)
   const safeSeconds = clamp(Math.floor(seconds), 0, 60 * 60)
-  const minutes = Math.floor(safeSeconds / 60)
 
   /* ── Lesson record (idempotency anchor) ── */
   acc.state = {
@@ -351,7 +363,7 @@ export function completeLesson(state, payload, now = Date.now()) {
       merge(acc, awardXP(acc.state, XP.LESSON_REPLAY, 'lesson-replay', { lessonId }))
     }
 
-    merge(acc, recordActivity(acc.state, { xp: XP.LESSON_REPLAY, seconds: safeSeconds, minutes }, now))
+    merge(acc, recordActivity(acc.state, { xp: xpAwarded(acc.events), seconds: safeSeconds }, now))
     merge(acc, runPipeline(acc.state, now))
     return acc
   }
@@ -380,9 +392,8 @@ export function completeLesson(state, payload, now = Date.now()) {
 
   merge(acc, checkSectionCompletion(acc.state, lessonId, now))
 
-  const xpEarned = XP.LESSON + (perfect ? XP.PERFECT_BONUS : 0)
   merge(acc, recordActivity(acc.state, {
-    xp: xpEarned, lessons: 1, seconds: safeSeconds, minutes, perfect: perfect ? 1 : 0,
+    xp: xpAwarded(acc.events), lessons: 1, seconds: safeSeconds, perfect: perfect ? 1 : 0,
   }, now))
 
   merge(acc, runPipeline(acc.state, now))
@@ -393,7 +404,6 @@ export function completeLesson(state, payload, now = Date.now()) {
 export function completePractice(state, { seconds = 0, correct = 0, total = 0 } = {}, now = Date.now()) {
   const acc = { state, events: [] }
   const safeSeconds = clamp(Math.floor(seconds), 0, 60 * 60)
-  const minutes = Math.floor(safeSeconds / 60)
 
   acc.state = addCounters(acc.state, {
     daily: { practiceSessions: 1, practiceSeconds: safeSeconds },
@@ -404,7 +414,7 @@ export function completePractice(state, { seconds = 0, correct = 0, total = 0 } 
   acc.events.push({ type: 'PRACTICE_COMPLETE', correct, total })
 
   merge(acc, awardXP(acc.state, XP.PRACTICE, 'practice-complete'))
-  merge(acc, recordActivity(acc.state, { xp: XP.PRACTICE, seconds: safeSeconds, minutes }, now))
+  merge(acc, recordActivity(acc.state, { xp: xpAwarded(acc.events), seconds: safeSeconds }, now))
   merge(acc, runPipeline(acc.state, now))
   return acc
 }
@@ -421,7 +431,7 @@ export function addPracticeTime(state, seconds, now = Date.now()) {
     stats: { totalPracticeSeconds: safeSeconds },
   })
   acc.state = streakService.recordHistory(acc.state, { seconds: safeSeconds }, now)
-  merge(acc, teamService.contribute(acc.state, { minutes: Math.floor(safeSeconds / 60) }, now))
+  merge(acc, teamService.contribute(acc.state, { seconds: safeSeconds }, now))
   merge(acc, runPipeline(acc.state, now))
   return acc
 }
@@ -678,7 +688,7 @@ export function buildViewModel(state, now = Date.now()) {
        offer something the engine would reject. */
     shop: {
       items: SHOP_ITEMS.map((item) => {
-        const { ok, reason, shortfall } = shopService.getAvailability(state, item.id)
+        const { ok, reason, shortfall } = shopService.getAvailability(state, item.id, now)
         return { ...item, ok, reason, shortfall, owned: shopService.getOwnedCount(state, item.id) }
       }),
       purchaseCount: state.shop.purchaseCount,

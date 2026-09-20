@@ -133,6 +133,7 @@ export function createMission(state, now = Date.now()) {
     squadSize,
     members,
     contribution: 0,        // the learner's REAL contribution
+    contributionSeconds: 0, // learning time behind a minutes mission
     claimed: false,
     joinedAt: now,
   }
@@ -224,25 +225,36 @@ export function ensureMission(state, now = Date.now()) {
  * reducer whenever a lesson or practice session finishes — the same event
  * that feeds solo quests, so a team bar can never disagree with a solo bar.
  */
-export function contribute(state, { xp = 0, lessons = 0, minutes = 0, perfect = 0 } = {}, now = Date.now()) {
+export function contribute(state, { xp = 0, lessons = 0, seconds = 0, perfect = 0 } = {}, now = Date.now()) {
   const record = state.team
   if (!record) return { state, events: [] }
   const mission = MISSIONS.find((m) => m.key === record.missionKey)
   if (!mission) return { state, events: [] }
 
   let amount = 0
+  let updated = record
   switch (mission.type) {
     case MISSION_TYPES.TEAM_XP:
     case MISSION_TYPES.XP_RELAY:     amount = xp; break
     case MISSION_TYPES.TEAM_LESSONS: amount = lessons; break
-    case MISSION_TYPES.TEAM_MINUTES: amount = minutes; break
+    case MISSION_TYPES.TEAM_MINUTES: {
+      /* Seconds accumulate on the record and minutes are derived from the
+         total, so three 50-second lessons count 2 minutes, not 0. */
+      if (seconds <= 0) return { state, events: [] }
+      const contributionSeconds = (record.contributionSeconds ?? 0) + seconds
+      updated = { ...record, contributionSeconds }
+      amount = Math.floor(contributionSeconds / 60) - record.contribution
+      break
+    }
     case MISSION_TYPES.TEAM_PERFECT: amount = perfect; break
     default: amount = 0
   }
-  if (amount <= 0) return { state, events: [] }
+  if (amount <= 0) {
+    return updated === record ? { state, events: [] } : { state: { ...state, team: updated }, events: [] }
+  }
 
   const before = getMissionView(state, now)
-  const next = { ...state, team: { ...record, contribution: record.contribution + amount } }
+  const next = { ...state, team: { ...updated, contribution: record.contribution + amount } }
   const after = getMissionView(next, now)
 
   const events = [{ type: 'TEAM_CONTRIBUTION', amount, unit: mission.unit }]

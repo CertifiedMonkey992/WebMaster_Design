@@ -77,8 +77,15 @@ const EFFECTS = {
   }),
 
   [REWARD_TYPES.HEARTS]: (state, reward, ctx) => {
-    const result = currency.restoreHeart(state, reward.amount, ctx.reason, ctx.now)
-    return { ...result, delivered: result.state.hearts > state.hearts }
+    /* Hearts the clock already gave back are not the bonus's to give: settle
+       regen first and judge delivery against the regenerated count. */
+    const regen = currency.applyHeartRegen(state, ctx.now)
+    const result = currency.restoreHeart(regen.state, reward.amount, ctx.reason, ctx.now)
+    return {
+      state: result.state,
+      events: [...regen.events, ...result.events],
+      delivered: result.state.hearts > regen.state.hearts,
+    }
   },
 
   [REWARD_TYPES.STREAK_SHIELD]: (state, reward) => {

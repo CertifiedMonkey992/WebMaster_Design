@@ -40,14 +40,17 @@ export const REASONS = {
  * (to disable the button) and the reducer (to refuse the purchase), so the UI
  * can never offer something the engine would reject.
  */
-export function getAvailability(state, itemId) {
+export function getAvailability(state, itemId, now = Date.now()) {
   const item = getShopItem(itemId)
   if (!item) return { ok: false, reason: REASONS.UNKNOWN_ITEM, item: null }
 
-  if (item.type === ITEM_TYPES.HEART_REFILL && state.hearts >= state.maxHearts) {
+  /* Hearts the clock has already given back count as owned: a purchase is
+     judged against the regenerated count, never a stale one. */
+  const { hearts, maxHearts } = currency.applyHeartRegen(state, now).state
+  if (item.type === ITEM_TYPES.HEART_REFILL && hearts >= maxHearts) {
     return { ok: false, reason: REASONS.HEARTS_FULL, item }
   }
-  if (item.type === ITEM_TYPES.EXTRA_HEART && state.hearts >= state.maxHearts) {
+  if (item.type === ITEM_TYPES.EXTRA_HEART && hearts >= maxHearts) {
     return { ok: false, reason: REASONS.HEARTS_FULL, item }
   }
   if (item.type === ITEM_TYPES.STREAK_SHIELD && state.streak.shields >= SHIELD.MAX_OWNED) {
@@ -96,23 +99,28 @@ const EFFECTS = {
  * @param txnId one-shot id minted when the learner opened the confirmation.
  *              Passing the same id twice settles only the first.
  */
-export function purchaseItem(state, { itemId, txnId } = {}, now = Date.now()) {
+export function purchaseItem(input, { itemId, txnId } = {}, now = Date.now()) {
   const item = getShopItem(itemId)
   if (!item) {
-    return { state, events: [{ type: 'PURCHASE_FAILED', reason: REASONS.UNKNOWN_ITEM, itemId }], ok: false }
+    return { state: input, events: [{ type: 'PURCHASE_FAILED', reason: REASONS.UNKNOWN_ITEM, itemId }], ok: false }
   }
 
-  if (txnId && state.shop.seenTxnIds.includes(txnId)) {
+  if (txnId && input.shop.seenTxnIds.includes(txnId)) {
     /* Already settled — the learner is not charged again, and this is not an
        error worth showing them. */
-    return { state, events: [{ type: 'PURCHASE_DUPLICATE', itemId, txnId }], ok: false }
+    return { state: input, events: [{ type: 'PURCHASE_DUPLICATE', itemId, txnId }], ok: false }
   }
 
-  const availability = getAvailability(state, itemId)
+  /* Settle the heart clock first, so a heart the learner has already earned
+     back is never sold to them again. */
+  const regen = currency.applyHeartRegen(input, now)
+  const state = regen.state
+
+  const availability = getAvailability(state, itemId, now)
   if (!availability.ok) {
     return {
       state,
-      events: [{
+      events: [...regen.events, {
         type: 'PURCHASE_FAILED',
         reason: availability.reason,
         itemId,
@@ -149,6 +157,7 @@ export function purchaseItem(state, { itemId, txnId } = {}, now = Date.now()) {
   return {
     state: settled,
     events: [
+      ...regen.events,
       ...spend.events,
       ...effect.events,
       {
