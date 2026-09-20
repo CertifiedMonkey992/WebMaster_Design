@@ -17,7 +17,7 @@
 
 export const SITE = {
   name: 'LunX',
-  /* Where the build is published (GitHub Pages, from /docs). */
+  /* Where the build is published (GitHub Pages, deployed by CI). */
   origin: 'https://certifiedmonkey992.github.io',
   base: '/WebMaster_Design/',
   get url() { return this.origin + this.base },

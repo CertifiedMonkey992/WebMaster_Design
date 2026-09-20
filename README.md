@@ -37,18 +37,41 @@ are tested deterministically. It can also be run from the app: open the
 course with `?dev=1` and press "Run self-tests" in the developer panel.
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, the tests and the
-build on every push and pull request.
+build on every push and pull request, and publishes the site when those
+pass on `main`.
 
 ## Publishing
 
-GitHub Pages serves the `main` branch from `docs/`, so the built site is
-committed. After a change that should go live:
+GitHub Pages serves whatever CI last built from `main`. The build output
+is **not** committed — `docs/` is in `.gitignore` — so the live site
+cannot drift from the source.
 
-```bash
-npm run build
-git add docs
-git commit -m "Rebuild docs/ so the published site carries this work"
-```
+To publish, push to `main`. The `deploy` job in
+`.github/workflows/ci.yml` waits on the `check` job, so a push that fails
+lint, the typecheck, either timezone's test run or the build never reaches
+the live site. Nothing is built or committed by hand.
+
+Progress is on the repository's Actions tab; the deployed URL is recorded
+on the `github-pages` environment.
+
+### The repository setting this depends on
+
+**Settings → Pages → Build and deployment → Source** must be **GitHub
+Actions**. It was previously *Deploy from a branch → `main` → /docs*,
+which is why `docs/` used to be committed. A workflow cannot change that
+setting for itself, so it is a one-time choice by someone with admin
+access to the repository.
+
+### Where the build output goes
+
+Vite writes to `docs/` (`build.outDir` in `vite.config.js`) — a name left
+over from branch-based publishing, kept so the build behaves exactly as it
+did before. The deploy job uploads whatever that folder contains, so the
+name is now an implementation detail rather than a requirement.
+
+Alongside the bundle, the build writes a static HTML file per address
+(`docs/about/index.html`, `docs/privacy/index.html`, …) carrying that
+page's head, plus `404.html`, `sitemap.xml`, `robots.txt` and `.nojekyll`.
 
 ## Progress data
 
