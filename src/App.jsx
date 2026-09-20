@@ -11,6 +11,7 @@ import Footer          from './components/Footer'
 import ConsentBanner   from './components/ConsentBanner'
 import StickyCta       from './components/StickyCta'
 import PageLoading     from './components/PageLoading'
+import ErrorBoundary   from './components/ErrorBoundary'
 
 import FxLayer from './motion/FxLayer'
 import { SpiderCursor } from './components/ui/spider-cursor'
@@ -78,14 +79,25 @@ export default function App() {
   const go = useCallback((page, { push = true, section = null } = {}) => {
     const from = pageRef.current
     if (page === from) {
-      if (section) document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      else window.scrollTo({ top: 0, behavior: 'smooth' })
+      if (section) {
+        /* A real history entry for the section, as Navbar.followLink makes. */
+        if (push && window.location.hash !== `#${section}`) window.history.pushState(null, '', `#${section}`)
+        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
       return
     }
     if (push) window.history.pushState(null, '', hrefOf(page) + (section ? `#${section}` : ''))
     navigated.current = true
-    const ready = LOADERS[page] ? LOADERS[page]().catch(() => null) : Promise.resolve()
-    ready.then(() => {
+    /* If the page's code cannot be fetched (a deploy replaced the chunks, the
+       network dropped), a full navigation gets a fresh copy instead of
+       turning to a page that will never render. */
+    const ready = LOADERS[page]
+      ? LOADERS[page]().catch(() => { window.location.assign(hrefOf(page)); return null })
+      : Promise.resolve(true)
+    ready.then((loaded) => {
+      if (!loaded) return
       turnPage(() => {
         setAnchor(section)
         setCurrentPage(page)
@@ -109,11 +121,24 @@ export default function App() {
      content, so a screen reader announces where they are. */
   useEffect(() => {
     if (anchor) {
-      const t = window.setTimeout(() => {
-        document.getElementById(anchor)?.scrollIntoView({ behavior: 'instant', block: 'start' })
-        setAnchor(null)
-      }, 60)
-      return () => clearTimeout(t)
+      /* The section may not be in the document yet (its page is still
+         arriving on a cold load), so keep looking for up to ~2s and clear
+         the anchor only once it has been found and scrolled to. */
+      const deadline = performance.now() + 2000
+      let raf = 0
+      let t = 0
+      const look = () => {
+        const el = document.getElementById(anchor)
+        if (el) {
+          el.scrollIntoView({ behavior: 'instant', block: 'start' })
+          setAnchor(null)
+          return
+        }
+        if (performance.now() > deadline) { setAnchor(null); return }
+        t = window.setTimeout(() => { raf = requestAnimationFrame(look) }, 60)
+      }
+      look()
+      return () => { clearTimeout(t); cancelAnimationFrame(raf) }
     }
     if (navigated.current) {
       const t = window.setTimeout(() => document.querySelector('main')?.focus({ preventScroll: true }), 80)
@@ -186,9 +211,11 @@ export default function App() {
       </a>
       <FxLayer />
       <SpiderCursor />
-      <Suspense fallback={<PageLoading label={currentPage === 'learn' ? 'Opening the course…' : 'Opening the page…'} />}>
-        {page}
-      </Suspense>
+      <ErrorBoundary key={currentPage}>
+        <Suspense fallback={<PageLoading label={currentPage === 'learn' ? 'Opening the course…' : 'Opening the page…'} />}>
+          {page}
+        </Suspense>
+      </ErrorBoundary>
       <ConsentBanner />
     </NavProvider>
   )

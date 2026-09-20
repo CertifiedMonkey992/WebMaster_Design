@@ -26,7 +26,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import './LessonModal.css'
 
-import { useProgression } from '../../state/ProgressionContext'
+import { useProgression, useClock } from '../../state/ProgressionContext'
+import { getHeartRecoveryTime } from '../../services/currencyService'
 import { getLessonContent, countSteps } from '../../data/lessonContent'
 import { getLessonById } from '../../data/learnData'
 import { XP, HEARTS, CURRENCY } from '../../config/progressionConfig'
@@ -76,10 +77,14 @@ export default function LessonModal({ lessonId, onClose }) {
   const [filled, setFilled] = useState([])
   const [selected, setSelected] = useState(null)
   const [draggedChip, setDraggedChip] = useState(null)
-  const [perfect, setPerfect] = useState(true)
   const [unlockedTabs, setUnlockedTabs] = useState([0])
   const [completedTabs, setCompletedTabs] = useState([])
-  const [correctCount, setCorrectCount] = useState(0)
+  /* One verdict per step, keyed "tab:step", so a step can never be graded
+     or counted twice — and a finished tab can be read back with its answers. */
+  const [verdicts, setVerdicts] = useState({})
+  /* The furthest point graded so far. Viewing an earlier tab never moves it,
+     so progress cannot walk backwards and grading only happens here. */
+  const [frontier, setFrontier] = useState({ tab: 0, step: 0 })
   const [sessionXP, setSessionXP] = useState(0)
   const [sessionGems, setSessionGems] = useState(0)
   const [leaving, setLeaving] = useState(false)
@@ -116,10 +121,18 @@ export default function LessonModal({ lessonId, onClose }) {
 
   const currentTab = lesson.tabs[tabIdx]
   const currentStep = currentTab?.steps[stepIdx]
-  const doneSteps = lesson.tabs.slice(0, tabIdx).reduce((s, t) => s + t.steps.length, 0) + stepIdx
+  const stepKey = `${tabIdx}:${stepIdx}`
+  /* A tab behind the frontier is read back, never re-graded. */
+  const readOnly = tabIdx < frontier.tab
+  const correctCount = Object.values(verdicts).filter((v) => v.ok).length
+  const perfect = Object.values(verdicts).every((v) => v.ok)
+  const doneSteps = lesson.tabs.slice(0, frontier.tab).reduce((s, t) => s + t.steps.length, 0) + frontier.step
   const progress = screen === 'complete' ? 1 : screen === 'welcome' ? 0 : doneSteps / totalSteps
 
   const blocked = !vm.canStartLesson
+  /* The out-of-hearts countdown ticks with the shared clock. */
+  const now = useClock()
+  const recovery = getHeartRecoveryTime(state, now)
 
   const requestClose = useCallback(() => {
     if (leaving) return
@@ -129,15 +142,34 @@ export default function LessonModal({ lessonId, onClose }) {
 
   useDialog(overlayRef, { onClose: requestClose })
 
+  /* On unmount, credit the time of an abandoned lesson. The values are read
+     through a ref so the cleanup sees the latest without re-subscribing. */
+  const latest = useRef({ time, actions })
+  latest.current = { time, actions }
   useEffect(() => () => {
-    if (time.started() && !committedRef.current) {
-      const seconds = time.seconds()
-      if (seconds > 20) actions.addPracticeTime(seconds)
+    const { time: t, actions: a } = latest.current
+    if (t.started() && !committedRef.current) {
+      const seconds = t.seconds()
+      if (seconds > 20) a.addPracticeTime(seconds)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function resetStep() { setFilled([]); setSelected(null); setStepPhase('answering') }
+
+  /* Show a step: a graded one with its recorded answer and verdict, an
+     ungraded one ready to answer. */
+  function showStep(tab, step) {
+    setTabIdx(tab)
+    setStepIdx(step)
+    const v = verdicts[`${tab}:${step}`]
+    if (v) {
+      setFilled(v.filled)
+      setSelected(v.selected)
+      setStepPhase(v.ok ? 'correct' : 'wrong')
+    } else {
+      resetStep()
+    }
+  }
 
   function start() {
     if (blocked) return
@@ -161,13 +193,22 @@ export default function LessonModal({ lessonId, onClose }) {
 
   function advance() {
     time.touch()
+    const tab = lesson.tabs[tabIdx]
+
+    /* Reading a finished tab: step through it, then return to the frontier. */
+    if (readOnly) {
+      if (stepIdx + 1 < tab.steps.length) showStep(tabIdx, stepIdx + 1)
+      else showStep(frontier.tab, frontier.step)
+      return
+    }
+
     if (vm.hearts <= 0) {
       setScreen('welcome')
       return
     }
 
-    const tab = lesson.tabs[tabIdx]
     if (stepIdx + 1 < tab.steps.length) {
+      setFrontier({ tab: tabIdx, step: stepIdx + 1 })
       setStepIdx((s) => s + 1)
       resetStep()
       return
@@ -177,6 +218,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
     if (tabIdx + 1 < lesson.tabs.length) {
       const next = tabIdx + 1
+      setFrontier({ tab: next, step: 0 })
       setTabIdx(next)
       setStepIdx(0)
       setUnlockedTabs((p) => (p.includes(next) ? p : [...p, next]))
@@ -188,19 +230,15 @@ export default function LessonModal({ lessonId, onClose }) {
   }
 
   function check() {
+    if (readOnly || verdicts[stepKey]) return
     if (!canCheckStep(currentStep, { filled, selected })) return
     time.touch()
     const ok = isAnswerCorrect(currentStep, { filled, selected })
 
     tally(actions.recordAnswer({ lessonId, correct: ok, maxAnswerXP }))
 
-    if (ok) {
-      setCorrectCount((c) => c + 1)
-      setStepPhase('correct')
-    } else {
-      setPerfect(false)
-      setStepPhase('wrong')
-    }
+    setVerdicts((v) => ({ ...v, [stepKey]: { ok, filled, selected } }))
+    setStepPhase(ok ? 'correct' : 'wrong')
   }
 
   /* React to the verdict once it has painted. */
@@ -347,7 +385,7 @@ export default function LessonModal({ lessonId, onClose }) {
         <div className="lm-welcome lm-blocked">
           <CloseButton onClick={requestClose} className="lm-close--abs" />
           <div className="lm-blocked-icon">
-            <LiveHeart hearts={0} max={vm.maxHearts} recovery={vm.heartRecovery.cycleProgress ?? 0} size={52} />
+            <LiveHeart hearts={0} max={vm.maxHearts} recovery={recovery.cycleProgress ?? 0} size={52} />
           </div>
           <SplitText as="h2" className="lm-welcome-title" immediate>You’re out of hearts</SplitText>
           <p className="lm-welcome-sub">
@@ -356,7 +394,7 @@ export default function LessonModal({ lessonId, onClose }) {
           </p>
           <div className="lm-blocked-timer">
             <Icon name="clock" size={15} />
-            Next heart in <strong><RollingNumber value={formatClock(vm.heartRecovery.msUntilNext)} /></strong>
+            Next heart in <strong><RollingNumber value={formatClock(recovery.msUntilNext)} /></strong>
           </div>
           <p className="lm-blocked-alt">
             Practice sessions never cost hearts — head to <b>Practice</b> to keep learning
@@ -452,7 +490,6 @@ export default function LessonModal({ lessonId, onClose }) {
   }
 
   /* ── Step runner ── */
-  const stepKey = `${tabIdx}-${stepIdx}`
 
   return (
     <div className={overlayCls} {...dialogProps}>
@@ -486,8 +523,14 @@ export default function LessonModal({ lessonId, onClose }) {
             key={tab.id}
             className={`lm-tab${i === tabIdx ? ' lm-tab--active' : ''}${!unlockedTabs.includes(i) ? ' lm-tab--locked' : ''}`}
             disabled={!unlockedTabs.includes(i)}
-            onClick={() => { if (unlockedTabs.includes(i)) { setTabIdx(i); setStepIdx(0); resetStep() } }}
-            data-tip={!unlockedTabs.includes(i) ? 'Finish the part before to open this' : undefined}
+            onClick={() => {
+              if (!unlockedTabs.includes(i) || i === tabIdx) return
+              /* Back to the frontier resumes where grading left off; an
+                 earlier tab opens at its first step, read-only. */
+              if (i === frontier.tab) showStep(frontier.tab, frontier.step)
+              else showStep(i, 0)
+            }}
+            data-tip={!unlockedTabs.includes(i) ? 'Finish the part before to open this' : i < frontier.tab ? 'Finished — read back, not re-graded' : undefined}
           >
             {!unlockedTabs.includes(i) && <Icon name="lock" size={11} strokeWidth={2.6} />}
             {tab.label}

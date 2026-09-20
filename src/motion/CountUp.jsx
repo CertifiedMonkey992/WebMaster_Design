@@ -29,6 +29,10 @@ export default function CountUp({
   const [ref, inView] = useInView({ immediate, threshold: 0.4 })
   const out = useRef(null)
   const target = Number(value) || 0
+  /* The formatter is read through a ref: a new function each render must
+     not restart a count that is under way. */
+  const formatRef = useRef(format)
+  formatRef.current = format
 
   /* The tally is drawn through a data attribute and ::before, so the only
      real text in the element is the final value — copying or reading the
@@ -36,7 +40,7 @@ export default function CountUp({
   useEffect(() => {
     const node = out.current
     if (!node) return undefined
-    const write = (v) => node.setAttribute('data-d', `${prefix}${format(v)}${suffix}`)
+    const write = (v) => node.setAttribute('data-d', `${prefix}${formatRef.current(v)}${suffix}`)
     if (!inView) { write(from); return undefined }
     if (prefersReducedMotion() || from === target) {
       write(target)
@@ -59,7 +63,6 @@ export default function CountUp({
     }, delay)
 
     return () => { clearTimeout(timer); clearTimeout(settle); cancelAnimationFrame(raf) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView, target, from, duration, delay, prefix, suffix])
 
   return (

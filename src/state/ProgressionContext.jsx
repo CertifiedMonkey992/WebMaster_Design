@@ -141,8 +141,7 @@ export function ProgressionProvider({ children }) {
        not show the same shield or streak toast again. */
     pushRewards(bootRef.current.events)
     bootRef.current.events = []
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [persist, pushRewards])
 
   /**
    * The single entry point for the whole UI.
@@ -329,11 +328,7 @@ export function ProgressionProvider({ children }) {
      Rebuilt when state changes, or once every 30s so heart-recovery timings
      stay fresh without recomputing the whole model every single tick. */
   const slowNow = Math.floor(now / 30000)
-  const vm = useMemo(
-    () => buildViewModel(state, Date.now()),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state, slowNow],
-  )
+  const vm = useMemo(() => buildViewModel(state, slowNow * 30000), [state, slowNow])
 
   const value = useMemo(() => ({
     state, vm, dispatch, actions,

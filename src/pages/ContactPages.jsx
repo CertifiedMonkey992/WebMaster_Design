@@ -143,7 +143,7 @@ export function ContactPage() {
           <div className={`form-field${errors.name ? ' has-error' : ''}`}>
             <label className="form-label" htmlFor="ct-name">Name <span className="ct-req" aria-hidden="true">required</span></label>
             <input
-              className="form-input" id="ct-name" name="name" type="text" autoComplete="name" required maxLength={120}
+              className="form-input" id="ct-name" name="name" type="text" autoComplete="name" required maxLength={80}
               value={values.name} onChange={change('name')} onBlur={blur('name')}
               aria-invalid={errors.name ? 'true' : undefined} aria-describedby={described('name')}
             />
