@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import LearnSidebar from '../components/learn/LearnSidebar'
 import ModuleList   from '../components/learn/ModuleList'
 import RightSidebar from '../components/learn/RightSidebar'
@@ -47,21 +47,8 @@ function Course({ onGoHome, onGoAbout }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /* Show the waiting reward once per visit — never claim it, and never over
-     a lesson in progress: it waits until the lesson has closed. */
-  const bonusShown = useRef(false)
-  const bonusReady = vm.dailyBonus.available
-  useEffect(() => {
-    if (bonusShown.current || !bonusReady || activeLessonId) return undefined
-    /* The flag is set when the panel actually opens, not when the timer is
-       scheduled — StrictMode's mount/unmount/mount would otherwise cancel
-       the timer and leave the flag saying it had already been shown. */
-    const t = window.setTimeout(() => {
-      bonusShown.current = true
-      setBonusOpen(true)
-    }, 900)
-    return () => clearTimeout(t)
-  }, [bonusReady, activeLessonId])
+  /* The daily bonus opens only from its button in the top bar: a waiting
+     reward is announced by the button's dot, never by a panel on arrival. */
 
   return (
     <div className="learn-app">
