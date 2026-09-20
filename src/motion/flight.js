@@ -260,12 +260,26 @@ export function fly({
         })
       }
 
-      const anim = node.animate(frames, {
-        duration: 760 + Math.min(260, len * 0.25),
-        delay: i * 55,
-        easing: 'cubic-bezier(0.5, 0, 0.25, 1)',
-        fill: 'both',
-      })
+      let anim
+      try {
+        anim = node.animate(frames, {
+          duration: 760 + Math.min(260, len * 0.25),
+          delay: i * 55,
+          easing: 'cubic-bezier(0.5, 0, 0.25, 1)',
+          fill: 'both',
+        })
+      } catch {
+        /* No Web Animations here: nothing to watch, so the flight is over
+           before it began and the counter is released at once. */
+        node.remove()
+        if (key) {
+          inFlight.set(key, Math.max(0, (inFlight.get(key) || 1) - 1))
+          notify(key)
+        }
+        done()
+        resolveFlight(false)
+        return
+      }
 
       anim.onfinish = () => {
         node.remove()

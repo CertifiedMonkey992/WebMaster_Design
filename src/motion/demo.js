@@ -83,15 +83,20 @@ export function ghost(track, { from = 0, to = 100, label = null, labelFrom = nul
   bar.setAttribute('aria-hidden', 'true')
   bar.style.left = `${from}%`
   bar.style.width = `${Math.max(0, to - from)}%`
+  /* The hosts are made positioned only for the ghost's stay; whatever they
+     had inline before is put back when it goes. */
+  const trackPosition = track.style.position
   if (getComputedStyle(track).position === 'static') track.style.position = 'relative'
   track.appendChild(bar)
 
   let tag = null
+  let labelPosition = ''
   if (label && labelFrom?.isConnected) {
     tag = document.createElement('span')
     tag.className = 'fx-ghost-label'
     tag.setAttribute('aria-hidden', 'true')
     tag.textContent = label
+    labelPosition = labelFrom.style.position
     if (getComputedStyle(labelFrom).position === 'static') labelFrom.style.position = 'relative'
     labelFrom.appendChild(tag)
     tag.animate(
@@ -103,17 +108,21 @@ export function ghost(track, { from = 0, to = 100, label = null, labelFrom = nul
   bar.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: DUR.settle, easing: EASE.settle, fill: 'both' })
 
   const total = DUR.settle + hold + DUR.open
+  const restore = () => {
+    track.style.position = trackPosition
+    if (labelFrom && tag) labelFrom.style.position = labelPosition
+  }
   const withdraw = () => {
     const out = { duration: DUR.open, easing: EASE.in, fill: 'forwards' }
     const a = bar.animate([{ opacity: 1 }, { opacity: 0 }], out)
     a.onfinish = () => bar.remove()
-    window.setTimeout(() => bar.remove(), DUR.open + 200)
+    window.setTimeout(() => { bar.remove(); restore() }, DUR.open + 200)
     if (tag) {
       tag.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateY(-8px)' }], out).onfinish = () => tag.remove()
       window.setTimeout(() => tag?.remove(), DUR.open + 200)
     }
   }
-  const cleanNow = () => { bar.remove(); tag?.remove() }
+  const cleanNow = () => { bar.remove(); tag?.remove(); restore() }
 
   if (ctx) {
     ctx.onStop(cleanNow)

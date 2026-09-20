@@ -347,7 +347,12 @@ function eligible(p, t, { noMajor }) {
 
 function attempt() {
   timer = 0
-  if (prefersReducedMotion()) return
+  if (prefersReducedMotion()) {
+    /* Asleep until the preference flips back, then the schedule resumes. */
+    window.matchMedia('(prefers-reduced-motion: reduce)')
+      .addEventListener('change', () => { if (!prefersReducedMotion()) schedule(rand(...RETRY)) }, { once: true })
+    return
+  }
   /* Every slot full: come back when one frees up. */
   if (running.size >= cfg().concurrent) { schedule(rand(...RETRY)); return }
   /* A hidden tab: look again later. (Not only on visibilitychange — some
@@ -425,7 +430,10 @@ function perform(p) {
     result = 0
   }
   if (result && typeof result.then === 'function') {
-    result.then(finish, finish)
+    result.then(finish, (err) => {
+      if (import.meta.env?.DEV) console.error('[stage]', spec.id, err)
+      finish()
+    })
   } else {
     ctx.after(Math.max(0, Number(result) || 0), finish)
   }

@@ -69,7 +69,12 @@ function frame(now) {
 }
 
 function wake() {
-  if (!raf) raf = requestAnimationFrame(frame)
+  if (raf) return
+  /* The loop went to sleep with a stale position; starting from where the
+     page is NOW keeps a jump made while asleep from reading as a velocity. */
+  lastY = window.scrollY
+  lastT = 0
+  raf = requestAnimationFrame(frame)
 }
 
 function bind() {

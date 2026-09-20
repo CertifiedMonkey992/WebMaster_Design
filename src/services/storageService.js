@@ -352,17 +352,23 @@ export function migrate(raw) {
 
 /* ── Read / write ────────────────────────────────────────────────────────── */
 
+/** The probe's verdict, kept for the page's lifetime: `undefined` until the
+ *  first call, then the storage or null. */
+let storage
+
 function getStorage() {
+  if (storage !== undefined) return storage
   try {
-    if (typeof window === 'undefined' || !window.localStorage) return null
+    if (typeof window === 'undefined' || !window.localStorage) return (storage = null)
     /* Some browsers throw on access in private mode — probe once. */
     const probe = '__lunx_probe__'
     window.localStorage.setItem(probe, '1')
     window.localStorage.removeItem(probe)
-    return window.localStorage
+    storage = window.localStorage
   } catch {
-    return null
+    storage = null
   }
+  return storage
 }
 
 /** Load progression state. Always returns a complete, valid state object. */

@@ -14,7 +14,10 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-const PINNED = Date.UTC(2026, 0, 1, 12, 0, 0)
+/* PIN_DATE=YYYY-MM-DD picks another day for the pinned run. */
+const PINNED = process.env.PIN_DATE
+  ? Date.parse(`${process.env.PIN_DATE}T12:00:00Z`)
+  : Date.UTC(2026, 0, 1, 12, 0, 0)
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const out = mkdtempSync(path.join(tmpdir(), 'lunx-tests-'))
@@ -56,7 +59,7 @@ try {
   const realOk = await runOnce('real clock')
   const restore = pinDate(PINNED)
   let pinnedOk = false
-  try { pinnedOk = await runOnce('pinned 2026-01-01') } finally { restore() }
+  try { pinnedOk = await runOnce(`pinned ${new Date(PINNED).toISOString().slice(0, 10)}`) } finally { restore() }
   process.exitCode = realOk && pinnedOk ? 0 : 1
 } finally {
   rmSync(out, { recursive: true, force: true })
