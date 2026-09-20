@@ -1,0 +1,353 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   judge.css — MARGINALIA AND THE REVIEWER'S DESK
+   ---------------------------------------------------------------------------
+   Authoritative reference: design-system/COMPONENT_RULES.md → Reviewer
+   controls.
+
+   Two things live here and they are deliberately different weights:
+
+     the chips   marginalia — a reviewer's pencil in the margin of a proof.
+                 Clay hairline, clay ink, paper ground, micro uppercase.
+                 They must never out-shout the row they annotate, because the
+                 row is the thing being judged.
+
+     the desk    a floating surface, at --surface-raised with --shadow-float
+                 and --r-lg, tucked into the bottom-right corner behind a
+                 tab. It is the only place in the product with this many
+                 controls at once, so it is the only place with a dense
+                 button grid — and those buttons are still the product's
+                 geometry and the product's press.
+
+   Clay is rationed in this product (two or three per screen). That ration is
+   spent here on purpose and only on the reviewer's profile: on every other
+   profile none of this renders at all, so the ration is untouched.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE CHIPS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.jc {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  background: transparent;
+  border: 1px solid rgba(var(--clay-rgb), 0.35);
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--clay-ink);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
+}
+
+.jc:hover { background: var(--clay-tint); border-color: var(--clay); }
+.jc:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
+
+.jc:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* An undo-ish control — "lock it again", "empty this" — is ink, not clay.
+   Clay means "do this next"; taking something away never does. */
+.jc--quiet {
+  border-color: var(--line);
+  color: var(--ink-faint);
+}
+.jc--quiet:hover {
+  background: rgba(var(--ink-rgb), 0.05);
+  border-color: var(--line-strong);
+  color: var(--ink-muted);
+}
+
+.jc svg { flex-shrink: 0; }
+
+/* A line of chips in a row's or a card's margin. */
+.jc-margin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Inside a lesson row the margin sits to the right of the title, before the
+   row's own mark. It never shrinks and never wraps, so a long lesson title
+   loses a word before a control loses its label. */
+.lesson-row .jc-margin {
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  margin-left: auto;
+  padding-left: var(--sp-2);
+}
+
+/* Under a module header, on its own line above the lessons. The header's
+   own toggle is an absolute overlay across the whole of it, so the chips are
+   lifted over it — otherwise a press would fold the module instead. */
+.module-head .jc-margin {
+  position: relative;
+  z-index: 2;
+  margin-top: var(--sp-3);
+}
+
+/* In a panel (hearts, gems, streak), the chips sit under the panel's own
+   actions, separated by the same hairline every section of a panel uses. */
+.pg-judge-margin,
+.ac-judge-margin,
+.db-judge-margin {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-faint);
+}
+
+/* The badge grid's controls belong to its header, above the wall. */
+.ac-judge-margin { margin-bottom: var(--sp-4); }
+
+/* The shop's sit under the balance card, in the header's right column. */
+.sh-judge-margin { margin-top: var(--sp-3); justify-content: flex-end; }
+
+/* A quest card's chip joins the row of facts at its foot. */
+.qc-judge-margin { margin-left: auto; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE DESK
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.jd {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: var(--z-popover);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+
+.jd-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--clay);
+  color: var(--surface-raised);
+  border: 1px solid var(--clay);
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+  transition: background-color var(--dur-hover) var(--ease-out);
+}
+.jd-tab:hover { background: var(--clay-deep); }
+.jd-tab:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
+
+.jd-panel {
+  order: -1;
+  width: min(26rem, calc(100vw - var(--sp-8)));
+  max-height: min(34rem, calc(100vh - var(--sp-20)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-5);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-float);
+  animation: jd-in var(--dur-enter) var(--ease-snap) both;
+}
+
+@keyframes jd-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.jd-head { margin-bottom: var(--sp-4); }
+
+.jd-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semi);
+  margin-bottom: var(--sp-2);
+}
+
+.jd-lead,
+.jd-group-note,
+.jd-foot {
+  font-size: var(--fs-caption);
+  line-height: var(--lh-normal);
+  color: var(--ink-faint);
+}
+
+/* ── The figures ───────────────────────────────────────────────────────── */
+
+.jd-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--sp-4);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--paper);
+  border: 1px solid var(--line-faint);
+  border-radius: var(--r-md);
+}
+
+.jd-fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+}
+
+.jd-fact dt {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.jd-fact dd {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  color: var(--ink);
+  text-align: right;
+}
+
+/* ── Groups and their controls ─────────────────────────────────────────── */
+
+.jd-group {
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+}
+.jd-group:first-of-type { padding-top: 0; margin-top: 0; border-top: 0; }
+
+.jd-group-title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: var(--sp-2);
+}
+
+.jd-group-note { margin-bottom: var(--sp-3); }
+
+.jd-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.jd-btn {
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
+}
+.jd-btn:hover { background: var(--clay-tint); border-color: var(--clay); color: var(--clay-ink); }
+.jd-btn:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
+.jd-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.jd-btn:disabled:hover { background: var(--surface); border-color: var(--line); color: var(--ink); }
+
+.jd-btn--quiet { color: var(--ink-faint); }
+.jd-btn--quiet:hover {
+  background: rgba(var(--ink-rgb), 0.05);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+/* ── The power switches ────────────────────────────────────────────────── */
+
+.jd-powers { list-style: none; display: grid; gap: var(--sp-2); }
+
+.jd-power {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
+}
+.jd-power:hover { border-color: var(--line-strong); }
+.jd-power.is-on { border-color: rgba(var(--clay-rgb), 0.35); background: var(--clay-tint); }
+
+.jd-power-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xs);
+  background: var(--surface-raised);
+  color: transparent;
+  transition: background-color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out);
+}
+.jd-power.is-on .jd-power-box {
+  background: var(--clay);
+  border-color: var(--clay);
+  color: var(--surface-raised);
+}
+
+.jd-power-text { display: grid; gap: 1px; min-width: 0; }
+.jd-power-text b { font-size: var(--fs-caption); font-weight: var(--fw-semi); color: var(--ink); }
+.jd-power-text span { font-size: var(--fs-micro); line-height: var(--lh-snug); color: var(--ink-faint); }
+
+/* ── The engine's report ───────────────────────────────────────────────── */
+
+.jd-tests {
+  display: grid;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--moss-tint);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--moss);
+}
+.jd-tests.is-fail { background: var(--berry-tint); color: var(--berry-ink); }
+.jd-test-fail { font-weight: var(--fw-medium); font-size: var(--fs-micro); }
+
+.jd-foot { margin-top: var(--sp-3); }
+
+/* ── Narrow ────────────────────────────────────────────────────────────────
+   On a phone the desk takes the width it needs and the tab moves clear of
+   the sticky bar at the bottom edge. */
+
+@media (max-width: 560px) {
+  .jd { right: var(--sp-3); bottom: var(--sp-3); left: var(--sp-3); align-items: stretch; }
+  .jd-tab { justify-content: center; }
+  .jd-panel { width: 100%; max-height: 60vh; }
+  .jd-facts { grid-template-columns: 1fr; }
+}

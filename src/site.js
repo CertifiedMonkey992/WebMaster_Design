@@ -69,6 +69,16 @@ export const ROUTES = [
     sitemap: { priority: '0.8', changefreq: 'monthly' },
   },
   {
+    /* Profiles are optional and live only in the reader's browser, so this
+       page is not something search should send anyone to — and it carries
+       the reviewer's credentials, which are for judges, not for crawlers. */
+    page: 'signin',
+    path: 'signin/',
+    title: 'Sign in · LunX',
+    description: 'Keep separate progress on one browser with an optional local profile, or open the TSA reviewer profile with every module unlocked.',
+    noindex: true,
+  },
+  {
     page: 'contact',
     path: 'contact/',
     title: 'Contact LunX · Questions, feedback and bug reports',

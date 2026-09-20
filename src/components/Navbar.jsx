@@ -20,6 +20,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PageLink, useNav } from '../nav'
+import { useAuth } from '../state/AuthContext'
 
 const LINKS = [
   { id: 'learn', label: 'Course' },
@@ -166,14 +167,17 @@ export default function Navbar({ links = LINKS, scrollLinks = false, pageLink })
         <li className="nav-ink" aria-hidden="true" />
       </ul>}
 
-      {/* No account button: there are no accounts, so offering one here would
-          promise something the product cannot do. */}
+      {/* Still ONE solid button (COMPONENT_RULES.md → Landing navbar): the
+          course is the page's action. The profile sits beside it as a quiet
+          control, because signing in is optional and always will be — the
+          course runs perfectly well without one. */}
       <div className="nav-actions">
         {pageLink && pageLink.page !== currentPage && (
           <PageLink page={pageLink.page} className="btn btn-ghost nav-page-link">
             {pageLink.label}
           </PageLink>
         )}
+        <NavProfile />
         <PageLink
           page="learn"
           className={`btn btn-primary${cued ? ' is-cued' : ''}`}
@@ -190,5 +194,46 @@ export default function Navbar({ links = LINKS, scrollLinks = false, pageLink })
 
       <span className="nav-progress" aria-hidden="true" />
     </nav>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE PROFILE CONTROL
+   ---------------------------------------------------------------------------
+   Signed out it is the word "Sign in" — a quiet link, never a second solid
+   button, because a profile is optional and the course is the page's action.
+
+   Signed in it becomes a chip carrying the profile's initials and its name,
+   which links to the same page. The reviewer's chip says so in clay, since
+   a judge should be able to see at a glance which profile the app is in.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function NavProfile() {
+  const { account } = useAuth()
+
+  if (!account) {
+    return (
+      <PageLink page="signin" className="btn btn-ghost nav-page-link">
+        Sign in
+      </PageLink>
+    )
+  }
+
+  const initials = account.name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0] ?? '')
+    .join('')
+    .toUpperCase()
+
+  return (
+    <PageLink
+      page="signin"
+      className={`nav-profile${account.role === 'judge' ? ' is-judge' : ''}`}
+      aria-label={`Signed in as ${account.name}. Open the profile page.`}
+      data-tip={account.role === 'judge' ? 'Reviewer profile · every module unlocked' : `Signed in as ${account.name}`}
+    >
+      <span className="nav-profile-mark" aria-hidden="true">{initials || '·'}</span>
+      <span className="nav-profile-name">{account.name}</span>
+    </PageLink>
   )
 }

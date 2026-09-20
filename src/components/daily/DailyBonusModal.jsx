@@ -13,6 +13,7 @@ import { useProgression, useClock } from '../../state/ProgressionContext'
 import { Icon } from '../progression/Icons'
 import DailyBonusTrack from './DailyBonusTrack'
 import useDialog from '../../hooks/useDialog'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
 import './dailyBonus.css'
 
 const EXIT_MS = 220
@@ -65,6 +66,18 @@ export default function DailyBonusModal({ open, onClose }) {
         </button>
 
         <DailyBonusTrack view={vm.dailyBonus} onClaim={claim} variant="panel" />
+
+        {/* Reviewer only. "Tomorrow" moves the track on a day without moving
+            the clock, so each of the seven days can be claimed for real in a
+            minute rather than a week. */}
+        <JudgeMargin className="db-judge-margin" label="Reviewer daily-bonus controls">
+          <JudgeChip icon="calendar" label="Tomorrow" onDone={() => actions.dev.setBonusDay(vm.dailyBonus.nextDay)}
+            tip="Offer the next day of the track, unclaimed" />
+          <JudgeChip icon="gift" label="Run the week" onDone={() => actions.dev.completeBonusCycle()}
+            tip="Claim every remaining day in turn, through the real claim path" />
+          <JudgeChip icon="close" label="Back to day one" quiet onDone={() => actions.dev.resetDailyBonus()}
+            tip="Start the seven-day track again" />
+        </JudgeMargin>
       </div>
     </div>
   )

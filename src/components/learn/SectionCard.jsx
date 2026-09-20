@@ -4,6 +4,8 @@ import useProgressWidth from '../../hooks/useProgressWidth'
 import RollingNumber from '../../motion/RollingNumber'
 import { shake } from '../../motion/burst'
 import { Icon } from '../progression/Icons'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 
 /**
  * A course module: its header and its lessons, as ONE container.
@@ -145,6 +147,22 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
           <Icon name="clock" size={11} /> ~{totalDuration} min
           {!isLocked && !open && <span className="module-meta-hint"> · {total} lessons inside</span>}
         </p>
+
+        {/* Reviewer only. Finishing a module runs every one of its lessons
+            through the real completion path in turn, so the section bonus,
+            the next module's unlock and every animation land for real. */}
+        <JudgeMargin label={`Reviewer controls for ${section.title}`}>
+          <JudgeChip
+            op={OPS.COMPLETE_SECTION} payload={{ sectionId: section.id }}
+            icon="check-circle" label={`Finish all ${total}`} disabled={isDone}
+            tip="Completes every lesson here and unlocks what comes next"
+          />
+          <JudgeChip
+            op={OPS.RESET_SECTION} payload={{ sectionId: section.id }}
+            icon="close" label="Empty it" quiet disabled={completed === 0}
+            tip="Put this module back to untouched"
+          />
+        </JudgeMargin>
       </header>
 
       {!isLocked && (

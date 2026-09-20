@@ -17,6 +17,7 @@ import { GemIcon, Icon } from '../progression/Icons'
 import ShopArt from './ShopArt'
 import CountUp from '../../motion/CountUp'
 import { REASONS } from '../../services/shopService'
+import { formatNumber } from '../../utils/progressionUtils'
 import useDialog from '../../hooks/useDialog'
 
 let txnSeq = 0
@@ -81,13 +82,13 @@ export default function PurchaseDialog({ item, balance, owned, onConfirm, onClos
           </div>
           <div className="sh-ledger-row">
             <dt>Your balance</dt>
-            <dd><GemIcon size={15} /> {openBalance}</dd>
+            <dd><GemIcon size={15} /> {formatNumber(openBalance)}</dd>
           </div>
           <div className="sh-ledger-row sh-ledger-row--total">
             <dt>Balance after</dt>
             <dd>
               <GemIcon size={15} />
-              <CountUp value={after} from={openBalance} immediate delay={520} duration={900} />
+              <CountUp value={after} from={openBalance} format={formatNumber} immediate delay={520} duration={900} />
             </dd>
           </div>
         </dl>

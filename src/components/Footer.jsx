@@ -43,6 +43,9 @@ const COLUMNS = [
       { page: 'learn', label: 'Open the course' },
       { page: 'about', section: 'method', label: 'How a lesson works' },
       { page: 'about', section: 'impact', label: 'What it covers' },
+      /* Last, and worded as what it is: the course needs no profile, so this
+         is not an invitation, it is where the one option lives. */
+      { page: 'signin', label: 'Profiles on this browser' },
     ],
   },
   {
@@ -153,7 +156,7 @@ export default function Footer() {
       <div className="ft-last">
         <p className="ft-privacy">
           Your progress never leaves this browser.
-          {SITE.analytics.enabled ? '' : ' No accounts, no cookies, no tracking.'}
+          {SITE.analytics.enabled ? '' : ' No server, no cookies, no tracking.'}
         </p>
 
         <nav className="ft-legal" aria-label="Legal">

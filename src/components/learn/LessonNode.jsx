@@ -4,6 +4,9 @@ import { useProgression } from '../../state/ProgressionContext'
 import { HeartIcon, BoltIcon, Icon } from '../progression/Icons'
 import { XP } from '../../config/progressionConfig'
 import { burst, ring, shake } from '../../motion/burst'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import useJudge from '../judge/useJudge'
+import { OPS } from '../../services/judgeService'
 
 /**
  * One lesson, as a stop on its module's path.
@@ -29,6 +32,11 @@ export default function LessonNode({
   isPopupOpen, onTogglePopup, onStartLesson, tabbable = true,
 }) {
   const { state, vm, showcase } = useProgression()
+  /* The reviewer's chip and the hover peek want the same slot, and both say
+     "here is what pressing this does". The chip is the more useful of the
+     two to a judge, so it takes the slot and the peek stands down — which
+     also keeps the title off the ellipsis. */
+  const judge = useJudge()
   const rowRef = useRef(null)
   const markRef = useRef(null)
   const isCurrent = lesson.status === 'current'
@@ -124,7 +132,7 @@ export default function LessonNode({
         </span>
 
         {/* What pressing this row would do, revealed on hover. */}
-        {!isLocked && !isCurrent && (
+        {!isLocked && !isCurrent && !judge.chips && (
           <span className="lesson-peek" aria-hidden="true">
             {isDone ? (
               <>
@@ -141,6 +149,27 @@ export default function LessonNode({
             <Icon name="chevron-right" size={13} strokeWidth={2.6} className="lesson-peek-arrow" />
           </span>
         )}
+
+        {/* Reviewer only. "Finish" runs the real completion: the XP, the
+            gems, the module's progress bar, the streak, any quest it
+            advances and the check stamping down all happen exactly as they
+            would after five minutes of quiz. */}
+        <JudgeMargin label={`Reviewer controls for ${lesson.title}`}>
+          {!isDone && (
+            <JudgeChip
+              op={OPS.COMPLETE_LESSON} payload={{ lessonId: lesson.id }}
+              icon="check" label="Finish"
+              tip="Complete this lesson through the real engine, without the questions"
+            />
+          )}
+          {isDone && (
+            <JudgeChip
+              op={OPS.RESET_LESSON} payload={{ lessonId: lesson.id }}
+              icon="close" label="Unfinish" quiet
+              tip="Put this lesson back to where it was"
+            />
+          )}
+        </JudgeMargin>
 
         {isDone && (
           <span ref={markRef} className={`lesson-mark lesson-mark--done${justDone ? ' is-stamping' : ''}`} aria-hidden="true">

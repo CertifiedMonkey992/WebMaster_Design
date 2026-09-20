@@ -25,6 +25,8 @@ import useProgressWidth from '../../hooks/useProgressWidth'
 import { fly } from '../../motion/flight'
 import { ring } from '../../motion/burst'
 import RollingNumber from '../../motion/RollingNumber'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 
 const DIFFICULTY_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Challenge' }
 
@@ -201,6 +203,17 @@ export function QuestCard({ quest, variant = 'full', index = 0, style, className
             <RollingNumber value={remaining} /> to go
           </span>
         )}
+
+        {/* Reviewer only. The quest is pushed to its target and then CLAIMED
+            the ordinary way, so the bar settles, the button invites, the gems
+            fly to the counter and the card stamps. */}
+        <JudgeMargin className="qc-judge-margin" label={`Reviewer controls for ${quest.title}`}>
+          <JudgeChip
+            op={OPS.COMPLETE_QUEST} payload={{ questId: quest.id }}
+            icon="check" label="Fill it" disabled={quest.completed}
+            tip="Push this quest to its target so it can be claimed for real"
+          />
+        </JudgeMargin>
       </div>
     </article>
   )

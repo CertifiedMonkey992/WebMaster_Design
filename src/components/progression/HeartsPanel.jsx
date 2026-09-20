@@ -22,6 +22,8 @@ import { getHeartRecoveryTime } from '../../services/currencyService'
 import { fly } from '../../motion/flight'
 import { shake } from '../../motion/burst'
 import RollingNumber from '../../motion/RollingNumber'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 
 export default function HeartsPanel({ onClose, onOpenShop }) {
   const { state, vm, actions } = useProgression()
@@ -33,6 +35,12 @@ export default function HeartsPanel({ onClose, onOpenShop }) {
   const canAfford = vm.gems >= HEART_REFILL_COST
   const isFull = vm.hearts >= vm.maxHearts
   const cycle = Math.max(0, Math.min(1, recovery.cycleProgress ?? 0))
+  /* A learner has five hearts and a row of five is the clearest thing to
+     draw. The reviewer's profile has a hundred, and a hundred glyphs is not
+     a row — it is wallpaper — so past this many the panel counts instead.
+     COMPONENT_RULES.md → Hearts. */
+  const ROW_MAX = 10
+  const drawRow = vm.maxHearts <= ROW_MAX
 
   const refill = () => {
     if (isFull || !canAfford) {
@@ -45,7 +53,17 @@ export default function HeartsPanel({ onClose, onOpenShop }) {
 
   return (
     <div className="pg-panel">
-      <div
+      {!drawRow && (
+        <div ref={rowRef} className="pg-hearts-many" role="img" aria-label={`${vm.hearts} of ${vm.maxHearts} hearts`}>
+          <HeartIcon size={34} fill={Math.max(0.06, vm.hearts / vm.maxHearts)} />
+          <span className="pg-hearts-many-count tnum">
+            <RollingNumber value={vm.hearts} />
+            <span className="pg-hearts-many-max">of {vm.maxHearts}</span>
+          </span>
+        </div>
+      )}
+
+      {drawRow && <div
         ref={rowRef}
         className={`pg-hearts-row${isFull ? ' is-full' : ''}`}
         role="img"
@@ -71,7 +89,7 @@ export default function HeartsPanel({ onClose, onOpenShop }) {
             </span>
           )
         })}
-      </div>
+      </div>}
 
       <p className="pg-panel-lead">
         {isFull
@@ -143,6 +161,16 @@ export default function HeartsPanel({ onClose, onOpenShop }) {
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
         )}
       </div>
+
+      {/* Reviewer only: a heart lost here cracks and sheds exactly as one lost
+          to a wrong answer does, because it is the same action. */}
+      <JudgeMargin className="pg-judge-margin" label="Reviewer heart controls">
+        <JudgeChip op={OPS.HEARTS} payload={{ amount: -1 }} icon="heart" label="Lose one"
+          disabled={vm.hearts === 0} tip="Runs the same loss a wrong answer causes" />
+        <JudgeChip op={OPS.HEARTS} payload={{ amount: -vm.hearts }} icon="heart" label="Empty"
+          quiet disabled={vm.hearts === 0} tip="See the out-of-hearts state and the practice fallback" />
+        <JudgeChip op={OPS.TOP_UP} icon="sparkle" label="Refill" tip={`Back to ${vm.maxHearts}`} />
+      </JudgeMargin>
     </div>
   )
 }

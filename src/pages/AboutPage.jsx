@@ -162,9 +162,9 @@ export default function AboutPage() {
               <div><dt>Theme</dt><dd>Artificial Intelligence (AI) learning portal</dd></div>
               <div><dt>Audience</dt><dd>High school, grades 9–12</dd></div>
               <div><dt>Course</dt><dd className="tnum">{TOTAL_SECTIONS} modules · {TOTAL_LESSONS} lessons · {TOTAL_MINUTES} min</dd></div>
-              <div><dt>Pages</dt><dd>Home, Course, About, Contact, Privacy, Terms</dd></div>
+              <div><dt>Pages</dt><dd>Home, Course, Sign in, About, Contact, Privacy, Terms</dd></div>
               <div><dt>Built with</dt><dd>React 18, Vite 5, hand-written CSS</dd></div>
-              <div><dt>Accounts</dt><dd>None — progress stays in this browser</dd></div>
+              <div><dt>Accounts</dt><dd>Optional, and local — no server, nothing registered</dd></div>
             </dl>
           </Reveal>
         </section>
@@ -270,8 +270,9 @@ export default function AboutPage() {
                 <div>
                   <h3 className="ab-principle-title">Your progress stays yours</h3>
                   <p className="ab-principle-text">
-                    There are no accounts and no analytics. XP, streaks and gems are
-                    saved in your own browser and are never sent anywhere.
+                    There is no server and no analytics. XP, streaks and gems are saved
+                    in your own browser and are never sent anywhere. A profile, if you
+                    make one, is made there too.
                   </p>
                 </div>
               </li>
@@ -347,7 +348,7 @@ export default function AboutPage() {
             </Reveal>
 
             <Reveal as="p" className="ab-note" variant="fade" delay={DUR.open}>
-              We don’t count learners. LunX has no accounts and no analytics, so the
+              We don’t count learners. LunX has no server and no analytics, so the
               only figures we can show are the course’s own — each one read from the
               course data, not typed in.
             </Reveal>

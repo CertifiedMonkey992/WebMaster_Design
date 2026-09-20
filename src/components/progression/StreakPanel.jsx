@@ -22,6 +22,8 @@ import { useProgression, useClock } from '../../state/ProgressionContext'
 import { FlameIcon, ShieldIcon, Icon } from './Icons'
 import { LiveFlame } from './LiveIcons'
 import RollingNumber from '../../motion/RollingNumber'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 import { getActivityMap } from '../../services/streakService'
 import { STREAK } from '../../config/progressionConfig'
 import {
@@ -211,6 +213,15 @@ export default function StreakPanel({ onOpenShop }) {
         A day counts once you finish a lesson or a practice session. Simply opening
         LunX doesn’t extend a streak.
       </p>
+
+      {/* Reviewer only. A streak set here writes the days behind it, so the
+          calendar above and the milestones below agree with the number. */}
+      <JudgeMargin className="pg-judge-margin" label="Reviewer streak controls">
+        <JudgeChip op={OPS.STREAK} payload={{ days: 7 }} icon="flame" label="7 days" tip="Crosses the one-week milestone" />
+        <JudgeChip op={OPS.STREAK} payload={{ days: 30 }} icon="flame" label="30 days" tip="Crosses the one-month milestone" />
+        <JudgeChip op={OPS.STREAK} payload={{ days: 0 }} icon="flame" label="Break it" quiet tip="See the lost-streak state and the flame go out" />
+        <JudgeChip op={OPS.SHIELDS} payload={{ count: 2 }} icon="shield" label="Bank shields" tip="A shield covers a missed day automatically" />
+      </JudgeMargin>
     </div>
   )
 }

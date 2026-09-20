@@ -36,6 +36,7 @@ import achievementService from './achievementService'
 import teamService from './teamQuestService'
 import shopService from './shopService'
 import dailyBonusService from './dailyBonusService'
+import judgeService from './judgeService'
 import { deriveCourse, getSectionById, getLessonById } from '../data/learnData'
 
 /* ── Action names ────────────────────────────────────────────────────────── */
@@ -66,6 +67,9 @@ export const ACTIONS = {
   DEV_SHIFT_DAYS:     'DEV_SHIFT_DAYS',
   DEV_SET_BONUS_DAY:  'DEV_SET_BONUS_DAY',
   DEV_RESET_BONUS:    'DEV_RESET_BONUS',
+  /* The reviewer's controls (services/judgeService.js). One action, an `op`
+     in its payload, and only ever a no-op on a profile without the powers. */
+  JUDGE:              'JUDGE',
 }
 
 /* ── Small internal helpers ──────────────────────────────────────────────── */
@@ -186,6 +190,10 @@ export function runPipeline(state, now = Date.now()) {
   const acc = { state, events: [] }
   merge(acc, achievementService.evaluateAchievements(acc.state, now))
   merge(acc, questService.evaluateQuests(acc.state, now))
+  /* An unlimited purse stays unlimited. This is a no-op on every profile but
+     the reviewer's, and it runs LAST so the spend that emptied it has
+     already produced its events and its animation. */
+  acc.state = judgeService.topUpGems(acc.state)
   return acc
 }
 
@@ -577,6 +585,18 @@ function reduceAction(state, action, now) {
       return acc
     }
 
+    /* ── The reviewer's controls ─────────────────────────────────────────────
+       Every op runs the REAL path — judgeService.completeLesson is this
+       file's completeLesson — and then the standard pipeline, so a skipped
+       lesson pays, unlocks and animates exactly like a finished one. */
+    case ACTIONS.JUDGE: {
+      const result = judgeService.apply(acc.state, payload, now, { awardXP, completeLesson })
+      acc.state = result.state
+      acc.events.push(...result.events)
+      merge(acc, runPipeline(acc.state, now))
+      return acc
+    }
+
     /* ── Developer actions ── */
     case ACTIONS.DEV_SET:
       acc.state = { ...acc.state, ...payload }
@@ -645,12 +665,18 @@ function reduceAction(state, action, now) {
    ─────────────────────────────────────────────────────────────────────────── */
 export function buildViewModel(state, now = Date.now()) {
   const levelInfo = getXPProgress(state.xp)
-  const course = deriveCourse(state.lessons)
+  const course = deriveCourse(state.lessons, {
+    unlockAll: judgeService.hasPower(state, 'unlockAll'),
+  })
   const hearts = currency.getHeartRecoveryTime(state, now)
 
   return {
     xp: state.xp,
     gems: state.gems,
+    /* The reviewer's profile, and its powers. Null everywhere else, so a
+       component can ask `vm.judge?.powers.chips` without a guard. */
+    judge: state.judge,
+    unlimitedGems: judgeService.hasPower(state, 'infiniteGems'),
     hearts: state.hearts,
     maxHearts: state.maxHearts,
     heartsFull: state.hearts >= state.maxHearts,

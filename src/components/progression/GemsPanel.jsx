@@ -15,6 +15,8 @@ import { CURRENCY, QUESTS } from '../../config/progressionConfig'
 import { HEART_REFILL_COST, STREAK_SHIELD_COST, getShopItem } from '../../config/shopConfig'
 import { formatNumber } from '../../utils/progressionUtils'
 import RollingNumber from '../../motion/RollingNumber'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 
 const REASON_LABELS = {
   quest: 'Quest reward',
@@ -123,6 +125,15 @@ export default function GemsPanel({ onClose, onOpenShop }) {
         {onOpenShop && <button type="button" className="btn btn-primary btn-sm" onClick={onOpenShop}>Open the shop</button>}
         {onClose && <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>}
       </div>
+
+      {/* Reviewer only. Gems awarded here fly to the counter and land like
+          any other reward, because they go through the same award. */}
+      <JudgeMargin className="pg-judge-margin" label="Reviewer gem controls">
+        <JudgeChip op={OPS.GEMS} payload={{ amount: 250 }} icon="gem" label="+250" tip="Watch the counter roll and the gem turn over" />
+        <JudgeChip op={OPS.GEMS} payload={{ amount: -250 }} icon="gem" label="−250" quiet tip="Watch the gem sink" />
+        <JudgeChip op={OPS.POWERS} payload={{ powers: { infiniteGems: false } }} icon="gauge" label="Normal purse" quiet
+          tip="Stop topping the balance up, so the economy behaves as a learner sees it" />
+      </JudgeMargin>
     </div>
   )
 }

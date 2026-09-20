@@ -12,6 +12,8 @@
 import { useRef } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import { QuestIcon, GemIcon, Icon } from './Icons'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 import useProgressWidth from '../../hooks/useProgressWidth'
 import CountUp from '../../motion/CountUp'
 import Reveal from '../../motion/Reveal'
@@ -114,6 +116,15 @@ export default function AchievementGrid() {
         </div>
         <AchievementRing percent={Math.round((unlocked.length / vm.achievements.length) * 100)} />
       </header>
+
+      {/* Reviewer only. Unlocking grants what each badge MEASURES, so every
+          bar below reads true instead of a full seal beside "0 of 30". */}
+      <JudgeMargin className="ac-judge-margin" label="Reviewer badge controls">
+        <JudgeChip op={OPS.UNLOCK_BADGES} icon="trophy" label="Unlock all"
+          tip="Unlock every badge at once" />
+        <JudgeChip op={OPS.RESET_BADGES} icon="close" label="Lock them" quiet
+          tip="Put every badge back to locked" />
+      </JudgeMargin>
 
       <Reveal className="ac-grid" variant="scale" stagger immediate delay={300}>
         {ordered.map((a) => (

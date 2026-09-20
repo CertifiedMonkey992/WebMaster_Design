@@ -54,6 +54,10 @@ export default function PlayerStatusBar({ compact = false, onOpenShop }) {
 
   const recovery = getHeartRecoveryTime(state, now)
   const heartsFull = hearts >= vm.maxHearts
+  /* The reviewer's purse refills itself, so the pill states that rather than
+     rolling six digits nobody is counting (config/judgeConfig.js). The real
+     figure is still one press away, in the gem panel. */
+  const endless = vm.unlimitedGems
 
   const streakTip = vm.streak === 0
     ? 'No streak yet — finish a lesson to light it'
@@ -96,15 +100,17 @@ export default function PlayerStatusBar({ compact = false, onOpenShop }) {
           type="button"
           ref={gemsRef}
           data-popover-trigger
-          data-tip={`${formatNumber(vm.gems)} gems · spend them in the shop`}
+          data-tip={endless ? 'Unlimited gems · the reviewer profile tops itself up' : `${formatNumber(vm.gems)} gems · spend them in the shop`}
           data-tip-side="bottom"
           className="pg-pill pg-pill--gems is-active fx-glint-host"
           onClick={() => toggle('gems')}
           aria-expanded={showcase ? undefined : openPanel === 'gems'}
-          aria-label={`Gems: ${vm.gems}. Open gem details`}
+          aria-label={endless ? 'Gems: unlimited. Open gem details' : `Gems: ${vm.gems}. Open gem details`}
         >
           <LiveGem gems={gems} size={20} />
-          <RollingNumber className="pg-pill-value" value={gems} format={formatNumber} />
+          {endless
+            ? <span className="pg-pill-value pg-pill-value--endless" aria-hidden="true">∞</span>
+            : <RollingNumber className="pg-pill-value" value={gems} format={formatNumber} />}
         </button>
         <Popover open={openPanel === 'gems'} onClose={close} title="Gems" tone="gems">
           <GemsPanel onClose={close} onOpenShop={onOpenShop ? goToShop : undefined} />

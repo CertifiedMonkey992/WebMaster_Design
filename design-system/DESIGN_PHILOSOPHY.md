@@ -174,8 +174,17 @@ fourth feature that does not exist. If a section looks thin, it is either
 telling you the feature is thin, or telling you the section should not be
 there. Both are useful information.
 
-Corollary: if a feature does not exist (accounts, leaderboards), the UI does
-not pretend. Say what it is.
+Corollary: if a feature does not exist (a leaderboard, a class dashboard, a
+sync service), the UI does not pretend. Say what it is.
+
+The same rule cuts the other way, and the local profiles are the case in
+point. They exist, so the UI says so — but it says exactly what they are: a
+name on a shelf that keeps two people's progress apart on one browser, with
+no server, no registration and a passphrase that protects nothing. A sign-in
+page that borrowed the shape of a real one and implied a real one would be
+inventing a feature just as surely as a fake testimonial would. The page
+therefore carries the guest path as its own sentence, and the privacy policy
+lists the profile store beside every other key.
 
 ### 9. Subtraction first
 

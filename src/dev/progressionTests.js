@@ -1111,6 +1111,87 @@ export async function runProgressionTests() {
     }
   }
 
+  /* ── TEST 45: the reviewer's profile ────────────────────────────────────────
+     The whole claim of the judge controls is that they are not a shortcut
+     around the engine — they ARE the engine. These check that, and that the
+     powers cannot leak onto an ordinary profile. */
+  {
+    const judged = (s) => run(s, A.JUDGE, { op: 'enable', stock: true }, T0).state
+    const j = judged(fresh())
+
+    ok('T45 the profile is stocked', j.gems >= 999999 && j.hearts === 100 && j.maxHearts === 100,
+      `${j.gems} gems, ${j.hearts}/${j.maxHearts}`)
+    ok('T45 the powers are all on', j.judge.powers.infiniteGems && j.judge.powers.unlockAll && j.judge.powers.chips)
+
+    /* Every module is reachable without earning the one before it. */
+    const openCourse = prog.buildViewModel(j, T0).course
+    ok('T45 every module is unlocked', openCourse.sections.every((sec) => sec.unlocked),
+      openCourse.sections.filter((sec) => !sec.unlocked).map((sec) => sec.id).join(','))
+    const shutCourse = prog.buildViewModel(fresh(), T0).course
+    ok('T45 an ordinary profile still locks them', shutCourse.sections.filter((sec) => !sec.unlocked).length > 0)
+
+    /* A skipped lesson pays exactly what a finished one pays. */
+    const skipped = run(j, A.JUDGE, { op: 'completeLesson', lessonId: 'what-is-ai' }, T0)
+    const played = run(j, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 120, accuracy: 1 }, T0)
+    ok('T45 a skipped lesson pays the same XP', skipped.state.xp === played.state.xp, `${skipped.state.xp} vs ${played.state.xp}`)
+    ok('T45 it counts as a real completion', skipped.state.stats.totalLessonsCompleted === 1)
+    ok('T45 it keeps the streak', skipped.state.streak.current === 1, skipped.state.streak.current)
+    ok('T45 it emits the completion event', skipped.events.some((e) => e.type === 'LESSON_COMPLETE'))
+
+    /* A whole module, and the section bonus that comes with it. */
+    const mod = run(j, A.JUDGE, { op: 'completeSection', sectionId: 'ai-foundations' }, T0)
+    ok('T45 a module completes all of its lessons',
+      learn.getSectionById('ai-foundations').lessons.every((l) => mod.state.lessons[l.id]))
+    ok('T45 the section bonus is paid once', !!mod.state.sectionsCompleted['ai-foundations'])
+    ok('T45 the next module unlocks',
+      prog.buildViewModel({ ...mod.state, judge: null }, T0).course.sections[1].unlocked)
+
+    /* Emptying it puts the course, and the section stamp, back. */
+    const emptied = run(mod.state, A.JUDGE, { op: 'resetSection', sectionId: 'ai-foundations' }, T0)
+    ok('T45 emptying a module forgets its lessons', Object.keys(emptied.state.lessons).length === 0)
+    ok('T45 and forgets the section stamp', !emptied.state.sectionsCompleted['ai-foundations'])
+
+    /* The purse tops itself up, but only while the power is on. */
+    const spent = run(j, A.SPEND_GEMS, { amount: 200000, reason: 'test' }, T0)
+    ok('T45 an unlimited purse refills', spent.state.gems === 999999, spent.state.gems)
+    const normal = run(j, A.JUDGE, { op: 'powers', powers: { infiniteGems: false } }, T0).state
+    const spentAgain = run(normal, A.SPEND_GEMS, { amount: 200000, reason: 'test' }, T0)
+    ok('T45 switching it off lets gems actually fall', spentAgain.state.gems === normal.gems - 200000, spentAgain.state.gems)
+
+    /* Setting a streak writes the days behind it. */
+    const streaked = run(j, A.JUDGE, { op: 'streak', days: 7 }, T0).state
+    ok('T45 a set streak reads back', streaked.streak.current === 7)
+    ok('T45 and the history agrees with it', Object.keys(streaked.streak.history).length >= 7,
+      Object.keys(streaked.streak.history).length)
+
+    /* Setting a level holds the XP that level begins at. */
+    const levelled = run(j, A.JUDGE, { op: 'level', level: 5 }, T0).state
+    ok('T45 a set level is derived from real XP',
+      putils.getLevelFromXP(levelled.xp) === 5 && levelled.level === 5, `${levelled.level} at ${levelled.xp} XP`)
+
+    /* Quests are FILLED, not claimed: claiming stays the learner's press. */
+    const filled = run(j, A.JUDGE, { op: 'completeQuests', scope: 'daily' }, T0).state
+    ok('T45 filling quests completes them', filled.quests.daily.every((q) => q.completed))
+    ok('T45 but does not claim them', filled.quests.daily.every((q) => !q.claimed))
+    ok('T45 and does not pay out yet', filled.gems === j.gems, `${filled.gems} vs ${j.gems}`)
+
+    /* Badges: the grid must not show a full seal beside "0 of 30". */
+    const badged = run(j, A.JUDGE, { op: 'unlockBadges' }, T0).state
+    ok('T45 every badge unlocks', Object.keys(badged.achievements).length > 0)
+
+    /* The powers cannot ride along in a stored blob. */
+    const smuggled = store.sanitizeState({ ...j, judge: { powers: { unlockAll: true } } }, T0)
+    ok('T45 a stored blob keeps its powers only as data', !!smuggled.judge)
+    const stripped = run(smuggled, A.JUDGE, { op: 'disable' }, T0).state
+    ok('T45 disabling removes the powers', stripped.judge === null)
+    ok('T45 and brings the numbers back to a learner\'s', stripped.hearts === 5 && stripped.maxHearts === 5 && stripped.gems <= 500,
+      `${stripped.gems} gems, ${stripped.hearts}/${stripped.maxHearts}`)
+    ok('T45 an ordinary profile has no powers at all', fresh().judge === null)
+    ok('T45 and a judge op on one does nothing',
+      run(fresh(), A.JUDGE, { op: 'topUp' }, T0).state.gems === 100,
+      run(fresh(), A.JUDGE, { op: 'topUp' }, T0).state.gems)
+  }
+
   const passed = results.filter((r) => r.pass).length
   const failures = results.filter((r) => !r.pass)
   return {

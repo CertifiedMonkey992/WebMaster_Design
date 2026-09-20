@@ -2,7 +2,15 @@
 
 An interactive course on how AI works. 22 lessons across 5 modules, with
 streaks, hearts, gems, daily quests, a daily bonus track and a three-item
-shop. No accounts — progress persists in `localStorage`.
+shop. No server: progress persists in `localStorage`.
+
+Profiles are **optional and local** — a name on a shelf that keeps two
+people's progress apart on one browser, created in `accountService.js` and
+never transmitted. Signed out, the app reads and writes exactly the key it
+always did. One seeded profile is the **TSA reviewer's**
+(`config/judgeConfig.js`): unlimited gems, 100 hearts, every module open, and
+a control beside every feature so a judge can exercise the whole product in
+minutes. Every one of those controls runs the real reducer.
 
 ## Stack
 
@@ -104,9 +112,17 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 - **Use real data.** The landing page mounts real components against a real
   demo state via `ProgressionShowcase`. Do not replace working UI with
   mockups or invent figures for a stat row.
-- **Features that do not exist are not implied.** There are no accounts and
-  no leaderboard, so nothing in the UI offers, mentions or stands in for
-  either. Absence is the whole statement.
+- **Features that do not exist are not implied.** There is no leaderboard, no
+  class dashboard and no sync, so nothing in the UI offers, mentions or
+  stands in for any of them. Absence is the whole statement.
+- **And what does exist is described exactly.** Profiles are local, optional
+  and unprotected, and the sign-in page, the privacy policy and the footer
+  all say so in those words. Never let the sign-in page imply a server, an
+  account system or a security the product does not have.
+- **The reviewer's controls never fake a result.** Every one of them goes
+  through `judgeService.js` into the real reducer. A control that drew a
+  finished state instead of producing one would be showing a judge something
+  the product cannot do.
 
 ## Quick reference
 

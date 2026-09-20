@@ -95,6 +95,10 @@
 .sh-balance-value .gi { color: var(--ochre); }
 .sh-balance-value { --rn-up: var(--ochre-bright); }
 
+/* The reviewer's purse. Fraunces sets ∞ small, so it takes the next size up
+   to sit at the same optical weight as the figure it replaces. */
+.sh-balance-endless { font-size: var(--fs-section); line-height: 1; }
+
 /* ── Purchase receipt ─────────────────────────────────────────────────────── */
 
 .sh-receipt {

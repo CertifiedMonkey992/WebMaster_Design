@@ -180,6 +180,14 @@
 
 .pg-pill:hover .pg-pill-value { transform: translateX(1px); }
 
+/* The reviewer's purse. An ∞ has no digits to align, so it sits a little
+   larger and on the type's own baseline rather than in tabular figures. */
+.pg-pill-value--endless {
+  font-size: var(--fs-lead);
+  line-height: 1;
+  font-weight: var(--fw-semi);
+}
+
 .pg-pill--streak { color: var(--clay-ink); --rn-up: var(--clay); }
 .pg-pill--streak .pg-pill-value { color: var(--ink); }
 .pg-pill--streak.is-dim .pg-pill-value { color: var(--ink-faint); }
@@ -370,6 +378,34 @@
 .pg-heart-slot.is-next .hi-level { transition: transform var(--tick) linear; }
 
 .pg-hearts-row.is-full .pg-heart-slot { animation-name: fx-pop-in; }
+
+/* A profile with more hearts than a row can honestly draw (the reviewer's
+   has a hundred) counts them instead: one heart filled to the fraction it
+   holds, and the figure beside it. COMPONENT_RULES.md → Hearts. */
+.pg-hearts-many {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0 var(--sp-1);
+  color: var(--berry);
+}
+
+.pg-hearts-many-count {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-black);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.pg-hearts-many-max {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--ink-faint);
+}
 
 /* How hearts work: three pictures in a row. */
 .pg-how {

@@ -1299,6 +1299,17 @@ html:has(.learn-app) body {
 
 .rail-note-link:hover { color: var(--clay-ink); border-bottom-color: var(--clay); }
 
+/* The same link, inside the note's sentence rather than under it. */
+.rail-note-link-inline {
+  font-weight: var(--fw-semi);
+  color: var(--ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--line-strong);
+  transition: color var(--dur-hover) var(--ease-out), text-decoration-color var(--dur-hover) var(--ease-out);
+}
+.rail-note-link-inline:hover { color: var(--clay-ink); text-decoration-color: var(--clay); }
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE

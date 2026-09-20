@@ -11,10 +11,12 @@ import PlayerStatusBar from '../components/progression/PlayerStatusBar'
 import RewardToaster   from '../components/progression/RewardToaster'
 import QuestPanel, { QuestBoard } from '../components/progression/QuestPanel'
 import DevPanel        from '../components/progression/DevPanel'
+import JudgeConsole    from '../components/judge/JudgeConsole'
 import DailyBonusIndicator from '../components/daily/DailyBonusIndicator'
 import DailyBonusModal     from '../components/daily/DailyBonusModal'
 
 import { ProgressionProvider, useProgression } from '../state/ProgressionContext'
+import { useAuth } from '../state/AuthContext'
 
 import './LearnPage.css'
 import '../components/progression/progression.css'
@@ -25,8 +27,11 @@ const NAV_ORDER = ['learn', 'practice', 'quests', 'shop', 'profile']
 /* The learner's state lives with the course: App loads this page lazily, so
    the progression code is fetched with it, not with the home page. */
 export default function LearnPage(props) {
+  const { profileKey, isJudge } = useAuth()
   return (
-    <ProgressionProvider>
+    /* Keyed on the profile: signing in or out remounts the engine against
+       the right learner rather than swapping state underneath it. */
+    <ProgressionProvider key={profileKey} judge={isJudge}>
       <Course {...props} />
     </ProgressionProvider>
   )
@@ -34,6 +39,7 @@ export default function LearnPage(props) {
 
 function Course({ onGoHome, onGoAbout }) {
   const { vm } = useProgression()
+  const { isJudge } = useAuth()
   const [activeNav, setActiveNav] = useState('learn')
   const [dir, setDir] = useState(1)
   const [activeLessonId, setActiveLessonId] = useState(null)
@@ -103,7 +109,12 @@ function Course({ onGoHome, onGoAbout }) {
       <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />
 
       <RewardToaster />
-      <DevPanel />
+      {/* Two consoles in one corner is worse than one. The reviewer's desk
+          does everything the developer panel does and more, so on that
+          profile the developer panel stands down. */}
+      {!isJudge && <DevPanel />}
+      {/* Only ever rendered on the reviewer's profile. */}
+      <JudgeConsole />
     </div>
   )
 }

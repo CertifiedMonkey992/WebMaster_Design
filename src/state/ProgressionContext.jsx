@@ -20,9 +20,8 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from 'react'
 
-import { load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState } from '../services/storageService'
+import { load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState, getProfileKey } from '../services/storageService'
 import progression, { ACTIONS, reduce, reconcile, buildViewModel } from '../services/progressionService'
-import { STORAGE_KEY } from '../config/progressionConfig'
 import { getLocalDateKey } from '../utils/dateUtils'
 
 /* Split contexts: progression state changes rarely, the clock changes every
@@ -80,15 +79,27 @@ function createActions(dispatch) {
 
     setDailyGoal:   (dailyXP) => dispatch(ACTIONS.SET_DAILY_GOAL, { dailyXP }),
     reconcileNow:   () => dispatch(ACTIONS.RECONCILE),
+
+    /** The reviewer's controls. One call per operation, each a no-op on a
+     *  profile without the powers (services/judgeService.js → OPS). */
+    judge: (op, payload = {}) => dispatch(ACTIONS.JUDGE, { op, ...payload }),
   }
 }
 
-export function ProgressionProvider({ children }) {
+/**
+ * `judge` says whether the profile being loaded is the reviewer's
+ * (AuthContext → isJudge). It is asserted at boot in both directions: the
+ * reviewer's profile is stocked and given its powers, and every other
+ * profile has them stripped — so powers can never ride along inside an
+ * imported file or a blob copied between profiles.
+ */
+export function ProgressionProvider({ judge = false, children }) {
   /* ── Load once, reconcile against the real clock ── */
   const bootRef = useRef(null)
   if (bootRef.current === null) {
     const loaded = load()
-    const settled = reconcile(loaded.state, Date.now())
+    const claimed = assertJudge(loaded.state, judge, loaded.isNew)
+    const settled = reconcile(claimed, Date.now())
     bootRef.current = {
       state: settled.state,
       /* What reconciling the stored state did — a shield spent overnight, a
@@ -213,7 +224,7 @@ export function ProgressionProvider({ children }) {
      copy. The `storage` event only fires in OTHER tabs, never the writer. */
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key !== STORAGE_KEY || e.storageArea !== window.localStorage) return
+      if (e.key !== getProfileKey() || e.storageArea !== window.localStorage) return
       if (peekUpdatedAt() <= savedAtRef.current) return
       const loaded = load()
       const settled = reconcile(loaded.state, Date.now())
@@ -370,7 +381,7 @@ const NOOP_ACTIONS = {
   recordAnswer: NOOP, completeLesson: NOOP, completePractice: NOOP, addPracticeTime: NOOP,
   purchaseItem: NOOP, claimDailyBonus: NOOP,
   claimQuest: NOOP, claimAllQuests: NOOP, claimTeamReward: NOOP, rerollTeamMission: NOOP,
-  setDailyGoal: NOOP, reconcileNow: NOOP,
+  setDailyGoal: NOOP, reconcileNow: NOOP, judge: NOOP,
   exportProgress: () => '', importProgress: () => false,
   dev: { set: NOOP, resetDailyQuests: NOOP, resetWeeklyQuests: NOOP, setBonusDay: NOOP,
          resetDailyBonus: NOOP, completeBonusCycle: NOOP, shiftDays: NOOP, reset: NOOP, raw: () => null },
@@ -531,6 +542,25 @@ const VISIBLE = new Set([
 
 function isVisibleReward(event) {
   return VISIBLE.has(event.type)
+}
+
+/**
+ * Make the loaded state agree with who is signed in.
+ *
+ *   the reviewer   gets the powers, and on a first visit the stock that goes
+ *                  with them (gems, hearts, shields)
+ *   anyone else    has `judge` cleared, whatever the stored blob said
+ *
+ * A profile that already has the powers is not re-stocked, so a reviewer who
+ * spent their hearts on purpose still finds them spent after a refresh.
+ */
+function assertJudge(state, isJudge, isNew) {
+  if (!isJudge) return state.judge ? { ...state, judge: null } : state
+  const fresh = isNew || !state.judge
+  return reduce(state, {
+    type: ACTIONS.JUDGE,
+    payload: { op: 'enable', stock: fresh },
+  }, Date.now()).state
 }
 
 function shiftDateKey(key, days) {

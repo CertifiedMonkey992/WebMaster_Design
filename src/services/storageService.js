@@ -15,6 +15,7 @@
 import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS } from '../config/progressionConfig'
 import { SHIELD } from '../config/shopConfig'
 import { normalizeDay } from '../config/dailyBonusConfig'
+import { normalizePowers } from '../config/judgeConfig'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
 import { getLevelFromXP } from '../utils/progressionUtils'
 
@@ -133,6 +134,10 @@ export function createDefaultState(now = Date.now()) {
 
     /* Recent transactions — powers the reward history view */
     ledger: [],
+
+    /* The reviewer profile's powers (config/judgeConfig.js), or null on
+       every ordinary profile — which is every profile but one. */
+    judge: null,
   }
 }
 
@@ -300,6 +305,11 @@ export function sanitizeState(raw, now = Date.now()) {
     s.ledger = raw.ledger.filter((e) => isObj(e) && typeof e.reason === 'string').slice(0, 100)
   }
 
+  /* The reviewer's powers. `null` on every ordinary profile, and the auth
+     layer re-asserts that on sign-in — so a blob copied from the judge's
+     profile into a learner's cannot smuggle the powers across. */
+  s.judge = isObj(raw.judge) ? { powers: normalizePowers(raw.judge.powers) } : null
+
   s.version = STATE_VERSION
   return s
 }
@@ -350,6 +360,27 @@ export function migrate(raw) {
   return state
 }
 
+/* ── Which profile is being read and written ─────────────────────────────────
+   One key held all progress before accounts existed, and that key is still
+   the GUEST profile's — a visitor who never signs in reads and writes
+   exactly what they always did. A signed-in profile gets a key of its own
+   (accountService.progressKey), set here by the auth layer before the
+   progression provider mounts.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+let activeKey = STORAGE_KEY
+
+/** The storage key progress is currently read from and written to. */
+export function getProfileKey() {
+  return activeKey
+}
+
+/** Point every read and write at a profile's key. Pass nothing for guest. */
+export function setProfileKey(key) {
+  activeKey = typeof key === 'string' && key ? key : STORAGE_KEY
+  return activeKey
+}
+
 /* ── Read / write ────────────────────────────────────────────────────────── */
 
 /** The probe's verdict, kept for the page's lifetime: `undefined` until the
@@ -378,7 +409,7 @@ export function load(now = Date.now()) {
 
   let text = null
   try {
-    text = store.getItem(STORAGE_KEY)
+    text = store.getItem(activeKey)
   } catch {
     return { state: createDefaultState(now), isNew: true, recovered: false }
   }
@@ -391,7 +422,7 @@ export function load(now = Date.now()) {
   } catch {
     /* Corrupted JSON — start fresh rather than crash, and keep the bad blob
        under a side key so nothing is silently destroyed. */
-    try { store.setItem(`${STORAGE_KEY}__corrupt`, text.slice(0, 20000)) } catch { /* ignore */ }
+    try { store.setItem(`${activeKey}__corrupt`, text.slice(0, 20000)) } catch { /* ignore */ }
     return { state: createDefaultState(now), isNew: true, recovered: true }
   }
 
@@ -407,7 +438,7 @@ export function peekUpdatedAt() {
   const store = getStorage()
   if (!store) return 0
   try {
-    const text = store.getItem(STORAGE_KEY)
+    const text = store.getItem(activeKey)
     if (!text) return 0
     const parsed = JSON.parse(text)
     return isObj(parsed) && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : 0
@@ -424,7 +455,7 @@ export function save(state) {
   if (!store) return 0
   try {
     const updatedAt = Date.now()
-    store.setItem(STORAGE_KEY, JSON.stringify({ ...state, updatedAt }))
+    store.setItem(activeKey, JSON.stringify({ ...state, updatedAt }))
     return updatedAt
   } catch {
     return 0
@@ -436,7 +467,7 @@ export function clear() {
   const store = getStorage()
   if (!store) return false
   try {
-    store.removeItem(STORAGE_KEY)
+    store.removeItem(activeKey)
     return true
   } catch {
     return false
@@ -448,4 +479,7 @@ export function exportState(state) {
   return JSON.stringify(state, null, 2)
 }
 
-export default { load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState }
+export default {
+  load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState,
+  getProfileKey, setProfileKey,
+}

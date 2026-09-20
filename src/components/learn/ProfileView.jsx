@@ -20,6 +20,8 @@ import { getShortDate, getLocalDateKey } from '../../utils/dateUtils'
 import SplitText from '../../motion/SplitText'
 import Reveal from '../../motion/Reveal'
 import CountUp from '../../motion/CountUp'
+import { useAuth } from '../../state/AuthContext'
+import { PageLink } from '../../nav'
 
 /* Export and import of the learner's progress. The Terms warn that progress
    lives in this browser and can be lost with it; this is the way to keep a
@@ -94,8 +96,39 @@ function ProgressData() {
   )
 }
 
+/* Which profile this progress belongs to, and the way out of it. It sits
+   BELOW the data section rather than at the top, because who is signed in is
+   the least interesting fact on this page: the course is the same either
+   way, and the guest path is the default. */
+function ProfileIdentity() {
+  const { account, signOut } = useAuth()
+
+  return (
+    <section className="pv-data" aria-labelledby="pv-who-title">
+      <div>
+        <h3 className="pv-data-title" id="pv-who-title">
+          {account ? 'This profile' : 'Sharing this browser?'}
+        </h3>
+        <p className="pv-data-desc">
+          {account
+            ? `Everything above belongs to ${account.name} (${account.handle}). Signing out returns to the guest profile and leaves this one exactly as it is.`
+            : 'The progress above is the guest profile — whatever anyone does on this browser. A local profile keeps two people’s streaks and gems apart. It is optional, it is free, and nothing is sent anywhere.'}
+        </p>
+      </div>
+      <div className="pv-data-actions">
+        {account ? (
+          <button type="button" className="btn btn-outline btn-sm" onClick={signOut}>Sign out</button>
+        ) : (
+          <PageLink page="signin" className="btn btn-outline btn-sm">Make a profile</PageLink>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export default function ProfileView() {
   const { state, vm } = useProgression()
+  const { account } = useAuth()
   const s = vm.stats
 
   const accuracy = s.totalCorrectAnswers + s.totalWrongAnswers > 0
@@ -119,8 +152,11 @@ export default function ProfileView() {
         <div className="pv-identity">
           <div className="pv-avatar" data-tilt data-tip={`Level ${vm.level}`}>{vm.level}</div>
           <div>
-            <SplitText as="h2" className="pv-name" immediate>{vm.levelTitle}</SplitText>
-            <p className="pv-since">Learning since {getShortDate(getLocalDateKey(new Date(state.createdAt)))}</p>
+            <SplitText as="h2" className="pv-name" immediate>{account?.name ?? vm.levelTitle}</SplitText>
+            <p className="pv-since">
+              {account ? `${vm.levelTitle} · ` : ''}
+              Learning since {getShortDate(getLocalDateKey(new Date(state.createdAt)))}
+            </p>
           </div>
         </div>
 
@@ -158,6 +194,7 @@ export default function ProfileView() {
       <AchievementGrid />
 
       <ProgressData />
+      <ProfileIdentity />
     </div>
   )
 }

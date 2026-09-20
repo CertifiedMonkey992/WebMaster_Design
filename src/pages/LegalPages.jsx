@@ -13,6 +13,7 @@ import { PageLink } from '../nav'
 import { SITE } from '../site'
 import { STORAGE_KEY } from '../config/progressionConfig'
 import { CONSENT_KEY, reopenChoices } from '../services/analytics'
+import { ACCOUNTS_KEY } from '../services/accountService'
 
 const UPDATED = new Date(`${SITE.policiesUpdated}T12:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
@@ -37,13 +38,14 @@ export function PrivacyPage() {
     <SitePage
       eyebrow="Privacy policy"
       title={<>Your progress <em className="em">stays in your browser</em>.</>}
-      lead="LunX has no accounts and no server of its own. This page lists everything it stores, everything that leaves your browser, and how to remove it."
+      lead="LunX has no server of its own, and the profiles it does have never leave your browser. This page lists everything it stores, everything that leaves your browser, and how to remove it."
     >
       <Updated />
 
       <Section id="summary" title="In short">
         <ul className="sp-list">
-          <li>No account and nothing to register for.</li>
+          <li>Nothing to register for: the whole course works without a profile.</li>
+          <li>A profile, if you make one, is created in this browser and never sent anywhere.</li>
           <li>Your course progress is saved in this browser only, and is never sent anywhere.</li>
           <li>LunX sets no cookies.</li>
           <li>{analytics
@@ -55,12 +57,27 @@ export function PrivacyPage() {
 
       <Section id="stored" title="What LunX stores, and where">
         <p className="sp-p">
-          LunX uses your browser’s local storage, which stays on your device. It keeps two entries, and a third only if something goes wrong:
+          LunX uses your browser’s local storage, which stays on your device. It keeps three entries, a fourth for each profile you create, and one more only if something goes wrong:
         </p>
         <dl className="sp-defs">
           <div>
             <dt><code>{STORAGE_KEY}</code></dt>
-            <dd>Your course progress: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily bonus track, shop items and achievements. It contains no name, email address or other personal detail.</dd>
+            <dd>Your course progress while you are signed out — the guest profile: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily bonus track, shop items and achievements. It contains no name, email address or other personal detail.</dd>
+          </div>
+          <div>
+            <dt><code>{ACCOUNTS_KEY}</code></dt>
+            <dd>
+              The profiles made on this browser, and which one is signed in. Each
+              holds the display name and username you typed and a short digest of the
+              passphrase — never the passphrase itself. Because nothing is transmitted
+              or verified, that digest keeps two people’s progress apart on a shared
+              computer; it does not secure anything, and anyone with this device can
+              read the progress behind it. Use a passphrase you do not use elsewhere.
+            </dd>
+          </div>
+          <div>
+            <dt><code>{STORAGE_KEY}__&lt;profile&gt;</code></dt>
+            <dd>One of these per profile, holding that profile’s progress in the same shape as the entry above. Signing out of a profile leaves it in place; removing the profile removes it.</dd>
           </div>
           <div>
             <dt><code>{STORAGE_KEY}__corrupt</code></dt>
@@ -112,8 +129,9 @@ export function PrivacyPage() {
       <Section id="students" title="Students and schools">
         <p className="sp-p">
           LunX is written for high school students. It asks no student for personal information,
-          and the course works in full without giving any. Teachers can use it in class without
-          creating accounts for anyone.
+          and the course works in full without giving any — a profile is optional, and the name
+          and username it asks for can be anything at all, because nothing is verified and
+          nothing is sent. Teachers can use it in class without registering anyone anywhere.
         </p>
       </Section>
 

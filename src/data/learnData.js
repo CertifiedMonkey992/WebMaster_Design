@@ -116,9 +116,16 @@ export function getSectionById(sectionId) {
  *     (reachable, but not the recommended next step)
  *   • a section unlocks when every lesson of the previous section is done
  *
+ * `unlockAll` opens every section regardless of what came before. It is for
+ * the reviewer's profile (config/judgeConfig.js), which has to reach any
+ * lesson in any module without first earning its way there. Nothing else
+ * changes: "current" is still the first unfinished lesson, and every count
+ * is still the real one.
+ *
  * @param {Set<string>|object} completedLessons  Set, array or map keyed by id
+ * @param {{ unlockAll?: boolean }} [options]
  */
-export function deriveCourse(completedLessons) {
+export function deriveCourse(completedLessons, { unlockAll = false } = {}) {
   const done = toSet(completedLessons)
 
   let currentFound = false
@@ -127,7 +134,7 @@ export function deriveCourse(completedLessons) {
   let completedSections = 0
 
   const sections = SECTIONS.map((section) => {
-    const unlocked = previousSectionComplete
+    const unlocked = unlockAll || previousSectionComplete
     const lessons = section.lessons.map((lesson) => {
       const isDone = done.has(lesson.id)
       if (isDone) completedCount++

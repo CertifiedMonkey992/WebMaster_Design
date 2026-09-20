@@ -11,6 +11,8 @@
 import { useRef, useState } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { QuestIcon, GemIcon, Icon } from './Icons'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 import { formatDuration } from '../../utils/dateUtils'
 import useProgressWidth from '../../hooks/useProgressWidth'
 
@@ -108,6 +110,13 @@ export default function TeamMissionCard() {
             Your leg: {team.contribution}/{team.goalPerMember} {team.mission.unit}
           </span>
         )}
+
+        {/* Reviewer only. Fills your leg of the relay, which is what a week
+            of learning would have done — the squad carries the rest. */}
+        <JudgeMargin label="Reviewer mission controls">
+          <JudgeChip op={OPS.COMPLETE_MISSION} icon="users" label="Finish your leg" disabled={team.complete}
+            tip="Contributes your whole share so the mission can complete" />
+        </JudgeMargin>
       </footer>
     </section>
   )

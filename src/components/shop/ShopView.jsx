@@ -20,6 +20,8 @@ import { SHOP_SECTIONS, SHOP_ITEMS } from '../../config/shopConfig'
 import { REASONS } from '../../services/shopService'
 import { QUESTS } from '../../config/progressionConfig'
 import { GemIcon, Icon } from '../progression/Icons'
+import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
+import { OPS } from '../../services/judgeService'
 import { formatNumber } from '../../utils/progressionUtils'
 import ShopArt from './ShopArt'
 import PurchaseDialog from './PurchaseDialog'
@@ -210,17 +212,41 @@ export default function ShopView({ onNavigate }) {
         </div>
 
         <Reveal variant="scale" immediate delay={180}>
-          <div className="sh-balance fx-glint-host fx-gleam" ref={balanceRef} data-tip="Earn more from quests and perfect lessons">
+          <div
+            className="sh-balance fx-glint-host fx-gleam"
+            ref={balanceRef}
+            data-tip={vm.unlimitedGems
+              ? `The reviewer profile tops itself up · ${formatNumber(vm.gems)} right now`
+              : 'Earn more from quests and perfect lessons'}
+          >
             <span className="sh-balance-art"><ShopArt name="gemStack" size={78} /></span>
             <div className="sh-balance-text">
               <span className="sh-balance-label">Your balance</span>
               <span className="sh-balance-value">
                 <GemIcon size={19} />
-                <RollingNumber value={gems} format={formatNumber} />
+                {/* Six digits nobody is counting say less than the symbol
+                    does. The receipt on each purchase still quotes the real
+                    figure, and the reviewer console can switch the purse
+                    back to behaving normally. */}
+                {vm.unlimitedGems
+                  ? <span className="sh-balance-endless" aria-label="Unlimited">∞</span>
+                  : <RollingNumber value={gems} format={formatNumber} />}
               </span>
             </div>
           </div>
         </Reveal>
+
+        {/* Reviewer only. The shop refuses a purchase the state cannot
+            support, so these put the profile back into the states worth
+            seeing: hearts to spend on, and a shield stock to spend down. */}
+        <JudgeMargin className="sh-judge-margin" label="Reviewer shop controls">
+          <JudgeChip op={OPS.HEARTS} payload={{ amount: -3 }} icon="heart" label="Spend 3 hearts"
+            disabled={vm.hearts === 0} tip="So the heart refill has something to refill" />
+          <JudgeChip op={OPS.SHIELDS} payload={{ count: 0 }} icon="shield" label="Empty the shields" quiet
+            disabled={vm.shields === 0} tip="So a Streak Shield can be bought again" />
+          <JudgeChip op={OPS.POWERS} payload={{ powers: { infiniteGems: false } }} icon="gem" label="Normal purse" quiet
+            tip="Stop topping the balance up, so a price can actually be out of reach" />
+        </JudgeMargin>
       </header>
 
       {receipt && (

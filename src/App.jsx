@@ -14,10 +14,16 @@ import PageLoading     from './components/PageLoading'
 import ErrorBoundary   from './components/ErrorBoundary'
 
 import FxLayer from './motion/FxLayer'
-import { SpiderCursor } from './components/ui/spider-cursor'
+/* components/ui/spider-cursor.jsx is kept, deliberately unmounted. The two
+   ink spiders that walked after the pointer are being held back to become
+   something a learner UNLOCKS rather than something every visitor gets on
+   arrival, so the component stays where it is until there is a reward to
+   attach it to. Mounting <SpiderCursor /> here is all it takes to bring
+   them back. */
 import { turnPage } from './motion/pageTurn'
 import { afterArrival, setStageMode } from './motion/stage'
 import { NavProvider, usePageMeta } from './nav'
+import { AuthProvider } from './state/AuthContext'
 import { PAGES, routeOf, pageFromLocation } from './site'
 import { initAnalytics, pageview } from './services/analytics'
 /* Last, so the shared verbs (magnet, press, reveal) sit on top of the
@@ -29,6 +35,7 @@ import './motion/motion.css'
    fetched BEFORE its page turn starts — a turn must never snapshot a loader. */
 const LOADERS = {
   learn:    () => import('./pages/LearnPage'),
+  signin:   () => import('./pages/SignInPage'),
   about:    () => import('./pages/AboutPage'),
   contact:  () => import('./pages/ContactPages').then((m) => ({ default: m.ContactPage })),
   thanks:   () => import('./pages/ContactPages').then((m) => ({ default: m.ThanksPage })),
@@ -205,18 +212,24 @@ export default function App() {
   }
 
   return (
-    <NavProvider value={nav}>
-      <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); const m = document.querySelector('main'); m?.focus(); m?.scrollIntoView() }}>
-        Skip to content
-      </a>
-      <FxLayer />
-      <SpiderCursor />
-      <ErrorBoundary key={currentPage}>
-        <Suspense fallback={<PageLoading label={currentPage === 'learn' ? 'Opening the course…' : 'Opening the page…'} />}>
-          {page}
-        </Suspense>
-      </ErrorBoundary>
-      <ConsentBanner />
-    </NavProvider>
+    /* AuthProvider is outermost: it points storage at the signed-in
+       profile's key while it renders, before any page reads it, and the
+       boundary below must be able to render a signed-in chrome around a page
+       that failed. The boundary stays scoped to the PAGE, as it was — a
+       lesson that throws must not take the navbar and the banner with it. */
+    <AuthProvider>
+      <NavProvider value={nav}>
+        <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); const m = document.querySelector('main'); m?.focus(); m?.scrollIntoView() }}>
+          Skip to content
+        </a>
+        <FxLayer />
+        <ErrorBoundary key={currentPage}>
+          <Suspense fallback={<PageLoading label={currentPage === 'learn' ? 'Opening the course…' : 'Opening the page…'} />}>
+            {page}
+          </Suspense>
+        </ErrorBoundary>
+        <ConsentBanner />
+      </NavProvider>
+    </AuthProvider>
   )
 }

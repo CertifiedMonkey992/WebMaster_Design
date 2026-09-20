@@ -3,10 +3,38 @@
 An interactive field guide to how AI works, built for high-school learners
 as a TSA Webmaster entry. Twenty-two lessons across five modules, with XP,
 levels, streaks, hearts, gems, daily and weekly quests, a daily bonus track,
-a small shop and achievements. There are no accounts and no server: all
-progress lives in the browser's local storage.
+a small shop and achievements. There is no server: all progress lives in the
+browser's local storage, and the course needs no profile at all.
 
 Live site: https://certifiedmonkey992.github.io/WebMaster_Design/
+
+## For TSA judges
+
+Open **Sign in** at the top right and press the credentials panel to fill
+them in:
+
+| | |
+|---|---|
+| Username | `judge@lunx.app` |
+| Passphrase | `tsa2027` |
+
+That profile has every module unlocked, unlimited gems and 100 hearts, a
+small clay control in the margin of each feature (finish a lesson, fill a
+quest, break a streak, lose a heart), and a **Reviewer console** behind the
+tab in the bottom-right corner — resources, levels, streaks, the whole
+course, quests, badges, the daily bonus, and a button that runs the
+progression engine's own test suite in the browser.
+
+None of it fakes a result: every control calls the same reducer a learner
+drives, so a skipped lesson pays the same XP, unlocks the same module and
+plays the same animation as one answered question by question. Each power
+can be switched off in the console to see the plain course, and judges are
+equally welcome to create an ordinary profile and walk it as a student
+would.
+
+Profiles are local: they are created in this browser, nothing is transmitted
+or registered, and the stored passphrase separates two learners rather than
+protecting anything. See `PRIVACY` on the site for every key it writes.
 
 ## Stack
 

@@ -102,6 +102,12 @@ are in.
   two ways into the course** (the other is the closing CTA), so the bar
   **never hides**: after 24px of scroll it compresses (the strip's ground
   scales to 56px, the wordmark to 92%) instead of tucking away.
+- **The profile control** sits beside it, quiet. Signed out it is the word
+  "Sign in" in the ghost style; signed in it is a chip — initials in an
+  evergreen `--r-xs` tile, then the name, inside one hairline. The reviewer's
+  chip is clay, so a judge can see at a glance which profile the app is in.
+  It is never solid: a profile is optional, and the course is the page's
+  action. Below 720px the chip keeps its mark and drops its name.
 - Arrival: wordmark, links and button settle in on load, 40ms apart.
 
 ### Links into the course (landing page)
@@ -122,6 +128,84 @@ Three, each with a job, and never two on screen at once in the same place:
 The section copy and the footer do not repeat it. In-page section anchors
 (the navbar's section links) are navigation, not course links. Every link
 to a page is a real `<a href>` (`PageLink`), never a button.
+
+### Sign in (`SignInPage`)
+
+A profile in LunX is a **name on a shelf**, not a login to a server: it keeps
+two people's progress apart on one browser, and it gives a TSA judge a
+profile that already has everything open. Nothing is transmitted, registered
+or verified. The page is built on that fact rather than around it.
+
+- **A spread, not a split-screen hero.** Two leaves of one page on the same
+  `--paper` ground, divided by the gutter and nothing else — no coloured
+  panel, no photograph, no tinted half.
+- **The left leaf is a PLATE** (`SignInPlate`), not an illustration of a
+  person at a laptop: an ink drawing of the thing the course is about,
+  inside a hairline frame, with keyed labels and a numbered Fraunces-italic
+  caption under a rule. Its labels are sized in **SVG user units**, not type
+  tokens — they are part of the drawing and scale with it.
+- **The right leaf is the form**, in the product's one input style
+  (`.form-field` / `.form-input`) and the product's one button.
+- **"Sign in" and "Create a profile" are two names on one rule**, with ONE
+  clay underline sliding between them — the navbar's gesture, for the same
+  reason. The rule is **measured** from the chosen name, never guessed at in
+  rem.
+- **It asks for as little as it can**: a display name, a handle and a
+  passphrase. No email validation, because there is nothing to send to.
+- **It says what the passphrase is and is not.** The page states plainly that
+  nothing reaches a server, that the passphrase separates two learners rather
+  than protecting anything, and that the reader should not reuse one. A page
+  that implied security it does not have would be worse than no page.
+- **Signing in is never a wall.** "Start the course as a guest" is its own
+  sentence at the foot of the page, and the whole course works without ever
+  opening this page.
+- **The reviewer's panel** is one card (the card rule — `--surface`, one
+  hairline, `--r-md`, no shadow) holding the credentials in `--font-mono`.
+  Pressing it fills the form. It is not louder than the form: it is a note to
+  one reader.
+- **Signed in**, the page becomes a receipt — who you are, what the profile
+  can do, and the way out — never a second form.
+- **Mobile**: one column; below 560px the plate is dropped rather than
+  shrunk, because a plate a thumb scrolls past is decoration.
+
+### Reviewer controls (`components/judge/`)
+
+Present **only** on the profile marked `judge` (`config/judgeConfig.js`).
+There is no flag, no query string and no key combination that summons them
+anywhere else, and every operation is refused by `judgeService` on a profile
+without the powers.
+
+Two weights, deliberately different:
+
+- **The chips** (`JudgeChip`) are **marginalia** — a reviewer's pencil in the
+  margin of a proof. Clay hairline, clay ink, paper ground, Manrope
+  `--fs-micro` uppercase tracked, `--r-sm`, the product's press. They sit in
+  the margin of the thing they act on and are never the loudest object on the
+  row: the row is what is being judged. An undo-ish chip ("Empty it", "Lock
+  them") is ink, not clay — clay means "do this next", and taking something
+  away never does.
+- **The desk** (`JudgeConsole`) is a floating surface at
+  `--surface-raised` / `--shadow-float` / `--r-lg`, behind a clay tab in the
+  bottom-right corner. It is the one place in the product with a dense grid
+  of controls, and they are still the product's geometry and press.
+
+Three rules govern both:
+
+- **Nothing draws a result.** Every control calls the same engine a learner
+  drives, so a lesson skipped from a chip pays the same XP, unlocks the same
+  module and plays the same animation as one answered question by question.
+  A control that faked a state would be showing a judge a thing the product
+  cannot do.
+- **Filling is not claiming.** A quest chip pushes a quest to its target; the
+  claim stays the reader's press, so the invitation, the flight and the stamp
+  all still happen.
+- **They can be switched off.** "Controls in the margin" in the console
+  removes every chip, which is how a judge sees the plain course. So can
+  the unlimited purse and the unlocked modules.
+
+Clay is rationed to two or three per screen. That ration is spent here on
+purpose, and only on one profile — on every other profile none of this
+renders, so the ration is untouched.
 
 ### Site pages (contact, thank you, privacy, terms, not found)
 
@@ -231,10 +315,11 @@ last action and the footer never competes with it.
 - **External link**: its arrow travels up-right 2px on the same clock.
 - The wordmark is a button back to the top and keeps the shared
   `.wm-letter` ripple.
-- Anything that does not exist is not implied: there are no social accounts,
-  no newsletter and no app stores, and the footer shows none. Contact is the
+- Anything that does not exist is not implied: there is no newsletter, no app
+  store and no social presence, and the footer shows none. Contact is the
   contact page plus the repository, because that is all there is
-  (`SITE.contact`).
+  (`SITE.contact`). The profile link is worded as what it is — "Profiles on
+  this browser" — not as an invitation to sign up for anything.
 - **Mobile**: the columns stack in reading order; the last line wraps above
   the back-to-top control.
 
@@ -374,6 +459,10 @@ semantic colour* — always in that order, always the same sizes.
 - Five discrete hearts, never a bar. Filled `--berry`, spent `--berry` at
   25% with a hairline outline. Losing one: the heart it was drains to the
   outline state over 240ms.
+- Past **ten**, a row of glyphs stops being a row and becomes wallpaper, so
+  the panel counts instead: one heart filled to the fraction held, with the
+  figure beside it. Only the reviewer's profile (a hundred hearts) reaches
+  this.
 - At zero, the panel explains the refill timer and offers the shop. The empty
   state is informative, not punitive.
 
