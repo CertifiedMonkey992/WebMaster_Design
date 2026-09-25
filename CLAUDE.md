@@ -1,8 +1,20 @@
 # LunX
 
-An interactive course on how AI works. 22 lessons across 5 modules, with
-streaks, hearts, gems, daily quests, a daily bonus track and a three-item
-shop. No server: progress persists in `localStorage`.
+An interactive course on how AI works: 21 lessons in 7 modules, grouped into
+the three Parts the TSA brief asks for (Understand AI · Use AI Well · Use AI
+Responsibly), plus a Case File per module, two Part projects, a capstone and
+ungraded Launch and Final Scans. Streaks, hearts, gems, daily quests, a daily
+bonus track and a three-item shop. No server: progress persists in
+`localStorage`.
+
+The curriculum is in `src/data/learnData.js` (structure) and
+`src/data/course/` (one content file per module, each its own chunk). Lessons
+run in three parts — predict & explore, explain & apply, a graded Check — and
+**only the Check spends hearts**: predictions, recalls and simulations never
+do. The 21 simulations in `src/components/learn/sims/` are real (models that
+train in the browser, real calculations) or labelled as illustrative or
+scripted; nothing is sent anywhere. The Field Journal, resume points, review
+flags and scans live in progression state beside everything else.
 
 Profiles are **optional and local** — a name on a shelf that keeps two
 people's progress apart on one browser, created in `accountService.js` and

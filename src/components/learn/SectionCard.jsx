@@ -6,6 +6,7 @@ import { shake } from '../../motion/burst'
 import { Icon } from '../progression/Icons'
 import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
 import { OPS } from '../../services/judgeService'
+import { useProgression } from '../../state/ProgressionContext'
 
 /**
  * A course module: its header and its lessons, as ONE container.
@@ -22,6 +23,8 @@ import { OPS } from '../../services/judgeService'
  */
 export default function SectionCard({ section, sectionNumber, previousTitle, onStartLesson, className = '', style }) {
   const [activeLesson, setActiveLesson] = useState(null)
+  const { showcase } = useProgression()
+  const Title = showcase ? 'h5' : 'h3'
   const cardRef = useRef(null)
   const lockRef = useRef(null)
   const { completed, total, pct, totalDuration } = section
@@ -97,7 +100,7 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
 
         <div className="module-head-top">
           <span className="module-num">{String(sectionNumber).padStart(2, '0')}</span>
-          <span className="module-level">{section.level}</span>
+          <span className="module-level">{section.role ? `${section.role} · ` : ''}{section.level}</span>
 
           {isDone && (
             <span className="badge badge--done">
@@ -125,7 +128,8 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
           )}
         </div>
 
-        <h2 className="module-title" id={`${section.id}-title`}>{section.title}</h2>
+        <Title className="module-title" id={`${section.id}-title`}>{section.title}</Title>
+        {section.question && <p className="module-question">{section.question}</p>}
         <p className="module-desc">{section.description || section.subtitle}</p>
 
         <div className="module-progress">
@@ -144,9 +148,15 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
           </span>
         </div>
         <p className="module-meta tnum">
-          <Icon name="clock" size={11} /> ~{totalDuration} min
-          {!isLocked && !open && <span className="module-meta-hint"> · {total} lessons inside</span>}
+          <Icon name="clock" size={11} /> ~{totalDuration} min · {section.lessonCount ?? total} lessons{total > (section.lessonCount ?? total) ? ` + ${total - section.lessonCount} more` : ''}
+          {!isLocked && !open && <span className="module-meta-hint"> · open to see them</span>}
         </p>
+        {section.fieldKit && (
+          <p className={`module-kit${isDone ? ' is-earned' : ''}`}>
+            <Icon name={isDone ? 'check-circle' : 'target'} size={12} />
+            {isDone ? 'Field Kit tool earned:' : 'Unlocks the Field Kit tool'} <b>{section.fieldKit.name}</b>
+          </p>
+        )}
 
         {/* Reviewer only. Finishing a module runs every one of its lessons
             through the real completion path in turn, so the section bonus,
@@ -191,7 +201,7 @@ export default function SectionCard({ section, sectionNumber, previousTitle, onS
       {isLocked && (
         <p className={`module-locked-hint${denied ? ' is-flash' : ''}`} key={denied}>
           <Icon name="lock" size={12} strokeWidth={2.4} />
-          Finish {previousTitle ?? 'the previous module'} to unlock these {total} lessons.
+          Finish {previousTitle ?? 'the previous module'} to unlock this module.
         </p>
       )}
     </section>

@@ -31,6 +31,12 @@ import { getLocalDateKey } from '../utils/dateUtils'
 /** The local date key for an injected timestamp — used all over the bonus tests. */
 const putils_today = (t) => getLocalDateKey(new Date(t))
 
+/* The first four course items, in order: three lessons and Module 1's Case
+   File — so completing all four finishes the module. */
+const [L0, L1, L2, L3] = learn.ALL_LESSONS.map((l) => l.id)
+/* Lessons proper, for anything that counts lessons (quests, stats). */
+const LESSON_IDS = learn.ALL_LESSONS.filter((l) => learn.isLesson(l)).map((l) => l.id)
+
 export async function runProgressionTests() {
 
   const results = []
@@ -59,13 +65,13 @@ export async function runProgressionTests() {
       s.quests.weekly.every(q => q.type !== 'REACH_STREAK' || q.target <= 7),
       JSON.stringify(s.quests.weekly.filter(q => q.type === 'REACH_STREAK').map(q => q.target)))
     ok('T1 no lesson quest above remaining',
-      [...s.quests.daily, ...s.quests.weekly].every(q => q.type !== 'COMPLETE_LESSONS' || q.target <= 22))
+      [...s.quests.daily, ...s.quests.weekly].every(q => q.type !== 'COMPLETE_LESSONS' || q.target <= learn.TOTAL_LESSONS))
   }
 
   /* ── TEST 2: first lesson completion drives everything ── */
   {
     let s = fresh()
-    const r = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 180, accuracy: 1 }, T0)
+    const r = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: true, seconds: 180, accuracy: 1 }, T0)
     s = r.state
     const expectXP = cfg.XP.LESSON + cfg.XP.PERFECT_BONUS
     ok('T2 xp includes lesson+perfect', s.xp >= expectXP, s.xp)
@@ -77,7 +83,7 @@ export async function runProgressionTests() {
     ok('T2 stats updated', s.stats.totalLessonsCompleted === 1 && s.stats.totalPerfectLessons === 1)
     ok('T2 practice seconds recorded', s.daily.practiceSeconds === 180, s.daily.practiceSeconds)
     ok('T2 course derives completed', learn.deriveCourse(s.lessons).completedCount === 1)
-    ok('T2 next lesson advanced', learn.deriveCourse(s.lessons).current.lesson.id === 'types-of-ai',
+    ok('T2 next lesson advanced', learn.deriveCourse(s.lessons).current.lesson.id === L1,
        learn.deriveCourse(s.lessons).current.lesson.id)
     ok('T2 emitted LESSON_COMPLETE', r.events.some(e => e.type === 'LESSON_COMPLETE'))
     ok('T2 emitted XP_AWARDED', r.events.some(e => e.type === 'XP_AWARDED'))
@@ -87,17 +93,17 @@ export async function runProgressionTests() {
   /* ── TEST 3: repeat lesson pays no completion XP ── */
   {
     let s = fresh()
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: false, seconds: 60, accuracy: 1 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: false, seconds: 60, accuracy: 1 }, T0).state
     const xpAfterFirst = s.xp
     const gemsAfterFirst = s.gems
     const lessonsAfterFirst = s.daily.lessons
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 60, accuracy: 1 }, T0 + 1000).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: true, seconds: 60, accuracy: 1 }, T0 + 1000).state
     ok('T3 no duplicate XP', s.xp === xpAfterFirst, `${xpAfterFirst} -> ${s.xp}`)
     ok('T3 no duplicate gems', s.gems === gemsAfterFirst, `${gemsAfterFirst} -> ${s.gems}`)
     ok('T3 lesson count unchanged', s.daily.lessons === lessonsAfterFirst, s.daily.lessons)
     ok('T3 replay counts as practice', s.daily.practiceSessions === 1, s.daily.practiceSessions)
     ok('T3 unique lessons still 1', s.stats.totalLessonsCompleted === 1)
-    ok('T3 attempts incremented', s.lessons['what-is-ai'].attempts === 2)
+    ok('T3 attempts incremented', s.lessons[L0].attempts === 2)
   }
 
   /* ── TEST 3b: answer XP budget cannot be farmed ── */
@@ -105,7 +111,7 @@ export async function runProgressionTests() {
     let s = fresh()
     const budget = 3 * cfg.XP.CORRECT_ANSWER
     for (let i = 0; i < 10; i++) {
-      s = run(s, A.RECORD_ANSWER, { lessonId: 'what-is-ai', correct: true, maxAnswerXP: budget }, T0).state
+      s = run(s, A.RECORD_ANSWER, { lessonId: L0, correct: true, maxAnswerXP: budget }, T0).state
     }
     ok('T3b answer XP capped at budget', s.xp === budget, `${s.xp} vs ${budget}`)
   }
@@ -165,10 +171,10 @@ export async function runProgressionTests() {
           /* Re-completing one lesson never counts twice, so each pass needs a
              lesson of its own. */
           const perfect = quest.type === 'PERFECT_LESSON'
-          if (learn.ALL_LESSONS.length < target) return null
+          if (LESSON_IDS.length < target) return null
           let st = state
           for (let i = 0; i < target; i += 1) {
-            st = step(st, A.COMPLETE_LESSON, { lessonId: learn.ALL_LESSONS[i].id, seconds: 30, perfect, accuracy: perfect ? 1 : 0.8 })
+            st = step(st, A.COMPLETE_LESSON, { lessonId: LESSON_IDS[i], seconds: 30, perfect, accuracy: perfect ? 1 : 0.8 })
           }
           return st
         }
@@ -229,8 +235,8 @@ export async function runProgressionTests() {
   /* ── TEST 6: two activities on the same calendar day ── */
   {
     let s = fresh()
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', seconds: 30 }, T0).state
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'types-of-ai', seconds: 30 }, T0 + 3600000).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, seconds: 30 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L1, seconds: 30 }, T0 + 3600000).state
     ok('T6 streak stays 1 on same day', s.streak.current === 1, s.streak.current)
     ok('T6 both lessons counted', s.daily.lessons === 2, s.daily.lessons)
   }
@@ -238,14 +244,14 @@ export async function runProgressionTests() {
   /* ── TEST 7: consecutive days ── */
   {
     let s = fresh()
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', seconds: 30 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, seconds: 30 }, T0).state
     s = prog.reconcile(s, T0 + DAY).state
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'types-of-ai', seconds: 30 }, T0 + DAY).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L1, seconds: 30 }, T0 + DAY).state
     ok('T7 day2 streak = 2', s.streak.current === 2, s.streak.current)
     s = prog.reconcile(s, T0 + 2 * DAY).state
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'how-ai-learns', seconds: 30 }, T0 + 2 * DAY).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L2, seconds: 30 }, T0 + 2 * DAY).state
     ok('T7 day3 streak = 3', s.streak.current === 3, s.streak.current)
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'ai-everyday', seconds: 30 }, T0 + 2 * DAY + 7200000).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L3, seconds: 30 }, T0 + 2 * DAY + 7200000).state
     ok('T7 same-day second lesson keeps streak 3', s.streak.current === 3, s.streak.current)
     ok('T7 longest recorded', s.streak.longest === 3, s.streak.longest)
     ok('T7 section completed bonus', s.stats.totalSectionsCompleted === 1, s.stats.totalSectionsCompleted)
@@ -254,14 +260,14 @@ export async function runProgressionTests() {
   /* ── TEST 8: skipping a day resets the streak ── */
   {
     let s = fresh()
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', seconds: 30 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, seconds: 30 }, T0).state
     s = prog.reconcile(s, T0 + DAY).state
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'types-of-ai', seconds: 30 }, T0 + DAY).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L1, seconds: 30 }, T0 + DAY).state
     ok('T8 streak 2 before gap', s.streak.current === 2)
     // Skip T0+2D entirely, return on T0+3D
     const afterGap = prog.reconcile(s, T0 + 3 * DAY).state
     ok('T8 streak shows broken on return', afterGap.streak.current === 0, afterGap.streak.current)
-    const resumed = run(afterGap, A.COMPLETE_LESSON, { lessonId: 'how-ai-learns', seconds: 30 }, T0 + 3 * DAY).state
+    const resumed = run(afterGap, A.COMPLETE_LESSON, { lessonId: L2, seconds: 30 }, T0 + 3 * DAY).state
     ok('T8 next activity resets to 1', resumed.streak.current === 1, resumed.streak.current)
     ok('T8 longest preserved', resumed.streak.longest === 2, resumed.streak.longest)
     ok('T8 total XP preserved', resumed.xp >= 50, resumed.xp)
@@ -270,7 +276,7 @@ export async function runProgressionTests() {
   /* ── TEST 9: persistence round-trip ── */
   {
     let s = fresh()
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 90 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: true, seconds: 90 }, T0).state
     s = run(s, A.AWARD_GEMS, { amount: 77, reason: 'test' }, T0).state
     const json = JSON.stringify(s)
     const restored = store.sanitizeState(JSON.parse(json), T0)
@@ -294,7 +300,7 @@ export async function runProgressionTests() {
   /* ── TEST 10: next-day rollover ── */
   {
     let s = fresh()
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 60 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: true, seconds: 60 }, T0).state
     const xpBefore = s.xp, gemsBefore = s.gems, streakBefore = s.streak.current
     const dailyIdsBefore = s.quests.daily.map(q => q.id).join()
     const next = prog.reconcile(s, T0 + DAY).state
@@ -447,7 +453,7 @@ export async function runProgressionTests() {
     const lessonQuest = active.find(q => q.type === 'COMPLETE_LESSONS')
     if (!lessonQuest) return { quest: null, state }
     let s = state
-    const ids = learn.SECTIONS.flatMap(sec => sec.lessons.map(l => l.id))
+    const ids = LESSON_IDS
     for (const id of ids.slice(0, lessonQuest.target)) {
       s = run(s, A.COMPLETE_LESSON, { lessonId: id, perfect: false, seconds: 60, accuracy: 1 }, T0).state
     }
@@ -969,7 +975,7 @@ export async function runProgressionTests() {
   {
     const s = fresh()                       // reconciled at noon
     const justPastMidnight = T0 + 12 * 3600000 + 60000
-    const r = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: false, seconds: 60, accuracy: 1 }, justPastMidnight)
+    const r = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: false, seconds: 60, accuracy: 1 }, justPastMidnight)
     ok('T34 the day rolled over first', r.events[0]?.type === 'DAY_ROLLOVER', r.events[0]?.type)
     ok('T34 the lesson is in today\'s bucket', r.state.daily.dateKey === putils_today(justPastMidnight) && r.state.daily.lessons === 1,
       `${r.state.daily.dateKey} lessons=${r.state.daily.lessons}`)
@@ -979,7 +985,7 @@ export async function runProgressionTests() {
     const later = run(r.state, A.RECONCILE, {}, justPastMidnight + 15000)
     ok('T34 a reconcile keeps the work', later.state.daily.lessons === 1 && later.state.daily.xp === r.state.daily.xp)
     /* Same day: no rollover is inserted. */
-    const sameDay = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: false, seconds: 60, accuracy: 1 }, T0 + 60000)
+    const sameDay = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: false, seconds: 60, accuracy: 1 }, T0 + 60000)
     ok('T34 no rollover on the same day', !sameDay.events.some(e => e.type === 'DAY_ROLLOVER'))
   }
 
@@ -1038,9 +1044,9 @@ export async function runProgressionTests() {
   {
     let s = fresh()
     s = { ...s, team: { ...s.team, missionKey: 'reach-the-moon', contribution: 0 } }
-    for (let i = 0; i < 4; i++) s = run(s, A.RECORD_ANSWER, { lessonId: 'what-is-ai', correct: true, maxAnswerXP: 35 }, T0).state
+    for (let i = 0; i < 4; i++) s = run(s, A.RECORD_ANSWER, { lessonId: L0, correct: true, maxAnswerXP: 35 }, T0).state
     ok('T39 four answers pay 20 XP', s.xp === 20, s.xp)
-    s = run(s, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 120, accuracy: 1 }, T0).state
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, perfect: true, seconds: 120, accuracy: 1 }, T0).state
     const today = putils_today(T0)
     ok('T39 daily XP is 70', s.daily.xp === 70, s.daily.xp)
     ok('T39 the calendar shows 70', s.streak.history[today]?.xp === 70, s.streak.history[today]?.xp)
@@ -1131,25 +1137,25 @@ export async function runProgressionTests() {
     ok('T45 an ordinary profile still locks them', shutCourse.sections.filter((sec) => !sec.unlocked).length > 0)
 
     /* A skipped lesson pays exactly what a finished one pays. */
-    const skipped = run(j, A.JUDGE, { op: 'completeLesson', lessonId: 'what-is-ai' }, T0)
-    const played = run(j, A.COMPLETE_LESSON, { lessonId: 'what-is-ai', perfect: true, seconds: 120, accuracy: 1 }, T0)
+    const skipped = run(j, A.JUDGE, { op: 'completeLesson', lessonId: L0 }, T0)
+    const played = run(j, A.COMPLETE_LESSON, { lessonId: L0, perfect: true, seconds: 120, accuracy: 1 }, T0)
     ok('T45 a skipped lesson pays the same XP', skipped.state.xp === played.state.xp, `${skipped.state.xp} vs ${played.state.xp}`)
     ok('T45 it counts as a real completion', skipped.state.stats.totalLessonsCompleted === 1)
     ok('T45 it keeps the streak', skipped.state.streak.current === 1, skipped.state.streak.current)
     ok('T45 it emits the completion event', skipped.events.some((e) => e.type === 'LESSON_COMPLETE'))
 
     /* A whole module, and the section bonus that comes with it. */
-    const mod = run(j, A.JUDGE, { op: 'completeSection', sectionId: 'ai-foundations' }, T0)
+    const mod = run(j, A.JUDGE, { op: 'completeSection', sectionId: learn.SECTIONS[0].id }, T0)
     ok('T45 a module completes all of its lessons',
-      learn.getSectionById('ai-foundations').lessons.every((l) => mod.state.lessons[l.id]))
-    ok('T45 the section bonus is paid once', !!mod.state.sectionsCompleted['ai-foundations'])
+      learn.getSectionById(learn.SECTIONS[0].id).lessons.every((l) => mod.state.lessons[l.id]))
+    ok('T45 the section bonus is paid once', !!mod.state.sectionsCompleted[learn.SECTIONS[0].id])
     ok('T45 the next module unlocks',
       prog.buildViewModel({ ...mod.state, judge: null }, T0).course.sections[1].unlocked)
 
     /* Emptying it puts the course, and the section stamp, back. */
-    const emptied = run(mod.state, A.JUDGE, { op: 'resetSection', sectionId: 'ai-foundations' }, T0)
+    const emptied = run(mod.state, A.JUDGE, { op: 'resetSection', sectionId: learn.SECTIONS[0].id }, T0)
     ok('T45 emptying a module forgets its lessons', Object.keys(emptied.state.lessons).length === 0)
-    ok('T45 and forgets the section stamp', !emptied.state.sectionsCompleted['ai-foundations'])
+    ok('T45 and forgets the section stamp', !emptied.state.sectionsCompleted[learn.SECTIONS[0].id])
 
     /* The purse tops itself up, but only while the power is on. */
     const spent = run(j, A.SPEND_GEMS, { amount: 200000, reason: 'test' }, T0)
@@ -1190,6 +1196,105 @@ export async function runProgressionTests() {
     ok('T45 and a judge op on one does nothing',
       run(fresh(), A.JUDGE, { op: 'topUp' }, T0).state.gems === 100,
       run(fresh(), A.JUDGE, { op: 'topUp' }, T0).state.gems)
+  }
+
+  /* ── TEST 46: the curriculum's shape (redesign, 2026-09) ── */
+  {
+    ok('T46 three parts', learn.PARTS.length === 3, learn.PARTS.length)
+    ok('T46 seven modules', learn.SECTIONS.length === 7, learn.SECTIONS.length)
+    ok('T46 twenty-one lessons proper', learn.TOTAL_LESSONS === 21, learn.TOTAL_LESSONS)
+    ok('T46 every module is in exactly one part',
+      learn.SECTIONS.every((s) => learn.PARTS.filter((p) => p.modules.includes(s.id)).length === 1))
+    ok('T46 every module has a Field Kit tool', learn.SECTIONS.every((s) => s.fieldKit?.name && s.fieldKit.questions.length >= 2))
+    ok('T46 item ids are unique', new Set(learn.ALL_LESSONS.map((l) => l.id)).size === learn.ALL_LESSONS.length)
+    ok('T46 lesson numbers read 1.1 to 7.2', learn.lessonNumber('m01-l01') === '1.1' && learn.lessonNumber('m07-l02') === '7.2' && learn.lessonNumber('m01-case') === null)
+    ok('T46 the capstone closes the course', learn.ALL_LESSONS[learn.ALL_LESSONS.length - 1].kind === 'capstone')
+  }
+
+  /* ── TEST 47: a Case File completes like a lesson but is not one ── */
+  {
+    let s = fresh()
+    const caseId = learn.SECTIONS[0].lessons.find((l) => l.kind === 'casefile').id
+    const r = run(s, A.COMPLETE_LESSON, { lessonId: caseId, perfect: true, seconds: 60, accuracy: 1 }, T0)
+    s = r.state
+    ok('T47 a Case File pays its own XP', r.events.some((e) => e.type === 'XP_AWARDED' && e.amount === cfg.XP.ITEM.casefile))
+    ok('T47 it is not counted as a lesson', s.stats.totalLessonsCompleted === 0 && s.daily.lessons === 0, `${s.stats.totalLessonsCompleted}/${s.daily.lessons}`)
+    ok('T47 but it keeps the streak', s.streak.current === 1, s.streak.current)
+    ok('T47 and the course counts it as an item', learn.deriveCourse(s.lessons).completedItems === 1 && learn.deriveCourse(s.lessons).completedCount === 0)
+  }
+
+  /* ── TEST 48: a module unlocks only after its Case File ── */
+  {
+    let s = fresh()
+    const [first, second] = learn.SECTIONS
+    for (const l of first.lessons.filter((x) => x.kind === 'lesson')) s = run(s, A.COMPLETE_LESSON, { lessonId: l.id, seconds: 30 }, T0).state
+    ok('T48 lessons alone leave the next module locked', learn.deriveCourse(s.lessons).sections[1].status === 'locked')
+    s = run(s, A.COMPLETE_LESSON, { lessonId: first.lessons.find((x) => x.kind === 'casefile').id, seconds: 30 }, T0).state
+    ok('T48 the Case File unlocks it', learn.deriveCourse(s.lessons).sections[1].status !== 'locked')
+    ok('T48 and earns the module Field Kit badge', !!s.achievements[`kit-${first.id}`])
+    ok('T48 the next module first lesson is current', learn.deriveCourse(s.lessons).current.lesson.id === second.lessons[0].id)
+  }
+
+  /* ── TEST 49: resume points ── */
+  {
+    let s = fresh()
+    s = run(s, A.SAVE_PART, { lessonId: L0, part: 1 }, T0).state
+    ok('T49 a finished part is remembered', s.lessonParts[L0] === 1)
+    s = run(s, A.SAVE_PART, { lessonId: L0, part: 2 }, T0).state
+    s = run(s, A.SAVE_PART, { lessonId: L0, part: 1 }, T0).state
+    ok('T49 it never moves backwards', s.lessonParts[L0] === 2, s.lessonParts[L0])
+    const restored = store.sanitizeState(JSON.parse(JSON.stringify(s)), T0)
+    ok('T49 it survives a reload', restored.lessonParts[L0] === 2)
+    s = run(s, A.COMPLETE_LESSON, { lessonId: L0, seconds: 30 }, T0).state
+    ok('T49 finishing the item clears it', s.lessonParts[L0] === undefined)
+    ok('T49 unknown items are refused', run(fresh(), A.SAVE_PART, { lessonId: 'nope', part: 1 }, T0).state.lessonParts.nope === undefined)
+    ok('T49 resume points pay nothing', run(fresh(), A.SAVE_PART, { lessonId: L0, part: 1 }, T0).state.xp === 0)
+  }
+
+  /* ── TEST 50: the Field Journal ── */
+  {
+    let s = fresh()
+    s = run(s, A.SAVE_JOURNAL, { lessonId: L0, entry: { kind: 'prediction', key: 'explore:p1', prompt: 'Q?', text: 'A', confidence: 'sure', correct: false } }, T0).state
+    s = run(s, A.SAVE_JOURNAL, { lessonId: L0, entry: { kind: 'reflection', key: 'check:carry', prompt: 'Why?', text: 'Because.' } }, T0).state
+    ok('T50 entries are kept', s.journal[L0].entries.length === 2)
+    s = run(s, A.SAVE_JOURNAL, { lessonId: L0, entry: { kind: 'reflection', key: 'check:carry', prompt: 'Why?', text: 'Because, revised.' } }, T0).state
+    ok('T50 a same-key entry is replaced, not duplicated', s.journal[L0].entries.length === 2 && s.journal[L0].entries[1].text === 'Because, revised.')
+    ok('T50 a confident miss is recorded as such', s.journal[L0].entries[0].confidence === 'sure' && s.journal[L0].entries[0].correct === false)
+    const restored = store.sanitizeState(JSON.parse(JSON.stringify(s)), T0)
+    ok('T50 the journal survives a reload', restored.journal[L0].entries.length === 2)
+    ok('T50 junk entries are refused', run(fresh(), A.SAVE_JOURNAL, { lessonId: L0, entry: { kind: 'essay', key: 'x', prompt: '' } }, T0).state.journal[L0] === undefined)
+    ok('T50 writing pays nothing', s.xp === 0)
+  }
+
+  /* ── TEST 51: missed Check items come back in Practice ── */
+  {
+    let s = fresh()
+    const key = `${L0}:check:c1`
+    s = run(s, A.RECORD_ANSWER, { lessonId: L0, correct: false, maxAnswerXP: 25, reviewKey: key }, T0).state
+    ok('T51 a missed Check item is flagged', s.review[key]?.lessonId === L0)
+    ok('T51 and still costs its heart', s.hearts === 4, s.hearts)
+    s = run(s, A.COMPLETE_PRACTICE, { seconds: 60, correct: 1, total: 5, cleared: [key] }, T0).state
+    ok('T51 answering it right in Practice clears it', s.review[key] === undefined)
+  }
+
+  /* ── TEST 52: the scans ── */
+  {
+    let s = fresh()
+    s = run(s, A.RECORD_SCAN, { which: 'launch', form: 'A', answers: { a1: { correct: true, confidence: 'sure' }, a2: { correct: false, confidence: 'sure' } } }, T0).state
+    ok('T52 the Launch Scan is stored', s.scans.launch.correct === 1 && s.scans.launch.total === 2)
+    ok('T52 and pays nothing', s.xp === 0 && s.gems === 100)
+    s = run(s, A.RECORD_SCAN, { which: 'final', form: 'B', answers: { b1: { correct: true, confidence: 'think' }, b2: { correct: true, confidence: 'sure' } } }, T0).state
+    ok('T52 the Final Scan sits beside it', s.scans.final.correct === 2 && s.scans.launch.correct === 1)
+    const restored = store.sanitizeState(JSON.parse(JSON.stringify(s)), T0)
+    ok('T52 both survive a reload', restored.scans.final.form === 'B' && restored.scans.launch.total === 2)
+    ok('T52 an unknown scan is refused', run(fresh(), A.RECORD_SCAN, { which: 'midterm', answers: {} }, T0).state.scans.midterm === undefined)
+  }
+
+  /* ── TEST 53: the demo learner runs on the new course ── */
+  {
+    const demo = showcase.getShowcaseState()
+    ok('T53 the demo learner has finished Module 1', !!demo.sectionsCompleted[learn.SECTIONS[0].id])
+    ok('T53 and is part-way through Module 2', learn.deriveCourse(demo.lessons).current?.section.id === learn.SECTIONS[1].id)
   }
 
   const passed = results.filter((r) => r.pass).length

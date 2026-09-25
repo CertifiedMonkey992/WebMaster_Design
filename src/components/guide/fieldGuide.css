@@ -371,9 +371,9 @@
   --chapter: var(--moss);   /* set inline to the tab's chapter ink */
   position: absolute;
   left: 100%;
-  top: calc(1.15rem + 3.15rem * var(--j, 0));
+  top: calc(1.15rem + 2.45rem * var(--j, 0)); /* seven chapters share the fore-edge */
   width: 1.35rem;
-  height: 2.6rem;
+  height: 2.1rem;
   padding: 0;
   border: none;
   background: none;
@@ -1114,7 +1114,7 @@
   .fg-stage { --fg-w: 16rem; --fg-h: 21.6rem; height: 36rem; }
   .fg-compass { width: 8.4rem; height: 8.4rem; }
   .fg-cover-title { font-size: calc(var(--fs-title) * 1.12); }
-  .fg-tab { top: calc(1.3rem + 3.6rem * var(--j, 0)); height: 2.9rem; }
+  .fg-tab { top: calc(1.3rem + 2.75rem * var(--j, 0)); height: 2.35rem; }
   .fg-lessons li { padding: 5px 0; }
   .fg-toc-row { padding: 9px 0; }
   .fg-lesson-t { max-width: 10.5rem; }

@@ -7,6 +7,7 @@ import { burst, ring, shake } from '../../motion/burst'
 import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
 import useJudge from '../judge/useJudge'
 import { OPS } from '../../services/judgeService'
+import { lessonNumber, KIND_LABEL } from '../../data/learnData'
 
 /**
  * One lesson, as a stop on its module's path.
@@ -44,6 +45,12 @@ export default function LessonNode({
   const isDone = lesson.status === 'completed'
   const outOfHearts = !vm.canStartLesson
   const record = state.lessons?.[lesson.id]
+  const kind = lesson.kind ?? 'lesson'
+  const number = lessonNumber(lesson.id)
+  const kindLabel = number ? `Lesson ${number}` : KIND_LABEL[kind] ?? `Lesson ${index + 1}`
+  const itemXP = XP.ITEM?.[kind] ?? XP.LESSON
+  const resumeAt = !isDone ? vm.lessonParts?.[lesson.id] : 0
+  const heartsLine = kind === 'project' || kind === 'capstone' ? 'No hearts at stake' : 'Only the Check costs hearts'
 
   /* Stamp the check when this lesson turns completed while on screen. */
   const prevStatus = useRef(lesson.status)
@@ -126,7 +133,8 @@ export default function LessonNode({
 
         <span className="lesson-info">
           <span className="lesson-label tnum">
-            {isCurrent ? 'Up next' : `Lesson ${index + 1}`}{lesson.duration ? ` · ${lesson.duration}` : ''}
+            {isCurrent ? `Up next · ${kindLabel}` : kindLabel}{lesson.duration ? ` · ${lesson.duration}` : ''}
+            {resumeAt ? <span className="lesson-resume"> · resume at Part {resumeAt + 1}</span> : null}
           </span>
           <span className="lesson-title">{lesson.title}</span>
         </span>
@@ -144,7 +152,7 @@ export default function LessonNode({
                 Review
               </>
             ) : (
-              <><BoltIcon size={12} /> +{XP.LESSON} XP</>
+              <><BoltIcon size={12} /> +{itemXP} XP</>
             )}
             <Icon name="chevron-right" size={13} strokeWidth={2.6} className="lesson-peek-arrow" />
           </span>
@@ -189,12 +197,12 @@ export default function LessonNode({
         <div className="lesson-panel">
           <p className="lesson-panel-desc">{lesson.desc}</p>
           <div className="lesson-panel-meta">
-            <span data-tip="For finishing it the first time"><BoltIcon size={13} /> +{XP.LESSON} XP</span>
-            <span data-tip="Wrong answers cost a heart"><HeartIcon size={13} /> {vm.hearts} to spend</span>
+            <span data-tip="For finishing it the first time"><BoltIcon size={13} /> +{itemXP} XP</span>
+            <span data-tip="Predictions and practice never cost a heart"><HeartIcon size={13} /> {heartsLine}</span>
           </div>
-          {outOfHearts && (
+          {outOfHearts && kind !== 'project' && kind !== 'capstone' && (
             <p className="lesson-warn">
-              <HeartIcon size={13} empty /> No hearts left — try Practice instead
+              <HeartIcon size={13} empty /> No hearts left for the Check — try Practice meanwhile
             </p>
           )}
           <button
@@ -204,7 +212,7 @@ export default function LessonNode({
             data-magnetic="6"
             tabIndex={tabbable ? 0 : -1}
           >
-            Start lesson
+            {resumeAt ? `Resume at Part ${resumeAt + 1}` : kind === 'lesson' ? 'Start lesson' : `Start ${KIND_LABEL[kind].toLowerCase()}`}
             <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />
@@ -239,7 +247,7 @@ export default function LessonNode({
               onStartLesson?.(lesson.id)
             }}
           >
-            {isDone ? 'Review lesson' : 'Start lesson'}
+            {isDone ? 'Review' : resumeAt ? `Resume at Part ${resumeAt + 1}` : 'Start'}
             <svg className="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />

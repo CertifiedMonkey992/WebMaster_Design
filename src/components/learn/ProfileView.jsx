@@ -13,6 +13,7 @@ import { useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import LevelProgress from '../progression/LevelProgress'
 import AchievementGrid from '../progression/AchievementGrid'
+import { FieldKit, FieldJournal } from './CourseworkPanels'
 import { GemIcon, BoltIcon, Icon } from '../progression/Icons'
 import { LiveFlame } from '../progression/LiveIcons'
 import { formatNumber } from '../../utils/progressionUtils'
@@ -142,7 +143,7 @@ export default function ProfileView() {
     { label: 'Practice time',   value: Math.floor(s.totalPracticeSeconds / 60), suffix: 'm', icon: <Icon name="timer" size={16} />, tip: 'Measured time in lessons and practice' },
     { label: 'Answer accuracy', value: accuracy, suffix: '%', icon: <Icon name="target" size={16} />, tip: `${s.totalCorrectAnswers} right, ${s.totalWrongAnswers} wrong` },
     { label: 'Quests claimed',  value: s.totalQuestsClaimed, icon: <Icon name="check-circle" size={16} />, tip: 'Daily and weekly' },
-    { label: 'Sections done',   value: vm.course.completedSections, of: vm.course.totalSections, icon: <Icon name="layers" size={16} />, tip: 'Whole modules finished' },
+    { label: 'Modules done',    value: vm.course.completedSections, of: vm.course.totalSections, icon: <Icon name="layers" size={16} />, tip: 'Whole modules finished, Case File included' },
     { label: 'Days active',     value: s.daysActive, icon: <Icon name="calendar" size={16} />, tip: 'Days you finished something' },
   ]
 
@@ -191,7 +192,11 @@ export default function ProfileView() {
         ))}
       </Reveal>
 
+      <FieldKit />
+
       <AchievementGrid />
+
+      <FieldJournal />
 
       <ProgressData />
       <ProfileIdentity />

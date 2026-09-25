@@ -6,6 +6,8 @@
    action, and unlocked exactly once (achievementService records unlockedAt).
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { SECTIONS } from './learnData'
+
 export const ACHIEVEMENT_TIER = {
   BRONZE: 'bronze',
   SILVER: 'silver',
@@ -150,6 +152,39 @@ export const ACHIEVEMENTS = [
     progress: (s) => ({ current: s.stats.totalTeamMissionsCompleted, target: 1 }),
   },
 ]
+
+/* ── The Field Kit ───────────────────────────────────────────────────────────
+   One tool per module (data/learnData.js → fieldKit): a set of questions the
+   learner can ask of any AI system. A tool is earned by finishing its module,
+   which means passing the module's Case File and Checkpoint — a capability
+   unlocked, not a count reached. The profile shows these as the Field Kit
+   rather than in the general badge wall.
+   ─────────────────────────────────────────────────────────────────────────── */
+const FIELD_KIT_ICON = {
+  'how-machines-learn': 'target',
+  'inside-a-neural-network': 'layers',
+  'how-generative-ai-works': 'brain',
+  'working-with-ai': 'users',
+  'checking-ai': 'check-circle',
+  'using-ai-ethically': 'shield',
+  'build-and-shape': 'flag',
+}
+
+export const FIELD_KIT = SECTIONS.map((section, i) => ({
+  id: `kit-${section.id}`,
+  group: 'field-kit',
+  moduleId: section.id,
+  moduleNumber: i + 1,
+  title: section.fieldKit.name,
+  description: `Finish Module ${i + 1}, ${section.title}, including its ${section.lessons.some((l) => l.kind === 'capstone') ? 'capstone' : 'Case File'}`,
+  questions: section.fieldKit.questions,
+  icon: FIELD_KIT_ICON[section.id] ?? 'star',
+  tier: i < 3 ? ACHIEVEMENT_TIER.BRONZE : i < 5 ? ACHIEVEMENT_TIER.SILVER : ACHIEVEMENT_TIER.GOLD,
+  gems: 20,
+  progress: (s) => ({ current: s.sectionsCompleted?.[section.id] ? 1 : 0, target: 1 }),
+}))
+
+ACHIEVEMENTS.push(...FIELD_KIT)
 
 export function getAchievement(id) {
   return ACHIEVEMENTS.find((a) => a.id === id)

@@ -62,7 +62,7 @@ export function PrivacyPage() {
         <dl className="sp-defs">
           <div>
             <dt><code>{STORAGE_KEY}</code></dt>
-            <dd>Your course progress while you are signed out — the guest profile: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily bonus track, shop items and achievements. It contains no name, email address or other personal detail.</dd>
+            <dd>Your course progress while you are signed out — the guest profile: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily bonus track, shop items and achievements — and your coursework: the part you reached in an unfinished lesson, the predictions you committed to, the reflections you typed into your Field Journal, the questions you missed (for review in Practice), and your Launch and Final Scan answers. LunX never asks for a name or email address here; a reflection holds whatever you choose to type, and like everything else in this entry it never leaves your browser.</dd>
           </div>
           <div>
             <dt><code>{ACCOUNTS_KEY}</code></dt>

@@ -3,6 +3,7 @@ import LearnSidebar from '../components/learn/LearnSidebar'
 import ModuleList   from '../components/learn/ModuleList'
 import RightSidebar from '../components/learn/RightSidebar'
 import LessonModal  from '../components/learn/LessonModal'
+import ScanModal    from '../components/learn/ScanModal'
 import PracticeSession from '../components/learn/PracticeSession'
 import ProfileView  from '../components/learn/ProfileView'
 import ShopView     from '../components/shop/ShopView'
@@ -43,6 +44,7 @@ function Course({ onGoHome, onGoAbout }) {
   const [activeNav, setActiveNav] = useState('learn')
   const [dir, setDir] = useState(1)
   const [activeLessonId, setActiveLessonId] = useState(null)
+  const [scan, setScan] = useState(null)
   const [questPanelOpen, setQuestPanelOpen] = useState(false)
   const [bonusOpen, setBonusOpen] = useState(false)
 
@@ -85,7 +87,7 @@ function Course({ onGoHome, onGoAbout }) {
         {/* Keyed on the destination, so each view arrives from the direction
             the nav moved rather than swapping in place. */}
         <div className="view-enter" key={activeNav} style={{ '--dir': dir }}>
-          {activeNav === 'learn'    && <ModuleList onStartLesson={setActiveLessonId} />}
+          {activeNav === 'learn'    && <ModuleList onStartLesson={setActiveLessonId} onStartScan={setScan} />}
           {activeNav === 'practice' && <PracticeSession />}
           {activeNav === 'quests'   && <QuestBoard />}
           {activeNav === 'shop'     && <ShopView onNavigate={navigate} />}
@@ -104,6 +106,8 @@ function Course({ onGoHome, onGoAbout }) {
           onClose={() => setActiveLessonId(null)}
         />
       )}
+
+      {scan && <ScanModal which={scan} onClose={() => setScan(null)} />}
 
       <QuestPanel open={questPanelOpen} onClose={() => setQuestPanelOpen(false)} />
       <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />

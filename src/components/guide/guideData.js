@@ -18,15 +18,20 @@ export const CHAPTERS = SECTIONS
 export const SPREADS = SECTIONS.length + 1
 export const PAGE_UNITS = 10
 
-/* The chapter inks: a field guide colour-codes its thumb index. */
-export const CHAPTER_INK = ['--moss', '--evergreen', '--ochre-ink', '--clay-deep', '--berry-ink']
+/* The chapter inks: a field guide colour-codes its thumb index. Seven
+   chapters since the curriculum redesign (2026-09); every ink passes AA as
+   text on paper, because the chapter numerals are read, not just seen. */
+export const CHAPTER_INK = ['--moss', '--evergreen', '--ochre-ink', '--clay-deep', '--berry-ink', '--ink-muted', '--ink']
 
 export const minutesOf = (section) =>
   section.lessons.reduce((m, l) => m + parseInt(l.duration, 10), 0)
 
+/** Lessons proper in a chapter (Case Files, projects and the capstone are extra). */
+export const lessonsIn = (section) => section.lessons.filter((l) => (l.kind ?? 'lesson') === 'lesson').length
+
 export const TOTAL_MINUTES = SECTIONS.reduce((m, s) => m + minutesOf(s), 0)
 
-const LESSON_MINUTES = SECTIONS.flatMap((s) => s.lessons.map((l) => parseInt(l.duration, 10)))
+const LESSON_MINUTES = SECTIONS.flatMap((s) => s.lessons.filter((l) => (l.kind ?? 'lesson') === 'lesson').map((l) => parseInt(l.duration, 10)))
 export const SHORTEST_LESSON = Math.min(...LESSON_MINUTES)
 export const LONGEST_LESSON = Math.max(...LESSON_MINUTES)
 export { TOTAL_LESSONS }
@@ -51,5 +56,5 @@ export function folio(spread, side) {
 export function spreadLabel(spread) {
   if (spread <= 0) return 'Contents'
   const s = CHAPTERS[spread - 1]
-  return `Chapter ${spread}, ${s.title}: ${s.lessons.length} lessons, ${minutesOf(s)} minutes`
+  return `Chapter ${spread}, ${s.title}: ${lessonsIn(s)} lessons, ${minutesOf(s)} minutes`
 }

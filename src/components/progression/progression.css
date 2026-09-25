@@ -2550,3 +2550,49 @@
 .ac-card.is-unlocked[data-shown] .ac-icon { transform: rotate(-14deg) scale(1.15); }
 .ac-track { position: relative; }
 .qc-card-track { position: relative; }
+
+/* ── Field Kit and Field Journal (profile, curriculum redesign 2026-09) ──
+   Printed lists on hairlines: the Kit is seven numbered tools, the Journal a
+   list of items that open to their entries. No new card edges. */
+.fk, .fj { display: flex; flex-direction: column; gap: var(--sp-3); }
+.fk-head { display: flex; flex-direction: column; gap: 2px; }
+.fk-sub { margin: 0; font-size: var(--fs-caption); color: var(--ink-faint); }
+.fk-list, .fj-items, .fj-entries, .fk-qs { list-style: none; margin: 0; padding: 0; }
+.fk-tool { display: grid; grid-template-columns: 2rem 1fr; gap: var(--sp-3); padding: var(--sp-3) 0; border-top: 1px solid var(--line-faint); }
+.fk-tool:last-child { border-bottom: 1px solid var(--line-faint); }
+.fk-n { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: var(--fw-bold); color: var(--ink-faint); }
+.fk-tool.is-earned .fk-n { color: var(--moss); }
+.fk-body { display: flex; flex-direction: column; gap: var(--sp-1); }
+.fk-name { display: inline-flex; align-items: center; gap: var(--sp-1); font-family: var(--font-display); font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--ink); }
+.fk-tool:not(.is-earned) .fk-name { color: var(--ink-muted); }
+.fk-tool.is-earned .fk-name svg { color: var(--moss); }
+.fk-qs li { font-size: var(--fs-small); line-height: var(--lh-normal); color: var(--ink-muted); padding-left: var(--sp-3); position: relative; }
+.fk-qs li::before { content: '·'; position: absolute; left: 0; color: var(--ink-faint); }
+.fk-hint { font-size: var(--fs-caption); color: var(--ink-faint); }
+
+.fj-item { border-top: 1px solid var(--line-faint); }
+.fj-item:last-child { border-bottom: 1px solid var(--line-faint); }
+.fj-toggle {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink);
+}
+.fj-toggle:hover .fj-title { color: var(--evergreen); }
+.fj-label { font-size: var(--fs-micro); font-weight: var(--fw-bold); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-faint); }
+.fj-title { font-family: var(--font-display); font-size: var(--fs-body); transition: color var(--dur-hover) var(--ease-out); }
+.fj-count { font-size: var(--fs-caption); color: var(--ink-faint); }
+.fj-chev { color: var(--ink-faint); transition: transform var(--dur-move) var(--ease-snap); }
+.fj-chev.is-open { transform: rotate(180deg); }
+.fj-entries { padding: 0 0 var(--sp-3); display: grid; gap: var(--sp-2); animation: fx-slide-up var(--dur-open) var(--ease-snap) backwards; }
+.fj-entry { display: grid; gap: 2px; padding-left: var(--sp-3); border-left: 2px solid var(--line); }
+.fj-entry--prediction { border-left-color: var(--tan-deep); }
+.fj-q { font-size: var(--fs-caption); color: var(--ink-faint); }
+.fj-a { font-size: var(--fs-small); line-height: var(--lh-normal); color: var(--ink); white-space: pre-line; }

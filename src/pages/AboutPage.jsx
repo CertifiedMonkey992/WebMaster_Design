@@ -23,12 +23,12 @@ import ClosingCTA from '../components/ClosingCTA'
 import Footer     from '../components/Footer'
 import { Eyebrow, Mark } from '../components/showcase/ProductSections'
 
-import { SECTIONS, TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
+import { SECTIONS, PARTS, TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { DAILY_TEMPLATES, WEEKLY_TEMPLATES } from '../data/questTemplates'
 import { XP, CURRENCY, HEARTS } from '../config/progressionConfig'
 import { TSA_EVENT } from '../data/tsaEvent'
-import { CHAPTER_INK, TOTAL_MINUTES, minutesOf, pad } from '../components/guide/guideData'
+import { CHAPTER_INK, TOTAL_MINUTES, SHORTEST_LESSON, LONGEST_LESSON, minutesOf, lessonsIn, pad } from '../components/guide/guideData'
 
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
@@ -42,23 +42,19 @@ import './AboutPage.css'
 
 /* ── Derived facts ───────────────────────────────────────────────────────── */
 
-const durations = SECTIONS.flatMap((s) => s.lessons.map((l) => parseInt(l.duration, 10)))
-const SHORTEST = Math.min(...durations)
-const LONGEST = Math.max(...durations)
+const SHORTEST = SHORTEST_LESSON
+const LONGEST = LONGEST_LESSON
 const QUEST_TYPES = DAILY_TEMPLATES.length + WEEKLY_TEMPLATES.length
 
-/* The brief names three kinds of learning. Each module belongs to one. */
-const STRANDS = [
-  { id: 'concepts', label: 'Fundamental AI concepts',         modules: ['ai-foundations', 'machine-learning', 'neural-networks'] },
-  { id: 'tools',    label: 'Practical AI tools & techniques', modules: ['practical-tools'] },
-  { id: 'ethics',   label: 'Ethical AI usage',                modules: ['ai-ethics'] },
-].map((strand) => {
+/* The brief names three kinds of learning. Each is one of the course's three
+   Parts (data/learnData.js → PARTS), and each module belongs to one. */
+const STRANDS = PARTS.map((part) => ({ id: part.id, label: part.strand, part: part.title, modules: part.modules })).map((strand) => {
   const sections = SECTIONS.filter((s) => strand.modules.includes(s.id))
   return {
     ...strand,
     sections,
     numbers: sections.map((s) => SECTIONS.indexOf(s) + 1),
-    lessons: sections.reduce((n, s) => n + s.lessons.length, 0),
+    lessons: sections.reduce((n, s) => n + lessonsIn(s), 0),
     minutes: sections.reduce((m, s) => m + minutesOf(s), 0),
   }
 })
@@ -78,7 +74,7 @@ const CREDITS = [
   { name: 'Icons, illustrations and the field guide', role: 'Inline SVG written for LunX', licence: 'Original work' },
 ]
 
-const TRADEMARKS = ['ChatGPT', 'Claude', 'Gemini', 'Midjourney', 'DALL·E', 'Stable Diffusion', 'GitHub Copilot']
+const TRADEMARKS = ['ChatGPT', 'GPT-4', 'Claude', 'Gemini', 'Microsoft Copilot', 'GitHub Copilot', 'Perplexity', 'Character.AI', 'Stable Diffusion']
 
 /* ── Small pieces ────────────────────────────────────────────────────────── */
 
@@ -235,10 +231,13 @@ export default function AboutPage() {
                 <p className="sc-body">
                   So LunX is set like a field guide instead — warm paper, printed type,
                   and a clothbound book on the front page that opens at any chapter.
-                  The course inside runs from what AI is, through machine learning and
-                  neural networks, to the tools students already use and the ethics of
-                  using them: {TOTAL_LESSONS} lessons of {SHORTEST} to {LONGEST} minutes,
-                  and it remembers where you stopped.
+                  The course inside runs in three parts — understand AI, use it well,
+                  use it responsibly. Students train and break real models in the
+                  browser, open a neural network, find out why chatbots flatter and
+                  invent, learn to delegate, specify and check, and finish by building
+                  a tool and investigating a product they have never seen:
+                  {TOTAL_LESSONS} lessons of {SHORTEST} to {LONGEST} minutes, and it
+                  remembers where you stopped, down to the part.
                 </p>
               </Reveal>
             </div>
@@ -259,9 +258,10 @@ export default function AboutPage() {
                 <div>
                   <h3 className="ab-principle-title">Practice, not playback</h3>
                   <p className="ab-principle-text">
-                    Lessons are questions, not videos: fill the blank, decide whether
-                    it is AI, make the call. A wrong answer costs a heart, so nobody
-                    clicks through on autopilot.
+                    Lessons are experiments, not videos: predict first, then train,
+                    break and test a real model in your browser. A wrong prediction
+                    costs nothing — only the Check at the end spends hearts, so being
+                    wrong early is safe and being careless late is not.
                   </p>
                 </div>
               </li>
@@ -296,7 +296,7 @@ export default function AboutPage() {
 
             <Reveal as="dl" className="ab-figures" stagger delay={DUR.hover}>
               <div className="ab-figure">
-                <dt className="ab-figure-label">minutes of lessons</dt>
+                <dt className="ab-figure-label">minutes of lessons and projects</dt>
                 <dd className="ab-figure-value"><CountUp value={TOTAL_MINUTES} duration={DUR.celebrate} /></dd>
               </div>
               <div className="ab-figure">
@@ -323,7 +323,7 @@ export default function AboutPage() {
                     key={s.id}
                     className="ab-strand-seg"
                     style={{ '--chapter': `var(${CHAPTER_INK[i]})`, '--i': i }}
-                    data-tip={`${pad(i + 1)} ${s.title} · ${s.lessons.length} lessons · ${minutesOf(s)} min`}
+                    data-tip={`${pad(i + 1)} ${s.title} · ${lessonsIn(s)} lessons · ${minutesOf(s)} min`}
                   />
                 ))}
               </div>
@@ -369,7 +369,7 @@ export default function AboutPage() {
                   What it does use is listed here with its license.
                 </p>
                 <p className="ab-note">
-                  Product names taught in the {strand('tools').sections[0].title} module —{' '}
+                  Product names mentioned in the course, mostly in the {strand('II').sections[0].title} module’s tool guide —{' '}
                   {inProse(TRADEMARKS)} — are trademarks of their owners. LunX is a
                   student project and is not affiliated with or endorsed by any of them.
                 </p>
@@ -409,8 +409,9 @@ export default function AboutPage() {
                   <h3 className="ab-step-title">Open the next lesson</h3>
                   <p className="ab-step-text">
                     Lessons unlock in order, so the next one is always marked in the
-                    course. Starting one needs at least {HEARTS.COST_TO_START_LESSON} heart;
-                    Practice is free and never costs one.
+                    course, and a lesson left half-way resumes at the part you reached.
+                    Its Check needs at least {HEARTS.COST_TO_START_LESSON} heart; Practice is
+                    free and brings back what you missed.
                   </p>
                 </div>
                 <span className="ab-step-yield tnum">{SHORTEST}–{LONGEST} min</span>
@@ -418,14 +419,14 @@ export default function AboutPage() {
               <li className="ab-step">
                 <span className="ab-step-num">2</span>
                 <div className="ab-step-body">
-                  <h3 className="ab-step-title">Answer as you go</h3>
+                  <h3 className="ab-step-title">Predict, explore, then check</h3>
                   <p className="ab-step-text">
-                    Each step teaches one idea, then asks you to use it. A correct
-                    answer earns XP; a wrong one costs a heart, and hearts refill one
-                    every {HEARTS.RECOVERY_MINUTES} minutes.
+                    Three parts: predict and explore with a real model, explain and
+                    apply, then a graded Check. Predictions never cost a heart; a wrong
+                    Check answer does, and hearts refill one every {HEARTS.RECOVERY_MINUTES} minutes.
                   </p>
                 </div>
-                <span className="ab-step-yield tnum">+{XP.CORRECT_ANSWER} XP an answer</span>
+                <span className="ab-step-yield tnum">+{XP.CORRECT_ANSWER} XP a Check answer</span>
               </li>
               <li className="ab-step">
                 <span className="ab-step-num">3</span>
@@ -435,8 +436,8 @@ export default function AboutPage() {
                     Finishing moves the module’s progress bar and counts toward your
                     streak, quests and badges. A flawless lesson pays +{XP.PERFECT_BONUS} XP
                     and {CURRENCY.PERFECT_LESSON_GEMS} gems more; a finished module pays
-                    +{XP.SECTION_COMPLETE} XP and {CURRENCY.SECTION_COMPLETE_GEMS} gems and
-                    unlocks the next.
+                    +{XP.SECTION_COMPLETE} XP and {CURRENCY.SECTION_COMPLETE_GEMS} gems, earns its
+                    Field Kit tool, and unlocks the next.
                   </p>
                 </div>
                 <span className="ab-step-yield tnum">+{XP.LESSON} XP</span>

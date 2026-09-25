@@ -23,7 +23,7 @@
    why a backend can later replace the persistence layer without touching it.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { XP, CURRENCY, HEARTS } from '../config/progressionConfig'
+import { XP, CURRENCY, HEARTS, COURSEWORK } from '../config/progressionConfig'
 import { SHIELD, SHOP_ITEMS } from '../config/shopConfig'
 import { normalizeDay } from '../config/dailyBonusConfig'
 import { getLevelFromXP, getXPProgress, getLevelTitle, clamp } from '../utils/progressionUtils'
@@ -37,7 +37,7 @@ import teamService from './teamQuestService'
 import shopService from './shopService'
 import dailyBonusService from './dailyBonusService'
 import judgeService from './judgeService'
-import { deriveCourse, getSectionById, getLessonById } from '../data/learnData'
+import { deriveCourse, getSectionById, getLessonById, isLesson } from '../data/learnData'
 
 /* ── Action names ────────────────────────────────────────────────────────── */
 export const ACTIONS = {
@@ -60,6 +60,11 @@ export const ACTIONS = {
   CLAIM_TEAM_REWARD:  'CLAIM_TEAM_REWARD',
   REROLL_TEAM_MISSION:'REROLL_TEAM_MISSION',
   SET_DAILY_GOAL:     'SET_DAILY_GOAL',
+  /* Coursework: a lesson's resume point, the Field Journal, the scans. None
+     of them pays anything — they are the learner's own record. */
+  SAVE_PART:          'SAVE_PART',
+  SAVE_JOURNAL:       'SAVE_JOURNAL',
+  RECORD_SCAN:        'RECORD_SCAN',
   /* Developer-only */
   DEV_SET:            'DEV_SET',
   DEV_RESET_DAILY:    'DEV_RESET_DAILY',
@@ -282,13 +287,16 @@ function checkSectionCompletion(state, lessonId, now) {
  *           lesson can never farm XP.
  * Wrong   → one heart, through the central heart system.
  */
-export function recordAnswer(state, { lessonId, correct, maxAnswerXP = 0 }, now = Date.now()) {
+export function recordAnswer(state, { lessonId, correct, maxAnswerXP = 0, reviewKey = null }, now = Date.now()) {
   const acc = { state, events: [] }
 
   if (!correct) {
     acc.state = addCounters(acc.state, {
       stats: { totalWrongAnswers: 1 },
     })
+    /* A missed Check item comes back later, in Practice, until it is answered
+       right there (completePractice → cleared). */
+    if (reviewKey) acc.state = flagForReview(acc.state, reviewKey, lessonId, now)
     merge(acc, currency.loseHeart(acc.state, 'wrong-answer', now))
     return acc
   }
@@ -342,6 +350,10 @@ export function completeLesson(state, payload, now = Date.now()) {
   const existing = acc.state.lessons[lessonId]
   const isReplay = Boolean(existing)
   const safeSeconds = clamp(Math.floor(seconds), 0, 60 * 60)
+  /* Lessons proper count as lessons; a Case File, a Part project or the
+     capstone completes the same way but is not "a lesson" in any count. */
+  const countsAsLesson = isLesson(lesson)
+  const kind = lesson.kind ?? 'lesson'
 
   /* ── Lesson record (idempotency anchor) ── */
   acc.state = {
@@ -356,6 +368,11 @@ export function completeLesson(state, payload, now = Date.now()) {
         bestAccuracy: Math.max(existing?.bestAccuracy ?? 0, accuracy),
       },
     },
+  }
+  /* A finished item needs no resume point. */
+  if (acc.state.lessonParts?.[lessonId]) {
+    const { [lessonId]: _done, ...rest } = acc.state.lessonParts
+    acc.state = { ...acc.state, lessonParts: rest }
   }
 
   if (isReplay) {
@@ -377,20 +394,22 @@ export function completeLesson(state, payload, now = Date.now()) {
   }
 
   /* ── First completion ── */
+  const lessonCount = countsAsLesson ? 1 : 0
+  const perfectCount = countsAsLesson && perfect ? 1 : 0
   acc.state = addCounters(acc.state, {
-    daily: { lessons: 1, practiceSeconds: safeSeconds, perfectLessons: perfect ? 1 : 0 },
-    weekly: { lessons: 1, practiceSeconds: safeSeconds, perfectLessons: perfect ? 1 : 0 },
+    daily: { lessons: lessonCount, practiceSeconds: safeSeconds, perfectLessons: perfectCount },
+    weekly: { lessons: lessonCount, practiceSeconds: safeSeconds, perfectLessons: perfectCount },
     stats: {
-      totalLessonsCompleted: 1,
+      totalLessonsCompleted: lessonCount,
       totalLessonAttempts: 1,
       totalPracticeSeconds: safeSeconds,
-      totalPerfectLessons: perfect ? 1 : 0,
+      totalPerfectLessons: perfectCount,
     },
   })
 
-  acc.events.push({ type: 'LESSON_COMPLETE', lessonId, title: lesson.title, perfect })
+  acc.events.push({ type: 'LESSON_COMPLETE', lessonId, title: lesson.title, perfect, kind })
 
-  merge(acc, awardXP(acc.state, XP.LESSON, 'lesson-complete', { lessonId }))
+  merge(acc, awardXP(acc.state, XP.ITEM?.[kind] ?? XP.LESSON, 'lesson-complete', { lessonId }))
 
   if (perfect) {
     merge(acc, awardXP(acc.state, XP.PERFECT_BONUS, 'perfect-lesson', { lessonId }))
@@ -401,7 +420,7 @@ export function completeLesson(state, payload, now = Date.now()) {
   merge(acc, checkSectionCompletion(acc.state, lessonId, now))
 
   merge(acc, recordActivity(acc.state, {
-    xp: xpAwarded(acc.events), lessons: 1, seconds: safeSeconds, perfect: perfect ? 1 : 0,
+    xp: xpAwarded(acc.events), lessons: lessonCount, seconds: safeSeconds, perfect: perfectCount,
   }, now))
 
   merge(acc, runPipeline(acc.state, now))
@@ -409,9 +428,16 @@ export function completeLesson(state, payload, now = Date.now()) {
 }
 
 /** A standalone practice / review session. Never costs hearts. */
-export function completePractice(state, { seconds = 0, correct = 0, total = 0 } = {}, now = Date.now()) {
+export function completePractice(state, { seconds = 0, correct = 0, total = 0, cleared = [] } = {}, now = Date.now()) {
   const acc = { state, events: [] }
   const safeSeconds = clamp(Math.floor(seconds), 0, 60 * 60)
+
+  /* Review items answered right in this session leave the review pile. */
+  if (Array.isArray(cleared) && cleared.length && acc.state.review) {
+    const review = { ...acc.state.review }
+    for (const key of cleared) delete review[key]
+    acc.state = { ...acc.state, review }
+  }
 
   acc.state = addCounters(acc.state, {
     daily: { practiceSessions: 1, practiceSeconds: safeSeconds },
@@ -442,6 +468,71 @@ export function addPracticeTime(state, seconds, now = Date.now()) {
   merge(acc, teamService.contribute(acc.state, { seconds: safeSeconds }, now))
   merge(acc, runPipeline(acc.state, now))
   return acc
+}
+
+/* ── Coursework ──────────────────────────────────────────────────────────────
+   The learner's own record inside the lessons. None of it pays XP or gems:
+   a resume point, a journal entry and a scan are things the learner did, not
+   things the economy rewards, so none of them can be farmed.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+function flagForReview(state, key, lessonId, now) {
+  const review = { ...(state.review ?? {}) }
+  const existing = review[key]
+  review[key] = { lessonId, since: existing?.since ?? now, misses: (existing?.misses ?? 0) + 1 }
+  /* Bounded: the oldest flags give way first. */
+  const keys = Object.keys(review)
+  if (keys.length > COURSEWORK.REVIEW_LIMIT) {
+    keys.sort((a, b) => review[a].since - review[b].since)
+    for (const k of keys.slice(0, keys.length - COURSEWORK.REVIEW_LIMIT)) delete review[k]
+  }
+  return { ...state, review }
+}
+
+/** Remember how many parts of an item are finished, so it resumes there. */
+export function savePart(state, { lessonId, part }) {
+  if (!getLessonById(lessonId) || state.lessons[lessonId]) return { state, events: [] }
+  const n = clamp(Math.floor(part ?? 0), 0, 8)
+  if (n <= (state.lessonParts?.[lessonId] ?? 0)) return { state, events: [] }
+  return { state: { ...state, lessonParts: { ...(state.lessonParts ?? {}), [lessonId]: n } }, events: [] }
+}
+
+/** Add or replace one Field Journal entry (keyed by the step it came from). */
+export function saveJournal(state, { lessonId, entry }, now = Date.now()) {
+  if (!getLessonById(lessonId) || !entry || typeof entry.key !== 'string') return { state, events: [] }
+  if (entry.kind !== 'prediction' && entry.kind !== 'reflection') return { state, events: [] }
+  const clean = {
+    kind: entry.kind,
+    key: entry.key,
+    prompt: String(entry.prompt ?? '').slice(0, 400),
+    at: now,
+  }
+  if (entry.kind === 'reflection') clean.text = String(entry.text ?? '').slice(0, COURSEWORK.JOURNAL_TEXT_MAX)
+  if (entry.kind === 'prediction') {
+    clean.text = String(entry.text ?? '').slice(0, 400)
+    clean.confidence = ['sure', 'think', 'guess'].includes(entry.confidence) ? entry.confidence : 'guess'
+    if (typeof entry.correct === 'boolean') clean.correct = entry.correct
+  }
+  const prior = state.journal?.[lessonId]?.entries ?? []
+  const entries = [...prior.filter((e) => e.key !== clean.key), clean].slice(-COURSEWORK.JOURNAL_ENTRIES_PER_ITEM)
+  return { state: { ...state, journal: { ...(state.journal ?? {}), [lessonId]: { entries } } }, events: [] }
+}
+
+/** Store a Launch or Final Scan. A scan can be retaken; the latest counts. */
+export function recordScan(state, { which, form = 'A', answers = {} }, now = Date.now()) {
+  if (which !== 'launch' && which !== 'final') return { state, events: [] }
+  const clean = {}
+  let correct = 0
+  for (const [id, a] of Object.entries(answers).slice(0, COURSEWORK.SCAN_ITEMS)) {
+    const ok = a?.correct === true
+    if (ok) correct++
+    clean[id] = { correct: ok, confidence: ['sure', 'think', 'guess'].includes(a?.confidence) ? a.confidence : 'guess' }
+  }
+  const scan = { at: now, form: form === 'B' ? 'B' : 'A', answers: clean, correct, total: Object.keys(clean).length }
+  return {
+    state: { ...state, scans: { ...(state.scans ?? { launch: null, final: null }), [which]: scan } },
+    events: [{ type: 'SCAN_RECORDED', which, correct, total: scan.total }],
+  }
 }
 
 /* ── Reducer ─────────────────────────────────────────────────────────────── */
@@ -577,6 +668,15 @@ function reduceAction(state, action, now) {
 
     case ACTIONS.REROLL_TEAM_MISSION:
       return teamService.rerollMission(state, now)
+
+    case ACTIONS.SAVE_PART:
+      return savePart(state, payload)
+
+    case ACTIONS.SAVE_JOURNAL:
+      return saveJournal(state, payload, now)
+
+    case ACTIONS.RECORD_SCAN:
+      return recordScan(state, payload, now)
 
     case ACTIONS.SET_DAILY_GOAL: {
       const dailyXP = clamp(Math.floor(payload.dailyXP ?? 50), 10, 500)
@@ -724,10 +824,16 @@ export function buildViewModel(state, now = Date.now()) {
     achievementsUnlocked: achievementService.getUnlockedCount(state),
     stats: state.stats,
     ledger: state.ledger,
+    /* Coursework */
+    lessonParts: state.lessonParts ?? {},
+    journal: state.journal ?? {},
+    reviewCount: Object.keys(state.review ?? {}).length,
+    scans: state.scans ?? { launch: null, final: null },
   }
 }
 
 export default {
   ACTIONS, reduce, reconcile, buildViewModel, awardXP,
   completeLesson, completePractice, recordAnswer, applyRollover, runPipeline,
+  savePart, saveJournal, recordScan,
 }

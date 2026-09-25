@@ -12,7 +12,7 @@
 
 import { getLessonIcon } from '../learn/LessonIcons'
 import {
-  CHAPTERS, CHAPTER_INK, LONGEST_LESSON, TOTAL_LESSONS, TOTAL_MINUTES, folio, minutesOf, pad,
+  CHAPTERS, CHAPTER_INK, LONGEST_LESSON, TOTAL_LESSONS, TOTAL_MINUTES, folio, minutesOf, lessonsIn, pad,
 } from './guideData'
 
 const ink = (j) => `var(${CHAPTER_INK[j % CHAPTER_INK.length]})`
@@ -97,7 +97,7 @@ function ChapterOpener({ spread }) {
       <p className="fg-opener-title">{s.title}</p>
       <p className="fg-opener-sub">{s.subtitle}</p>
       <span className="fg-opener-meta">
-        {s.lessons.length} lessons · {minutesOf(s)} min
+        {lessonsIn(s)} lessons · {minutesOf(s)} min
       </span>
       <span className="fg-opener-dots" aria-hidden="true">
         {s.lessons.map((l) => <i key={l.id} />)}

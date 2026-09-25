@@ -1,0 +1,419 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   lessonSteps.css — THE NEW STEP KINDS
+   ---------------------------------------------------------------------------
+   Read cards, predictions with a confidence row, sorting, figures, the Field
+   Journal, transcripts and the frame every simulation sits in. They share the
+   lesson's measure (≈36rem), its paper-and-hairline vocabulary and its one
+   verdict palette: moss is right, berry is a cost, and a prediction that
+   missed is neither — it is shown in ink, because it cost nothing.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shared ── */
+.st-eyebrow {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: center;
+  animation: fx-fade-in var(--dur-open) var(--ease-out) backwards;
+}
+.st-eyebrow--predict { color: var(--clay-ink); }
+
+.st-p {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-body);
+  line-height: var(--lh-relaxed);
+  color: var(--ink-muted);
+}
+.st-p strong { color: var(--ink); font-weight: var(--fw-bold); }
+.st-p em { font-style: italic; color: var(--ink); }
+
+.st-prov {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: var(--surface);
+  white-space: nowrap;
+}
+.st-prov--live,
+.st-prov--computed { color: var(--moss); border-color: rgba(var(--moss-rgb), 0.35); }
+.st-prov--illustration,
+.st-prov--scripted,
+.st-prov--practice { color: var(--ochre-ink); border-color: rgba(var(--ochre-rgb), 0.35); }
+
+.st-task,
+.st-help {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+  text-align: center;
+  max-width: 34rem;
+}
+.st-help { font-size: var(--fs-small); }
+.st-task strong, .st-help strong { color: var(--ink); }
+
+.st-hint,
+.st-after {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+  max-width: 34rem;
+  text-align: center;
+}
+.st-after {
+  color: var(--ink);
+  background: var(--moss-tint);
+  border: 1px solid rgba(var(--moss-rgb), 0.25);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) backwards;
+}
+
+/* ── Read card ── */
+.st-read {
+  width: 100%;
+  max-width: 36rem;
+  text-align: left;
+  animation: fx-slide-up var(--dur-open) var(--ease-snap) 50ms backwards;
+}
+.st-read .st-eyebrow { text-align: left; }
+.st-read-title {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+.st-read-title em { color: var(--clay); font-style: italic; }
+
+.st-takeaway {
+  margin: var(--sp-5) 0 0;
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+.st-takeaway strong { font-weight: var(--fw-bold); }
+
+.st-source {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-normal);
+  color: var(--ink-faint);
+}
+
+.st-deflist { margin: var(--sp-2) 0 0; display: grid; gap: 0; }
+.st-deflist > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 11rem) 1fr;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-faint);
+}
+.st-deflist > div:last-child { border-bottom: 1px solid var(--line-faint); }
+.st-deflist dt {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+.st-deflist dd {
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+.st-deflist dd strong { color: var(--ink); }
+
+.st-table-wrap { width: 100%; overflow-x: auto; margin: var(--sp-3) 0 0; }
+.st-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+.st-table th,
+.st-table td {
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--line-faint);
+  text-align: left;
+  vertical-align: top;
+}
+.st-table thead th {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-top: none;
+  border-bottom: 1px solid var(--line);
+}
+.st-table tbody th {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+
+/* ── Prediction: the confidence row ── */
+.st-confidence {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+  animation: fx-fade-in var(--dur-open) var(--ease-out) 260ms backwards;
+}
+.st-confidence-label {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink-muted);
+  margin-right: var(--sp-2);
+}
+
+/* The segmented control: confidence, sort bins. A control, so --r-sm. */
+.st-seg {
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-raised);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
+}
+.st-seg:hover:not(:disabled):not(.is-on):not(.is-answer):not(.is-miss) { border-color: var(--evergreen); color: var(--ink); background: var(--evergreen-tint); }
+.st-seg.is-on:hover:not(:disabled) { background: var(--evergreen-deep); border-color: var(--evergreen-deep); }
+.st-seg:active:not(:disabled) { transform: translateY(1px); box-shadow: var(--shadow-press); }
+.st-seg.is-on { border-color: var(--evergreen); background: var(--evergreen); color: var(--surface-raised); }
+.st-seg:disabled { cursor: default; }
+.st-seg.is-answer { border-color: var(--moss); background: var(--moss-tint); color: var(--moss); }
+.st-seg.is-on.is-answer { background: var(--moss); color: var(--surface-raised); }
+.st-seg.is-miss { border-color: var(--berry); background: var(--berry-tint); color: var(--berry-ink); }
+
+/* ── Sort ── */
+.st-sort { width: 100%; max-width: 38rem; display: flex; flex-direction: column; align-items: center; }
+.st-sort-list { list-style: none; margin: 0; padding: 0; width: 100%; }
+.st-sort-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-faint);
+  animation: rv-up var(--dur-open) var(--ease-snap) backwards;
+  animation-delay: calc(120ms + var(--i, 0) * var(--stagger));
+}
+.st-sort-row:last-child { border-bottom: 1px solid var(--line-faint); }
+.st-sort-item { display: flex; flex-direction: column; gap: var(--sp-1); }
+.st-sort-text { font-size: var(--fs-body); line-height: var(--lh-normal); color: var(--ink); }
+.st-sort-note { font-size: var(--fs-small); line-height: var(--lh-normal); color: var(--ink-muted); }
+.st-sort-bins { display: flex; flex-wrap: wrap; gap: var(--sp-1); justify-content: flex-end; }
+.st-sort-row.is-right .st-sort-text { color: var(--moss); }
+.st-sort-row.is-wrong .st-sort-text { color: var(--berry-ink); }
+
+/* ── Number ── */
+.st-number { width: 100%; max-width: 34rem; display: flex; flex-direction: column; align-items: center; }
+.st-number-field { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.st-number-input {
+  width: 10rem;
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  text-align: center;
+}
+.st-number-unit { font-size: var(--fs-body); color: var(--ink-muted); }
+.st-number-field.is-right .st-number-input { border-color: var(--moss); background: var(--moss-tint); color: var(--moss); }
+.st-number-field.is-wrong .st-number-input { border-color: var(--berry); background: var(--berry-tint); color: var(--berry-ink); }
+
+/* ── Transcript ── */
+.st-transcript { width: 100%; max-width: 36rem; display: flex; flex-direction: column; align-items: flex-start; }
+.st-transcript .st-eyebrow { text-align: left; }
+.st-chat { list-style: none; margin: var(--sp-3) 0 var(--sp-4); padding: 0; width: 100%; display: grid; gap: var(--sp-3); }
+.st-msg {
+  display: grid;
+  gap: var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  max-width: 88%;
+  animation: rv-up var(--dur-open) var(--ease-snap) backwards;
+  animation-delay: calc(80ms + var(--i, 0) * var(--stagger) * 2);
+}
+.st-msg--you { justify-self: end; background: var(--evergreen-tint); border-color: rgba(var(--evergreen-rgb), 0.2); }
+.st-msg--page { background: var(--paper-deep); border-style: dashed; max-width: 100%; }
+.st-msg-who {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.st-msg-text { font-size: var(--fs-body); line-height: var(--lh-normal); color: var(--ink); white-space: pre-line; }
+.st-msg-note { font-size: var(--fs-small); line-height: var(--lh-normal); color: var(--clay-ink); }
+
+/* ── Reflect / compose ── */
+.st-reflect,
+.st-compose { width: 100%; max-width: 36rem; display: flex; flex-direction: column; }
+.st-reflect .st-eyebrow { text-align: left; }
+.st-reflect-q { text-align: left; margin-bottom: var(--sp-3); }
+.st-reflect .st-help,
+.st-compose .st-help { text-align: left; }
+.st-compose .st-eyebrow { text-align: left; }
+.st-textarea { resize: vertical; min-height: 5rem; line-height: var(--lh-normal); font-family: var(--font-ui); }
+.st-field { display: flex; flex-direction: column; gap: var(--sp-1); margin-bottom: var(--sp-4); }
+.st-field-hint { font-size: var(--fs-caption); line-height: var(--lh-normal); color: var(--ink-faint); }
+.st-reflect-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+}
+
+/* ── Journal read-back ── */
+.st-journal { margin-top: var(--sp-3); }
+.st-journal-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-5);
+}
+.st-journal-figures > div { padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-raised); }
+.st-journal-figures dt { font-size: var(--fs-micro); font-weight: var(--fw-bold); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-faint); }
+.st-journal-figures dd { margin: var(--sp-1) 0 0; font-family: var(--font-display); font-size: var(--fs-title); font-weight: var(--fw-bold); color: var(--ink); }
+.st-journal-h { margin: var(--sp-4) 0 var(--sp-2); font-family: var(--font-display); font-size: var(--fs-lead); font-weight: var(--fw-semi); color: var(--ink); }
+.st-journal-list { list-style: none; margin: 0; padding: 0; }
+.st-journal-list li { display: grid; gap: 2px; padding: var(--sp-3) 0; border-top: 1px solid var(--line-faint); }
+.st-journal-src { font-size: var(--fs-micro); font-weight: var(--fw-bold); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-faint); }
+.st-journal-q { font-size: var(--fs-small); color: var(--ink-muted); }
+.st-journal-a { font-size: var(--fs-body); color: var(--ink); white-space: pre-line; }
+
+.st-inline-sim { width: 100%; margin-bottom: var(--sp-5); }
+
+/* ── The verdict bar's explanation (every answer explains why) ── */
+.lm-fb-why {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink);
+  max-width: 44rem;
+}
+.lm-fb-why strong { font-weight: var(--fw-bold); }
+.lm-action--reveal { background: var(--paper); border-top: 2px solid var(--ink-muted); }
+.lm-action--reveal .lm-fb-title { color: var(--ink); }
+.lm-fb-icon--reveal { background: var(--ink-muted); }
+.lm-btn-continue--reveal { background: var(--evergreen); }
+.lm-btn-continue--reveal:hover { background: var(--evergreen-deep); }
+.lm-action .lm-feedback { align-items: flex-start; }
+
+@media (max-width: 640px) {
+  .st-sort-row { grid-template-columns: 1fr; }
+  .st-sort-bins { justify-content: flex-start; }
+  .st-deflist > div { grid-template-columns: 1fr; gap: var(--sp-1); }
+  .st-msg { max-width: 100%; }
+}
+
+/* ── Lesson chrome added with the three-part lessons ── */
+.lm-tab-n {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  opacity: 0.8;
+}
+.lm-tab .hi, .lm-tab svg { flex-shrink: 0; }
+.lm-readback {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+  text-align: center;
+}
+.lm-takeaway {
+  max-width: 34rem;
+  margin: var(--sp-2) 0 var(--sp-3);
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+  text-align: center;
+  animation: fx-fade-in var(--dur-open) var(--ease-out) 600ms backwards;
+}
+.lm-takeaway strong { color: var(--ink); font-weight: var(--fw-bold); }
+.lm-kit-unlocked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid rgba(var(--moss-rgb), 0.35);
+  border-radius: var(--r-sm);
+  background: var(--moss-tint);
+  font-size: var(--fs-small);
+  color: var(--ink);
+  animation: fx-pop-in var(--dur-lift) var(--ease-spring) 700ms backwards;
+}
+.lm-kit-unlocked svg { color: var(--moss); }
+
+/* ── Scan results ── */
+.sc-results { justify-content: flex-start; overflow-y: auto; }
+/* Longer welcome and completion screens scroll rather than clip. */
+.lm-complete, .lm-welcome { justify-content: safe center; overflow-y: auto; }
+.sc-table { max-width: 30rem; margin: var(--sp-3) auto var(--sp-5); }
+.sc-review { list-style: none; margin: 0 auto var(--sp-6); padding: 0; max-width: 36rem; text-align: left; }
+.sc-review li { display: grid; gap: 2px; padding: var(--sp-2) 0; border-top: 1px solid var(--line-faint); }
+.sc-q { font-size: var(--fs-small); color: var(--ink); }
+.sc-a { font-size: var(--fs-caption); color: var(--ink-muted); }
+.sc-review li.is-right .sc-q { color: var(--moss); }
+
+/* An ungraded miss is shown in ink: it cost nothing (the heart rule). */
+.st-reveal .lm-mcq-btn.lm-opt--wrong,
+.st-reveal .lm-binary-btn.lm-opt--wrong,
+.st-reveal .lm-mcq-btn.lm-opt--wrong:disabled,
+.st-reveal .lm-binary-btn.lm-opt--wrong:disabled { border-color: var(--line-strong); background: var(--paper-deep); color: var(--ink-muted); }
+.st-reveal .lm-opt-mark.is-wrong { background: var(--ink-muted); }
+.st-reveal .st-sort-row.is-wrong .st-sort-text { color: var(--ink-muted); }
+.st-reveal .st-seg.is-miss { border-color: var(--line-strong); background: var(--paper-deep); color: var(--ink-muted); }
+.lm-sentence.is-missed .lm-blank { color: var(--ink-muted); border-bottom-color: var(--ink-faint); background: var(--paper-deep); text-decoration: none; }
+.st-number-field.is-missed .st-number-input { border-color: var(--line-strong); background: var(--paper-deep); color: var(--ink-muted); }
+
+/* A step slides in from the right; it must not open a sideways scrollbar. */
+.lm-body { overflow-x: hidden; }
+
+/* A simulation step: title and task centred over the figure */
+.st-sim { width: 100%; max-width: 40rem; display: flex; flex-direction: column; align-items: center; }
+.st-sim .st-eyebrow, .st-sim .st-read-title { text-align: center; }
+.st-sim .st-after { align-self: stretch; }
+.sc-results .lm-welcome-sub { max-width: 36rem; }
+/* The new subtitles are sentences, not taglines: hold them to a reading measure. */
+.lm-welcome-sub { max-width: 36rem; line-height: var(--lh-normal); text-wrap: pretty; }
+/* A read card carrying a table gets a wider measure than prose. */
+.st-read:has(.st-table) { max-width: 46rem; }

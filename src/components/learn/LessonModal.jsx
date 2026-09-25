@@ -1,26 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   LessonModal.jsx — THE GRADED LESSON
+   LessonModal.jsx — THE LESSON
    ---------------------------------------------------------------------------
    Hearts, gems, XP and the streak are the REAL progression state, and every
-   answer is reported to the central engine.
+   graded answer is reported to the central engine.
 
-     wrong answer   → progression.recordAnswer → a real heart is spent
-     correct answer → progression.recordAnswer → real XP (budgeted per lesson)
-     lesson finished→ progression.completeLesson → everything updates at once
+   A lesson is three PARTS (its tabs), each ending at a natural stopping point:
 
-   Completion is dispatched exactly once per session (`committedRef`).
+     Part 1  Recall → Predict → Explore     nothing here is graded
+     Part 2  Explain → Apply                nothing here is graded
+     Part 3  Check → Carry forward          the only part that spends hearts
 
-   Revision 2 — the lesson answers you:
-     · each step slides in from the right; the tab underline slides to the
-       new tab; the progress bar settles with a shine and says "3 / 12"
-     · the overlay's own counters are flight targets: XP from a correct
-       answer flies into the bolt, a lost heart CRACKS in the heart counter
-     · correct → the option stamps a check and throws moss shards; wrong →
-       the option shakes and the right one is pointed out
-     · the feedback bar rises from the bottom with its verdict
-     · keyboard: 1–9 pick an option, Enter checks and continues
-     · completion: the stamp slams down with a ring, the rewards count up in
-       sequence, the perfect badge turns over
+   The heart rule: a prediction is made BEFORE the explanation, and a wrong
+   one is the point of the exercise — so predictions, recalls, simulations
+   and applied questions never cost a heart and never pay answer XP. Only a
+   step in a part marked `graded` goes through progression.recordAnswer:
+
+     wrong answer   → a real heart is spent, and the item is flagged for
+                      spaced review in Practice
+     correct answer → real XP (budgeted per item, so replays cannot farm it)
+     item finished  → progression.completeLesson → everything updates at once
+
+   Every committed prediction and every reflection is written to the Field
+   Journal (progression.saveJournal). Finishing a part saves a resume point
+   (progression.savePart), so a lesson reopened tomorrow starts where the
+   learner stopped. Completion is dispatched exactly once (`committedRef`).
+
+   Revision 2 motion, unchanged: steps slide in, the tab underline slides,
+   the progress bar settles, XP flies to the bolt and a lost heart cracks,
+   the verdict bar rises, keyboard 1–9 / Enter, the stamp slams down.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -28,15 +35,19 @@ import './LessonModal.css'
 
 import { useProgression, useClock } from '../../state/ProgressionContext'
 import { getHeartRecoveryTime } from '../../services/currencyService'
-import { getLessonContent, countSteps } from '../../data/lessonContent'
-import { getLessonById } from '../../data/learnData'
+import { useLessonContent, countSteps, countGraded, reviewKeyOf } from '../../data/lessonContent'
+import { getLessonById, getSectionById, lessonNumber, KIND_LABEL } from '../../data/learnData'
 import { XP, HEARTS, CURRENCY } from '../../config/progressionConfig'
 import useActiveTime from '../../hooks/useActiveTime'
 import useDialog from '../../hooks/useDialog'
 import { HeartIcon, GemIcon, FlameIcon, BoltIcon, Icon } from '../progression/Icons'
 import { LiveHeart, LiveGem, LiveFlame } from '../progression/LiveIcons'
 import { formatClock } from '../../utils/dateUtils'
-import StepBody, { correctLabel, isAnswerCorrect, canCheckStep } from './StepRenderer'
+import StepBody, {
+  EMPTY_ANSWER, correctLabel, isAnswerCorrect, canCheckStep, canContinue,
+  isCheckStep, isGradable, composeText, CONFIDENCE,
+} from './StepRenderer'
+import { inline } from './Rich'
 import { getLessonIcon } from './LessonIcons'
 import SplitText from '../../motion/SplitText'
 import CountUp from '../../motion/CountUp'
@@ -49,6 +60,13 @@ import { burst, ring, shake } from '../../motion/burst'
    the tile's CSS delay (470ms + i × --lag-finish) plus most of its rise. */
 const REWARD_AT = (i) => 470 + i * LAG.finish + DUR.modal * 0.6
 
+const Arrow = ({ size = 16 }) => (
+  <svg className="btn-arrow" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+)
+
 function CloseButton({ onClick, className = '' }) {
   return (
     <button className={`lm-close ${className}`.trim()} onClick={onClick} aria-label="Close lesson">
@@ -59,38 +77,42 @@ function CloseButton({ onClick, className = '' }) {
   )
 }
 
+const confidenceLabel = (id) => CONFIDENCE.find((c) => c.id === id)?.label ?? ''
+
 export default function LessonModal({ lessonId, onClose }) {
   const { state, vm, actions } = useProgression()
 
   const meta = getLessonById(lessonId)
-  const lesson = getLessonContent(lessonId)
+  const section = meta ? getSectionById(meta.sectionId) : null
+  const { content: lesson, failed } = useLessonContent(lessonId)
   const totalSteps = useMemo(() => countSteps(lesson), [lesson])
-  const maxAnswerXP = totalSteps * XP.CORRECT_ANSWER
+  const gradedTotal = useMemo(() => countGraded(lesson), [lesson])
+  const maxAnswerXP = gradedTotal * XP.CORRECT_ANSWER
+  const kind = meta?.kind ?? 'lesson'
+  const number = lessonNumber(lessonId)
 
   const [isReplay] = useState(() => Boolean(state.lessons[lessonId]))
+  /* A lesson left part-way through resumes at its next part. */
+  const [resumeAt] = useState(() => (state.lessons[lessonId] ? 0 : (state.lessonParts?.[lessonId] ?? 0)))
 
   const [screen, setScreen] = useState('welcome')
   const [tabIdx, setTabIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [stepPhase, setStepPhase] = useState('answering')
-
-  const [filled, setFilled] = useState([])
-  const [selected, setSelected] = useState(null)
+  const [answer, setAnswer] = useState(EMPTY_ANSWER)
   const [draggedChip, setDraggedChip] = useState(null)
   const [unlockedTabs, setUnlockedTabs] = useState([0])
   const [completedTabs, setCompletedTabs] = useState([])
   /* One verdict per step, keyed "tab:step", so a step can never be graded
-     or counted twice — and a finished tab can be read back with its answers. */
+     or counted twice — and a finished part can be read back with its answers. */
   const [verdicts, setVerdicts] = useState({})
-  /* The furthest point graded so far. Viewing an earlier tab never moves it,
-     so progress cannot walk backwards and grading only happens here. */
+  /* The furthest point reached. Viewing an earlier part never moves it. */
   const [frontier, setFrontier] = useState({ tab: 0, step: 0 })
   const [sessionXP, setSessionXP] = useState(0)
   const [sessionGems, setSessionGems] = useState(0)
+  const [unlockedKit, setUnlockedKit] = useState(null)
   const [leaving, setLeaving] = useState(false)
 
-  /* Learning time is measured between interactions, not by the wall clock —
-     an abandoned tab earns one idle window at most (MISC.MAX_IDLE_SECONDS). */
   const time = useActiveTime()
   const committedRef = useRef(false)
   const earnedRef = useRef({ xp: 0, gems: 0 })
@@ -101,8 +123,6 @@ export default function LessonModal({ lessonId, onClose }) {
   const startRef = useRef(null)
   const primaryRef = useRef(null)
 
-  /* The overlay's own counters: flights land here while a lesson covers the
-     top bar. */
   const heartsTarget = useFlightTarget('hearts')
   const gemsTarget = useFlightTarget('gems')
   const streakTarget = useFlightTarget('streak')
@@ -116,21 +136,26 @@ export default function LessonModal({ lessonId, onClose }) {
     for (const event of events) {
       if (event.type === 'XP_AWARDED') earnedRef.current.xp += event.amount
       if (event.type === 'GEMS_AWARDED') earnedRef.current.gems += event.amount
+      if (event.type === 'SECTION_COMPLETE') setUnlockedKit(getSectionById(event.section.id)?.fieldKit?.name ?? null)
     }
   }
 
-  const currentTab = lesson.tabs[tabIdx]
+  const tabs = lesson?.tabs ?? []
+  const currentTab = tabs[tabIdx]
   const currentStep = currentTab?.steps[stepIdx]
   const stepKey = `${tabIdx}:${stepIdx}`
-  /* A tab behind the frontier is read back, never re-graded. */
+  /* A part behind the frontier is read back, never re-graded. */
   const readOnly = tabIdx < frontier.tab
-  const correctCount = Object.values(verdicts).filter((v) => v.ok).length
-  const perfect = Object.values(verdicts).every((v) => v.ok)
-  const doneSteps = lesson.tabs.slice(0, frontier.tab).reduce((s, t) => s + t.steps.length, 0) + frontier.step
-  const progress = screen === 'complete' ? 1 : screen === 'welcome' ? 0 : doneSteps / totalSteps
+  const stepGraded = Boolean(currentTab?.graded) && isGradable(currentStep)
+  const gradedVerdicts = Object.values(verdicts).filter((v) => v.graded)
+  const gradedCorrect = gradedVerdicts.filter((v) => v.ok).length
+  const perfect = gradedTotal > 0 && gradedVerdicts.length === gradedTotal && gradedVerdicts.every((v) => v.ok)
+  const doneSteps = tabs.slice(0, frontier.tab).reduce((s, t) => s + t.steps.length, 0) + frontier.step
+  const progress = screen === 'complete' ? 1 : screen === 'welcome' ? 0 : totalSteps ? doneSteps / totalSteps : 0
 
-  const blocked = !vm.canStartLesson
-  /* The out-of-hearts countdown ticks with the shared clock. */
+  /* Hearts are only needed where hearts can be spent. */
+  const needsHearts = gradedTotal > 0
+  const blocked = needsHearts && !vm.canStartLesson
   const now = useClock()
   const recovery = getHeartRecoveryTime(state, now)
 
@@ -142,8 +167,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
   useDialog(overlayRef, { onClose: requestClose })
 
-  /* On unmount, credit the time of an abandoned lesson. The values are read
-     through a ref so the cleanup sees the latest without re-subscribing. */
+  /* On unmount, credit the time of an unfinished lesson. */
   const latest = useRef({ time, actions })
   latest.current = { time, actions }
   useEffect(() => () => {
@@ -154,26 +178,39 @@ export default function LessonModal({ lessonId, onClose }) {
     }
   }, [])
 
-  function resetStep() { setFilled([]); setSelected(null); setStepPhase('answering') }
+  /* A patch, or a function of the latest answer — so several quick changes
+     (sorting five items in a row) never overwrite one another. */
+  const update = useCallback((patch) => {
+    time.touch()
+    setAnswer((prev) => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) }))
+  }, [time])
 
-  /* Show a step: a graded one with its recorded answer and verdict, an
-     ungraded one ready to answer. */
+  function resetStep() { setAnswer(EMPTY_ANSWER); setStepPhase('answering') }
+
   function showStep(tab, step) {
     setTabIdx(tab)
     setStepIdx(step)
     const v = verdicts[`${tab}:${step}`]
     if (v) {
-      setFilled(v.filled)
-      setSelected(v.selected)
-      setStepPhase(v.ok ? 'correct' : 'wrong')
+      setAnswer(v.answer)
+      setStepPhase(v.phase)
     } else {
       resetStep()
     }
   }
 
   function start() {
-    if (blocked) return
+    if (blocked || !lesson) return
     time.start()
+    if (resumeAt > 0 && resumeAt < tabs.length) {
+      const done = Array.from({ length: resumeAt }, (_, i) => i)
+      setCompletedTabs(done)
+      setUnlockedTabs([...done, resumeAt])
+      setFrontier({ tab: resumeAt, step: 0 })
+      setTabIdx(resumeAt)
+      setStepIdx(0)
+      resetStep()
+    }
     setScreen('step')
   }
 
@@ -185,24 +222,40 @@ export default function LessonModal({ lessonId, onClose }) {
       lessonId,
       perfect,
       seconds,
-      accuracy: totalSteps ? correctCount / totalSteps : 0,
+      accuracy: gradedTotal ? gradedCorrect / gradedTotal : 1,
     }))
     setSessionXP(earnedRef.current.xp)
     setSessionGems(earnedRef.current.gems)
   }
 
+  /* Save what a Continue step produced before leaving it. */
+  function saveContinueStep() {
+    const step = currentStep
+    if (!step || readOnly) return
+    const key = `${currentTab.id}:${step.id}`
+    if (step.type === 'reflect' && answer.text.trim()) {
+      actions.saveJournal(lessonId, { kind: 'reflection', key, prompt: step.prompt, text: answer.text.trim() })
+    }
+    if (step.type === 'compose') {
+      actions.saveJournal(lessonId, { kind: 'reflection', key, prompt: step.title ?? 'Draft', text: composeText(step, answer) })
+    }
+    setVerdicts((v) => (v[stepKey] ? v : { ...v, [stepKey]: { ok: true, graded: false, answer, phase: 'answering' } }))
+  }
+
   function advance() {
     time.touch()
-    const tab = lesson.tabs[tabIdx]
+    const tab = tabs[tabIdx]
 
-    /* Reading a finished tab: step through it, then return to the frontier. */
+    /* Reading a finished part: step through it, then return to the frontier. */
     if (readOnly) {
       if (stepIdx + 1 < tab.steps.length) showStep(tabIdx, stepIdx + 1)
       else showStep(frontier.tab, frontier.step)
       return
     }
 
-    if (vm.hearts <= 0) {
+    if (!isCheckStep(currentStep)) saveContinueStep()
+
+    if (tab.graded && needsHearts && vm.hearts <= 0) {
       setScreen('welcome')
       return
     }
@@ -216,8 +269,9 @@ export default function LessonModal({ lessonId, onClose }) {
 
     setCompletedTabs((p) => (p.includes(tabIdx) ? p : [...p, tabIdx]))
 
-    if (tabIdx + 1 < lesson.tabs.length) {
+    if (tabIdx + 1 < tabs.length) {
       const next = tabIdx + 1
+      if (!isReplay) actions.savePart(lessonId, next)
       setFrontier({ tab: next, step: 0 })
       setTabIdx(next)
       setStepIdx(0)
@@ -231,14 +285,42 @@ export default function LessonModal({ lessonId, onClose }) {
 
   function check() {
     if (readOnly || verdicts[stepKey]) return
-    if (!canCheckStep(currentStep, { filled, selected })) return
+    if (!canCheckStep(currentStep, answer)) return
     time.touch()
-    const ok = isAnswerCorrect(currentStep, { filled, selected })
+    const result = isAnswerCorrect(currentStep, answer)
+    const ok = result !== false
 
-    tally(actions.recordAnswer({ lessonId, correct: ok, maxAnswerXP }))
+    if (stepGraded) {
+      tally(actions.recordAnswer({
+        lessonId,
+        correct: ok,
+        maxAnswerXP,
+        reviewKey: reviewKeyOf(lessonId, currentTab.id, currentStep.id),
+      }))
+    }
 
-    setVerdicts((v) => ({ ...v, [stepKey]: { ok, filled, selected } }))
-    setStepPhase(ok ? 'correct' : 'wrong')
+    if (currentStep.type === 'predict') {
+      const chosen = currentStep.options.find((o) => o.id === answer.selected)
+      actions.saveJournal(lessonId, {
+        kind: 'prediction',
+        key: `${currentTab.id}:${currentStep.id}`,
+        prompt: currentStep.prompt.replace(/\*/g, ''),
+        text: (chosen?.text ?? '').replace(/\*/g, ''),
+        confidence: answer.confidence,
+        ...(result === null ? {} : { correct: result }),
+      })
+    }
+
+    /* Graded steps speak in moss and berry; everything else is feedback that
+       cost nothing — a prediction that missed is shown in ink. */
+    const phase = stepGraded
+      ? (ok ? 'correct' : 'wrong')
+      : currentStep.type === 'predict'
+        ? (result === true ? 'correct' : 'reveal')
+        : (ok ? 'correct' : 'reveal')
+
+    setVerdicts((v) => ({ ...v, [stepKey]: { ok, graded: stepGraded, answer, phase, result } }))
+    setStepPhase(phase)
   }
 
   /* React to the verdict once it has painted. */
@@ -246,25 +328,24 @@ export default function LessonModal({ lessonId, onClose }) {
     const body = bodyRef.current
     if (!body || screen !== 'step') return
     if (stepPhase === 'correct') {
-      const target = body.querySelector('.lm-opt--correct') || body.querySelector('.lm-sentence')
+      const target = body.querySelector('.lm-opt--correct') || body.querySelector('.lm-sentence') || body.querySelector('.st-number-field') || body.querySelector('.st-sort-list')
       ring(target, { color: '--moss', size: 120 })
-      burst(target, { palette: 'moss', count: 14, spread: 80, gravity: 20 })
+      if (stepGraded) burst(target, { palette: 'moss', count: 14, spread: 80, gravity: 20 })
     }
     if (stepPhase === 'wrong') {
-      const wrong = body.querySelector('.lm-opt--wrong') || body.querySelector('.lm-sentence')
+      const wrong = body.querySelector('.lm-opt--wrong') || body.querySelector('.lm-sentence') || body.querySelector('.st-number-field') || body.querySelector('.st-sort-row.is-wrong')
       shake(wrong, { distance: 7 })
     }
-  }, [stepPhase, screen])
+  }, [stepPhase, screen, stepGraded])
 
   const chipClick = useCallback((chip, fromEl) => {
     if (stepPhase !== 'answering') return
     time.touch()
-    const arr = [...filled]
+    const arr = [...answer.filled]
     let slot = -1
     for (let i = 0; i < currentStep.answers.length; i++) { if (!arr[i]) { arr[i] = chip; slot = i; break } }
     if (slot < 0) return
-    setFilled(arr)
-    /* Fly a copy of the chip into its blank. */
+    setAnswer((a) => ({ ...a, filled: arr }))
     const body = bodyRef.current
     if (fromEl && body) {
       requestAnimationFrame(() => {
@@ -282,67 +363,69 @@ export default function LessonModal({ lessonId, onClose }) {
         )
       })
     }
-  }, [stepPhase, filled, currentStep, time])
+  }, [stepPhase, answer.filled, currentStep, time])
 
   function blankClick(idx) {
     if (stepPhase !== 'answering') return
     time.touch()
-    const arr = [...filled]; arr[idx] = null; setFilled(arr)
-  }
-
-  function select(value) {
-    time.touch()
-    setSelected(value)
+    const arr = [...answer.filled]; arr[idx] = null
+    setAnswer((a) => ({ ...a, filled: arr }))
   }
 
   function dropChip(idx) {
     if (!draggedChip) return
-    const arr = [...filled]; arr[idx] = draggedChip; setFilled(arr); setDraggedChip(null)
+    const arr = [...answer.filled]; arr[idx] = draggedChip
+    setAnswer((a) => ({ ...a, filled: arr }))
+    setDraggedChip(null)
   }
 
+  const isCheck = isCheckStep(currentStep)
+  const continueReady = !isCheck && canContinue(currentStep, answer)
+  const checkReady = isCheck && canCheckStep(currentStep, answer)
+
   /* Keyboard: numbers choose, Enter checks / continues. Only keys aimed at
-     the lesson count — a key typed into a form or a panel open over the
-     lesson is that control's business, not an answer. Escape is the dialog
-     hook's (useDialog). */
+     the lesson count — typing into a field or a simulation is its own. */
   useEffect(() => {
     if (screen !== 'step' || leaving) return undefined
     const onKey = (e) => {
       if (e.target !== document.body && !overlayRef.current?.contains(e.target)) return
-      if (e.target instanceof HTMLElement && e.target.matches('input, textarea')) return
+      if (e.target instanceof HTMLElement && e.target.matches('input, textarea, select')) return
+      if (e.target instanceof HTMLElement && e.target.closest('.sim')) return
       if (e.key === 'Enter') {
         if (e.target instanceof HTMLElement && e.target.matches('button') && !e.target.matches('.lm-btn-check, .lm-btn-continue')) return
         e.preventDefault()
-        if (stepPhase === 'answering') check()
-        else advance()
+        if (readOnly || stepPhase !== 'answering') { advance(); return }
+        if (isCheck) { if (checkReady) check() } else if (continueReady) advance()
         return
       }
-      if (stepPhase !== 'answering' || !currentStep) return
+      if (stepPhase !== 'answering' || !currentStep || readOnly) return
       const n = Number(e.key)
       if (!Number.isInteger(n) || n < 1) return
-      if (currentStep.type === 'binary' && currentStep.options[n - 1]) select(currentStep.options[n - 1].value)
-      if (currentStep.type === 'mcq' && currentStep.options[n - 1]) select(currentStep.options[n - 1].id)
-      if (currentStep.type === 'fill-blank') {
-        const used = filled.filter(Boolean)
-        const avail = currentStep.choices.filter((c) => !used.includes(c))
+      const t = currentStep.type
+      if (t === 'binary' && currentStep.options[n - 1]) update({ selected: currentStep.options[n - 1].value })
+      if ((t === 'mcq' || t === 'recall' || t === 'predict') && currentStep.options[n - 1]) update({ selected: currentStep.options[n - 1].id })
+      if (t === 'fill-blank') {
+        const used = answer.filled.filter(Boolean)
         const chip = currentStep.choices[n - 1]
-        if (chip && avail.includes(chip)) chipClick(chip, bodyRef.current?.querySelector(`[data-chip="${n - 1}"]`))
+        if (chip && !used.includes(chip)) chipClick(chip, bodyRef.current?.querySelector(`[data-chip="${n - 1}"]`))
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
 
-  /* The tab underline slides to the active tab. */
   useLayoutEffect(() => {
-    const tabs = tabsRef.current
-    if (!tabs) return
-    const active = tabs.querySelector('.lm-tab--active')
+    const el = tabsRef.current
+    if (!el) return
+    const active = el.querySelector('.lm-tab--active')
     if (!active) return
-    tabs.style.setProperty('--tab-x', `${active.offsetLeft}px`)
-    tabs.style.setProperty('--tab-w', `${active.offsetWidth}px`)
+    el.style.setProperty('--tab-x', `${active.offsetLeft}px`)
+    el.style.setProperty('--tab-w', `${active.offsetWidth}px`)
   }, [tabIdx, screen])
 
-  /* Completion: slam the stamp. */
+  /* A new step starts at the top of the page. */
+  useEffect(() => { bodyRef.current?.scrollTo?.({ top: 0 }) }, [stepKey])
+
   useEffect(() => {
     if (screen !== 'complete') return undefined
     const t = window.setTimeout(() => {
@@ -356,11 +439,9 @@ export default function LessonModal({ lessonId, onClose }) {
     if (screen !== 'welcome' || leaving) return undefined
     const onKey = (e) => {
       if (e.target !== document.body && !overlayRef.current?.contains(e.target)) return
-      if (e.key !== 'Enter' || blocked) return
+      if (e.key !== 'Enter' || blocked || !lesson) return
       const onOtherButton = e.target instanceof HTMLButtonElement && e.target !== startRef.current
       if (onOtherButton) return
-      /* preventDefault stops the focused Start button's own activation, so
-         one Enter starts the lesson exactly once. */
       e.preventDefault()
       start()
     }
@@ -368,15 +449,14 @@ export default function LessonModal({ lessonId, onClose }) {
     return () => window.removeEventListener('keydown', onKey)
   })
 
-  /* Focus moves INTO the lesson with each screen, so Enter and Tab act on
-     the lesson rather than on the page hidden behind it. */
   useEffect(() => {
     const t = window.setTimeout(() => (startRef.current || primaryRef.current)?.focus({ preventScroll: true }), 60)
     return () => clearTimeout(t)
-  }, [screen, blocked])
+  }, [screen, blocked, lesson])
 
   const overlayCls = `lm-overlay${leaving ? ' is-leaving' : ''}`
-  const dialogProps = { ref: overlayRef, role: 'dialog', 'aria-modal': true, 'aria-label': meta?.title ?? lesson.title }
+  const dialogProps = { ref: overlayRef, role: 'dialog', 'aria-modal': true, 'aria-label': meta?.title ?? 'Lesson' }
+  const kindLine = number ? `Lesson ${number}` : KIND_LABEL[kind]
 
   /* ── Out of hearts ── */
   if (screen === 'welcome' && blocked) {
@@ -389,18 +469,19 @@ export default function LessonModal({ lessonId, onClose }) {
           </div>
           <SplitText as="h2" className="lm-welcome-title" immediate>You’re out of hearts</SplitText>
           <p className="lm-welcome-sub">
-            Graded lessons need at least {HEARTS.COST_TO_START_LESSON} heart. One comes back
+            The Check at the end of a lesson needs at least {HEARTS.COST_TO_START_LESSON} heart. One comes back
             every {HEARTS.RECOVERY_MINUTES} minutes — even while LunX is closed.
+            {vm.lessonParts?.[lessonId] ? ' Your place in this lesson is saved.' : ''}
           </p>
           <div className="lm-blocked-timer">
             <Icon name="clock" size={15} />
             Next heart in <strong><RollingNumber value={formatClock(recovery.msUntilNext)} /></strong>
           </div>
           <p className="lm-blocked-alt">
-            Practice sessions never cost hearts — head to <b>Practice</b> to keep learning
-            and keep your streak alive.
+            Practice never costs hearts — head to <b>Practice</b> to review what you’ve missed and
+            keep your streak alive.
           </p>
-          <button ref={primaryRef} className="btn btn-primary btn-lg" onClick={requestClose}>Back to lessons</button>
+          <button ref={primaryRef} className="btn btn-primary btn-lg" onClick={requestClose}>Back to the course</button>
         </div>
       </div>
     )
@@ -408,38 +489,52 @@ export default function LessonModal({ lessonId, onClose }) {
 
   /* ── Welcome ── */
   if (screen === 'welcome') {
+    const parts = tabs.length
+    const itemXP = XP.ITEM?.[kind] ?? XP.LESSON
     return (
       <div className={overlayCls} {...dialogProps}>
         <div className="lm-welcome">
           <CloseButton onClick={requestClose} className="lm-close--abs" />
           <div className="lm-welcome-mark" data-tilt>{getLessonIcon(lessonId)}</div>
-          <span className="lm-welcome-eyebrow">{meta?.duration} · {totalSteps} questions</span>
+          <span className="lm-welcome-eyebrow">
+            {kindLine}{section ? ` · ${section.role}` : ''} · {meta?.duration}{parts ? ` · ${parts} parts` : ''}
+          </span>
           <SplitText as="h2" className="lm-welcome-title" immediate delay={160} stagger={55}>
-            {meta?.title ?? lesson.title}
+            {meta?.title ?? lesson?.title ?? 'Lesson'}
           </SplitText>
-          <p className="lm-welcome-sub">{lesson.subtitle}</p>
-          <div className="lm-welcome-bonus">
-            {isReplay
-              ? 'Review mode · keeps your streak alive'
-              : <><BoltIcon size={16} /> Earn up to {XP.LESSON + XP.PERFECT_BONUS + maxAnswerXP} XP</>}
-          </div>
-          <div className="lm-welcome-meta">
-            <span data-tip="Each wrong answer costs one"><HeartIcon size={15} fill={vm.hearts / vm.maxHearts} /> {vm.hearts} hearts</span>
-            <span data-tip={isReplay ? 'Rewards are paid once per lesson' : 'Finish without losing a heart'}><GemIcon size={15} /> {isReplay ? 'Already earned' : `+${CURRENCY.PERFECT_LESSON_GEMS} on a perfect run`}</span>
-            <span data-tip="Finishing counts as today's activity"><FlameIcon size={15} /> Build your streak</span>
-          </div>
+          <p className="lm-welcome-sub">{lesson?.subtitle ?? meta?.desc}</p>
+          {lesson && (
+            <div className="lm-welcome-bonus">
+              {isReplay
+                ? 'Review mode · keeps your streak alive'
+                : <><BoltIcon size={16} /> Earn up to {itemXP + (gradedTotal ? XP.PERFECT_BONUS : 0) + maxAnswerXP} XP</>}
+            </div>
+          )}
+          {lesson && (
+            <div className="lm-welcome-meta">
+              <span data-tip="Predictions and practice never cost a heart">
+                <HeartIcon size={15} fill={vm.hearts / vm.maxHearts} /> {gradedTotal ? `Only the ${gradedTotal}-question Check spends hearts` : 'No hearts at stake'}
+              </span>
+              <span data-tip={isReplay ? 'Rewards are paid once per item' : 'Pass the Check without losing a heart'}>
+                <GemIcon size={15} /> {isReplay ? 'Already earned' : gradedTotal ? `+${CURRENCY.PERFECT_LESSON_GEMS} on a perfect Check` : `+${itemXP} XP when finished`}
+              </span>
+              <span data-tip="Finishing counts as today's activity"><FlameIcon size={15} /> Builds your streak</span>
+            </div>
+          )}
+          {!lesson && !failed && <p className="lm-replay-note" aria-live="polite">Opening the lesson…</p>}
+          {failed && <p className="lm-replay-note">This lesson could not be loaded. Check your connection and open it again.</p>}
+          {resumeAt > 0 && lesson && (
+            <p className="lm-replay-note">You finished {resumeAt} of {parts} parts last time — this picks up at Part {resumeAt + 1}, {tabs[resumeAt]?.label}.</p>
+          )}
           {isReplay && (
             <p className="lm-replay-note">
-              You’ve already completed this lesson, so it won’t pay out again — but the
-              time still counts toward practice quests and your streak.
+              You’ve already completed this, so it won’t pay out again — but the time still counts
+              toward practice quests and your streak.
             </p>
           )}
-          <button ref={startRef} className="btn btn-next btn-lg lm-start-btn fx-shine" onClick={start} data-magnetic="8">
-            {isReplay ? 'Review lesson' : 'Start lesson'}
-            <svg className="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+          <button ref={startRef} className="btn btn-next btn-lg lm-start-btn fx-shine" onClick={start} disabled={!lesson} data-magnetic="8">
+            {isReplay ? 'Review' : resumeAt > 0 ? `Resume at Part ${resumeAt + 1}` : kind === 'lesson' ? 'Start lesson' : `Start ${KIND_LABEL[kind].toLowerCase()}`}
+            <Arrow size={18} />
           </button>
           <span className="lm-key-hint" aria-hidden="true"><kbd>Enter</kbd> to start</span>
         </div>
@@ -460,9 +555,15 @@ export default function LessonModal({ lessonId, onClose }) {
             </svg>
           </div>
           <SplitText as="h2" className="lm-complete-title" immediate delay={260} stagger={45}>
-            {isReplay ? 'Review complete' : 'Lesson complete'}
+            {isReplay ? 'Review complete' : `${kindLine} complete`}
           </SplitText>
-          {perfect && <div className="lm-perfect-badge"><Icon name="star" size={14} strokeWidth={2.4} /> Perfect run</div>}
+          {perfect && <div className="lm-perfect-badge"><Icon name="star" size={14} strokeWidth={2.4} /> Perfect Check</div>}
+          {lesson?.takeaway && <p className="lm-takeaway">{inline(lesson.takeaway)}</p>}
+          {unlockedKit && (
+            <p className="lm-kit-unlocked">
+              <Icon name="check-circle" size={15} /> Field Kit tool unlocked: <b>{unlockedKit}</b>
+            </p>
+          )}
           <div className="lm-complete-rewards">
             <div className="lm-reward" style={{ '--i': 0 }}>
               <span className="lm-reward-icon lm-reward-icon--gem"><GemIcon size={26} /></span>
@@ -481,7 +582,7 @@ export default function LessonModal({ lessonId, onClose }) {
             </div>
           </div>
           <div className="lm-complete-score">
-            {correctCount} of {totalSteps} correct · Level {vm.level} · {vm.levelProgress.xpUntilNextLevel} XP to next
+            {gradedTotal ? `${gradedCorrect} of ${gradedTotal} on the Check · ` : ''}Level {vm.level} · {vm.levelProgress.xpUntilNextLevel} XP to next
           </div>
           <button ref={primaryRef} className="btn btn-primary btn-lg lm-done-btn fx-shine" onClick={requestClose} data-magnetic="8">Done</button>
         </div>
@@ -490,13 +591,19 @@ export default function LessonModal({ lessonId, onClose }) {
   }
 
   /* ── Step runner ── */
+  const v = verdicts[stepKey]
+  const why = currentStep?.why
+  const predictionText = currentStep?.type === 'predict' && v
+    ? `You said “${(currentStep.options.find((o) => o.id === v.answer.selected)?.text ?? '').replace(/\*/g, '')}” — ${confidenceLabel(v.answer.confidence).toLowerCase()}.`
+    : null
+  const confidentMiss = currentStep?.type === 'predict' && v?.result === false && v.answer.confidence === 'sure'
 
   return (
     <div className={overlayCls} {...dialogProps}>
       <div className="lm-topbar">
         <CloseButton onClick={requestClose} />
         <div className="lm-progress-wrap">
-          <div className="lm-progress-bar" data-tip={`${doneSteps} of ${totalSteps} questions done`} data-tip-side="bottom">
+          <div className="lm-progress-bar" data-tip={`${doneSteps} of ${totalSteps} steps done`} data-tip-side="bottom">
             <div key={doneSteps} className={`lm-progress-fill${doneSteps ? ' fx-fill-shine' : ''}`} style={{ width: `${progress * 100}%` }} />
           </div>
           <span className="lm-progress-count tnum"><RollingNumber value={Math.min(totalSteps, doneSteps + 1)} /> / {totalSteps}</span>
@@ -518,22 +625,22 @@ export default function LessonModal({ lessonId, onClose }) {
       </div>
 
       <div className="lm-tabs" ref={tabsRef}>
-        {lesson.tabs.map((tab, i) => (
+        {tabs.map((tab, i) => (
           <button
             key={tab.id}
             className={`lm-tab${i === tabIdx ? ' lm-tab--active' : ''}${!unlockedTabs.includes(i) ? ' lm-tab--locked' : ''}`}
             disabled={!unlockedTabs.includes(i)}
             onClick={() => {
               if (!unlockedTabs.includes(i) || i === tabIdx) return
-              /* Back to the frontier resumes where grading left off; an
-                 earlier tab opens at its first step, read-only. */
               if (i === frontier.tab) showStep(frontier.tab, frontier.step)
               else showStep(i, 0)
             }}
-            data-tip={!unlockedTabs.includes(i) ? 'Finish the part before to open this' : i < frontier.tab ? 'Finished — read back, not re-graded' : undefined}
+            data-tip={!unlockedTabs.includes(i) ? 'Finish the part before to open this' : i < frontier.tab ? 'Finished — read back, not re-graded' : tab.graded ? 'This part is graded: a wrong answer costs a heart' : 'Nothing in this part costs a heart'}
           >
             {!unlockedTabs.includes(i) && <Icon name="lock" size={11} strokeWidth={2.6} />}
+            <span className="lm-tab-n tnum">{i + 1}</span>
             {tab.label}
+            {tab.graded && <HeartIcon size={11} />}
             {completedTabs.includes(i) && (
               <span className="lm-tab-done is-drawing"><Icon name="check" size={11} strokeWidth={3.2} /></span>
             )}
@@ -550,42 +657,61 @@ export default function LessonModal({ lessonId, onClose }) {
 
       <div className="lm-body" ref={bodyRef}>
         <div className="lm-step" key={stepKey}>
+          {readOnly && !v && isCheck && <p className="lm-readback">Read back from an earlier session — answers aren’t kept between sessions.</p>}
           <StepBody
             step={currentStep}
-            phase={stepPhase}
-            filled={filled}
-            selected={selected}
+            phase={readOnly && !v ? 'readonly' : stepPhase}
+            answer={answer}
+            update={readOnly ? undefined : update}
+            lessonId={lessonId}
             draggedChip={draggedChip}
             onChipClick={chipClick}
             onBlankClick={blankClick}
-            onSelect={select}
             onDropChip={dropChip}
             onDragChip={setDraggedChip}
           />
         </div>
       </div>
 
-      {/* The verdict, for screen readers: the feedback bar below is inserted
-          with its text already in it, so a live region there would not be
-          announced. This one is always present and only its text changes. */}
       <span className="pg-sr-only" role="status" aria-live="polite">
         {stepPhase === 'correct' && 'Correct.'}
         {stepPhase === 'wrong' && `Not correct — one heart spent. The answer is ${correctLabel(currentStep)}.`}
+        {stepPhase === 'reveal' && `Here is what happened. ${correctLabel(currentStep) ? `The answer is ${correctLabel(currentStep)}.` : ''}`}
       </span>
 
-      {stepPhase === 'answering' && (
+      {/* Reading back an earlier part: step through it, nothing to answer. */}
+      {readOnly && !v && (
+        <div className="lm-action lm-action--neutral" key="readback">
+          <span className="lm-key-hint" aria-hidden="true"><kbd>Enter</kbd> for the next step</span>
+          <button className="btn btn-primary btn-lg lm-btn-continue lm-btn-continue--reveal" onClick={advance}>Next <Arrow /></button>
+        </div>
+      )}
+
+      {!(readOnly && !v) && stepPhase === 'answering' && (
         <div className="lm-action lm-action--neutral" key="answering">
           <span className="lm-key-hint" aria-hidden="true">
-            {currentStep?.type === 'fill-blank' ? <>Press <kbd>1</kbd>–<kbd>{currentStep.choices.length}</kbd> to place a word</> : <>Press <kbd>1</kbd>–<kbd>{currentStep?.options?.length ?? 2}</kbd> to choose</>}
-            {' · '}<kbd>Enter</kbd> to check
+            {isCheck
+              ? <>{currentStep?.type === 'predict' ? 'Choose, rate your confidence' : 'Choose'} · <kbd>Enter</kbd> to {currentStep?.type === 'predict' ? 'lock it in' : 'check'}</>
+              : <><kbd>Enter</kbd> to continue</>}
+            {currentTab.graded && isGradable(currentStep) ? ' · graded' : ''}
           </span>
-          <button
-            className={`btn btn-primary btn-lg lm-btn-check${canCheckStep(currentStep, { filled, selected }) ? ' is-ready' : ''}`}
-            disabled={!canCheckStep(currentStep, { filled, selected })}
-            onClick={check}
-          >
-            Check
-          </button>
+          {isCheck ? (
+            <button
+              className={`btn btn-primary btn-lg lm-btn-check${checkReady ? ' is-ready' : ''}`}
+              disabled={!checkReady}
+              onClick={check}
+            >
+              {currentStep?.type === 'predict' ? 'Lock in prediction' : 'Check'}
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary btn-lg lm-btn-continue lm-btn-continue--reveal"
+              disabled={!continueReady}
+              onClick={advance}
+            >
+              Continue <Arrow />
+            </button>
+          )}
         </div>
       )}
 
@@ -598,14 +724,39 @@ export default function LessonModal({ lessonId, onClose }) {
               </svg>
             </span>
             <div>
-              <div className="lm-fb-title">Nice work!</div>
-              <div className="lm-fb-correct">That’s right.</div>
+              <div className="lm-fb-title">{currentStep?.type === 'predict' ? 'You called it' : 'Right'}</div>
+              {predictionText && <div className="lm-fb-correct">{predictionText}</div>}
+              {currentStep?.reveal && <p className="lm-fb-why">{inline(currentStep.reveal)}</p>}
+              {why && <p className="lm-fb-why">{inline(why)}</p>}
+              {currentStep?.source && <p className="lm-fb-correct">{inline(currentStep.source)}</p>}
             </div>
           </div>
-          <button className="btn btn-lg lm-btn-continue lm-btn-continue--correct" onClick={advance}>
-            Continue
-            <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-          </button>
+          <button className="btn btn-lg lm-btn-continue lm-btn-continue--correct" onClick={advance}>Continue <Arrow /></button>
+        </div>
+      )}
+
+      {stepPhase === 'reveal' && (
+        <div className="lm-action lm-action--reveal" key="reveal">
+          <div className="lm-feedback">
+            <span className="lm-fb-icon lm-fb-icon--reveal">
+              <Icon name="info" size={20} strokeWidth={2.4} />
+            </span>
+            <div>
+              <div className="lm-fb-title">
+                {currentStep?.type === 'predict'
+                  ? (v?.result === null ? 'Here’s what happens' : confidentMiss ? 'A confident miss — the kind you remember' : 'Not what happens — no heart spent')
+                  : 'Not quite — no heart spent'}
+              </div>
+              {predictionText && <div className="lm-fb-correct">{predictionText}</div>}
+              {currentStep?.type !== 'predict' && correctLabel(currentStep) && (
+                <div className="lm-fb-correct">Answer: <strong>{correctLabel(currentStep)}</strong></div>
+              )}
+              {currentStep?.reveal && <p className="lm-fb-why">{inline(currentStep.reveal)}</p>}
+              {why && <p className="lm-fb-why">{inline(why)}</p>}
+              {currentStep?.source && <p className="lm-fb-correct">{inline(currentStep.source)}</p>}
+            </div>
+          </div>
+          <button className="btn btn-lg lm-btn-continue lm-btn-continue--reveal" onClick={advance}>Continue <Arrow /></button>
         </div>
       )}
 
@@ -617,13 +768,12 @@ export default function LessonModal({ lessonId, onClose }) {
             </span>
             <div>
               <div className="lm-fb-title lm-fb-title--wrong">Not this time — one heart spent</div>
-              <div className="lm-fb-correct">Answer: <strong>{correctLabel(currentStep)}</strong></div>
+              {correctLabel(currentStep) && <div className="lm-fb-correct">Answer: <strong>{correctLabel(currentStep)}</strong></div>}
+              {why && <p className="lm-fb-why">{inline(why)}</p>}
+              <p className="lm-fb-correct">This one will come back in Practice.</p>
             </div>
           </div>
-          <button className="btn btn-lg lm-btn-continue lm-btn-continue--wrong" onClick={advance}>
-            Continue
-            <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-          </button>
+          <button className="btn btn-lg lm-btn-continue lm-btn-continue--wrong" onClick={advance}>Continue <Arrow /></button>
         </div>
       )}
     </div>

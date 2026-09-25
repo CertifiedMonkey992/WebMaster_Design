@@ -18,7 +18,7 @@
 
    The hero carries the page's primary action, above the fold on every
    screen: one button into the course, with the three facts that remove the
-   last hesitation (free, no account, five minutes). COMPONENT_RULES.md →
+   last hesitation (free, no account, how long lesson one takes). COMPONENT_RULES.md →
    Links into the course.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -27,13 +27,17 @@ import { SECTIONS, TOTAL_LESSONS } from '../data/learnData'
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import FieldGuide from './guide/FieldGuide'
-import { CHAPTER_INK, minutesOf, pad } from './guide/guideData'
+import { CHAPTER_INK, minutesOf, lessonsIn, pad } from './guide/guideData'
 import { usePerformer } from '../motion/stage'
 import { PageLink } from '../nav'
 import { DUR } from '../motion/timing'
 
-/* Which hero term names which chapter (by index); Foundations has none. */
-const TERM_OF_CHAPTER = { 1: 0, 2: 1, 3: 2, 4: 3 }
+/* Which hero term names which chapter (by index). Chapters 4 (Working With
+   AI) and 7 (Build & Shape) have no term of their own. */
+const TERM_OF_CHAPTER = { 0: 0, 1: 1, 2: 2, 4: 3, 5: 4 }
+
+/* Lesson one's real length, so the promise beside the button stays true. */
+const FIRST_MINUTES = parseInt(SECTIONS[0].lessons[0].duration, 10)
 
 export default function Hero() {
   const guide = useRef(null)
@@ -88,7 +92,7 @@ export default function Hero() {
     id: 'hero:term',
     region: 'hero:copy',
     tier: 'accent',
-    /* There are only four terms to mark, so this is the page's most easily
+    /* There are only five terms to mark, so this is the page's most easily
        over-used gesture: without a cooldown of its own it would out-play the
        book, which is the thing worth watching. */
     weight: 0.75,
@@ -137,10 +141,12 @@ export default function Hero() {
         </SplitText>
 
         <Reveal as="p" className="hero-sub" immediate delay={420}>
-          Short, interactive lessons on how models <span className="hero-term">learn from
-          data</span>, what happens inside a <span className="hero-term">neural network</span>, how
-          to <span className="hero-term">prompt AI tools</span>, and when using AI <span className="hero-term">crosses
-          an ethical line</span>. Earn XP and badges, and keep a daily streak as you go.
+          Interactive lessons where you <span className="hero-term">train real models</span> in
+          your browser, look inside a <span className="hero-term">neural network</span>, find
+          out <span className="hero-term">why chatbots invent things</span>, learn
+          to <span className="hero-term">check what AI tells you</span>, and decide when using
+          it <span className="hero-term">crosses an ethical line</span>. Earn XP and badges, and keep
+          a daily streak as you go.
         </Reveal>
 
         <Reveal className="hero-cta" variant="fade" immediate delay={500}>
@@ -150,7 +156,7 @@ export default function Hero() {
               <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
             </svg>
           </PageLink>
-          <span className="hero-cta-note">Free · no account · about five minutes</span>
+          <span className="hero-cta-note">Free · no account · lesson one takes {FIRST_MINUTES} minutes</span>
         </Reveal>
 
         <Reveal as="ol" className="hero-path" variant="left" stagger immediate delay={620}>
@@ -164,13 +170,13 @@ export default function Hero() {
                 onFocus={() => light(i)}
                 onBlur={unlight}
                 onClick={() => guide.current?.go(i)}
-                aria-label={`${section.title}: ${section.lessons.length} lessons, ${minutesOf(section)} minutes. ${bookOpen ? 'Turn the field guide to this chapter.' : 'Open the field guide at this chapter.'}`}
+                aria-label={`${section.title}: ${lessonsIn(section)} lessons, ${minutesOf(section)} minutes. ${bookOpen ? 'Turn the field guide to this chapter.' : 'Open the field guide at this chapter.'}`}
               >
                 <span className="hero-path-num">{pad(i + 1)}</span>
                 <span className="hero-path-label">{section.title}</span>
                 <span className="hero-path-count">
-                  <span className="hpc-rest">{section.lessons.length}</span>
-                  <span className="hpc-hover">{section.lessons.length} lessons · {minutesOf(section)} min</span>
+                  <span className="hpc-rest">{lessonsIn(section)}</span>
+                  <span className="hpc-hover">{lessonsIn(section)} lessons · {minutesOf(section)} min</span>
                 </span>
                 <svg className="hero-path-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M5 12h14" /><path d="m13 6 6 6-6 6" />

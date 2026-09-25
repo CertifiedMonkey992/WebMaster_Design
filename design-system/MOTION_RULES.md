@@ -818,6 +818,14 @@ More life, no more cost:
 - No per-frame JS while nothing changes: idle events are timers, tours are
   Web Animations, springs sleep when settled.
 - Particles (bursts, sparkles) remove themselves; a burst is ≤ 24 nodes.
+- **Simulations** (`components/learn/sims/`, curriculum redesign 2026-09).
+  A network training, a feed drifting, noise becoming a picture: these
+  redraws are **Responses** to the learner's press, not performances. They
+  run on one `useLoop` (`sims/kit.jsx`) only while the learner has something
+  running, stop themselves when it finishes or is paused, and never start on
+  their own — so they do not register with the Stage. A canvas redraws when
+  its inputs change and not otherwise. Under reduced motion the loop still
+  runs (it *is* the content), but nothing around it animates.
 
 ---
 

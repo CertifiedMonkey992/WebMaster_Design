@@ -80,6 +80,11 @@ function createActions(dispatch) {
     setDailyGoal:   (dailyXP) => dispatch(ACTIONS.SET_DAILY_GOAL, { dailyXP }),
     reconcileNow:   () => dispatch(ACTIONS.RECONCILE),
 
+    /* Coursework — the learner's own record; none of it pays. */
+    savePart:       (lessonId, part) => dispatch(ACTIONS.SAVE_PART, { lessonId, part }),
+    saveJournal:    (lessonId, entry) => dispatch(ACTIONS.SAVE_JOURNAL, { lessonId, entry }),
+    recordScan:     (payload) => dispatch(ACTIONS.RECORD_SCAN, payload),
+
     /** The reviewer's controls. One call per operation, each a no-op on a
      *  profile without the powers (services/judgeService.js → OPS). */
     judge: (op, payload = {}) => dispatch(ACTIONS.JUDGE, { op, ...payload }),
@@ -382,6 +387,7 @@ const NOOP_ACTIONS = {
   purchaseItem: NOOP, claimDailyBonus: NOOP,
   claimQuest: NOOP, claimAllQuests: NOOP, claimTeamReward: NOOP, rerollTeamMission: NOOP,
   setDailyGoal: NOOP, reconcileNow: NOOP, judge: NOOP,
+  savePart: NOOP, saveJournal: NOOP, recordScan: NOOP,
   exportProgress: () => '', importProgress: () => false,
   dev: { set: NOOP, resetDailyQuests: NOOP, resetWeeklyQuests: NOOP, setBonusDay: NOOP,
          resetDailyBonus: NOOP, completeBonusCycle: NOOP, shiftDays: NOOP, reset: NOOP, raw: () => null },

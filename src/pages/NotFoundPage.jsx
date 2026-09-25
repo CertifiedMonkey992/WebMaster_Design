@@ -35,7 +35,7 @@ export default function NotFoundPage() {
           <li key={s.id} className="sp-row">
             <span className="sp-row-num tnum" aria-hidden="true">{pad(i + 1)}</span>
             <span className="sp-row-title">{s.title}</span>
-            <span className="sp-row-meta tnum">{s.lessons.length} lessons</span>
+            <span className="sp-row-meta tnum">{s.lessons.filter((l) => (l.kind ?? 'lesson') === 'lesson').length} lessons</span>
           </li>
         ))}
       </ol>

@@ -4,8 +4,9 @@
    The page's one continuous motion outside the hero (MOTION_RULES.md →
    Ambient). Roots & Routes' testimonial wall says "there are more of these
    than fit on screen"; this says the same about the course, with the only
-   content that is true: the 22 real lesson titles, in two rows drifting in
-   opposite directions.
+   content that is true: the real lesson titles, in two rows drifting in
+   opposite directions. Only lessons proper — the Case Files, Part projects
+   and capstone are the course's work, not its chapters' contents.
 
    It is a transition as much as a decoration — it carries the eye from the
    book in the hero down into the course section, and scrolling pushes it.
@@ -19,7 +20,9 @@ import Marquee from '../motion/Marquee'
 import { CHAPTER_INK, pad } from './guide/guideData'
 
 const LESSONS = SECTIONS.flatMap((section, j) =>
-  section.lessons.map((lesson) => ({ ...lesson, j, chapter: section.title })),
+  section.lessons
+    .filter((lesson) => (lesson.kind ?? 'lesson') === 'lesson')
+    .map((lesson) => ({ ...lesson, j, chapter: section.title })),
 )
 
 /* Interleave so each row mixes chapters instead of running in blocks. */

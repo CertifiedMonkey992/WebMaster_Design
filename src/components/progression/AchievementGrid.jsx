@@ -101,10 +101,13 @@ export default function AchievementGrid() {
   const { vm } = useProgression()
   const wrapRef = useRef(null)
   const listRef = useRef(null)
-  listRef.current = vm.achievements
+  /* The Field Kit tools are badges too, but the profile shows them in their
+     own panel with their questions (ProfileView → FieldKit). */
+  const badges = vm.achievements.filter((a) => a.group !== 'field-kit')
+  listRef.current = badges
   useAchievementPreviews(wrapRef, () => listRef.current)
-  const unlocked = vm.achievements.filter((a) => a.unlocked)
-  const locked = vm.achievements.filter((a) => !a.unlocked)
+  const unlocked = badges.filter((a) => a.unlocked)
+  const locked = badges.filter((a) => !a.unlocked)
   const ordered = [...unlocked, ...locked]
 
   return (
@@ -112,9 +115,9 @@ export default function AchievementGrid() {
       <header className="ac-head">
         <div>
           <h3 className="ac-title">Achievements</h3>
-          <p className="ac-sub">{unlocked.length} of {vm.achievements.length} unlocked</p>
+          <p className="ac-sub">{unlocked.length} of {badges.length} unlocked</p>
         </div>
-        <AchievementRing percent={Math.round((unlocked.length / vm.achievements.length) * 100)} />
+        <AchievementRing percent={Math.round((unlocked.length / badges.length) * 100)} />
       </header>
 
       {/* Reviewer only. Unlocking grants what each badge MEASURES, so every

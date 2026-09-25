@@ -44,7 +44,7 @@ export const JUDGE_POWERS = [
   {
     id: 'unlockAll',
     label: 'Every module open',
-    on: 'All 5 modules are unlocked, in any order',
+    on: 'Every module is unlocked, in any order',
     off: 'Modules unlock the way a learner earns them',
   },
   {

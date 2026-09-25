@@ -1464,3 +1464,94 @@ html:has(.learn-app) body {
 .module--locked[data-shown] .badge--locked svg { transform: translateY(-3px) rotate(-18deg); }
 .module-locked-hint { background-image: linear-gradient(var(--clay-tint), var(--clay-tint)); background-repeat: no-repeat; background-size: 0% 2px; background-position: var(--sp-5) calc(100% - var(--sp-4)); transition: background-size var(--dur-reveal) var(--ease-snap), color var(--dur-hover) var(--ease-out); }
 .module--locked[data-shown] .module-locked-hint { background-size: 60% 2px; color: var(--ink-muted); }
+
+/* ── Parts and scans (curriculum redesign, 2026-09) ──────────────────────────
+   A Part is a heading, not a surface: three printed lines above its modules,
+   so the page gains no card edges. The scans are hairline rows — the same
+   weight as the resume strip — at the two ends of the course. */
+
+.part { margin-top: var(--sp-8); }
+.part:first-of-type { margin-top: var(--sp-6); }
+
+.part-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: 'num strand' 'title title' 'summary summary';
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.part-num {
+  grid-area: num;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--evergreen);
+}
+.part-strand {
+  grid-area: strand;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.part-title {
+  grid-area: title;
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+.part-summary {
+  grid-area: summary;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+  max-width: 36rem;
+}
+
+.scan-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--line-faint);
+  margin-bottom: var(--sp-2);
+}
+.scan-row-ico { display: grid; place-items: center; color: var(--ink-faint); }
+.scan-row-text { font-size: var(--fs-small); line-height: var(--lh-normal); color: var(--ink-muted); }
+.scan-row-text b { color: var(--ink); font-weight: var(--fw-semi); }
+.scan-row.is-locked { opacity: 0.7; }
+.part + .scan-row { margin-top: var(--sp-4); border-top: 1px solid var(--line-faint); }
+
+/* Module header additions: role, the module's question, its Field Kit tool */
+.module-question {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
+  color: var(--ink-muted);
+  margin-bottom: var(--sp-2);
+  max-width: 34rem;
+}
+.module-kit {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+}
+.module-kit b { color: var(--ink-muted); font-weight: var(--fw-semi); }
+.module-kit.is-earned, .module-kit.is-earned b { color: var(--moss); }
+
+/* The ticks: Case Files, projects and the capstone are drawn a little wider */
+.course-tick.is-work { width: 9px; }
+
+/* A lesson row's resume marker */
+.lesson-resume { color: var(--evergreen); font-weight: var(--fw-semi); }

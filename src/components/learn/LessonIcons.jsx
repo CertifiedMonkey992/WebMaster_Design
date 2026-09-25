@@ -202,8 +202,103 @@ const ICONS = {
       <path d="M12 8v4l3 1.5" strokeWidth="2"/>
     </Icon>
   ),
+  /* ── Curriculum redesign (2026-09): new shapes, same language ── */
+  'casefile': (
+    <Icon>
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="currentColor" fillOpacity="0.1" stroke="none"/>
+      <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <path d="M8 13h8M8 16h5" opacity="0.5"/>
+    </Icon>
+  ),
+  'project': (
+    <Icon>
+      <rect x="5" y="4" width="14" height="17" rx="2" fill="currentColor" fillOpacity="0.08" stroke="none"/>
+      <rect x="5" y="4" width="14" height="17" rx="2"/>
+      <rect x="9" y="2.5" width="6" height="3" rx="1"/>
+      <path d="M8.5 11l2 2 4-4" strokeWidth="2"/>
+      <path d="M8.5 17h7" opacity="0.4"/>
+    </Icon>
+  ),
+  'compass': (
+    <Icon>
+      <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.06" stroke="none"/>
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor" fillOpacity="0.25"/>
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>
+    </Icon>
+  ),
+  'tutor': (
+    <Icon>
+      <path d="M12 6.5C10 5 6.5 4.5 3 5v13c3.5-.5 7 0 9 1.5 2-1.5 5.5-2 9-1.5V5c-3.5-.5-7 0-9 1.5z" fill="currentColor" fillOpacity="0.08" stroke="none"/>
+      <path d="M12 6.5C10 5 6.5 4.5 3 5v13c3.5-.5 7 0 9 1.5 2-1.5 5.5-2 9-1.5V5c-3.5-.5-7 0-9 1.5zM12 6.5v13"/>
+      <path d="M15 10.5h3M15 13.5h3" opacity="0.45"/>
+    </Icon>
+  ),
+  'magnifier': (
+    <Icon>
+      <circle cx="10.5" cy="10.5" r="6" fill="currentColor" fillOpacity="0.08" stroke="none"/>
+      <circle cx="10.5" cy="10.5" r="6"/>
+      <path d="M15 15l5.5 5.5" strokeWidth="2"/>
+      <path d="M8 10.5h5" opacity="0.5"/>
+    </Icon>
+  ),
+  'checklist': (
+    <Icon>
+      <path d="M4 6l1.5 1.5L8 5M4 12l1.5 1.5L8 11M4 18l1.5 1.5L8 17" strokeWidth="1.75"/>
+      <path d="M11 6.5h9M11 12.5h9M11 18.5h6" opacity="0.6"/>
+    </Icon>
+  ),
+  'cursor': (
+    <Icon>
+      <path d="M5 3l13 6.5-5.5 1.8L10.7 17z" fill="currentColor" fillOpacity="0.12" stroke="none"/>
+      <path d="M5 3l13 6.5-5.5 1.8L10.7 17z"/>
+      <path d="M13 13l5 5" strokeWidth="1.75"/>
+      <path d="M16 3.5l1-1.5M19.5 6.5l1.5-.8" opacity="0.4"/>
+    </Icon>
+  ),
+  'document': (
+    <Icon>
+      <path d="M6 3h8l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" fill="currentColor" fillOpacity="0.08" stroke="none"/>
+      <path d="M6 3h8l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM14 3v4h4"/>
+      <path d="M8.5 12h7M8.5 15h7M8.5 18h4" opacity="0.45"/>
+    </Icon>
+  ),
+  'bubbles': (
+    <Icon>
+      <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h8A2.5 2.5 0 0 1 16 5.5v4a2.5 2.5 0 0 1-2.5 2.5H8l-3.5 3v-3.2A2.5 2.5 0 0 1 3 9.5z" fill="currentColor" fillOpacity="0.1" stroke="none"/>
+      <path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h8A2.5 2.5 0 0 1 16 5.5v4a2.5 2.5 0 0 1-2.5 2.5H8l-3.5 3v-3.2A2.5 2.5 0 0 1 3 9.5z"/>
+      <path d="M18.5 9A2.5 2.5 0 0 1 21 11.5v4a2.5 2.5 0 0 1-1.5 2.3V21l-3.5-3h-4.5A2.5 2.5 0 0 1 9 15.5V15" opacity="0.55"/>
+    </Icon>
+  ),
+  'wrench': (
+    <Icon>
+      <path d="M14.5 4.5a4.5 4.5 0 0 0-5.3 5.9L3.8 15.8a1.9 1.9 0 0 0 2.7 2.7l5.4-5.4a4.5 4.5 0 0 0 5.9-5.3l-2.6 2.6-2.4-.3-.3-2.4z" fill="currentColor" fillOpacity="0.1" stroke="none"/>
+      <path d="M14.5 4.5a4.5 4.5 0 0 0-5.3 5.9L3.8 15.8a1.9 1.9 0 0 0 2.7 2.7l5.4-5.4a4.5 4.5 0 0 0 5.9-5.3l-2.6 2.6-2.4-.3-.3-2.4z"/>
+    </Icon>
+  ),
+  'columns': (
+    <Icon>
+      <path d="M3 9l9-5 9 5" fill="currentColor" fillOpacity="0.1" stroke="none"/>
+      <path d="M3 9l9-5 9 5zM5 9v8M9.5 9v8M14.5 9v8M19 9v8M3 20h18M4 17h16"/>
+    </Icon>
+  ),
+}
+
+/* The curriculum's items, drawn from the shapes above. An icon marks a
+   repeating object type (VISUAL_SYSTEM.md → Iconography), so the Case Files
+   share one, the Part projects one, and the capstone has the guide's compass. */
+const ALIAS = {
+  'm01-l01': 'what-is-ai',   'm01-l02': 'training-data', 'm01-l03': 'model-eval',
+  'm02-l01': 'perceptron',   'm02-l02': 'backprop',      'm02-l03': 'cnn-rnn',
+  'm03-l01': 'chatgpt',      'm03-l02': 'image-gen',     'm03-l03': 'how-ai-learns',
+  'm04-l01': 'ai-everyday',  'm04-l02': 'prompt-eng',    'm04-l03': 'tutor',
+  'm05-l01': 'magnifier',    'm05-l02': 'checklist',     'm05-l03': 'cursor',
+  'm06-l01': 'document',     'm06-l02': 'bias',          'm06-l03': 'privacy',   'm06-l04': 'bubbles',
+  'm07-l01': 'wrench',       'm07-l02': 'columns',       'm07-cap': 'compass',
+  'p1-project': 'project',   'p2-project': 'project',
 }
 
 export function getLessonIcon(lessonId) {
-  return ICONS[lessonId] || ICONS['what-is-ai']
+  const key = ALIAS[lessonId] ?? (/-case$/.test(lessonId ?? '') ? 'casefile' : lessonId)
+  return ICONS[key] || ICONS['what-is-ai']
 }

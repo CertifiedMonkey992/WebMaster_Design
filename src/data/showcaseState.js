@@ -25,11 +25,12 @@ import { getLocalDateKey, addDays } from '../utils/dateUtils'
 /* Lessons the demo learner has finished. Split across two days on purpose:
    if everything lands in one tick, today's quests are all already complete and
    the quest panel shows nothing left to do — which is the opposite of the
-   point. Five yesterday, one today leaves the daily quests part-finished. */
+   point. Module 1 (three lessons and its Case File) and Lesson 2.1 yesterday,
+   Lesson 2.2 today, leaves the daily quests part-finished. */
 const COMPLETED_EARLIER = [
-  'what-is-ai', 'types-of-ai', 'how-ai-learns', 'ai-everyday', 'what-is-ml',
+  'm01-l01', 'm01-l02', 'm01-l03', 'm01-case', 'm02-l01',
 ]
-const COMPLETED_TODAY = ['training-data']
+const COMPLETED_TODAY = ['m02-l02']
 
 const STREAK_DAYS = 12
 

@@ -12,7 +12,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
-import { buildPracticeDeck } from '../../data/lessonContent'
+import { buildPracticeDeck, preloadContent } from '../../data/lessonContent'
+import { inline } from './Rich'
 import { XP } from '../../config/progressionConfig'
 import useActiveTime from '../../hooks/useActiveTime'
 import { Icon, HeartIcon, GemIcon, FlameIcon, BoltIcon } from '../progression/Icons'
@@ -27,7 +28,7 @@ import './LessonModal.css'
 const DECK_SIZE = 5
 
 export default function PracticeSession() {
-  const { vm, actions } = useProgression()
+  const { state, vm, actions } = useProgression()
   const [phase, setPhase] = useState('intro')
   const [deck, setDeck] = useState([])
   /* Counts sessions, so "Practice again" keys a fresh first question. */
@@ -39,6 +40,9 @@ export default function PracticeSession() {
   const [draggedChip, setDraggedChip] = useState(null)
   const [correct, setCorrect] = useState(0)
   const [earned, setEarned] = useState({ xp: 0, gems: 0 })
+  const [ready, setReady] = useState(false)
+  /* Review items answered right this session leave the review pile. */
+  const cleared = useRef([])
 
   /* Session time is counted between interactions, capped per idle gap
      (MISC.MAX_IDLE_SECONDS) — a deck left open is not an hour of practice. */
@@ -53,9 +57,20 @@ export default function PracticeSession() {
   )
 
   const step = deck[idx]
+  const reviewKeys = useMemo(() => Object.keys(state.review ?? {}), [state.review])
+
+  /* Practice draws on the content of finished items (and the items missed
+     in a Check), which is fetched once here. */
+  useEffect(() => {
+    let alive = true
+    const ids = [...new Set([...completedIds, ...Object.values(state.review ?? {}).map((r) => r.lessonId), 'm01-l01'])]
+    preloadContent(ids).then(() => { if (alive) setReady(true) })
+    return () => { alive = false }
+  }, [completedIds, state.review])
 
   function start() {
-    setDeck(buildPracticeDeck(completedIds, DECK_SIZE))
+    setDeck(buildPracticeDeck(completedIds, DECK_SIZE, reviewKeys))
+    cleared.current = []
     setRound((r) => r + 1)
     setIdx(0); setCorrect(0); setFilled([]); setSelected(null)
     setStepPhase('answering')
@@ -69,6 +84,7 @@ export default function PracticeSession() {
     time.touch()
     const ok = isAnswerCorrect(step, { filled, selected })
     if (ok) setCorrect((c) => c + 1)
+    if (ok && step.isReview) cleared.current.push(step.key)
     setStepPhase(ok ? 'correct' : 'wrong')
   }
 
@@ -91,7 +107,7 @@ export default function PracticeSession() {
     if (committed.current) return
     committed.current = true
     const seconds = time.started() ? time.seconds() : 0
-    const events = actions.completePractice({ seconds, correct, total: deck.length })
+    const events = actions.completePractice({ seconds, correct, total: deck.length, cleared: cleared.current })
     setEarned({
       xp: events.filter((e) => e.type === 'XP_AWARDED').reduce((s, e) => s + e.amount, 0),
       gems: events.filter((e) => e.type === 'GEMS_AWARDED').reduce((s, e) => s + e.amount, 0),
@@ -158,8 +174,9 @@ export default function PracticeSession() {
         </div>
         <SplitText as="h2" className="ps-title" immediate delay={120}>Practice</SplitText>
         <Reveal as="p" className="ps-sub" variant="fade" immediate delay={300}>
-          A quick review drawn from everything you’ve covered so far.
-          {completedIds.length === 0 && ' Starting with the fundamentals until you finish your first lesson.'}
+          A quick review drawn from the Checks you’ve passed — with anything you missed coming back first.
+          {completedIds.length === 0 && ' Starting with Lesson 1.1 until you finish your first lesson.'}
+          {vm.reviewCount > 0 && ` ${vm.reviewCount} missed question${vm.reviewCount === 1 ? '' : 's'} waiting for review.`}
         </Reveal>
 
         <Reveal as="ul" className="ps-facts" variant="scale" stagger immediate delay={380}>
@@ -170,8 +187,8 @@ export default function PracticeSession() {
         </Reveal>
 
         <Reveal variant="scale" immediate delay={620}>
-          <button className="btn btn-primary btn-lg ps-start fx-shine" onClick={start} data-magnetic="8">
-            Start review session
+          <button className="btn btn-primary btn-lg ps-start fx-shine" onClick={start} disabled={!ready} data-magnetic="8">
+            {ready ? 'Start review session' : 'Getting questions ready…'}
             <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
           </button>
         </Reveal>
@@ -261,7 +278,10 @@ export default function PracticeSession() {
             <span className="lm-fb-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" /></svg>
             </span>
-            <div className="lm-fb-title">Correct</div>
+            <div>
+              <div className="lm-fb-title">Correct{step?.isReview ? ' — cleared from your review list' : ''}</div>
+              {step?.why && <p className="lm-fb-why">{inline(step.why)}</p>}
+            </div>
           </div>
           <button className="btn btn-lg lm-btn-continue lm-btn-continue--correct" onClick={next}>Continue</button>
         </div>
@@ -275,6 +295,7 @@ export default function PracticeSession() {
             <div>
               <div className="lm-fb-title lm-fb-title--wrong">Not quite — no heart lost</div>
               <div className="lm-fb-correct">Answer: <strong>{correctLabel(step)}</strong></div>
+              {step?.why && <p className="lm-fb-why">{inline(step.why)}</p>}
             </div>
           </div>
           <button className="btn btn-lg lm-btn-continue lm-btn-continue--wrong" onClick={next}>Continue</button>

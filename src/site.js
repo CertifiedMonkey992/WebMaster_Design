@@ -47,7 +47,7 @@ export const SITE = {
   },
 
   /* When the privacy policy and terms last changed. */
-  policiesUpdated: '2026-09-19',
+  policiesUpdated: '2026-09-25',
 }
 
 const DESCRIPTION = 'LunX is a field guide to how AI works for high school students: interactive lessons on machine learning, neural networks, AI tools and ethics, with XP, streaks and badges. No account needed.'

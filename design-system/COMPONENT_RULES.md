@@ -226,9 +226,9 @@ renders, so the ration is untouched.
 
 ### The field guide (landing hero)
 
-- The five modules as a clothbound book (`MOTION_RULES.md` → *The field
+- The seven modules as a clothbound book (`MOTION_RULES.md` → *The field
   guide* for anatomy and physics). Closed: evergreen cover, wordmark, title,
-  compass, `22 lessons · 5 chapters`. Open: a contents page, or a chapter
+  compass, `21 lessons · 7 chapters`. Open: a contents page, or a chapter
   spread — opener on the left, lessons with dotted leaders on the right.
 - Pages are `--surface` ruled paper at `--r-xs` corners (paper has almost no
   radius); the cover board is `--r-sm` at the fore-edge and square at the
@@ -279,7 +279,8 @@ renders, so the ration is untouched.
 - Chips are printed labels: `--surface`, hairline, `--r-xs`; chapter number
   in the chapter's ink, a 22px icon tile, the title in Fraunces
   `--fs-small`, the duration in `--ink-faint`. Quiet on purpose — it is read
-  as motion and colour, not as twenty-two headlines.
+  as motion and colour, not as twenty-one headlines. Lessons only: the Case
+  Files, Part projects and capstone are work, not chapter contents.
 - Not buttons and not course links. Hovering a row brakes it; each chip names
   its chapter in a tooltip; scrolling pushes the rows along.
 - Reduced motion: one still row per line, horizontally scrollable.
@@ -420,6 +421,41 @@ the one the reader needs.
 - **Wrong**: the row goes `--berry` / `--berry-tint`, and the heart counter
   takes a single 120ms shake of 3px. One shake.
 - The footer holds one solid button, full width on mobile.
+
+### Lesson parts and steps (curriculum redesign, 2026-09)
+
+- **A lesson is three parts** (the modal's tabs): *Predict & explore*,
+  *Explain & apply*, *Check*. Each tab carries its number; the Check carries
+  a small heart, because it is **the only part that spends hearts**.
+  Finishing a part saves a resume point; the welcome screen says where the
+  lesson picks up.
+- **The heart rule, in colour.** Graded answers speak moss and berry. An
+  ungraded miss — a prediction, a recall, an applied question — is shown in
+  **ink** (`st-reveal`), with a paper verdict bar, because it cost nothing.
+  A confident miss says so: it is the moment the lesson is built around.
+- **Every verdict explains why** (`lm-fb-why`), and a prediction's reveal
+  names the evidence behind it.
+- **Step kinds** (`StepRenderer.jsx`): read cards at the reading measure
+  (46rem when they carry a table); predictions with a *Sure / Think so /
+  Guessing* row; sorts as hairline rows with segmented bins; number fields;
+  transcripts as speech rows; reflections and compose fields in the one
+  input style. None adds a card edge beyond the simulation's own frame.
+- **Provenance labels.** Anything AI-shaped on the page carries a printed
+  `--r-xs` label saying what it is: *Real model · runs in your browser*,
+  *Real calculation*, *Illustrative · written for this lesson*, *Scripted
+  scene*, *Practice sources*. Nothing recorded, scripted or written for the
+  lesson is ever mistaken for a real system's output.
+
+### Simulations (`components/learn/sims/`)
+
+- A simulation is a **figure**: one hairline box (`--r-md`, no shadow), a
+  Manrope title and its provenance label on one line, controls on the next,
+  the working drawing below. Controls are the product's segmented control,
+  a range slider on a `--paper-deep` track, and `.btn-sm` buttons.
+- Drawings are ink on paper: two classes are evergreen circles and ochre
+  squares (shape and colour, never colour alone), heatmaps are the two tints
+  at low alpha, a loss curve is one berry line. No gradients, no glow.
+- Every one works at 375px wide without a sideways scroll.
 
 ---
 

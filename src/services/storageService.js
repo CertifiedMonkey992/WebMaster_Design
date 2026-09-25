@@ -12,7 +12,7 @@
    browser extension mangled a storage value.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS } from '../config/progressionConfig'
+import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS, COURSEWORK } from '../config/progressionConfig'
 import { SHIELD } from '../config/shopConfig'
 import { normalizeDay } from '../config/dailyBonusConfig'
 import { normalizePowers } from '../config/judgeConfig'
@@ -74,6 +74,18 @@ export function createDefaultState(now = Date.now()) {
     /** Per-lesson XP budget already paid out for correct answers. Replaying a
      *  lesson can therefore never farm XP — the budget is spent once. */
     answerXP: {},             // lessonId -> xp already awarded
+
+    /* Coursework — the learner's own work inside the lessons, kept with the
+       rest of their progress in this browser and nowhere else. */
+    /** Parts of a lesson already finished, so a long lesson resumes where
+     *  the learner stopped. Cleared when the item is completed. */
+    lessonParts: {},          // itemId -> parts finished (1, 2 …)
+    /** The Field Journal: every committed prediction and every reflection. */
+    journal: {},              // itemId -> { entries: [{ kind, key, prompt, … }] }
+    /** Missed Check items, waiting for spaced review in Practice. */
+    review: {},               // "item:part:step" -> { lessonId, since, misses }
+    /** The Launch and Final Scans (ungraded diagnostics). */
+    scans: { launch: null, final: null },
 
     /* Quests */
     quests: {
@@ -278,6 +290,39 @@ export function sanitizeState(raw, now = Date.now()) {
     }
   }
 
+  if (isObj(raw.lessonParts)) {
+    s.lessonParts = {}
+    for (const [id, value] of Object.entries(raw.lessonParts)) {
+      const n = Math.floor(num(value, 0))
+      if (n > 0) s.lessonParts[id] = Math.min(8, n)
+    }
+  }
+
+  if (isObj(raw.journal)) {
+    s.journal = {}
+    for (const [id, rec] of Object.entries(raw.journal)) {
+      if (!isObj(rec) || !Array.isArray(rec.entries)) continue
+      const entries = rec.entries.filter(isValidJournalEntry).slice(-COURSEWORK.JOURNAL_ENTRIES_PER_ITEM)
+      if (entries.length) s.journal[id] = { entries }
+    }
+  }
+
+  if (isObj(raw.review)) {
+    s.review = {}
+    for (const [key, rec] of Object.entries(raw.review).slice(0, COURSEWORK.REVIEW_LIMIT)) {
+      if (!isObj(rec) || typeof rec.lessonId !== 'string') continue
+      s.review[key] = {
+        lessonId: rec.lessonId,
+        since: num(rec.since, now),
+        misses: Math.max(1, Math.floor(num(rec.misses, 1))),
+      }
+    }
+  }
+
+  if (isObj(raw.scans)) {
+    s.scans = { launch: sanitizeScan(raw.scans.launch), final: sanitizeScan(raw.scans.final) }
+  }
+
   if (isObj(raw.quests)) {
     s.quests = {
       dailyKey: typeof raw.quests.dailyKey === 'string' ? raw.quests.dailyKey : null,
@@ -320,6 +365,33 @@ function pickNumbers(source, template) {
     if (typeof template[key] === 'number') out[key] = Math.max(0, Math.floor(num(source[key], 0)))
   }
   return out
+}
+
+function isValidJournalEntry(e) {
+  return isObj(e)
+    && (e.kind === 'prediction' || e.kind === 'reflection')
+    && typeof e.key === 'string'
+    && typeof e.prompt === 'string'
+    && (e.text === undefined || typeof e.text === 'string')
+}
+
+function sanitizeScan(scan) {
+  if (!isObj(scan) || !isObj(scan.answers)) return null
+  const answers = {}
+  for (const [id, a] of Object.entries(scan.answers)) {
+    if (!isObj(a)) continue
+    answers[id] = {
+      correct: a.correct === true,
+      confidence: ['sure', 'think', 'guess'].includes(a.confidence) ? a.confidence : 'guess',
+    }
+  }
+  return {
+    at: num(scan.at, 0),
+    form: scan.form === 'B' ? 'B' : 'A',
+    answers,
+    correct: Math.max(0, Math.floor(num(scan.correct, 0))),
+    total: Math.max(0, Math.floor(num(scan.total, 0))),
+  }
 }
 
 function isValidQuest(q) {

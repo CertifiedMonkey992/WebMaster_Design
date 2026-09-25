@@ -52,6 +52,26 @@ export const XP = {
   DAILY_GOAL_BONUS: 15,
   /** Bonus applied on top of LESSON when a whole section is finished. */
   SECTION_COMPLETE: 50,
+  /** First-time completion, by course item kind (data/learnData.js →
+   *  ITEM_KIND). A lesson pays LESSON; the larger pieces of work pay more. */
+  ITEM: {
+    lesson: 25,
+    casefile: 30,
+    project: 60,
+    capstone: 120,
+  },
+}
+
+/* ── Coursework ──────────────────────────────────────────────────────────── */
+export const COURSEWORK = {
+  /** Field Journal entries kept per item (predictions + reflections). */
+  JOURNAL_ENTRIES_PER_ITEM: 24,
+  /** Longest reflection kept, in characters. */
+  JOURNAL_TEXT_MAX: 2000,
+  /** Missed Check items held for spaced review. */
+  REVIEW_LIMIT: 60,
+  /** Items in a Launch or Final Scan. */
+  SCAN_ITEMS: 12,
 }
 
 /* ── Goals ───────────────────────────────────────────────────────────────── */
@@ -146,6 +166,6 @@ export const MISC = {
 export const HEART_RECOVERY_MS = HEARTS.RECOVERY_MINUTES * 60 * 1000
 
 export default {
-  STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, XP, GOALS,
+  STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, XP, GOALS, COURSEWORK,
   LEVELS, QUESTS, STREAK, TEAM, MISC, HEART_RECOVERY_MS,
 }
