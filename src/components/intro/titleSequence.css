@@ -1,0 +1,559 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   titleSequence.css — THE TITLE SEQUENCE
+   ---------------------------------------------------------------------------
+   MOTION_RULES.md → The title sequence. COMPONENT_RULES.md → Title sequence.
+
+   The book reuses the field guide's own classes (fieldGuide.css) for every
+   part the two books share; this file adds only the stage around it and
+   what is printed on its pages. No durations live here — every motion is on
+   the clock in score.js.
+
+   What is printed is set on the sequence's design grid (1600 × 900 units,
+   900 × 1600 on a tall screen) in `--u`, because it is shot at a camera
+   distance, not read at arm's length: `calc(var(--u) * 64)` is 64 units.
+   The families, weights, colours and radii are the product's own tokens.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ts {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  overflow: hidden;
+  background-color: var(--paper);
+  /* The page ground's own grain (index.css → body::before), so the overlay
+     is the same paper the hero lies on. */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(var(--ink-rgb), 0.02) 0px,
+    rgba(var(--ink-rgb), 0.02) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  cursor: default;
+  user-select: none;
+}
+
+/* ── The lens and the camera (camera.js) ─────────────────────────────────── */
+
+.ts-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.ts-cam,
+.ts-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-style: preserve-3d;
+}
+
+.ts-cam { transform-origin: 0 0; }
+
+/* ── The book: .fg-desk's pose, open, and the parts fieldGuide.css does
+   not give a book without a stage ─────────────────────────────────────── */
+
+.ts-desk {
+  position: absolute;
+  transform-style: preserve-3d;
+  transform:
+    translateX(calc(var(--fg-w) * 0.5))
+    rotateX(18deg)
+    rotateZ(-2deg);
+}
+
+.ts-press {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* The contact shadow (fieldGuide.css → .fg-shadow), still; widened to the
+   left by the open half of the book. */
+.ts-shadow {
+  position: absolute;
+  inset: 2% -1% -1% 1%;
+  border-radius: var(--r-sm);
+  background: rgba(var(--ink-rgb), 0.16);
+  box-shadow: 0 0 22px 12px rgba(var(--ink-rgb), 0.14);
+  transform: translateZ(-1px);
+}
+
+.ts-shadow-open {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  width: 100%;
+  border-radius: inherit;
+  background: inherit;
+  box-shadow: inherit;
+  transform-origin: 100% 50%;
+}
+
+/* Raised off the cover's own board so the leaves can lie on it when the
+   book is open (camera.js → INSIDE_Z). */
+.ts-desk .fg-board--inside { transform: translateZ(6.6px) rotateY(180deg); }
+
+/* The leaves start lying on the right; score.js turns them. The inner
+   panel reaches half a pixel under the outer one, so no seam shows where
+   the paper bends. */
+.ts-desk .fg-leaf { transform-origin: 0 50%; }
+.ts-desk .fg-leaf-part--inner { width: calc(58% + 0.5px); }
+
+/* The same ruled paper, with rules one screen pixel thick in close-up. */
+.ts-desk .ts-paper {
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0 calc(20px - var(--hair)),
+    var(--line-faint) calc(20px - var(--hair)) 20px
+  );
+}
+
+/* ── What is printed ─────────────────────────────────────────────────────── */
+
+.ts-print {
+  position: absolute;
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
+
+.ts-head {
+  position: absolute;
+  top: calc(var(--u) * 58);
+  left: calc(var(--u) * 120);
+  right: calc(var(--u) * 120);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: calc(var(--u) * 14);
+  border-bottom: calc(var(--u) * 2) solid rgba(var(--clay-rgb), 0.3);
+  font-size: calc(var(--u) * 19);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.ts-head-label span { color: var(--chapter, var(--ink-faint)); }
+.ts-folio { font-variant-numeric: tabular-nums; }
+
+/* A running head that changes is a Cue: the old line leaves up, the new
+   one rises in, inside one mask. */
+.ts-cues {
+  display: inline-grid;
+  overflow: hidden;
+  padding-block: 0.15em;
+  margin-block: -0.15em;
+}
+
+.ts-cue { grid-area: 1 / 1; }
+
+/* Headlines, in the product's voice. */
+.ts-a-lead,
+.ts-b-cap,
+.ts-c-head,
+.ts-v-title {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+}
+
+/* Introduction ── the AI you already use, and what it does every day. */
+.ts-a {
+  position: absolute;
+  left: calc(var(--u) * 120);
+  right: calc(var(--u) * 120);
+  top: calc(var(--u) * 318);
+}
+
+.ts-a-lead { font-size: calc(var(--u) * 64); }
+
+/* The one italic clay phrase on the screen, rolling on the beat. */
+.ts-a-roll {
+  position: relative;
+  height: 1.32em;
+  margin: calc(var(--u) * 4) -0.12em 0;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: calc(var(--u) * 132);
+  font-style: italic;
+  font-weight: var(--fw-regular);
+  line-height: 1.2;
+  letter-spacing: var(--ls-display);
+  color: var(--clay);
+}
+
+.ts-a-phrase {
+  position: absolute;
+  left: 0.12em;
+  top: 0.04em;
+  white-space: nowrap;
+}
+
+/* Parts I and II ── a sentence written one likely word at a time. */
+.ts-b {
+  position: absolute;
+  left: calc(var(--u) * 120);
+  right: calc(var(--u) * 120);
+  top: calc(var(--u) * 196);
+}
+
+.ts-b-cap {
+  display: grid;
+  font-size: calc(var(--u) * 60);
+}
+
+.ts-cap { grid-area: 1 / 1; }
+
+.ts-b-line {
+  margin-top: calc(var(--u) * 64);
+  font-family: var(--font-display);
+  font-size: calc(var(--u) * 92);
+  font-weight: var(--fw-regular);
+  line-height: 1.42;
+  letter-spacing: var(--ls-title);
+}
+
+.ts-b-made {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.ts-slot {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+}
+
+.ts-slot-word {
+  display: inline-block;
+  opacity: 0;
+  transform-origin: 0 70%;
+}
+
+.ts-slips {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* A candidate: a paper slip, handled — no shadow until it is picked up. */
+.ts-slip {
+  position: absolute;
+  left: 0;
+  width: 4.9em;
+  height: 0.64em;
+  font-size: 1em;
+}
+
+.ts-slip-card {
+  position: absolute;
+  inset: 0;
+  border: calc(var(--u) * 2) solid var(--line);
+  border-radius: var(--r-xs);
+  background: var(--surface-raised);
+}
+
+/* Its likelihood, as a track and a fill; no figure. */
+.ts-bar {
+  position: absolute;
+  left: 2.35em;
+  right: 0.24em;
+  top: 50%;
+  height: 0.09em;
+  margin-top: -0.045em;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: var(--paper-deep);
+}
+
+.ts-bar-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--moss);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+/* The word on the slip, at half the line's size; score.js flies it into
+   the line at twice its size, where it lands on its own glyphs. */
+.ts-fly {
+  position: absolute;
+  left: 0.4em;      /* 0.2em of the line: IntroScenes.jsx → SLIP.padX */
+  top: 0.26em;      /* 0.13em of the line: SLIP.padY */
+  font-size: 0.5em;
+  line-height: 1;
+  white-space: nowrap;
+  transform-origin: 0 0;
+}
+
+/* The pencil ring round the claim. */
+.ts-ring {
+  position: absolute;
+  left: -0.42em;
+  right: -0.36em;
+  top: -0.22em;
+  bottom: -0.36em;
+  width: auto;
+  height: auto;
+  max-width: none;
+  overflow: visible;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ts-ring path,
+.ts-c-line path {
+  fill: none;
+  stroke: var(--clay);
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.ts-ring path { stroke-width: 3.2; }
+
+/* The stamp: a printed label in the colour of a mistake. */
+.ts-stamp {
+  position: absolute;
+  left: calc(100% + 0.62em);
+  top: 0.1em;
+  padding: 0.1em 0.34em 0.06em;
+  border: calc(var(--u) * 4) solid var(--berry-ink);
+  border-radius: var(--r-xs);
+  background: var(--berry-tint);
+  color: var(--berry-ink);
+  font-family: var(--font-ui);
+  font-size: 0.34em;
+  font-weight: var(--fw-black);
+  letter-spacing: var(--ls-label);
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: rotate(-8deg);
+}
+
+/* Part III ── decide where you draw the line. */
+.ts-c {
+  position: absolute;
+  left: calc(var(--u) * 120);
+  right: calc(var(--u) * 120);
+  top: calc(var(--u) * 300);
+}
+
+.ts-c-head {
+  max-width: 11em;
+  font-size: calc(var(--u) * 104);
+}
+
+.ts-c-line {
+  display: block;
+  width: 100%;
+  height: calc(var(--u) * 40);
+  max-width: none;
+  margin-top: calc(var(--u) * 60);
+  overflow: visible;
+}
+
+.ts-c-line path { stroke-width: 5; }
+
+/* Part III's opener, the left-hand page the camera pulls back to. */
+.ts-v {
+  position: absolute;
+  left: calc(var(--u) * 120);
+  right: calc(var(--u) * 120);
+  top: calc(var(--u) * 190);
+}
+
+.ts-v-num {
+  display: block;
+  font-family: var(--font-display);
+  font-size: calc(var(--u) * 220);
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  color: var(--ink-faint);
+}
+
+.ts-v-title {
+  margin-top: calc(var(--u) * 24);
+  font-size: calc(var(--u) * 72);
+}
+
+.ts-v-sum {
+  max-width: 24em;
+  margin-top: calc(var(--u) * 28);
+  font-size: calc(var(--u) * 30);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+
+/* ── A tall screen: the same pages, re-set for a 900 × 1600 grid ─────────── */
+
+.ts[data-shape='tall'] .ts-head,
+.ts[data-shape='tall'] .ts-a,
+.ts[data-shape='tall'] .ts-b,
+.ts[data-shape='tall'] .ts-c,
+.ts[data-shape='tall'] .ts-v {
+  left: calc(var(--u) * 80);
+  right: calc(var(--u) * 80);
+}
+
+.ts[data-shape='tall'] .ts-head { top: calc(var(--u) * 150); font-size: calc(var(--u) * 26); }
+.ts[data-shape='tall'] .ts-a { top: calc(var(--u) * 560); }
+.ts[data-shape='tall'] .ts-a-lead { font-size: calc(var(--u) * 72); }
+.ts[data-shape='tall'] .ts-a-roll { height: 2.5em; font-size: calc(var(--u) * 112); }
+.ts[data-shape='tall'] .ts-a-phrase { white-space: normal; right: 0.12em; }
+.ts[data-shape='tall'] .ts-b { top: calc(var(--u) * 400); }
+.ts[data-shape='tall'] .ts-b-cap { font-size: calc(var(--u) * 70); }
+.ts[data-shape='tall'] .ts-b-line { margin-top: calc(var(--u) * 90); font-size: calc(var(--u) * 84); }
+.ts[data-shape='tall'] .ts-c { top: calc(var(--u) * 560); }
+.ts[data-shape='tall'] .ts-c-head { font-size: calc(var(--u) * 100); }
+.ts[data-shape='tall'] .ts-v { top: calc(var(--u) * 420); }
+/* No room beside the claim: the stamp lands under it. */
+.ts[data-shape='tall'] .ts-stamp { left: auto; right: 0.2em; top: calc(100% + 0.5em); font-size: 0.4em; }
+
+/* ── Window light: one band, drifting across the page in close-up ────────── */
+
+.ts-light {
+  position: absolute;
+  inset: -10% -40%;
+  pointer-events: none;
+  background: linear-gradient(
+    104deg,
+    rgba(var(--sheen-rgb), 0) 34%,
+    rgba(var(--sheen-rgb), 0.2) 44%,
+    rgba(var(--ink-rgb), 0.03) 47%,
+    rgba(var(--sheen-rgb), 0.2) 50%,
+    rgba(var(--sheen-rgb), 0) 60%
+  );
+  opacity: 0;
+}
+
+/* ── The headline, set where the hero's heading is (App.css → .hero-heading
+   gives it everything else) ─────────────────────────────────────────────── */
+
+.ts-title {
+  position: absolute;
+  margin: 0;
+}
+
+/* ── Skip, and the rule that runs the length of the piece ─────────────────── */
+
+.ts-chrome {
+  position: absolute;
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+}
+
+.ts-rule {
+  position: relative;
+  width: var(--sp-16);
+  height: 2px;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: var(--line);
+}
+
+.ts-progress {
+  position: absolute;
+  inset: 0;
+  background: var(--clay);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+.ts-skip { background: var(--paper); }
+
+/* ── The replay tab ──────────────────────────────────────────────────────────
+   A thumb tab on the landing page's right edge, like the field guide's own
+   index tabs: printed paper, a hairline, set upright. Quiet at rest — the
+   page's loudest thing is still "Start lesson one" — it answers the hand
+   like an outline button, leaning out toward the pointer, its arrow turning
+   the way it will play. */
+.intro-tab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  z-index: var(--z-raised);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-2);
+  border: 1px solid var(--line-strong);
+  border-right: none;
+  border-radius: var(--r-sm) 0 0 var(--r-sm);
+  background: var(--surface-raised);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    translate var(--dur-move) var(--ease-snap);
+}
+
+/* Leaning out leaves a gap at the screen's edge, where a flung pointer
+   rests: the tab reaches into it, so hover never slips off (MOTION_RULES.md
+   → a hover that moves the target). */
+.intro-tab::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: var(--sp-2);
+}
+
+.intro-tab-label { writing-mode: vertical-rl; }
+
+.intro-tab-icon { transition: rotate var(--dur-move) var(--ease-snap); }
+
+.intro-tab:hover,
+.intro-tab:focus-visible {
+  background: color-mix(in srgb, var(--evergreen) 9%, var(--surface-raised));
+  border-color: var(--evergreen);
+  color: var(--evergreen);
+  translate: -4px 0;
+}
+
+.intro-tab:hover .intro-tab-icon,
+.intro-tab:focus-visible .intro-tab-icon { rotate: -40deg; }
+
+.intro-tab:active {
+  translate: -4px 1px;
+  box-shadow: var(--shadow-press);
+  transition-duration: var(--dur-micro);
+}
+
+/* A phone's gutter is narrow: the tab keeps its arrow and gives up its
+   words (its accessible name still says what it does). */
+@media (max-width: 560px) {
+  .intro-tab { padding: var(--sp-2) var(--sp-1); }
+  .intro-tab-label { display: none; }
+}
+
+/* Controls and a moving picture have no place on paper. */
+@media print {
+  .intro-tab,
+  .ts { display: none; }
+}

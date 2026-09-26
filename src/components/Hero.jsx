@@ -22,7 +22,7 @@
    Links into the course.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { SECTIONS, TOTAL_LESSONS } from '../data/learnData'
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
@@ -31,6 +31,7 @@ import { CHAPTER_INK, minutesOf, lessonsIn, pad } from './guide/guideData'
 import { usePerformer } from '../motion/stage'
 import { PageLink } from '../nav'
 import { DUR } from '../motion/timing'
+import { INTRO_EVENT } from './intro/TitleSequence'
 
 /* Which hero term names which chapter (by index). Chapters 4 (Working With
    AI) and 7 (Build & Shape) have no term of their own. */
@@ -110,6 +111,14 @@ export default function Hero() {
       await ctx.wait(DUR.open)
     },
   })
+
+  /* The title sequence ends on this book, so when it starts the book comes
+     to rest under it. */
+  useEffect(() => {
+    const rest = () => guide.current?.rest()
+    window.addEventListener(INTRO_EVENT, rest)
+    return () => window.removeEventListener(INTRO_EVENT, rest)
+  }, [])
 
   const light = (i) => { setLit(i); guide.current?.peek(i) }
   const unlight = () => { setLit(null); guide.current?.peek(null) }

@@ -10,6 +10,7 @@ import ClosingCTA      from './components/ClosingCTA'
 import Footer          from './components/Footer'
 import ConsentBanner   from './components/ConsentBanner'
 import StickyCta       from './components/StickyCta'
+import TitleSequence, { ReplayTab } from './components/intro/TitleSequence'
 import PageLoading     from './components/PageLoading'
 import ErrorBoundary   from './components/ErrorBoundary'
 
@@ -194,6 +195,8 @@ export default function App() {
 
         <Footer />
         <StickyCta />
+        <ReplayTab />
+        <TitleSequence />
       </div>
     )
   } else if (currentPage === 'learn') {

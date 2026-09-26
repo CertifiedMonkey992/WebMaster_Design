@@ -26,6 +26,7 @@ import { useRef } from 'react'
 import { PageLink, useNav } from '../nav'
 import { SITE } from '../site'
 import { reopenChoices } from '../services/analytics'
+import { playIntro, useIntroAvailable } from './intro/TitleSequence'
 import { TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
 import { usePerformer } from '../motion/stage'
 import { DUR } from '../motion/timing'
@@ -93,6 +94,7 @@ const policyLabel = POLICY_DATE.toLocaleDateString('en-US', { month: 'short', da
 export default function Footer() {
   const { page: current } = useNav()
   const ruleRef = useRef(null)
+  const introAvailable = useIntroAvailable()
 
   /* Accent: the rule under the colophon is drawn again. The Stage decides
      when; this only decides what. */
@@ -167,6 +169,14 @@ export default function Footer() {
           <button type="button" className="ft-legal-link" onClick={reopenChoices}>
             Privacy choices
           </button>
+          {current === 'landing' && introAvailable && (
+            <>
+              <span className="ft-dot" aria-hidden="true">·</span>
+              <button type="button" className="ft-legal-link" onClick={playIntro}>
+                Play the intro
+              </button>
+            </>
+          )}
           <span className="ft-updated">Updated {policyLabel}</span>
         </nav>
 

@@ -14,6 +14,7 @@ import { SITE } from '../site'
 import { STORAGE_KEY } from '../config/progressionConfig'
 import { CONSENT_KEY, reopenChoices } from '../services/analytics'
 import { ACCOUNTS_KEY } from '../services/accountService'
+import { INTRO_KEY } from '../components/intro/TitleSequence'
 
 const UPDATED = new Date(`${SITE.policiesUpdated}T12:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
@@ -57,7 +58,7 @@ export function PrivacyPage() {
 
       <Section id="stored" title="What LunX stores, and where">
         <p className="sp-p">
-          LunX uses your browser’s local storage, which stays on your device. It keeps three entries, a fourth for each profile you create, and one more only if something goes wrong:
+          LunX uses your browser’s local storage, which stays on your device. It keeps four entries, a fifth for each profile you create, and one more only if something goes wrong:
         </p>
         <dl className="sp-defs">
           <div>
@@ -86,6 +87,10 @@ export function PrivacyPage() {
           <div>
             <dt><code>{CONSENT_KEY}</code></dt>
             <dd>That you have seen the privacy notice{analytics ? ', and whether you allowed visit counting' : ''}, so it is not shown again.</dd>
+          </div>
+          <div>
+            <dt><code>{INTRO_KEY}</code></dt>
+            <dd>The date this browser first saw the fifteen-second introduction on the home page, so it plays only once. The “Replay intro” tab on the home page, or “Play the intro” in its footer, shows it again.</dd>
           </div>
         </dl>
         <p className="sp-p">
