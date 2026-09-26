@@ -62,7 +62,7 @@ import './fieldGuide.css'
            is the same fall in reverse.
      LIFT  a hand raising the cover a few degrees: ~250ms, no visible bounce. */
 const GRAVITY = 1500
-const HEFT = { stiffness: 30, damping: 6, force: (a) => -GRAVITY * Math.cos((a * Math.PI) / 180) }
+export const HEFT = { stiffness: 30, damping: 6, force: (a) => -GRAVITY * Math.cos((a * Math.PI) / 180) }
 const LIFT = { stiffness: 260, damping: 26, force: null }
 /* Amplitude carries importance: a peek at a chapter must be seen from across
    the page, so the block lifts far enough to show the page beneath. */
@@ -77,7 +77,7 @@ const AIR = { stiffness: 60, damping: 11, force: null }
 /* The cover drifting open far enough to see beneath it: slower still. */
 const AIR_SLOW = { stiffness: 28, damping: 7.5, force: null }
 const DROP = { stiffness: 40, damping: 7, force: (a) => -700 * Math.cos((a * Math.PI) / 180) }
-const NEEDLE = { stiffness: 55, damping: 6.5 }
+export const NEEDLE = { stiffness: 55, damping: 6.5 }
 const NEEDLE_LOOSE = { stiffness: 26, damping: 3.2 }
 /* After a touch, the book waits this long before it performs again. */
 const HANDS_OFF_MS = 8000
@@ -87,14 +87,14 @@ const LEAF_MS = Math.round(DUR.turn * 0.85)
 const LEAF_STAGGER = 80
 /* A page turned by a finger: it resists for a moment as it lifts, travels
    quickly through vertical, and lays itself down softly. */
-const LEAF_EASE = 'cubic-bezier(0.42, 0.02, 0.2, 1)'
+export const LEAF_EASE = 'cubic-bezier(0.42, 0.02, 0.2, 1)'
 
 /* Paper bends (revision 5). A leaf is two panels hinged at FOLD of its width.
    The outer panel's angle RELATIVE to the inner one, over the turn: it leads
    while the leaf lifts (the page is lifted by its edge), trails as it falls
    (air under the free edge), and flops a little past flat as it lands. Signs
    are for a forward turn; a backward turn mirrors them. */
-const BEND = [
+export const BEND = [
   { offset: 0, b: 0 },
   { offset: 0.18, b: -24 },
   { offset: 0.4, b: -9 },
@@ -340,7 +340,11 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
   useImperativeHandle(apiRef, () => ({
     peek: (j) => { takeOver(); peek(j) },
     go: (j) => { takeOver(); turnTo(j + 1) },
-  }), [peek, turnTo, takeOver])
+    /* The title sequence lands on this book at rest (MOTION_RULES.md → The
+       title sequence): whatever it was doing stops, and it shuts, or lets
+       a lifted cover fall back. */
+    rest: () => { takeOver(); if (live.current.open) close(); else peek(null) },
+  }), [peek, turnTo, takeOver, close])
 
   /* ── Repertoire (MOTION_RULES.md → The field guide → Repertoire) ─────────
      The book no longer keeps its own clock: its gestures are Stage

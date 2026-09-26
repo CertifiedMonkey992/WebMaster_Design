@@ -14,6 +14,11 @@
      s.kick(velocity)          add velocity without moving the target
      s.stop()
 
+     sample({ from, to, duration, ...feel })
+                               the same integrator run ahead of time, for
+                               choreography laid out before it plays (the
+                               title sequence's cover and needle)
+
    Options for objects that hit something:
      min / max + restitution   a hard stop; the value bounces off it and
                                loses (1 − restitution) of its speed
@@ -43,6 +48,20 @@ function stepSpring(state, cfg, dt) {
   state.x = x
   state.v = v
   return state
+}
+
+/** A spring released from `from` toward `to`, integrated exactly as a live
+    one is, sampled every `every` seconds for `duration` seconds: [{ t, x }].
+    A scripted fall is then the real fall, not a curve drawn to resemble it. */
+export function sample({ from, to, velocity = 0, duration, every = 1 / 60, mass = 1, min, max, restitution = 0, force, stiffness, damping }) {
+  const cfg = { stiffness, damping, mass, min, max, restitution, force }
+  const state = { x: from, v: velocity, target: to }
+  const out = [{ t: 0, x: from }]
+  for (let t = every; t < duration + every / 2; t += every) {
+    stepSpring(state, cfg, every)
+    out.push({ t, x: state.x })
+  }
+  return out
 }
 
 export function createSpring({
