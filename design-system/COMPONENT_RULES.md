@@ -250,6 +250,51 @@ renders, so the ration is untouched.
 - ≤ 1100px it sits under the copy, centred; ≤ 560px the open book shows its
   right-hand page with the left page cropped at the stage edge.
 
+### Title sequence (landing, first arrival)
+
+A fifteen-second piece that plays over the landing page on a browser's first
+arrival and hands off to the hero (`MOTION_RULES.md` → *The title
+sequence*).
+
+- **Ground**: `--paper` with the page's own grain, full-screen, at
+  `--z-modal`. It is a dialog (`role="dialog"`, `aria-modal`, a label and a
+  one-sentence description of what it shows); everything it animates is
+  `aria-hidden`.
+- **Pages**: the field guide's own ruled paper (`--surface`, faint rules one
+  screen pixel thick, the gutter's two-stop shade), seen close. Type on a
+  page is set on the sequence's design grid (1600 × 900 units, 900 × 1600
+  on a tall screen) rather than the `--fs-*` scale, because it is filmed at
+  a camera distance, not read at arm's length; the two families and five
+  weights are the product's own. Running heads are set like the book's:
+  uppercase, `--fw-bold`, `--ls-label`, over a clay hairline; Part labels
+  in the chapter inks (`CHAPTER_INK`). Headlines in Fraunces, the rolling phrase in Fraunces
+  italic `--clay` — the screen's signature — and the pencil in `--clay`.
+  The stamp is `--berry-ink` on `--berry-tint`, a printed label at `--r-xs`.
+  Candidate slips are `--surface-raised` at `--r-xs` with a `--line`
+  hairline; a lifted slip takes `--shadow-lift`, its likelihood bar is a
+  track at `--r-pill` in `--moss`.
+- **Skip intro**: `.btn .btn-outline .btn-sm` at the bottom-right, focused on
+  arrival, on a `--paper` ground so the pages never show through it. Beside
+  it a thin `--clay` rule runs the length of the piece — the same rule the
+  navbar draws for reading progress — and nothing else.
+- **The book** is the hero's field guide at the hero's size and pose, with
+  its real cover (`guide/GuidePages.jsx → Cover`), chapter tabs and ribbon.
+- **Replay tab** (`ReplayTab`): a thumb tab fixed to the landing page's
+  right edge at half height, like the book's own index tabs — `--surface-raised`,
+  a `--line-strong` hairline open on the screen side, `--r-sm` on its outer
+  corners, *Replay intro* set upright in `--fs-micro` uppercase at
+  `--ls-label` under a 2px-stroke replay arrow. Quiet at rest. Hover and
+  focus: the outline button's tint (evergreen ink and hairline), the tab
+  leans out 4px toward the pointer (`--dur-move` `--ease-snap`, its hit area
+  reaching into the gap it leaves) and the arrow turns 40° the way it will
+  play. Press: the product's press. ≤ 560px: the arrow only, the name kept
+  for assistive technology. `--z-raised`, below every dialog.
+- **Replay in the footer**: *Play the intro* in the footer's last line,
+  landing page only, a `ft-legal-link` button like *Privacy choices*.
+- Neither replay control exists under reduced motion, where the sequence
+  cannot play.
+- **Reduced motion**: it does not exist.
+
 ### Product frame (landing)
 
 - A thin window around a real component: `--r-lg`, hairline, `--shadow-float`
@@ -307,7 +352,8 @@ last action and the footer never competes with it.
    toolbar. An external link (the source repository) carries a 45° arrow and
    says where it goes; nothing else leaves the site.
 3. **The last line** — the privacy fact in `--ink-faint`, the policy date,
-   `Privacy choices` (a real control, so it stays a `<button>`), and the
+   `Privacy choices` (a real control, so it stays a `<button>`), on the
+   landing page `Play the intro` (the same kind of button), and the
    back-to-top control at the right edge.
 
 - **Hover**, per the row vocabulary: the label nudges 3px on `--dur-move`

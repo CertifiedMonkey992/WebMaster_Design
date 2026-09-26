@@ -1,5 +1,31 @@
 # Motion Rules
 
+> **Revision 7 — the title sequence (2026-09).** Revision 6 made the landing
+> page show everything it does. It still opened on a finished page, so a
+> first-time visitor met the product's argument — *you use this every day;
+> here is how it works, where it goes wrong, and what to do about it* — only
+> if they read the hero's second paragraph. Revision 7 adds one fifteen-second
+> piece that makes that argument before the page does, and then **becomes**
+> the page.
+>
+> It is the field guide telling it, on its own pages. The camera starts close
+> on the open book's right-hand page; the course's three Parts play on its
+> pages, which turn between them; the camera pulls back to the book on the
+> desk; the book shuts; the compass finds north; the headline sets beside it;
+> and the overlay lifts off a hero whose book and headline are already lying
+> in exactly those places. Nothing in it is a new vocabulary — it is Reveal,
+> Roll, Cue, Lift, Fly, Stamp and Settle, the leaf's bend, the cover's fall
+> and the needle's spring, conducted on one clock.
+>
+> What revision 7 does **not** change: the hand always wins (a key, a click,
+> a wheel or a swipe ends it at once), nothing plays under
+> `prefers-reduced-motion`, nothing writes progress, and everything behind the
+> front door stays `considered`. See *The title sequence*, below.
+>
+> Revision 6 → *the front page shows you everything it does, continuously.*
+> Revision 7 → *the first time, the guide introduces itself — then gets out of
+> the way.*
+
 > **Revision 6 — the shop window (2026-09).** Revision 5 gave the page one
 > attention clock and made it speak *one sentence at a time*. That is right
 > for the app, where the reader came to do something and every performance
@@ -800,6 +826,90 @@ nothing floats or performs.
 
 ---
 
+## The title sequence (revision 7)
+
+A Demonstration at the scale of the whole course: *this is what this guide
+will show you*. Every beat depicts something the course really teaches, in
+the order it teaches it, with real copy from the curriculum
+(`components/intro/`).
+
+### When it plays
+
+- On the **landing page**, on a browser's **first arrival**, and only then:
+  the landing page must be the page the browser opened. A visitor who came
+  in through another page and then went home is already inside and is not
+  greeted. It writes one flag (`lunx_intro_seen_v1`, listed on the privacy
+  page) the moment it starts, so a reload mid-way does not replay it.
+- Never under `prefers-reduced-motion`, never without Web Animations, never
+  when the address names a section (`#streak`: the reader is going
+  somewhere), and never on any page but the landing page.
+- **Replayed on request**: the replay tab on the landing page's right edge,
+  the footer's *Play the intro*, or `?intro` in the address. A replay
+  scrolls the page to its top first, because the sequence lands on the
+  hero; the hero's book is told to come to rest (shut, still) as the
+  sequence starts, because the sequence lands on it; and when it is over,
+  focus goes back to the control that asked. Neither control is offered
+  where the sequence cannot play.
+
+### The score
+
+Fifteen seconds on a 500ms grid (120 BPM), so a sound designer can score it
+from this table. Times are offsets from the first frame; gestures inside a
+beat use tier tokens.
+
+| Time | Beat | Motion | Sound |
+|---|---|---|---|
+| 0.0–1.0 | **Open** | the camera swings up off a tilted page to face it; *The AI you already use* sets word by word | air, then a soft landing |
+| 0.5 · 1.0 · 1.5 · 2.0 | **Every day** | the clay line under it rolls: *picks your next video · unlocks your phone · answers your questions · finishes your sentences* | four ticks |
+| 2.6–3.4 | **Turn** | the page lifts by its edge and turns, bending; its shadow crosses the page beneath | paper |
+| 3.1–6.3 | **Part I · Understand AI** | *It guesses the next word.* sets while the leaf clears; a sentence sets; three candidate slips are dealt with their likelihoods (bar lengths, no figures); the likeliest is picked up and its word flies into the sentence; then faster, and faster | three flicks; a thock on each word at 5.5 · 6.0 · 6.25 |
+| 6.45–8.4 | **Part II · Use AI well** | Cue: *Likely isn't the same as true.* A pencil rings the claim (6.8); a stamp lands, NOT TRUE (7.4), the camera takes the blow and the claim turns the colour of a mistake | pencil; a stamp |
+| 8.4–9.2 | **Turn** | as before | paper |
+| 8.95–10.7 | **Part III · Use AI responsibly** | *Decide where you draw the line.* sets while the leaf clears; one clay stroke is drawn across the page (9.55) | a long pencil line |
+| 10.7–12.0 | **Pull back** | the camera pulls back: the page is the right-hand page of the field guide, open on the desk where the hero's book lies | air |
+| 12.0–12.6 | **Shut** | the cover and the turned pages swing over as one block and land with the 3° rebound; the book presses into the desk | a slap |
+| 12.0–13.9 | **North** | the compass needle, spun by the fall, swings and settles on north on the book's own spring | a spin, a tick |
+| 12.7–14.4 | **Title** | *A field guide to the AI you already use.* sets word by word where the hero's heading is, at the hero's stagger; its scribble is inked (13.6) | — |
+| 14.2–15.0 | **Hand-off** | Skip and the progress rule leave; the overlay lifts off the live hero (14.25); on a one-column hero the book goes down toward where the hero's book lies | tail |
+
+### Rules
+
+1. **It holds the page, like a dialog.** It is `aria-modal`, so the Stage
+   waits behind it (*The hand always wins*) exactly as it waits behind a
+   lesson; the page under it is `inert`. It is not a performance and does not
+   register with the Stage.
+2. **Skippable from the first frame.** *Skip intro* has focus on arrival;
+   Escape, any other key, a click anywhere, a wheel or a swipe also end it,
+   from the very first frame (before the type has even loaded), and a key
+   still does what it does — nothing is swallowed but Tab. Ending early is
+   never a jump cut: the overlay lifts over `--dur-open`. Turning on reduced
+   motion while it plays ends it too.
+3. **One clock.** Every part of it is a Web Animation created up front on
+   one timeline, so it cannot drift and can be sought to any frame. It holds
+   its first frame until the pages have been painted (three steady frames,
+   600ms at most), so the first second of motion is not spent rasterising.
+   A hidden tab pauses it. A new shape of screen ends it — its camera was
+   measured for one viewport and cannot land on another's (a mobile toolbar
+   sliding away does not count).
+4. **It ends where the page begins.** Its last frame is the hero's book at
+   the hero book's measured position, pose and size, and the hero's headline
+   in the heading's measured box, so the overlay can lift off without a seam.
+   Where the book is below the fold (≤ 1100px), the book shuts in view and
+   leaves with the overlay.
+5. **Light is physical.** The turning leaf darkens as it turns from the
+   light and casts a shadow on the page beneath; one band of window light
+   drifts across the page in close-up and is gone before the hand-off.
+   Nothing emits light, and there is no wash, vignette or glow.
+6. **Nothing actionable waits.** *Skip intro* is actionable at 0ms. The
+   page is handed back — interactive, no longer `inert`, focus restored —
+   the moment the reader skips or the overlay starts to lift, not when the
+   fade has finished; the fading overlay catches nothing. (The landing
+   hero's 700ms arrival budget is measured from then.)
+7. **It never writes progress** and never mounts a demo learner. Its only
+   storage write is the seen flag.
+
+---
+
 ## Performance
 
 More life, no more cost:
@@ -839,7 +949,8 @@ More life, no more cost:
   multipliers and the idle period tokens are fine.)
 - `--ease-spring` on a Response.
 - Transitions longer than `--dur-celebrate` except scroll-linked, ambient,
-  idle, tour or stagger-accumulated sequences.
+  idle, tour or stagger-accumulated sequences, and the title sequence's
+  camera (*The title sequence*).
 - Animating layout properties (`top`, `left`, `height`, `margin`). Use
   `transform`, `opacity`, `clip-path`, `grid-template-rows` for expanders, and
   `width` only on progress tracks.
@@ -887,6 +998,7 @@ All shared motion lives in `src/motion/`:
 | `flight.js` | Fly |
 | `burst.js` | paper-shard bursts, rings, **sparkles** and **bloom** |
 | `motion.css` | the verbs as classes and keyframes |
+| `components/intro/` *(rev 7)* | the title sequence: `TitleSequence.jsx` (when it plays, the overlay, the hand), `IntroScenes.jsx` (the book and what is printed on its pages), `score.js` (the one clock: every beat as a Web Animation) and `camera.js` (the measured hand-off and the camera that lands on it) |
 
 A component never hand-rolls one of these. If it needs something they cannot
 do, extend the module.
