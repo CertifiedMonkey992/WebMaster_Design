@@ -16,8 +16,7 @@
 
      sample({ from, to, duration, ...feel })
                                the same integrator run ahead of time, for
-                               choreography laid out before it plays (the
-                               title sequence's cover and needle)
+                               choreography laid out before it plays
 
    Options for objects that hit something:
      min / max + restitution   a hard stop; the value bounces off it and

@@ -340,11 +340,7 @@ const FieldGuide = forwardRef(function FieldGuide({ onOpenChange, onShow }, apiR
   useImperativeHandle(apiRef, () => ({
     peek: (j) => { takeOver(); peek(j) },
     go: (j) => { takeOver(); turnTo(j + 1) },
-    /* The title sequence lands on this book at rest (MOTION_RULES.md → The
-       title sequence): whatever it was doing stops, and it shuts, or lets
-       a lifted cover fall back. */
-    rest: () => { takeOver(); if (live.current.open) close(); else peek(null) },
-  }), [peek, turnTo, takeOver, close])
+  }), [peek, turnTo, takeOver])
 
   /* ── Repertoire (MOTION_RULES.md → The field guide → Repertoire) ─────────
      The book no longer keeps its own clock: its gestures are Stage
