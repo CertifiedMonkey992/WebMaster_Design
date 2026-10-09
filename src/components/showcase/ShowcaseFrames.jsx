@@ -12,22 +12,22 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { ProgressionDemo, useProgression } from '../../state/ProgressionContext'
-import { getShowcaseState, getBonusShowcaseState } from '../../data/showcaseState'
+import { getShowcaseState } from '../../data/showcaseState'
 import { SHOP_ITEMS } from '../../config/shopConfig'
 
 import ModuleList from '../learn/ModuleList'
 import PlayerStatusBar from '../progression/PlayerStatusBar'
 import StreakPanel from '../progression/StreakPanel'
 import { QuestCard } from '../progression/QuestCard'
-import DailyBonusTrack from '../daily/DailyBonusTrack'
-import DailyBonusIndicator from '../daily/DailyBonusIndicator'
+import SpinWheel from '../wheel/SpinWheel'
+import WheelIndicator from '../wheel/WheelIndicator'
 import ShopArt from '../shop/ShopArt'
 import { GemIcon } from '../progression/Icons'
 
 import ProductFrame from './ProductFrame'
 import CourseScene from './scenes/CourseScene'
 import StreakScene from './scenes/StreakScene'
-import BonusScene from './scenes/BonusScene'
+import WheelScene from './scenes/WheelScene'
 import QuestScene from './scenes/QuestScene'
 
 const noop = () => {}
@@ -86,29 +86,29 @@ export function StreakFrame() {
   )
 }
 
-/* ── 3. Daily bonus ───────────────────────────────────────────────────────── */
+/* ── 3. Daily spin ────────────────────────────────────────────────────────── */
 
-function BonusPanel() {
+function WheelPanel() {
   const { vm, actions } = useProgression()
   return (
     <ProductFrame
-      path="Daily bonus"
-      caption="The top bar and daily bonus panel on a demo learner. It claims a day at a time; press Claim to try it yourself."
-      scene={<BonusScene />}
+      path="Daily spin"
+      caption="The top bar and the daily spin on a demo learner, drawing with the real odds. Press Spin to try it yourself."
+      scene={<WheelScene />}
     >
       <div className="sc-stats-frame">
         <div className="sc-topbar">
-          <DailyBonusIndicator onOpen={noop} />
+          <WheelIndicator onOpen={noop} />
           <PlayerStatusBar />
         </div>
-        <DailyBonusTrack view={vm.dailyBonus} variant="showcase" showHeader={false} onClaim={actions.claimDailyBonus} />
+        <SpinWheel view={vm.wheel} variant="showcase" onSpin={actions.spinWheel} />
       </div>
     </ProductFrame>
   )
 }
 
-export function BonusFrame() {
-  return <ProgressionDemo seed={getBonusShowcaseState}><BonusPanel /></ProgressionDemo>
+export function WheelFrame() {
+  return <ProgressionDemo seed={getShowcaseState}><WheelPanel /></ProgressionDemo>
 }
 
 /* ── 4. Quests and the shop ───────────────────────────────────────────────── */

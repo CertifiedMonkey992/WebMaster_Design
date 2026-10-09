@@ -6,7 +6,7 @@
 
    Revision 5: each frame has its OWN demo learner (ProgressionDemo) and a
    SCENE that uses it — the course frame finishes a lesson, the streak frame
-   keeps a day, the bonus frame claims its way along the track, the quest
+   keeps a day, the spin frame spins the wheel and waits a day, the quest
    frame completes a quest and is paid — each narrated in the frame's chrome
    and scheduled by the Stage (MOTION_RULES.md → The Stage). Nothing is
    saved; the visitor's own progress is never read or written here.
@@ -25,7 +25,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { TOTAL_LESSONS } from '../../data/learnData'
 import { SHOP_ITEMS } from '../../config/shopConfig'
 import { STREAK, QUESTS } from '../../config/progressionConfig'
-import { DAILY_BONUS } from '../../config/dailyBonusConfig'
+import { WHEEL, SLOTS, percentOf } from '../../config/wheelConfig'
 import { SHORTEST_LESSON, LONGEST_LESSON } from '../guide/guideData'
 
 import SplitText from '../../motion/SplitText'
@@ -38,7 +38,7 @@ import { DUR } from '../../motion/timing'
    components that use them, so they stay in the page's first stylesheet in
    the same order as before — under motion.css, whose verbs sit on top. */
 import '../progression/icons.css'
-import '../daily/dailyBonus.css'
+import '../wheel/wheel.css'
 import './showcase.css'
 
 /* The four live frames (ShowcaseFrames.jsx) are most of this page's code and
@@ -50,7 +50,7 @@ const loadFrames = () => import('./ShowcaseFrames')
 const frame = (name) => lazy(() => loadFrames().then((m) => ({ default: m[name] })))
 const CourseFrame = frame('CourseFrame')
 const StreakFrame = frame('StreakFrame')
-const BonusFrame = frame('BonusFrame')
+const WheelFrame = frame('WheelFrame')
 const QuestFrame = frame('QuestFrame')
 
 /* Small counts read as words in running prose ("three quests"), not numerals. */
@@ -215,26 +215,28 @@ function StreakSection() {
   )
 }
 
-/* ── 3. Daily bonus ───────────────────────────────────────────────────────── */
+/* ── 3. Daily spin ────────────────────────────────────────────────────────── */
 
-function BonusSection() {
+const JACKPOT = SLOTS.find((s) => s.tier === 'jackpot')
+const COMMON = SLOTS.filter((s) => s.tier === 'common')
+
+function WheelSection() {
   return (
     <Section
-      id="daily-bonus"
+      id="daily-spin"
       index={3}
-      eyebrow="Daily bonus"
-      heading={<>{DAILY_BONUS.CYCLE_LENGTH} days,<br />{DAILY_BONUS.CYCLE_LENGTH} rewards.</>}
-      frame={BonusFrame}
+      eyebrow="Daily spin"
+      heading={<>One spin a day,<br />odds on the wheel.</>}
+      frame={WheelFrame}
     >
       <p className="sc-body">
-        The track pays gems, XP and hearts, with a <Mark>Streak Shield on
-        day {DAILY_BONUS.CYCLE_LENGTH}</Mark>. Each day you visit, the next reward
-        is waiting for you to claim.
+        Every day brings {WHEEL.SPINS_PER_DAY === 1 ? 'one free spin' : `${WHEEL.SPINS_PER_DAY} free spins`}.
+        The wheel pays gems, XP or a Streak Shield — most often {COMMON.map((s) => s.label).join(' or ')},
+        and once in a long while the <Mark>{JACKPOT.label} jackpot ({percentOf(JACKPOT.weight)})</Mark>.
       </p>
       <p className="sc-body">
-        Miss a day and the track picks up where you left off instead of
-        resetting. A missed day can already cost you your streak, so the bonus
-        doesn’t take anything away as well.
+        The chance of every reward is printed beside the wheel, and the result
+        is drawn before it turns, so it always stops on what you actually won.
       </p>
     </Section>
   )
@@ -279,7 +281,7 @@ export default function ProductSections() {
     <>
       <LearnSection />
       <StreakSection />
-      <BonusSection />
+      <WheelSection />
       <QuestSection />
     </>
   )

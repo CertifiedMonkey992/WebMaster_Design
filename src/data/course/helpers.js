@@ -4,9 +4,10 @@
    Short constructors so a lesson file reads like a lesson rather than like
    JSON. Options are plain strings; the right one starts with "✓ ".
 
-     part(id, label, steps, { graded })   a lesson part (a tab)
+     lessonParts(learn, check)            a lesson: Learn, then a graded Check
+     part(id, label, steps, { graded })   a part (a tab) of a Case File or project
      read(id, title, body, extra)         an explanation card
-     predict(id, prompt, options, reveal) a prediction, with a confidence row
+     predict(id, prompt, options, reveal) a quick question asked before the answer
      recall(id, prompt, options, why)     a question from an earlier lesson
      mcq(id, prompt, options, why)        a question (graded in a graded part)
      sort(id, prompt, bins, items, why)   put each item in a bin
@@ -54,9 +55,10 @@ export const compose = (id, title, fields, extra = {}) => ({
   ...extra,
 })
 
-/** The three parts every lesson has. */
-export const lessonParts = (explore, explain, check) => [
-  part('explore', 'Predict & explore', explore),
-  part('explain', 'Explain & apply', explain),
+/** The two parts every lesson has (2026-10 simplification): Learn — short
+ *  explanations, at most one activity, a practice question or two, nothing
+ *  graded — and the Check, the only part that spends hearts. */
+export const lessonParts = (learn, check) => [
+  part('learn', 'Learn', learn),
   part('check', 'Check', check, { graded: true }),
 ]

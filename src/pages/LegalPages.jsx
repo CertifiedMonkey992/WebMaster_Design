@@ -39,14 +39,14 @@ export function PrivacyPage() {
     <SitePage
       eyebrow="Privacy policy"
       title={<>Your progress <em className="em">stays in your browser</em>.</>}
-      lead="LunX has no server of its own, and the profiles it does have never leave your browser. This page lists everything it stores, everything that leaves your browser, and how to remove it."
+      lead="LunX has no server of its own, so your account and your progress never leave your browser. This page lists everything it stores, everything that leaves your browser, and how to remove it."
     >
       <Updated />
 
       <Section id="summary" title="In short">
         <ul className="sp-list">
-          <li>Nothing to register for: the whole course works without a profile.</li>
-          <li>A profile, if you make one, is created in this browser and never sent anywhere.</li>
+          <li>The course needs an account: an email, a password and, if you like, a username.</li>
+          <li>Your account is created in this browser and never sent anywhere. Your email is never shown to anyone.</li>
           <li>Your course progress is saved in this browser only, and is never sent anywhere.</li>
           <li>LunX sets no cookies.</li>
           <li>{analytics
@@ -58,27 +58,28 @@ export function PrivacyPage() {
 
       <Section id="stored" title="What LunX stores, and where">
         <p className="sp-p">
-          LunX uses your browser’s local storage, which stays on your device. It keeps four entries, a fifth for each profile you create, and one more only if something goes wrong:
+          LunX uses your browser’s local storage, which stays on your device. It keeps these entries, one more for each account you create, and another only if something goes wrong:
         </p>
         <dl className="sp-defs">
           <div>
             <dt><code>{STORAGE_KEY}</code></dt>
-            <dd>Your course progress while you are signed out — the guest profile: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily bonus track, shop items and achievements — and your coursework: the part you reached in an unfinished lesson, the predictions you committed to, the reflections you typed into your Field Journal, the questions you missed (for review in Practice), and your Launch and Final Scan answers. LunX never asks for a name or email address here; a reflection holds whatever you choose to type, and like everything else in this entry it never leaves your browser.</dd>
+            <dd>Progress saved on this browser before accounts were required, if there is any. The first account created on the browser takes it over, so nobody loses a streak. New progress is never written here.</dd>
           </div>
           <div>
             <dt><code>{ACCOUNTS_KEY}</code></dt>
             <dd>
-              The profiles made on this browser, and which one is signed in. Each
-              holds the display name and username you typed and a short digest of the
-              passphrase — never the passphrase itself. Because nothing is transmitted
-              or verified, that digest keeps two people’s progress apart on a shared
-              computer; it does not secure anything, and anyone with this device can
-              read the progress behind it. Use a passphrase you do not use elsewhere.
+              The accounts made on this browser, and which one is signed in. Each
+              holds its email, its username (if you chose one), and a salted
+              PBKDF2 hash of the password and of the recovery code — never the
+              password or the code themselves. The hash means a password cannot be
+              read back from storage, but LunX has no server, so it cannot stop
+              someone using this device from reading the progress stored beside it.
+              Use a password you do not use anywhere else.
             </dd>
           </div>
           <div>
             <dt><code>{STORAGE_KEY}__&lt;profile&gt;</code></dt>
-            <dd>One of these per profile, holding that profile’s progress in the same shape as the entry above. Signing out of a profile leaves it in place; removing the profile removes it.</dd>
+            <dd>One per account, holding its progress: lessons finished, XP and level, gems, hearts, streak and its history, quests, the daily spin, shop items and achievements — and your coursework: the part you reached in an unfinished lesson, your answers to predictions, the reflections you typed into your Field Journal, the questions you missed (for review in Practice), and your Launch and Final Scan answers. Signing out leaves it in place; deleting the account (Profile → Account) removes it.</dd>
           </div>
           <div>
             <dt><code>{STORAGE_KEY}__corrupt</code></dt>
@@ -133,10 +134,10 @@ export function PrivacyPage() {
 
       <Section id="students" title="Students and schools">
         <p className="sp-p">
-          LunX is written for high school students. It asks no student for personal information,
-          and the course works in full without giving any — a profile is optional, and the name
-          and username it asks for can be anything at all, because nothing is verified and
-          nothing is sent. Teachers can use it in class without registering anyone anywhere.
+          LunX is written for high school students. The only personal information it asks for is
+          an email address to sign in with, which is kept in this browser, never verified and never
+          sent anywhere. The username is optional and can be anything appropriate. Teachers can use
+          it in class without registering anyone with a third party.
         </p>
       </Section>
 

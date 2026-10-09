@@ -33,12 +33,12 @@ const REASON_LABELS = {
 }
 
 /** The ledger's reasons as the services write them: shop purchases are
- *  `shop:<item id>` and bonus claims `daily-bonus-day-<n>`. */
+ *  `shop:<item id>` and spins `wheel:<slot id>`. */
 function reasonLabel(entry) {
   if (entry.questTitle) return entry.questTitle
   if (REASON_LABELS[entry.reason]) return REASON_LABELS[entry.reason]
   if (entry.reason.startsWith('shop:')) return getShopItem(entry.reason.slice(5))?.name ?? 'Shop purchase'
-  if (entry.reason.startsWith('daily-bonus')) return 'Daily bonus'
+  if (entry.reason.startsWith('wheel:')) return 'Daily spin'
   return entry.reason
 }
 

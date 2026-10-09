@@ -7,7 +7,7 @@
    Question steps — the learner commits, then the step answers back:
      fill-blank · binary · mcq   the original three
      recall                      an mcq from an earlier lesson, never graded
-     predict                     choose AND rate your confidence; never graded
+     predict                     a quick question asked before the answer; never graded
      sort                        put each item in a bin
      number                      type a figure; checked within a tolerance
 
@@ -83,8 +83,8 @@ function Eyebrow({ step }) {
 }
 
 const DEFAULT_EYEBROW = {
-  recall: 'Recall',
-  predict: 'Predict first',
+  recall: 'Quick review',
+  predict: 'Quick question',
   sort: 'Sort it',
   number: 'Work it out',
   reflect: 'Field Journal',
@@ -122,12 +122,6 @@ function optionState(isSelected, isCorrect, phase) {
 }
 
 const optClass = (base, st) => `${base}${st === 'selected' ? ' lm-opt--selected' : ''}${st === 'correct' ? ' lm-opt--correct' : ''}${st === 'wrong' ? ' lm-opt--wrong' : ''}`
-
-export const CONFIDENCE = [
-  { id: 'sure', label: 'Sure' },
-  { id: 'think', label: 'Think so' },
-  { id: 'guess', label: 'Guessing' },
-]
 
 /* ── Simulations ─────────────────────────────────────────────────────────
    Each is its own chunk, fetched when a lesson first shows it. */
@@ -178,23 +172,23 @@ function JournalReview({ step }) {
   const journal = vm.journal ?? {}
   const ids = Object.keys(journal).filter((id) => getLessonById(id))
   const predictions = ids.flatMap((id) => journal[id].entries.filter((e) => e.kind === 'prediction').map((e) => ({ ...e, id })))
-  const confidentMisses = predictions.filter((p) => p.confidence === 'sure' && p.correct === false)
+  const misses = predictions.filter((p) => p.correct === false)
   const reflections = ids.flatMap((id) => journal[id].entries.filter((e) => e.kind === 'reflection').map((e) => ({ ...e, id })))
   const scans = vm.scans ?? {}
 
   return (
     <div className="st-journal">
       <dl className="st-journal-figures">
-        <div><dt>Predictions made</dt><dd className="tnum">{predictions.length}</dd></div>
-        <div><dt>Confident misses</dt><dd className="tnum">{confidentMisses.length}</dd></div>
+        <div><dt>Answers given</dt><dd className="tnum">{predictions.length}</dd></div>
+        <div><dt>Missed first time</dt><dd className="tnum">{misses.length}</dd></div>
         <div><dt>Reflections written</dt><dd className="tnum">{reflections.length}</dd></div>
         {scans.launch && <div><dt>Launch Scan</dt><dd className="tnum">{scans.launch.correct}/{scans.launch.total}</dd></div>}
       </dl>
-      {confidentMisses.length > 0 && (
+      {misses.length > 0 && (
         <>
-          <h4 className="st-journal-h">Where you were sure, and wrong</h4>
+          <h4 className="st-journal-h">What you got wrong at first</h4>
           <ul className="st-journal-list">
-            {confidentMisses.slice(0, step.limit ?? 6).map((p) => (
+            {misses.slice(0, step.limit ?? 6).map((p) => (
               <li key={`${p.id}:${p.key}`}>
                 <span className="st-journal-src">{lessonNumber(p.id) ? `Lesson ${lessonNumber(p.id)}` : getLessonById(p.id)?.title}</span>
                 <span className="st-journal-q">{p.prompt}</span>
@@ -219,7 +213,7 @@ function JournalReview({ step }) {
         </>
       )}
       {predictions.length === 0 && reflections.length === 0 && (
-        <p className="st-p">Your journal is empty on this profile — the course was probably opened with the reviewer’s controls rather than lesson by lesson. Answer from memory instead.</p>
+        <p className="st-p">Your journal is empty on this account — the course was probably opened with the reviewer’s controls rather than lesson by lesson. Answer from memory instead.</p>
       )}
     </div>
   )
@@ -364,24 +358,6 @@ export default function StepBody({
             )
           })}
         </div>
-        {isPredict && (
-          <div className="st-confidence" role="radiogroup" aria-label="How sure are you?">
-            <span className="st-confidence-label">How sure are you?</span>
-            {CONFIDENCE.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                role="radio"
-                aria-checked={a.confidence === c.id}
-                className={`st-seg${a.confidence === c.id ? ' is-on' : ''}`}
-                disabled={!answering}
-                onClick={() => set({ confidence: c.id })}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     )
   }

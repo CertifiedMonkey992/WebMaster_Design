@@ -92,15 +92,6 @@ export function getShowcaseState() {
       shields: 1,
       history: buildHistory(today, STREAK_DAYS),
     },
-    /* Mid-track on the daily bonus: three days claimed, day four waiting.
-       Shows every card state at once. */
-    dailyBonus: {
-      cycleDay: 4,
-      lastClaimDate: addDays(today, -1),
-      cycleStartDate: addDays(today, -3),
-      cyclesCompleted: 0,
-      totalClaimed: 3,
-    },
   }
 
   /* Settle what the overrides changed (a 12-day streak meets streak
@@ -109,25 +100,6 @@ export function getShowcaseState() {
 
   cached = state
   return cached
-}
-
-let bonusCached = null
-
-/**
- * The bonus frame's learner (revision 5): the same learner, two wrong answers
- * later — through the real LOSE_HEART action — so day 4's "2 Hearts" has
- * somewhere to go when the frame claims it, instead of being swapped for gems
- * because the hearts were already full.
- */
-export function getBonusShowcaseState() {
-  if (bonusCached) return bonusCached
-  const now = Date.now()
-  let state = getShowcaseState()
-  state = reduce(state, { type: ACTIONS.LOSE_HEART, payload: { reason: 'mistake' } }, now).state
-  state = reduce(state, { type: ACTIONS.LOSE_HEART, payload: { reason: 'mistake' } }, now).state
-  state = { ...reconcile(state, now).state, gems: DISPLAY_GEMS }
-  bonusCached = state
-  return bonusCached
 }
 
 export default getShowcaseState

@@ -25,17 +25,16 @@
 
 import { XP, CURRENCY, HEARTS, COURSEWORK } from '../config/progressionConfig'
 import { SHIELD, SHOP_ITEMS } from '../config/shopConfig'
-import { normalizeDay } from '../config/dailyBonusConfig'
-import { getLevelFromXP, getXPProgress, getLevelTitle, clamp } from '../utils/progressionUtils'
+import { getLevelFromXP, getXPProgress, clamp } from '../utils/progressionUtils'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
-import { emptyDaily, emptyWeekly } from './storageService'
+import { emptyDaily, emptyWeekly, emptyWheel } from './storageService'
 import currency from './currencyService'
 import streakService from './streakService'
 import questService from './questService'
 import achievementService from './achievementService'
 import teamService from './teamQuestService'
 import shopService from './shopService'
-import dailyBonusService from './dailyBonusService'
+import wheelService from './wheelService'
 import judgeService from './judgeService'
 import { deriveCourse, getSectionById, getLessonById, isLesson } from '../data/learnData'
 
@@ -54,7 +53,7 @@ export const ACTIONS = {
   COMPLETE_PRACTICE:  'COMPLETE_PRACTICE',
   ADD_PRACTICE_TIME:  'ADD_PRACTICE_TIME',
   PURCHASE_ITEM:      'PURCHASE_ITEM',
-  CLAIM_DAILY_BONUS:  'CLAIM_DAILY_BONUS',
+  SPIN_WHEEL:         'SPIN_WHEEL',
   CLAIM_QUEST:        'CLAIM_QUEST',
   CLAIM_ALL_QUESTS:   'CLAIM_ALL_QUESTS',
   CLAIM_TEAM_REWARD:  'CLAIM_TEAM_REWARD',
@@ -70,8 +69,7 @@ export const ACTIONS = {
   DEV_RESET_DAILY:    'DEV_RESET_DAILY',
   DEV_RESET_WEEKLY:   'DEV_RESET_WEEKLY',
   DEV_SHIFT_DAYS:     'DEV_SHIFT_DAYS',
-  DEV_SET_BONUS_DAY:  'DEV_SET_BONUS_DAY',
-  DEV_RESET_BONUS:    'DEV_RESET_BONUS',
+  DEV_RESET_WHEEL:    'DEV_RESET_WHEEL',
   /* The reviewer's controls (services/judgeService.js). One action, an `op`
      in its payload, and only ever a no-op on a profile without the powers. */
   JUDGE:              'JUDGE',
@@ -127,7 +125,6 @@ export function awardXP(state, amount, reason = 'unknown', meta = {}) {
       type: 'LEVEL_UP',
       level: newLevel,
       previous,
-      title: getLevelTitle(newLevel),
     })
   }
 
@@ -630,14 +627,15 @@ function reduceAction(state, action, now) {
       return acc
     }
 
-    case ACTIONS.CLAIM_DAILY_BONUS: {
-      /* `awardXP` is handed in rather than imported by the bonus service,
-         which keeps the dependency pointing one way. */
-      const result = dailyBonusService.claimDailyBonus(acc.state, { awardXP }, now)
+    case ACTIONS.SPIN_WHEEL: {
+      /* `awardXP` is handed in rather than imported by the wheel service,
+         which keeps the dependency pointing one way. The draw (payload.roll)
+         was made by the caller with crypto.getRandomValues. */
+      const result = wheelService.spin(acc.state, payload, { awardXP }, now)
       acc.state = result.state
       acc.events.push(...result.events)
-      /* A bonus can finish a gem quest or unlock an achievement, so a
-         successful claim runs the same pipeline as any other award. */
+      /* A spin can finish a gem quest or unlock an achievement, so a
+         successful one runs the same pipeline as any other award. */
       if (result.ok) merge(acc, runPipeline(acc.state, now))
       return acc
     }
@@ -725,33 +723,11 @@ function reduceAction(state, action, now) {
       return acc
     }
 
-    /* Jump to a cycle day and mark today unclaimed, so any day of the track
-       can be exercised without waiting a week. */
-    case ACTIONS.DEV_SET_BONUS_DAY: {
-      acc.state = {
-        ...acc.state,
-        dailyBonus: {
-          ...acc.state.dailyBonus,
-          cycleDay: normalizeDay(payload.day ?? 1),
-          lastClaimDate: null,
-        },
-      }
+    /* Give today's free spin back and forget the clock guard — so the
+       wheel can be exercised again without waiting for midnight UTC. */
+    case ACTIONS.DEV_RESET_WHEEL:
+      acc.state = { ...acc.state, wheel: { ...emptyWheel(), totalSpins: acc.state.wheel.totalSpins, jackpots: acc.state.wheel.jackpots, history: acc.state.wheel.history } }
       return acc
-    }
-
-    case ACTIONS.DEV_RESET_BONUS: {
-      acc.state = {
-        ...acc.state,
-        dailyBonus: {
-          cycleDay: 1,
-          lastClaimDate: null,
-          cycleStartDate: null,
-          cyclesCompleted: 0,
-          totalClaimed: 0,
-        },
-      }
-      return acc
-    }
 
     default:
       return acc
@@ -784,7 +760,6 @@ export function buildViewModel(state, now = Date.now()) {
     canStartLesson: state.hearts >= HEARTS.COST_TO_START_LESSON,
 
     level: levelInfo.level,
-    levelTitle: getLevelTitle(levelInfo.level),
     levelProgress: levelInfo,
 
     streak: state.streak.current,
@@ -819,7 +794,7 @@ export function buildViewModel(state, now = Date.now()) {
       }),
       purchaseCount: state.shop.purchaseCount,
     },
-    dailyBonus: dailyBonusService.getBonusView(state, now),
+    wheel: wheelService.getWheelView(state, now),
     achievements: achievementService.listAchievements(state),
     achievementsUnlocked: achievementService.getUnlockedCount(state),
     stats: state.stats,

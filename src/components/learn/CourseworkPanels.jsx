@@ -49,8 +49,6 @@ export function FieldKit() {
   )
 }
 
-const CONF = { sure: 'sure', think: 'thought so', guess: 'guessing' }
-
 export function FieldJournal() {
   const { vm } = useProgression()
   const journal = vm.journal ?? {}
@@ -58,18 +56,17 @@ export function FieldJournal() {
   const [open, setOpen] = useState(null)
   const predictions = items.flatMap((l) => journal[l.id].entries.filter((e) => e.kind === 'prediction'))
   const misses = predictions.filter((p) => p.correct === false)
-  const confidentMisses = misses.filter((p) => p.confidence === 'sure')
 
   return (
     <section className="fj" aria-labelledby="fj-title">
       <header className="fk-head">
         <h3 className="ac-title" id="fj-title">Field Journal</h3>
         <p className="fk-sub tnum">
-          {predictions.length} predictions · {misses.length} that didn’t hold · {confidentMisses.length} confident misses
+          {predictions.length} answers · {misses.length} missed first time
         </p>
       </header>
       {items.length === 0 && (
-        <p className="pv-data-desc">Your predictions and reflections from each lesson collect here, on this browser only. The capstone asks you to reread them.</p>
+        <p className="pv-data-desc">Your answers and reflections from each lesson collect here, on this browser only. The capstone asks you to reread them.</p>
       )}
       <ul className="fj-items">
         {items.map((l) => {
@@ -89,7 +86,7 @@ export function FieldJournal() {
                     <li key={e.key} className={`fj-entry fj-entry--${e.kind}`}>
                       <span className="fj-q">{e.prompt}</span>
                       {e.kind === 'prediction'
-                        ? <span className="fj-a">You said: {e.text} ({CONF[e.confidence] ?? e.confidence}){e.correct === true ? ' — it held.' : e.correct === false ? ' — it didn’t.' : ''}</span>
+                        ? <span className="fj-a">You said: {e.text}{e.correct === true ? ' — right.' : e.correct === false ? ' — not quite.' : ''}</span>
                         : <span className="fj-a">{e.text}</span>}
                     </li>
                   ))}

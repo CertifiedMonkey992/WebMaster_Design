@@ -12,6 +12,10 @@
 
 import { useEffect, useState } from 'react'
 import { PageLink } from '../nav'
+import { SECTIONS } from '../data/learnData'
+
+/* Lesson one’s real length, read from the course. */
+const FIRST_MINUTES = parseInt(SECTIONS[0].lessons[0].duration, 10)
 
 export default function StickyCta({ after = '.hero-cta', until = '.cta-section' }) {
   const [on, setOn] = useState(false)
@@ -37,7 +41,7 @@ export default function StickyCta({ after = '.hero-cta', until = '.cta-section' 
 
   return (
     <div className={`sticky-cta${on ? ' is-on' : ''}`} aria-hidden={!on} inert={on ? undefined : ''}>
-      <p className="sticky-cta-text"><b>Lesson one takes five minutes</b>No account needed</p>
+      <p className="sticky-cta-text"><b>Lesson one takes {FIRST_MINUTES} minutes</b>Free account</p>
       <PageLink page="learn" className="btn btn-next" tabIndex={on ? 0 : -1}>
         Open the course
         <svg className="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -1,19 +1,22 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   AuthContext.jsx — WHOSE PROGRESS IS ON SCREEN
+   AuthContext.jsx — WHO IS SIGNED IN
    ---------------------------------------------------------------------------
    Thin, like ProgressionContext: the rules are in services/accountService.js
-   and this file only holds the current profile, points storage at that
-   profile's key, and hands the rest of the app four commands.
+   and this file only holds the current account, points storage at that
+   account's key, and hands the rest of the app its commands.
 
    The ORDER matters and is the reason this is not an effect. Storage is
-   pointed at the profile's key while this provider first RENDERS, because
+   pointed at the account's key while this provider first RENDERS, because
    ProgressionProvider reads storage during its own first render. An effect
    would run after that read and the first paint would show the wrong
    learner. Every command does the same thing: key first, then state.
 
    `profileKey` is also what LearnPage keys the progression provider on, so
-   signing in or out remounts the engine against the right profile rather
+   signing in or out remounts the engine against the right account rather
    than trying to swap state underneath it.
+
+   Signing in, creating an account and resetting a password hash a secret,
+   so those three return promises.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -22,7 +25,7 @@ import { setProfileKey } from '../services/storageService'
 
 const AuthContext = createContext(null)
 
-/** Point storage at a profile and return the key it now uses. */
+/** Point storage at an account and return the key it now uses. */
 function focus(account) {
   return setProfileKey(progressKey(account?.id ?? null))
 }
@@ -42,17 +45,24 @@ export function AuthProvider({ children }) {
     return next
   }, [])
 
-  const signIn = useCallback((credentials) => {
-    const result = accounts.signIn(credentials)
-    if (result.ok) adopt(result.account)
+  /* Adopt the account a command produced, if it produced one. */
+  const settle = useCallback((result) => {
+    if (result.ok && result.account !== undefined) adopt(result.account)
     return result
   }, [adopt])
 
-  const createAccount = useCallback((details) => {
-    const result = accounts.createAccount(details)
-    if (result.ok) adopt(result.account)
-    return result
-  }, [adopt])
+  const signIn = useCallback(async (credentials) => settle(await accounts.signIn(credentials)), [settle])
+  const createAccount = useCallback(async (details) => settle(await accounts.createAccount(details)), [settle])
+  const resetPassword = useCallback(async (details) => settle(await accounts.resetPassword(details)), [settle])
+
+  const changePassword = useCallback(
+    (passwords) => accounts.changePassword(account?.id, passwords),
+    [account],
+  )
+  const updateUsername = useCallback(
+    (username) => settle(accounts.updateUsername(account?.id, username)),
+    [account, settle],
+  )
 
   const signOut = useCallback(() => {
     accounts.signOut()
@@ -66,7 +76,7 @@ export function AuthProvider({ children }) {
   }, [adopt, account])
 
   /* Another tab signed in or out: follow it, so two tabs never write two
-     different learners into one profile. */
+     different learners into one account. */
   useEffect(() => {
     const onStorage = (e) => {
       if (e.key !== ACCOUNTS_KEY || e.storageArea !== window.localStorage) return
@@ -81,12 +91,14 @@ export function AuthProvider({ children }) {
     account,
     /** Signed in at all? */
     signedIn: Boolean(account),
-    /** The reviewer's profile, which carries the judge powers. */
+    /** The reviewer's account, which carries the judge powers. */
     isJudge: account?.role === 'judge',
-    /** The storage key this profile's progress lives under. */
+    /** The name to show: the username, never the email. */
+    displayName: accounts.displayName(account),
+    /** The storage key this account's progress lives under. */
     profileKey: progressKey(account?.id ?? null),
-    signIn, createAccount, signOut, forget,
-  }), [account, signIn, createAccount, signOut, forget])
+    signIn, createAccount, resetPassword, changePassword, updateUsername, signOut, forget,
+  }), [account, signIn, createAccount, resetPassword, changePassword, updateUsername, signOut, forget])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

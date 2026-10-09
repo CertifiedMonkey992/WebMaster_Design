@@ -175,6 +175,45 @@
   --clay-bright:      #DE6C3A;
   --clay-bright-rgb:  222, 108, 58;
 
+  /* ── The nav-icon palette (VISUAL_SYSTEM.md → The nav icons, rev 9) ──────
+     The left sidebar's icons are small, full-colour illustrations — a
+     birdhouse, a dumbbell, a chest, a shop, an avatar — drawn to a reference
+     the product owner supplied. Their colours are a named, scoped exception
+     to the warm palette: read ONLY by `.ni` icons (components/learn/
+     NavIcons.jsx), never by text, surfaces or anything else. */
+  --ni-red:          #FF4B4B;
+  --ni-red-deep:     #EA2B2B;
+  --ni-red-mid:      #FF4945;
+  --ni-red-edge:     #D35744;
+  --ni-red-seam:     #E96767;
+  --ni-yellow:       #FFC800;
+  --ni-yellow-light: #FBE56D;
+  --ni-yellow-deep:  #E7AD12;
+  --ni-yellow-edge:  #E3A30D;
+  --ni-orange:       #FF8C24;
+  --ni-amber:        #CD7900;
+  --ni-gold-dark:    #C98D29;
+  --ni-maroon:       #945151;
+  --ni-wood:         #AA572A;
+  --ni-wood-light:   #C89274;
+  --ni-brown:        #A56644;
+  --ni-brown-light:  #B58165;
+  --ni-blue:         #1CB0F6;
+  --ni-blue-light:   #61C8F9;
+  --ni-blue-pale:    #B9E8FF;
+  --ni-blue-shirt:   #44A1CD;
+  --ni-blue-collar:  #4488A9;
+  --ni-green:        #58CC02;
+  --ni-green-light:  #89E219;
+  --ni-purple:       #CE82FF;
+  --ni-gray:         #AFAFAF;
+  --ni-gray-light:   #D0D0D0;
+  --ni-gray-frame:   #B0AAA6;
+  --ni-skin:         #FEC5B6;
+  --ni-skin-shade:   #E8A898;
+  --ni-hair:         #3D3D3D;
+  --ni-white:        #FFFFFF;
+
   /* ── Spacing (8pt, with 4px for the inside of small controls) ──────────── */
   /* The smallest control a finger can hit reliably (44px, WCAG 2.5.8).
      Applied under `pointer: coarse` only; a mouse needs no such room. */
@@ -251,7 +290,8 @@
   /* large — a value, or an object with weight */
   --dur-settle:    600ms;   /* a number or bar moving to a new value */
   --dur-turn:      760ms;   /* the field guide's cover, a leaf turning */
-  --dur-celebrate: 800ms;   /* a reward landing, a stamp, a burst */
+  --dur-celebrate: 800ms;
+  --dur-spin:      3800ms;  /* the daily spin's wheel, start to stop (timing.js → DUR.spin) */   /* a reward landing, a stamp, a burst */
 
   --ease-out:    cubic-bezier(0.33, 1, 0.68, 1);     /* colour and opacity */
   /* Travel in response to input: ~70% of the distance in the first third,
@@ -279,7 +319,7 @@
   --idle-float: 5.9s;   /* reward art floating in its tile */
   --idle-sweep: 9.7s;   /* light crossing a large surface; a rule drawn again */
   --idle-run:   7.3s;   /* a wave running along a row (streak week, course ticks) */
-  --idle-wave:  6.1s;   /* things in a list stirring in turn (bonus days, quest icons) */
+  --idle-wave:  6.1s;   /* things in a list stirring in turn (quest icons) */
   --idle-bob:   3.1s;   /* today's reward inviting a claim — an Invitation, so
                            shorter than the ambient periods above */
 
@@ -308,7 +348,7 @@
      screen (a lesson ping, an earned badge, a claimable gem, a low heart),
      and periods that match fall into step and read as one machine ticking.
      Keep them coprime-ish when adding to this list. */
-  --loop-ping:     2.6s;    /* the current lesson, today's bonus indicator */
+  --loop-ping:     2.6s;    /* the current lesson, the daily-spin button */
   --loop-beckon:   2.35s;   /* the next milestone stone */
   --loop-breathe:  2.65s;   /* an earned badge */
   --loop-bob:      2.2s;    /* a claimable reward's gem */

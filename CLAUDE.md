@@ -4,25 +4,35 @@ An interactive course on how AI works: 21 lessons in 7 modules, grouped into
 the three Parts the TSA brief asks for (Understand AI · Use AI Well · Use AI
 Responsibly), plus a Case File per module, two Part projects, a capstone and
 ungraded Launch and Final Scans. Streaks, hearts, gems, daily quests, a daily
-bonus track and a three-item shop. No server: progress persists in
-`localStorage`.
+spin (a reward wheel with published odds) and a three-item shop. No server:
+accounts and progress persist in `localStorage`.
 
 The curriculum is in `src/data/learnData.js` (structure) and
-`src/data/course/` (one content file per module, each its own chunk). Lessons
-run in three parts — predict & explore, explain & apply, a graded Check — and
-**only the Check spends hearts**: predictions, recalls and simulations never
-do. The 21 simulations in `src/components/learn/sims/` are real (models that
-train in the browser, real calculations) or labelled as illustrative or
-scripted; nothing is sent anywhere. The Field Journal, resume points, review
-flags and scans live in progression state beside everything else.
+`src/data/course/` (one content file per module, each its own chunk). Since
+2026-10 a lesson is **two parts** — *Learn* (short explanations, at most one
+activity, a practice question or two) and a graded *Check* — and **only the
+Check spends hearts**. Keep lessons short: one idea per card, plain words, no
+confidence ratings, no "are you sure?" steps. The simulations in
+`src/components/learn/sims/` are real (models that train in the browser, real
+calculations) or labelled as illustrative or scripted; nothing is sent
+anywhere. The Field Journal, resume points, review flags and scans live in
+progression state beside everything else.
 
-Profiles are **optional and local** — a name on a shelf that keeps two
-people's progress apart on one browser, created in `accountService.js` and
-never transmitted. Signed out, the app reads and writes exactly the key it
-always did. One seeded profile is the **TSA reviewer's**
+**Signing in is required** for the course (`App.jsx` gates `/learn`). An
+account is an email, a password (PBKDF2-hashed with a per-account salt) and an
+optional public **username**; "Forgot password?" works with a one-time
+recovery code. Accounts live in this browser (`accountService.js`) and are
+never transmitted — the sign-in page, privacy policy and About page say so in
+those words. One seeded account is the **TSA reviewer's**
 (`config/judgeConfig.js`): unlimited gems, 100 hearts, every module open, and
 a control beside every feature so a judge can exercise the whole product in
 minutes. Every one of those controls runs the real reducer.
+
+The **daily spin** (`config/wheelConfig.js`, `services/wheelService.js`)
+replaced the seven-day daily bonus: one free spin per UTC day, odds that sum
+to exactly 100% and are printed beside the wheel, a crypto draw made before
+the wheel moves, and a reducer that refuses replays and a clock set back.
+There are no level titles: progress is shown as level, XP, lessons and streak.
 
 ## Stack
 
@@ -90,7 +100,9 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 ## Do not introduce arbitrary
 
 - **Colours** — every colour is a token in `index.css`. No hex literals in
-  component CSS. No cool hues at all.
+  component CSS. No cool hues — except the one named, scoped palette of the
+  sidebar's full-colour nav icons (`--ni-*`, `VISUAL_SYSTEM.md` → The nav
+  icons), read only by `NavIcons.jsx`.
 - **Radii** — five values: `--r-xs` 2, `--r-sm` 4, `--r-md` 8, `--r-lg` 12,
   `--r-pill`. Each has an assigned role.
 - **Shadows** — four tokens. Nothing at rest has a shadow.
@@ -119,7 +131,7 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
   fix the implementation. The documents change only when the *design* is
   being deliberately revised, and then they change first.
 - **Preserve functionality.** Progression, persistence, streaks, hearts,
-  gems, quests, the daily bonus, the shop, lesson flow and the dev panel all
+  gems, quests, the daily spin, the shop, lesson flow and the dev panel all
   work. A visual change that breaks one of them is not a visual change.
 - **Use real data.** The landing page mounts real components against a real
   demo state via `ProgressionShowcase`. Do not replace working UI with
@@ -127,10 +139,11 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 - **Features that do not exist are not implied.** There is no leaderboard, no
   class dashboard and no sync, so nothing in the UI offers, mentions or
   stands in for any of them. Absence is the whole statement.
-- **And what does exist is described exactly.** Profiles are local, optional
-  and unprotected, and the sign-in page, the privacy policy and the footer
-  all say so in those words. Never let the sign-in page imply a server, an
-  account system or a security the product does not have.
+- **And what does exist is described exactly.** Accounts are required, local
+  to the browser and hashed, and the sign-in page, the privacy policy and
+  the About page say so. Never let the sign-in page imply a server, sync, or
+  a protection the product does not have — there is no friends system,
+  leaderboard or cross-device account, because those need a backend.
 - **The reviewer's controls never fake a result.** Every one of them goes
   through `judgeService.js` into the real reducer. A control that drew a
   finished state instead of producing one would be showing a judge something

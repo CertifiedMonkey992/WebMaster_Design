@@ -78,9 +78,18 @@ are in.
   square logomark in solid `--evergreen` (not a gradient).
 - Group labels: `--fs-micro`, `--ls-label`, uppercase, `--ink-faint`.
 - Item: `--sp-2 --sp-3` padding, `--r-sm`, Manrope `--fs-small`
-  `--fw-semi`, `--ink-muted`, icon 22px in `--ink-faint`.
-- **Hover**: ground `--evergreen-tint`, text and icon `--ink`. No transform.
-- **Active**: ground `--evergreen-tint`, text and icon `--evergreen`,
+  `--fw-semi`, `--ink-muted`, icon 30px.
+- **Icons (revision 9, 2026-10)** — full-colour illustrations drawn to a
+  reference the product owner supplied (`NavIcons.jsx`): Learn a birdhouse,
+  Practice a dumbbell, Quests a treasure chest (with a red dot only while a
+  quest is ready to claim), Shop a shopfront, Profile an avatar, Home a
+  globe, About an "i" in a purple disc. Flat shapes, no outlines, one lighter
+  shine per object, colours only from the `--ni-*` palette
+  (`VISUAL_SYSTEM.md` → The nav icons). Each keeps **one** hover move that
+  depicts the destination. They are the only full-colour icons in the
+  product; nothing else may borrow their palette.
+- **Hover**: ground `--evergreen-tint`, text `--ink`. No transform.
+- **Active**: ground `--evergreen-tint`, text `--evergreen`,
   `--fw-bold`, and a 3px `--evergreen` bar on the **left inside edge** of the
   item. This is the one place a coloured rail is allowed, because it marks
   position in a vertical list, which is what a rail is for.
@@ -106,8 +115,8 @@ are in.
   "Sign in" in the ghost style; signed in it is a chip — initials in an
   evergreen `--r-xs` tile, then the name, inside one hairline. The reviewer's
   chip is clay, so a judge can see at a glance which profile the app is in.
-  It is never solid: a profile is optional, and the course is the page's
-  action. Below 720px the chip keeps its mark and drops its name.
+  It is never solid: the course is the page's action (signed out, it leads
+  to the sign-in page). Below 720px the chip keeps its mark and drops its name.
 - Arrival: wordmark, links and button settle in on load, 40ms apart.
 
 ### Links into the course (landing page)
@@ -131,42 +140,35 @@ to a page is a real `<a href>` (`PageLink`), never a button.
 
 ### Sign in (`SignInPage`)
 
-A profile in LunX is a **name on a shelf**, not a login to a server: it keeps
-two people's progress apart on one browser, and it gives a TSA judge a
-profile that already has everything open. Nothing is transmitted, registered
-or verified. The page is built on that fact rather than around it.
+Revision 2026-10: **the course requires an account**, and the sign-in page is
+an ordinary, professional sign-in page in the product's materials.
 
-- **A spread, not a split-screen hero.** Two leaves of one page on the same
-  `--paper` ground, divided by the gutter and nothing else — no coloured
-  panel, no photograph, no tinted half.
-- **The left leaf is a PLATE** (`SignInPlate`), not an illustration of a
-  person at a laptop: an ink drawing of the thing the course is about,
-  inside a hairline frame, with keyed labels and a numbered Fraunces-italic
-  caption under a rule. Its labels are sized in **SVG user units**, not type
-  tokens — they are part of the drawing and scale with it.
-- **The right leaf is the form**, in the product's one input style
-  (`.form-field` / `.form-input`) and the product's one button.
-- **"Sign in" and "Create a profile" are two names on one rule**, with ONE
-  clay underline sliding between them — the navbar's gesture, for the same
-  reason. The rule is **measured** from the chosen name, never guessed at in
-  rem.
-- **It asks for as little as it can**: a display name, a handle and a
-  passphrase. No email validation, because there is nothing to send to.
-- **It says what the passphrase is and is not.** The page states plainly that
-  nothing reaches a server, that the passphrase separates two learners rather
-  than protecting anything, and that the reader should not reuse one. A page
-  that implied security it does not have would be worse than no page.
-- **Signing in is never a wall.** "Start the course as a guest" is its own
-  sentence at the foot of the page, and the whole course works without ever
-  opening this page.
-- **The reviewer's panel** is one card (the card rule — `--surface`, one
-  hairline, `--r-md`, no shadow) holding the credentials in `--font-mono`.
-  Pressing it fills the form. It is not louder than the form: it is a note to
-  one reader.
-- **Signed in**, the page becomes a receipt — who you are, what the profile
-  can do, and the way out — never a second form.
-- **Mobile**: one column; below 560px the plate is dropped rather than
-  shrunk, because a plate a thumb scrolls past is decoration.
+- **Layout**: the logo (link home), one card (the card rule — `--surface`,
+  one hairline, `--r-md`, no shadow), and a row of the site's links at the
+  foot. No illustration, no second panel, no navbar.
+- **Forms**: *Welcome back* (email or username, password, "Forgot
+  password?"), *Create your account* (email, optional username, password)
+  and *Reset your password* (email, recovery code, new password). One
+  solid evergreen button each; the way to the other form is a quiet text
+  link under a hairline. A browser nobody has signed up on opens on
+  *Create your account*; `#signin` / `#create` force a form.
+- **Fields** use the one input style. The password field has a visible
+  show/hide toggle (an eye icon, 36px hit area). Errors sit under the field
+  they belong to, in `--berry-ink`; a wrong email and a wrong password get
+  the same message.
+- **Loading**: the button keeps its width, shows the spinning arc and a
+  verb ("Signing in…") while the password is hashed.
+- **After creating an account or resetting a password**, one card shows the
+  recovery code in `--font-mono` with a Copy button — it is shown once.
+- **It says what it is, in one line under the card**: accounts and progress
+  are saved in this browser on this device, because LunX has no server.
+- **The reviewer's way in** is one quiet line under the card: "TSA judge?
+  Use the reviewer account", with the credentials in mono. Pressing it fills
+  the form.
+- **Signed in**, the page is a small card — who you are, *Continue to your
+  course*, *Sign out* — never a second form.
+- **Mobile**: the same single column; the card's padding tightens below
+  480px.
 
 ### Reviewer controls (`components/judge/`)
 
@@ -313,7 +315,7 @@ sequence*).
   Its controls work on the demo learner, and its caption says both: that it
   plays itself, and that the visitor can take over.
 - Frames whose scene pays rewards carry the app's real top bar
-  (`PlayerStatusBar`, and `DailyBonusIndicator` for the bonus frame) as the
+  (`PlayerStatusBar`, and `WheelIndicator` for the spin frame) as the
   place those rewards land.
 
 ### Lesson ticker (landing)
@@ -373,7 +375,7 @@ last action and the footer never competes with it.
 ### Top bar (`learn-topbar`)
 
 - A `--paper` strip with a bottom hairline, not a gradient fade.
-- Holds only: the daily-bonus control and the three status pills.
+- Holds only: the daily-spin button and the three status pills.
 - On mobile it also holds the wordmark.
 
 ---
@@ -468,22 +470,25 @@ the one the reader needs.
   takes a single 120ms shake of 3px. One shake.
 - The footer holds one solid button, full width on mobile.
 
-### Lesson parts and steps (curriculum redesign, 2026-09)
+### Lesson parts and steps (simplified 2026-10)
 
-- **A lesson is three parts** (the modal's tabs): *Predict & explore*,
-  *Explain & apply*, *Check*. Each tab carries its number; the Check carries
-  a small heart, because it is **the only part that spends hearts**.
-  Finishing a part saves a resume point; the welcome screen says where the
-  lesson picks up.
+- **A lesson is two parts** (the modal's tabs): *Learn* and *Check*. Learn
+  is short explanation cards (one idea each, a few sentences), at most one
+  activity, and a practice question or two. The Check carries a small
+  heart, because it is **the only part that spends hearts**. Finishing a
+  part saves a resume point. Case Files, projects and the capstone keep
+  their own parts.
+- **No ceremony.** No confidence ratings, no "are you sure?", no recall or
+  reflection steps inside lessons. A question is answered, gets one short
+  verdict with its reason, and the learner moves on.
 - **The heart rule, in colour.** Graded answers speak moss and berry. An
-  ungraded miss — a prediction, a recall, an applied question — is shown in
-  **ink** (`st-reveal`), with a paper verdict bar, because it cost nothing.
-  A confident miss says so: it is the moment the lesson is built around.
+  ungraded miss — a practice question — is shown in **ink**
+  (`st-reveal`), with a paper verdict bar, because it cost nothing.
 - **Every verdict explains why** (`lm-fb-why`), and a prediction's reveal
   names the evidence behind it.
 - **Step kinds** (`StepRenderer.jsx`): read cards at the reading measure
-  (46rem when they carry a table); predictions with a *Sure / Think so /
-  Guessing* row; sorts as hairline rows with segmented bins; number fields;
+  (46rem when they carry a table); quick questions (`predict`) that look like
+  any other question; sorts as hairline rows with segmented bins; number fields;
   transcripts as speech rows; reflections and compose fields in the one
   input style. None adds a card edge beyond the simulation's own frame.
 - **Provenance labels.** Anything AI-shaped on the page carries a printed
@@ -552,7 +557,7 @@ semantic colour* — always in that order, always the same sizes.
 
 - `--ochre` throughout: icon, the value in the shop, the price on a quest.
 - Earning gems is the only place `--ochre` fill is used on a large surface
-  (the daily-bonus claim tile).
+  (the daily spin's jackpot slot).
 
 ### Streak
 
@@ -573,16 +578,29 @@ semantic colour* — always in that order, always the same sizes.
   visible for the rest of the day. Disappearing rows lose the sense of
   having done something.
 
-### Daily bonus
+### Daily spin (`components/wheel/`)
 
-- Seven day-tiles in a row, `--r-sm`, showing the reward art.
-- Past: `--surface-sunk`, art at 45%, a `--moss` check.
-- Today, unclaimed: `--clay` 1.5px border, art full strength, and the only
-  solid `--clay` button on the screen.
-- Future: `--surface`, hairline, art at 45%, no lock icon (the position in
-  the row already says it is later).
-- Claiming: the tile presses, the art scales 1.06 and back over 240ms, the
-  toast fires. No confetti.
+Replaced the seven-day daily bonus (2026-10). It opens from the same place —
+a button in the top bar — and nowhere else.
+
+- **The wheel**: eight slots printed in the product's inks, one per tier —
+  paper (common), warm paper (uncommon), evergreen (rare), clay (epic),
+  ochre (jackpot) — each with its amount, its unit and the real economy
+  icon. Flat fills, a hairline between slots, an evergreen rim with paper
+  pegs, a clay pointer, an evergreen hub with the logomark.
+- **Beside it**: how many spins are left (or when the next one comes, in
+  the learner's own time), the result line, one solid clay *Spin* button,
+  and **the odds table** — every tier, every reward and its percentage —
+  always visible before anyone spins, with one line saying the draw is
+  random with exactly these chances.
+- **The button**: *Spin* when a spin is waiting; *Spinning…* and disabled
+  while the wheel turns; *No spins left* and disabled otherwise.
+- **The result**: the winning slot keeps a clay edge while the others step
+  back; the tier is named; a substituted reward says why ("your shields
+  were already full").
+- **The top-bar button**: clay with a pinging dot while a spin waits; quiet,
+  with the countdown, once spun.
+- **Mobile**: the wheel stacks above the controls.
 
 ### Shop
 

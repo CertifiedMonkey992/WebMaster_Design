@@ -34,7 +34,7 @@ import './judge.css'
 
 export default function JudgeConsole() {
   const { vm, actions } = useProgression()
-  const { account, signOut } = useAuth()
+  const { displayName, signOut } = useAuth()
   const judge = useJudge()
   const [open, setOpen] = useState(false)
   const [tests, setTests] = useState(null)
@@ -75,7 +75,7 @@ export default function JudgeConsole() {
   }
 
   const facts = [
-    ['Level', `${vm.level} · ${vm.levelTitle}`],
+    ['Level', String(vm.level)],
     ['XP', formatNumber(vm.xp)],
     ['Gems', judge.powers?.infiniteGems ? '∞' : formatNumber(vm.gems)],
     ['Hearts', `${vm.hearts} / ${vm.maxHearts}`],
@@ -84,7 +84,7 @@ export default function JudgeConsole() {
     ['Modules', `${course.completedSections} / ${course.totalSections}`],
     ['Badges', `${vm.achievementsUnlocked} / ${vm.achievements.length}`],
     ['Quests ready', String(vm.quests.claimableCount)],
-    ['Bonus day', `${vm.dailyBonus.currentDay} of ${vm.dailyBonus.cycleLength}`],
+    ['Spins left', String(vm.wheel.spinsLeft)],
   ]
 
   return (
@@ -233,20 +233,13 @@ export default function JudgeConsole() {
             </Row>
           </Group>
 
-          {/* ── Daily bonus ──────────────────────────────────────────────── */}
-          <Group title="Daily bonus">
+          {/* ── Daily spin ───────────────────────────────────────────────── */}
+          <Group title="Daily spin" note="Spins use the real draw and payout. Open the wheel from the top bar to watch one land.">
             <Row>
-              <Btn onClick={() => actions.claimDailyBonus()} disabled={!vm.dailyBonus.available}>
-                Claim today
-              </Btn>
-              <Btn onClick={() => actions.dev.setBonusDay(vm.dailyBonus.nextDay)}>Come back tomorrow</Btn>
-              <Btn onClick={() => actions.dev.completeBonusCycle()}>Run the whole week</Btn>
-              <Btn onClick={() => actions.dev.resetDailyBonus()} quiet>Back to day one</Btn>
-            </Row>
-            <Row>
-              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-                <Btn key={day} onClick={() => actions.dev.setBonusDay(day)}>Day {day}</Btn>
-              ))}
+              <Btn onClick={() => actions.spinWheel()} disabled={!vm.wheel.available}>Spin now</Btn>
+              <Btn onClick={() => run(ops.SPINS, { count: 1 })}>Bank a spin</Btn>
+              <Btn onClick={() => run(ops.SPINS, { count: 5 })}>Bank five</Btn>
+              <Btn onClick={() => actions.dev.resetWheel()} quiet>Give today’s spin back</Btn>
             </Row>
           </Group>
 
@@ -277,14 +270,13 @@ export default function JudgeConsole() {
                   }
                 }}
               >
-                Empty this profile
+                Empty this account
               </Btn>
-              <Btn quiet onClick={signOut}>Sign out of {account?.name ?? 'this profile'}</Btn>
+              <Btn quiet onClick={signOut}>Sign out of {displayName}</Btn>
             </Row>
             <p className="jd-foot">
-              Emptying the reviewer profile touches nothing else: any other
-              profile on this browser, including the guest one, keeps its
-              progress.
+              Emptying the reviewer account touches nothing else: every other
+              account on this browser keeps its progress.
             </p>
           </Group>
         </div>

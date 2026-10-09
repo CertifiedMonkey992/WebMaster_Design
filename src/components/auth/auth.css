@@ -1,162 +1,72 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   auth.css — THE SIGN-IN SPREAD
+   auth.css — THE SIGN-IN PAGE
    ---------------------------------------------------------------------------
    Authoritative reference: design-system/COMPONENT_RULES.md → Sign in.
 
-   A spread, not a split-screen hero: two leaves of one page, divided by a
-   hairline rather than by a block of colour. The left leaf carries a plate
-   (ink on paper, ruled and captioned); the right carries the form. Nothing
-   on either leaf has a shadow, a gradient or a cool hue, and the one clay
-   emphasis per screen is the italic phrase in the title — the submit button
-   takes the second, because it is the "do this next".
-
-   Every value is a token. The plate's ink weights are the only computed
-   numbers, and they come from a weight in the drawing's data.
+   An ordinary sign-in page in the product's materials: the logo, one card
+   on the paper ground, the product's one input and one button, and a row
+   of the site's links at the foot. No illustration, no second panel, no
+   shadow on the card (it rests), no gradient, no cool hue. Every value is a
+   token.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+.au-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
 .au {
-  position: relative;
-  z-index: var(--z-base);
-  padding: calc(68px + var(--sp-10)) var(--sp-6) var(--sp-16);
-}
-
-/* The two leaves. The gap is generous and the rule between them is the
-   product's hairline — a page gutter, not a divider between two products. */
-.au-spread {
-  max-width: 68rem;
+  flex: 1;
+  width: 100%;
+  max-width: 26.5rem;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: var(--sp-12);
-  align-items: start;
+  padding: var(--sp-12) var(--sp-4) var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-5);
 }
 
-.au-leaf { min-width: 0; }
+.au:focus { outline: none; }
 
-/* ── The plate ─────────────────────────────────────────────────────────────
-   Printed on the ground, not floated above it: the frame is a hairline rect
-   inside the SVG, and the figure itself has no border, fill or shadow. */
-
-.au-plate { position: sticky; top: calc(68px + var(--sp-8)); }
-
-.plate { display: flex; flex-direction: column; gap: var(--sp-4); }
-
-.plate-art { width: 100%; height: auto; overflow: visible; }
-
-.plate-frame {
-  fill: none;
-  stroke: var(--line);
-  stroke-width: 1;
-}
-
-/* Edges are drawn at the thickness of their weight, so the drawing carries
-   the idea rather than decorating it. */
-.plate-edge {
-  stroke: var(--ink);
-  stroke-width: calc(0.35px + var(--w) * 1.5px);
-  opacity: calc(0.14 + var(--w) * 0.26);
-  transition: opacity var(--dur-move) var(--ease-out), stroke var(--dur-move) var(--ease-out);
-}
-
-.plate-node {
-  fill: var(--surface);
-  stroke: var(--ink);
-  stroke-width: 1.4;
-  transition:
-    fill var(--dur-move) var(--ease-out),
-    stroke var(--dur-move) var(--ease-out),
-    r var(--dur-move) var(--ease-settle);
-}
-
-.plate-node.is-out { fill: var(--evergreen); stroke: var(--evergreen); }
-
-/* 8 USER UNITS, not 8px of type. Inside a viewBox a font-size resolves in
-   the drawing's coordinate system, so this is a dimension of the plate and
-   scales with it — a rem here would not. The type scale governs the
-   interface; a plate's keyed labels are part of the drawing. */
-.plate-key {
-  font-family: var(--font-ui);
-  font-size: 8px;
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  fill: var(--ink-faint);
-}
-
-.plate-axis { stroke: var(--line-strong); stroke-width: 1; }
-
-.plate-curve {
-  fill: none;
-  stroke: var(--ink-muted);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  opacity: 0.55;
-}
-
-/* Where training has got to. The geometry properties are set as CSS, so the
-   marker travels along the curve on a transition rather than on a React
-   render — one value moving to a new value, which is what --dur-settle is
-   for. */
-.plate-marker {
-  cx: var(--loss-x);
-  cy: var(--loss-y);
-  fill: var(--clay);
-  transition: cx var(--dur-settle) var(--ease-settle), cy var(--dur-settle) var(--ease-settle);
-}
-
-/* ── The plate's one performance (MOTION_RULES.md → Demonstrations) ─────────
-   A signal crosses the layers, the output lights, and the marker steps one
-   notch down the error curve. The Stage runs it; nothing here loops. */
-
-.plate[data-live='0'] .plate-node[data-layer='0'],
-.plate[data-live='1'] .plate-node[data-layer='1'],
-.plate[data-live='2'] .plate-node[data-layer='2'] {
-  fill: var(--evergreen);
-  stroke: var(--evergreen);
-}
-
-.plate[data-live='0'] .plate-edge[data-layer='0'],
-.plate[data-live='1'] .plate-edge[data-layer='1'],
-.plate[data-live='2'] .plate-edge[data-layer='2'] {
-  stroke: var(--evergreen);
-  opacity: calc(0.3 + var(--w) * 0.6);
-}
-
-.plate[data-out] .plate-node.is-out { fill: var(--clay); stroke: var(--clay); }
-
-.plate-caption {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--sp-3);
-  align-items: baseline;
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--line);
-}
-
-.plate-num {
+/* ── The logo ── */
+.au-logo {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  text-decoration: none;
+  color: var(--evergreen);
   font-family: var(--font-display);
-  font-size: var(--fs-caption);
+  font-size: var(--fs-title);
   font-weight: var(--fw-semi);
-  font-style: italic;
-  color: var(--clay-ink);
-  white-space: nowrap;
+  letter-spacing: var(--ls-title);
+  border-radius: var(--r-sm);
 }
 
-.plate-text {
-  font-size: var(--fs-caption);
-  line-height: var(--lh-normal);
-  color: var(--ink-faint);
+.au-logo:focus-visible { outline: 2px solid var(--evergreen); outline-offset: 4px; }
+
+.au-logo-mark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--evergreen);
+  border-radius: var(--r-sm);
 }
 
-/* ── The form leaf ─────────────────────────────────────────────────────── */
-
-.au-eyebrow {
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  margin-bottom: var(--sp-3);
+/* ── The card (COMPONENT_RULES.md → the card) ── */
+.au-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--sp-8) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
 }
 
 .au-title {
@@ -165,247 +75,192 @@
   font-weight: var(--fw-semi);
   letter-spacing: var(--ls-display);
   line-height: var(--lh-tight);
-  margin-bottom: var(--sp-3);
+  color: var(--ink);
+  text-align: center;
 }
 
 .au-lead {
+  margin-top: calc(-1 * var(--sp-2));
   font-size: var(--fs-body);
-  line-height: var(--lh-relaxed);
   color: var(--ink-muted);
-  max-width: 40ch;
-  margin-bottom: var(--sp-6);
-}
-
-/* ── Sign in / create ───────────────────────────────────────────────────────
-   Two names on one rule, with ONE ink underline sliding between them — the
-   same gesture the navbar's links use, for the same reason: two underlines
-   would read as two places. */
-
-.au-switch {
-  position: relative;
-  display: flex;
-  gap: var(--sp-5);
-  border-bottom: 1px solid var(--line);
-  margin-bottom: var(--sp-6);
-}
-
-.au-switch-btn {
-  appearance: none;
-  background: none;
-  border: 0;
-  padding: var(--sp-2) 0;
-  font-family: var(--font-ui);
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semi);
-  color: var(--ink-faint);
-  cursor: pointer;
-  transition: color var(--dur-hover) var(--ease-out);
-}
-.au-switch-btn:hover { color: var(--ink); }
-.au-switch-btn.is-on { color: var(--ink); }
-
-/* Measured, not guessed: the component reads each name's real offset and
-   width (the navbar's sliding underline does the same), so the rule stays
-   right when the webfont lands, when a label is translated, and at any type
-   size the reader has set. */
-.au-switch-ink {
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  width: var(--ink-w, 0);
-  background: var(--clay);
-  transform: translateX(var(--ink-x, 0));
-  transition: transform var(--dur-open) var(--ease-snap), width var(--dur-open) var(--ease-snap);
-}
-
-.au-form { display: flex; flex-direction: column; gap: var(--sp-4); }
-
-.au-field.is-error .form-input { border-color: var(--berry); }
-.au-field.is-error::after { background: var(--berry); }
-
-.au-hint,
-.au-error {
-  font-size: var(--fs-caption);
+  text-align: center;
   line-height: var(--lh-snug);
 }
-.au-hint { color: var(--ink-faint); }
-.au-error { color: var(--berry-ink); font-weight: var(--fw-semi); }
 
-.au-submit { align-self: flex-start; margin-top: var(--sp-1); }
+.au-lead b { color: var(--ink); font-weight: var(--fw-bold); }
 
-.au-adopt {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-size: var(--fs-caption);
-  color: var(--moss);
-}
+/* ── The form ── */
+.au-form { display: flex; flex-direction: column; gap: var(--sp-4); }
 
-/* ── The reviewer's panel ───────────────────────────────────────────────────
-   A card, by the product's card rule: --surface, one hairline, --r-md, no
-   shadow. It is not louder than the form — it is a note to one reader. */
-
-.au-judge {
-  margin-top: var(--sp-8);
-  padding: var(--sp-5);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-}
-
-.au-judge-title {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-family: var(--font-ui);
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--clay-ink);
-  margin-bottom: var(--sp-3);
-}
-
-.au-judge-lead {
-  font-size: var(--fs-small);
-  line-height: var(--lh-normal);
-  color: var(--ink-muted);
-  margin-bottom: var(--sp-4);
-}
-
-/* The credentials. A press fills them into the form, so the whole block is
-   the control and the hint sits inside it rather than beside it. */
-.au-judge-card {
-  display: block;
-  width: 100%;
-  text-align: left;
-  appearance: none;
-  padding: var(--sp-3) var(--sp-4);
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  cursor: pointer;
-  transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
-}
-.au-judge-card:hover { border-color: var(--clay); background: var(--clay-tint); }
-.au-judge-card:active { transform: translateY(1px); box-shadow: var(--shadow-press); }
-
-.au-judge-row {
+.au-label-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--sp-4);
-  padding: var(--sp-1) 0;
-}
-
-.au-judge-key {
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.au-judge-val {
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  font-weight: var(--fw-medium);
-  color: var(--ink);
-}
-
-.au-judge-fill {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  margin-top: var(--sp-2);
-  padding-top: var(--sp-2);
-  border-top: 1px solid var(--line-faint);
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-semi);
-  color: var(--clay-ink);
-}
-.au-judge-fill svg { transition: transform var(--dur-move) var(--ease-snap); }
-.au-judge-card:hover .au-judge-fill svg { transform: translateX(2px); }
-
-.au-judge-foot {
-  margin-top: var(--sp-3);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-normal);
-  color: var(--ink-faint);
-}
-
-/* ── Notes and the guest way through ───────────────────────────────────── */
-
-.au-note {
-  display: flex;
-  align-items: flex-start;
   gap: var(--sp-2);
-  margin-top: var(--sp-6);
-  font-size: var(--fs-caption);
-  line-height: var(--lh-normal);
-  color: var(--ink-faint);
 }
-.au-note svg { flex-shrink: 0; margin-top: 2px; }
 
-.au-link {
-  color: var(--evergreen);
+.au-optional { font-weight: var(--fw-medium); color: var(--ink-faint); }
+
+.au-field .form-input { padding-block: var(--sp-3); }
+
+.au-input-wrap { position: relative; }
+
+/* Room on the right for the show/hide button. */
+.au-password { padding-right: calc(var(--sp-3) + 36px); }
+
+.au-eye {
+  position: absolute;
+  top: 50%;
+  right: var(--sp-1);
+  width: 36px;
+  height: 36px;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
+}
+
+.au-eye:hover { color: var(--ink); background: rgba(var(--ink-rgb), 0.05); }
+.au-eye:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -2px; }
+
+.au-code-input { font-family: var(--font-mono); letter-spacing: var(--ls-label); text-transform: uppercase; }
+
+.au-hint {
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+  line-height: var(--lh-snug);
+}
+
+.au-error {
+  font-size: var(--fs-caption);
   font-weight: var(--fw-semi);
+  color: var(--berry-ink);
+  line-height: var(--lh-snug);
+}
+
+.au-banner {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--berry-tint);
+  color: var(--berry-ink);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+}
+
+.au-submit { width: 100%; padding-block: var(--sp-3); text-decoration: none; }
+.au-alt { align-self: center; }
+
+/* The loading state (COMPONENT_RULES.md → the button): an arc beside the
+   label while the password is hashed; the button holds its width. */
+.au-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--r-pill);
+  animation: au-spin var(--loop-spin) linear infinite;
+}
+
+@keyframes au-spin { to { transform: rotate(360deg); } }
+
+/* ── Links that are buttons ── */
+.au-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--fw-bold);
+  color: var(--evergreen);
   text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-color: var(--line-strong);
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  cursor: pointer;
   transition: text-decoration-color var(--dur-hover) var(--ease-out);
 }
-.au-link:hover { text-decoration-color: var(--evergreen); }
 
-.au-guest {
-  margin-top: var(--sp-4);
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--line);
+.au-link:hover { text-decoration-color: currentColor; }
+.au-link:focus-visible { outline: 2px solid var(--evergreen); outline-offset: 2px; border-radius: var(--r-xs); }
+
+.au-forgot { font-size: var(--fs-small); }
+
+.au-switch {
+  text-align: center;
   font-size: var(--fs-small);
   color: var(--ink-muted);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-faint);
 }
 
-/* ── The signed-in receipt ─────────────────────────────────────────────── */
+/* ── Under the card ── */
+.au-judge,
+.au-note {
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  line-height: var(--lh-snug);
+}
 
-.au-facts {
-  display: grid;
-  gap: 0;
-  margin-bottom: var(--sp-6);
-  border-top: 1px solid var(--line);
-}
-.au-facts > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-4);
-  padding: var(--sp-3) 0;
-  border-bottom: 1px solid var(--line);
-}
-.au-facts dt {
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
+.au-judge-creds {
+  display: block;
+  margin-top: var(--sp-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
   color: var(--ink-faint);
 }
-.au-facts dd { font-size: var(--fs-body); color: var(--ink); }
 
-.au-actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+.au-note { font-size: var(--fs-caption); color: var(--ink-faint); }
 
-/* ── Narrow ────────────────────────────────────────────────────────────────
-   One column, and the plate loses its sticky position and its caption's
-   second column: a plate a thumb scrolls past should be small and quick. */
-
-@media (max-width: 880px) {
-  .au { padding-top: calc(56px + var(--sp-8)); }
-  .au-spread { grid-template-columns: 1fr; gap: var(--sp-8); }
-  .au-plate { position: static; max-width: 26rem; }
-  .au-title { font-size: var(--fs-title); }
+/* ── The recovery code ── */
+.au-code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface-raised);
 }
 
-@media (max-width: 560px) {
-  .au { padding-left: var(--sp-4); padding-right: var(--sp-4); }
-  .au-plate { display: none; }
-  .au-judge-row { flex-direction: column; gap: 0; align-items: flex-start; }
+.au-code-text {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  color: var(--ink);
+  word-break: break-all;
+}
+
+/* ── The site's links ── */
+.au-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-5);
+  padding: var(--sp-6) var(--sp-4) var(--sp-8);
+  font-size: var(--fs-small);
+}
+
+.au-foot a {
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color var(--dur-hover) var(--ease-out);
+}
+
+.au-foot a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 480px) {
+  .au { padding-top: var(--sp-8); }
+  .au-card { padding: var(--sp-6) var(--sp-4); }
+  .au-title { font-size: var(--fs-title); }
+  .au-code { flex-direction: column; align-items: stretch; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .au-spinner { animation-duration: calc(var(--loop-spin) * 3); }
 }

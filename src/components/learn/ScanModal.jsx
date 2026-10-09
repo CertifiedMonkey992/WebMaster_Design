@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ScanModal.jsx — THE LAUNCH SCAN AND THE FINAL SCAN
    ---------------------------------------------------------------------------
-   Twelve questions with a confidence rating each, no feedback until the end,
+   Twelve questions, no feedback until the end,
    nothing graded and nothing paid. The Launch Scan (form A) is offered before
    the first lesson; the Final Scan (form B, the same ideas in new situations)
    after the capstone. Results are kept on this browser and compared Part by
@@ -54,12 +54,12 @@ export default function ScanModal({ which, onClose }) {
 
   const item = items[idx]
   const step = useMemo(() => (item ? { ...item, type: 'predict', eyebrow: `${PART_NAMES[item.part]} · question ${idx + 1} of ${items.length}` } : null), [item, idx, items.length])
-  const ready = answer.selected !== null && answer.confidence !== null
+  const ready = answer.selected !== null
 
   const next = () => {
     if (!ready) return
     const correct = item.options.find((o) => o.id === answer.selected)?.correct === true
-    const all = { ...answers, [item.id]: { correct, confidence: answer.confidence, selected: answer.selected } }
+    const all = { ...answers, [item.id]: { correct, selected: answer.selected } }
     setAnswers(all)
     setAnswer(EMPTY_ANSWER)
     if (idx + 1 < items.length) { setIdx(idx + 1); return }
@@ -71,7 +71,6 @@ export default function ScanModal({ which, onClose }) {
   const launch = vm.scans?.launch
   const launchParts = launch ? byPart('A', launch.answers) : null
   const right = Object.values(answers).filter((a) => a.correct).length
-  const confidentMisses = Object.values(answers).filter((a) => !a.correct && a.confidence === 'sure').length
 
   return (
     <div ref={overlayRef} className={`lm-overlay${leaving ? ' is-leaving' : ''}`} role="dialog" aria-modal="true" aria-label={which === 'final' ? 'Final Scan' : 'Launch Scan'}>
@@ -82,8 +81,8 @@ export default function ScanModal({ which, onClose }) {
           <SplitText as="h2" className="lm-welcome-title" immediate delay={120}>{which === 'final' ? 'The Final Scan' : 'The Launch Scan'}</SplitText>
           <p className="lm-welcome-sub">
             {which === 'final'
-              ? 'The same ideas as your Launch Scan, in new situations. Answer from what you know now — no AI — and say how sure you are.'
-              : 'Twelve questions across the whole course, before you start. Most people get several wrong — that is the point. Say how sure you are; you’ll see your results at the end, and again after the capstone.'}
+              ? 'The same ideas as your Launch Scan, in new situations. Answer from what you know now — no AI.'
+              : 'Twelve questions across the whole course, before you start. Most people get several wrong — that is the point. You’ll see your results at the end, and again after the capstone.'}
           </p>
           <p className="lm-replay-note">Nothing here costs a heart or pays XP. Your answers stay on this browser.</p>
           <button ref={primaryRef} className="btn btn-next btn-lg lm-start-btn" onClick={() => setScreen('run')}>Begin <Arrow /></button>
@@ -105,7 +104,7 @@ export default function ScanModal({ which, onClose }) {
             </div>
           </div>
           <div className="lm-action lm-action--neutral">
-            <span className="lm-key-hint" aria-hidden="true">Choose an answer and how sure you are</span>
+            <span className="lm-key-hint" aria-hidden="true">Choose an answer</span>
             <button ref={primaryRef} className="btn btn-primary btn-lg lm-btn-check" disabled={!ready} onClick={next}>
               {idx + 1 < items.length ? 'Next' : 'See my results'}
             </button>
@@ -121,7 +120,6 @@ export default function ScanModal({ which, onClose }) {
             {which === 'final' && launch
               ? `On your Launch Scan you had ${launch.correct} of ${launch.total}.`
               : 'This is your starting point. The Final Scan, after the capstone, asks about the same ideas.'}
-            {confidentMisses > 0 && ` You were sure and wrong ${confidentMisses} time${confidentMisses === 1 ? '' : 's'} — ${which === 'final' ? 'worth rereading below, next to the lesson that covers it.' : 'those are the ones the course will change most.'}`}
           </p>
           <table className="sim-table sc-table">
             <thead><tr><th>Part</th>{launchParts && which === 'final' && <th className="num">Launch</th>}<th className="num">{which === 'final' ? 'Final' : 'Now'}</th></tr></thead>

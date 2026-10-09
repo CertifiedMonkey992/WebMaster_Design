@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    scans.js — THE LAUNCH SCAN AND THE FINAL SCAN
    ---------------------------------------------------------------------------
-   Twelve questions, four per Part, answered with a confidence rating and no
+   Twelve questions, four per Part, answered with no
    feedback until the end. The two forms ask about the same ideas in new
    situations, so a learner sees their own growth rather than a remembered
    answer key. Neither is graded; neither pays or costs anything.

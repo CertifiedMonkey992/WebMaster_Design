@@ -12,8 +12,8 @@
    A module holds ITEMS, and every item is completed through the same engine
    path (progressionService.completeLesson). An item's `kind` says what it is:
 
-     lesson     one of the 21 lessons (Recall → Predict → Explore → Explain →
-                Apply → Check → Carry forward), in three parts
+     lesson     one of the 21 lessons, in two parts: Learn (short explanations,
+                at most one activity, a practice question) and a graded Check
      casefile   the module's mixed practice and Checkpoint
      project    a Part project (Model Autopsy, My AI Study Kit)
      capstone   the Field Investigation that closes the course
@@ -84,10 +84,10 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m01-l01', 'Spot the AI: Rules, Learning and What It Optimizes', 'Sort systems into rules, learned and generative; find the objective and proxy behind your own feed.', '14 min'),
-      lesson('m01-l02', 'Train It, Break It', 'Train a real classifier in your browser, discover what it actually learned, and repair its dataset.', '16 min'),
-      lesson('m01-l03', 'Is It Actually Good?', 'Held-out tests, overfitting, false positives and negatives, thresholds — and why “99% accurate” can mean useless.', '16 min'),
-      { id: 'm01-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 1: Objectives and Data', desc: 'Mixed scenarios, then the module Checkpoint. Passing it unlocks your first Field Kit tool.', duration: '8 min' },
+      lesson('m01-l01', 'Spot the AI: Rules, Learning and What It Optimizes', 'Rules, learned and generative systems — and the number a learned system chases.', '7 min'),
+      lesson('m01-l02', 'Train It, Break It', 'Train a real classifier in your browser and find the shortcut it learned.', '7 min'),
+      lesson('m01-l03', 'Is It Actually Good?', 'Held-out tests, two kinds of mistakes, and why “99% accurate” can mean useless.', '7 min'),
+      { id: 'm01-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 1: Objectives and Data', desc: 'Three cases, then the Checkpoint. Passing it unlocks your first Field Kit tool.', duration: '5 min' },
     ],
   },
   {
@@ -107,10 +107,10 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m02-l01', 'One Neuron, Then Layers', 'Hand-tune a perceptron, meet the XOR problem, and see why layers need a nonlinear bend.', '15 min'),
-      lesson('m02-l02', 'Learning Downhill', 'Loss, gradient descent, learning rate and backpropagation — train a network and diagnose it from its loss curve.', '16 min'),
-      lesson('m02-l03', 'What Networks See', 'Convolution filters, learned features, and the tiny changes that fool an image model.', '14 min'),
-      { id: 'm02-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 2: Inside the Model', desc: 'Mixed scenarios from Modules 1–2, then the Checkpoint for the Feature Check.', duration: '8 min' },
+      lesson('m02-l01', 'One Neuron, Then Layers', 'Tune one neuron by hand, then see why networks need layers.', '6 min'),
+      lesson('m02-l02', 'Learning Downhill', 'Loss, gradient descent and the learning rate — train a real network.', '7 min'),
+      lesson('m02-l03', 'What Networks See', 'Learned features, and the tiny changes that fool an image model.', '6 min'),
+      { id: 'm02-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 2: Inside the Model', desc: 'Mixed scenarios from Modules 1–2, then the Checkpoint for the Feature Check.', duration: '5 min' },
     ],
   },
   {
@@ -131,11 +131,11 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m03-l01', 'How Language Models Write', 'Tokens, next-token probabilities, temperature, attention and the context window — with a real model in your browser.', '18 min'),
-      lesson('m03-l02', 'Meaning as Maps, Images from Noise', 'Embeddings, semantic search, stereotypes as geometry, and how diffusion turns noise into a picture.', '17 min'),
-      lesson('m03-l03', 'From Autocomplete to Assistant', 'Instruction tuning, human feedback, system prompts, reasoning models — and why assistants flatter and fabricate.', '18 min'),
-      { id: 'm03-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 3: Decoding Behavior', desc: 'Mixed scenarios from all of Part I, then the Checkpoint for the Mechanism Lens.', duration: '8 min' },
-      { id: 'p1-project', kind: ITEM_KIND.PROJECT, title: 'Part I Project: Model Autopsy', desc: 'Take one system, predict a specific failure, show the evidence, and explain it mechanically — without AI.', duration: '20 min' },
+      lesson('m03-l01', 'How Language Models Write', 'Tokens, temperature and the context window — with a small model in your browser.', '6 min'),
+      lesson('m03-l02', 'Meaning as Maps, Images from Noise', 'Search by meaning, stereotypes in data, and images made from noise.', '6 min'),
+      lesson('m03-l03', 'From Autocomplete to Assistant', 'How assistants are trained — and why they flatter and make things up.', '6 min'),
+      { id: 'm03-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 3: Decoding Behavior', desc: 'Mixed scenarios from all of Part I, then the Checkpoint for the Mechanism Lens.', duration: '5 min' },
+      { id: 'p1-project', kind: ITEM_KIND.PROJECT, title: 'Part I Project: Model Autopsy', desc: 'Find out why a homework app fails, and explain it in your own words.', duration: '12 min' },
     ],
   },
   {
@@ -156,10 +156,10 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m04-l01', 'Delegate or Do', 'The jagged frontier, splitting a task into parts, and the Tool Guide to what each kind of AI tool is for.', '15 min'),
-      lesson('m04-l02', 'Describe It Well', 'Write a specification, diagnose a weak output by what it was missing, and iterate like debugging.', '15 min'),
-      lesson('m04-l03', 'Learn With AI, Not Instead of It', 'Cognitive offloading, tutor mode vs. answer mode, and your own AI-use protocol for school.', '15 min'),
-      { id: 'm04-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 4: Working With AI', desc: 'Mixed scenarios from Modules 1–4, then the Checkpoint for the Delegation Decision.', duration: '8 min' },
+      lesson('m04-l01', 'Delegate or Do', 'The jagged frontier, do / augment / automate, and which kind of tool fits.', '6 min'),
+      lesson('m04-l02', 'Describe It Well', 'Turn a vague request into a clear one, and fix a weak answer one change at a time.', '6 min'),
+      lesson('m04-l03', 'Learn With AI, Not Instead of It', 'Why answer mode can hurt learning, and how to use AI as a tutor.', '6 min'),
+      { id: 'm04-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 4: Working With AI', desc: 'Mixed scenarios from Modules 1–4, then the Checkpoint for the Delegation Decision.', duration: '5 min' },
     ],
   },
   {
@@ -180,11 +180,11 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m05-l01', 'Check the Claim', 'Split an answer into claims, read laterally, trace citations, and check an image’s provenance.', '16 min'),
-      lesson('m05-l02', 'Test the System', 'Evals, rubrics, repeated runs and a counterfactual bias test on a real screening model.', '17 min'),
-      lesson('m05-l03', 'When AI Takes Actions', 'Agents, permissions and prompt injection — find the hijack in an action log and design it out.', '15 min'),
-      { id: 'm05-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 5: Investigations', desc: 'Mixed scenarios from Modules 1–5, then the Checkpoint for the Verify Protocol.', duration: '8 min' },
-      { id: 'p2-project', kind: ITEM_KIND.PROJECT, title: 'Part II Project: My AI Study Kit', desc: 'For one real class: a delegation map, a tested specification, a protocol, a mini-eval and a verification log.', duration: '20 min' },
+      lesson('m05-l01', 'Check the Claim', 'Split an answer into claims and check each one outside the answer.', '7 min'),
+      lesson('m05-l02', 'Test the System', 'Repeated runs, rubrics, and a one-change bias test on a résumé screener.', '6 min'),
+      lesson('m05-l03', 'When AI Takes Actions', 'Agents, prompt injection, and limiting what a hijacked agent can do.', '7 min'),
+      { id: 'm05-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 5: Investigations', desc: 'Mixed scenarios from Modules 1–5, then the Checkpoint for the Verify Protocol.', duration: '5 min' },
+      { id: 'p2-project', kind: ITEM_KIND.PROJECT, title: 'Part II Project: My AI Study Kit', desc: 'For one real class: what goes to AI, your rules, and three checked claims.', duration: '10 min' },
     ],
   },
   {
@@ -205,11 +205,11 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m06-l01', 'Honest Work', 'Disclosure, citing AI, why detectors accuse honest students, and who owns what AI helped make.', '15 min'),
-      lesson('m06-l02', 'Fair to Whom?', 'Compute two fairness metrics on a real screening model, watch them conflict, and choose with a reason.', '16 min'),
-      lesson('m06-l03', 'Your Data, Face and Voice', 'Where typed data goes, voice-clone scams, image abuse and the law — and a verify-then-report protocol.', '15 min'),
-      lesson('m06-l04', 'Companions and Persuasion', 'Engagement objectives, engineered intimacy, and how to support a friend who relies on an AI companion.', '13 min'),
-      { id: 'm06-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 6: Harm Checks', desc: 'Mixed scenarios from the whole course so far, then the Checkpoint for the Harm Check.', duration: '8 min' },
+      lesson('m06-l01', 'Honest Work', 'Saying what AI did, and why detectors accuse honest students.', '7 min'),
+      lesson('m06-l02', 'Fair to Whom?', 'Audit an attendance flag and see why fairness measures conflict.', '7 min'),
+      lesson('m06-l03', 'Your Data, Face and Voice', 'Where typed data goes, voice-clone scams, and what to do about image abuse.', '6 min'),
+      lesson('m06-l04', 'Companions and Persuasion', 'Engagement tactics in AI companions, and healthy limits.', '6 min'),
+      { id: 'm06-case', kind: ITEM_KIND.CASEFILE, title: 'Case File 6: Harm Checks', desc: 'Mixed scenarios from the whole course so far, then the Checkpoint for the Harm Check.', duration: '5 min' },
     ],
   },
   {
@@ -230,9 +230,9 @@ export const SECTIONS = [
       ],
     },
     lessons: [
-      lesson('m07-l01', 'Design an AI Tool', 'Build a grounded Q&A tool from real parts, red-team it for prompt injection, and write its model card.', '20 min'),
-      lesson('m07-l02', 'Who Decides?', 'Stakeholders, contested costs like energy, and a school AI policy drafted, defended and revised.', '15 min'),
-      { id: 'm07-cap', kind: ITEM_KIND.CAPSTONE, title: 'Capstone: Field Investigation', desc: 'An unfamiliar AI product, all seven Field Kit tools, a safeguard you design, and a defense in your own words.', duration: '35 min' },
+      lesson('m07-l01', 'Design an AI Tool', 'Set up and test a class Q&A helper, and write its model card.', '7 min'),
+      lesson('m07-l02', 'Who Decides?', 'Who AI decisions affect, disputed costs, and hype literacy.', '6 min'),
+      { id: 'm07-cap', kind: ITEM_KIND.CAPSTONE, title: 'Capstone: Field Investigation', desc: 'Investigate an unfamiliar AI product and defend your judgment in your own words.', duration: '20 min' },
     ],
   },
 ]

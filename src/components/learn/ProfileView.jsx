@@ -22,7 +22,7 @@ import SplitText from '../../motion/SplitText'
 import Reveal from '../../motion/Reveal'
 import CountUp from '../../motion/CountUp'
 import { useAuth } from '../../state/AuthContext'
-import { PageLink } from '../../nav'
+import { USERNAME_MIN, USERNAME_MAX } from '../../services/accountService'
 
 /* Export and import of the learner's progress. The Terms warn that progress
    lives in this browser and can be lost with it; this is the way to keep a
@@ -97,39 +97,111 @@ function ProgressData() {
   )
 }
 
-/* Which profile this progress belongs to, and the way out of it. It sits
-   BELOW the data section rather than at the top, because who is signed in is
-   the least interesting fact on this page: the course is the same either
-   way, and the guest path is the default. */
-function ProfileIdentity() {
-  const { account, signOut } = useAuth()
+/* The account: the public username (changeable here), the private email,
+   the password, and the two ways out — sign out, or delete the account and
+   its progress. The email is shown only here, to its owner. */
+function AccountSettings() {
+  const { account, displayName, isJudge, updateUsername, changePassword, signOut, forget } = useAuth()
+  const [name, setName] = useState(account?.username ?? '')
+  const [nameNote, setNameNote] = useState(null)
+  const [pw, setPw] = useState({ current: '', next: '' })
+  const [pwNote, setPwNote] = useState(null)
+  const [pwBusy, setPwBusy] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+
+  if (!account) return null
+
+  const saveName = (e) => {
+    e.preventDefault()
+    if (name.trim() === (account.username ?? '')) { setNameNote({ tone: 'ok', text: 'No change to save.' }); return }
+    const result = updateUsername(name)
+    setNameNote(result.ok ? { tone: 'ok', text: 'Username saved.' } : { tone: 'bad', text: result.error })
+  }
+
+  const savePassword = async (e) => {
+    e.preventDefault()
+    if (pwBusy) return
+    setPwBusy(true)
+    const result = await changePassword(pw)
+    setPwBusy(false)
+    if (result.ok) setPw({ current: '', next: '' })
+    setPwNote(result.ok ? { tone: 'ok', text: 'Password changed.' } : { tone: 'bad', text: result.error })
+  }
 
   return (
-    <section className="pv-data" aria-labelledby="pv-who-title">
+    <section className="pv-data pv-account" aria-labelledby="pv-account-title">
       <div>
-        <h3 className="pv-data-title" id="pv-who-title">
-          {account ? 'This profile' : 'Sharing this browser?'}
-        </h3>
-        <p className="pv-data-desc">
-          {account
-            ? `Everything above belongs to ${account.name} (${account.handle}). Signing out returns to the guest profile and leaves this one exactly as it is.`
-            : 'The progress above is the guest profile — whatever anyone does on this browser. A local profile keeps two people’s streaks and gems apart. It is optional, it is free, and nothing is sent anywhere.'}
-        </p>
+        <h3 className="pv-data-title" id="pv-account-title">Account</h3>
+        <p className="pv-data-desc">Signed in as <b>{displayName}</b>. Your account is stored in this browser on this device.</p>
       </div>
+
+      <form className="pv-account-row" onSubmit={saveName} noValidate>
+        <div className="form-field">
+          <label className="form-label" htmlFor="pv-username">Username</label>
+          <input
+            id="pv-username" className="form-input" value={name} maxLength={USERNAME_MAX}
+            onChange={(e) => { setName(e.target.value); setNameNote(null) }}
+            disabled={isJudge} autoComplete="nickname" autoCapitalize="none" spellCheck={false}
+            aria-describedby="pv-username-note"
+          />
+        </div>
+        <button type="submit" className="btn btn-outline btn-sm" disabled={isJudge}>Save</button>
+        <p id="pv-username-note" className={`pv-data-note${nameNote ? ` is-${nameNote.tone}` : ''}`} role="status">
+          {nameNote?.text ?? `${USERNAME_MIN}–${USERNAME_MAX} letters, numbers or underscores. Leave it empty to show “Learner”.`}
+        </p>
+      </form>
+
+      {account.email && (
+        <div className="pv-account-fact">
+          <span className="form-label">Email</span>
+          <span className="pv-account-email">{account.email}</span>
+          <span className="pv-data-note">Private — used to sign in, never shown to anyone else.</span>
+        </div>
+      )}
+
+      {!isJudge && (
+        <form className="pv-account-row pv-account-row--pw" onSubmit={savePassword} noValidate>
+          <div className="form-field">
+            <label className="form-label" htmlFor="pv-pw-current">Current password</label>
+            <input id="pv-pw-current" type="password" className="form-input" value={pw.current} autoComplete="current-password"
+              onChange={(e) => { setPw((p) => ({ ...p, current: e.target.value })); setPwNote(null) }} />
+          </div>
+          <div className="form-field">
+            <label className="form-label" htmlFor="pv-pw-next">New password</label>
+            <input id="pv-pw-next" type="password" className="form-input" value={pw.next} autoComplete="new-password"
+              onChange={(e) => { setPw((p) => ({ ...p, next: e.target.value })); setPwNote(null) }} />
+          </div>
+          <button type="submit" className="btn btn-outline btn-sm" disabled={pwBusy || !pw.current || !pw.next}>
+            {pwBusy ? 'Saving…' : 'Change password'}
+          </button>
+          <p className={`pv-data-note${pwNote ? ` is-${pwNote.tone}` : ''}`} role="status">{pwNote?.text ?? ''}</p>
+        </form>
+      )}
+
       <div className="pv-data-actions">
-        {account ? (
-          <button type="button" className="btn btn-outline btn-sm" onClick={signOut}>Sign out</button>
-        ) : (
-          <PageLink page="signin" className="btn btn-outline btn-sm">Make a profile</PageLink>
+        <button type="button" className="btn btn-primary btn-sm" onClick={signOut}>
+          <Icon name="log-out" size={16} /> Sign out
+        </button>
+        {!isJudge && !confirming && (
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirming(true)}>Delete account</button>
         )}
       </div>
+      {confirming && (
+        <div className="pv-data-confirm" role="group" aria-label="Confirm deleting your account">
+          <p>Delete this account and all of its progress from this browser? This cannot be undone.</p>
+          <div className="pv-data-actions">
+            <button type="button" className="btn btn-outline btn-sm" onClick={() => forget()}>Delete my account</button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setConfirming(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
 
 export default function ProfileView() {
   const { state, vm } = useProgression()
-  const { account } = useAuth()
+  const { displayName } = useAuth()
   const s = vm.stats
 
   const accuracy = s.totalCorrectAnswers + s.totalWrongAnswers > 0
@@ -153,10 +225,9 @@ export default function ProfileView() {
         <div className="pv-identity">
           <div className="pv-avatar" data-tilt data-tip={`Level ${vm.level}`}>{vm.level}</div>
           <div>
-            <SplitText as="h2" className="pv-name" immediate>{account?.name ?? vm.levelTitle}</SplitText>
+            <SplitText as="h2" className="pv-name" immediate>{displayName}</SplitText>
             <p className="pv-since">
-              {account ? `${vm.levelTitle} · ` : ''}
-              Learning since {getShortDate(getLocalDateKey(new Date(state.createdAt)))}
+              Level {vm.level} · {vm.course.completedCount} of {vm.course.totalLessons} lessons done · learning since {getShortDate(getLocalDateKey(new Date(state.createdAt)))}
             </p>
           </div>
         </div>
@@ -198,8 +269,8 @@ export default function ProfileView() {
 
       <FieldJournal />
 
+      <AccountSettings />
       <ProgressData />
-      <ProfileIdentity />
     </div>
   )
 }

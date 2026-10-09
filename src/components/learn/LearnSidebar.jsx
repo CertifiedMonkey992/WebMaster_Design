@@ -1,13 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    LearnSidebar.jsx — PRIMARY APP NAVIGATION
    ---------------------------------------------------------------------------
-   One icon family, drawn to a single spec (24px box, 2.1px round strokes,
-   large simple forms). Revision 2 gives each icon ONE move that depicts what
-   the destination is — played on hover, and held while active:
+   Revision 3 (2026-10): the icons are full-colour illustrations drawn to a
+   reference the product owner supplied (NavIcons.jsx, VISUAL_SYSTEM.md →
+   The nav icons). Each still has ONE move that depicts the destination —
+   played on hover, and held while active:
 
-     Home        the roof lifts            Learn     the pages open
-     Practice    the rings close in        Quests    the star turns
-     Shop        the bag handle hops       Profile   the head nods
+     Home        the globe turns           Learn     the roof lifts
+     Practice    the dumbbell is lifted    Quests    the chest hops
+     Shop        the awning lifts          Profile   the head nods
+
+   A quest waiting to be claimed also puts the red dot on the chest.
 
    Two moving objects replace per-item tints:
      · a HOVER GHOST that slides between items under the pointer
@@ -18,72 +21,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-
-const ico = {
-  width: 22,
-  height: 22,
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 2.1,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
-  'aria-hidden': true,
-}
-
-const HomeIcon = () => (
-  <svg {...ico} className="ni ni-home">
-    <path className="ni-roof" d="M3.5 10.5 12 3.5l8.5 7" />
-    <path d="M5.5 9.5V20h13V9.5" />
-    <path className="ni-door" d="M9.75 20v-5.5h4.5V20" />
-  </svg>
-)
-
-/* About: the dot of the "i" hops. */
-const AboutIcon = () => (
-  <svg {...ico} className="ni ni-about">
-    <circle cx="12" cy="12" r="8.5" />
-    <path d="M12 11v5.5" />
-    <circle className="ni-about-dot" cx="12" cy="7.6" r="1.3" fill="currentColor" stroke="none" />
-  </svg>
-)
-
-const LearnIcon = () => (
-  <svg {...ico} className="ni ni-learn">
-    <path className="ni-page-l" d="M12 7.7a3.5 3.5 0 0 0-4-3.2H3v12h5a3.5 3.5 0 0 1 4 2.8" />
-    <path className="ni-page-r" d="M12 7.7a3.5 3.5 0 0 1 4-3.2h5v12h-5a3.5 3.5 0 0 0-4 2.8" />
-    <path d="M12 7.7v11.6" />
-  </svg>
-)
-
-const PracticeIcon = () => (
-  <svg {...ico} className="ni ni-practice">
-    <circle className="ni-ring-o" cx="12" cy="12" r="8.5" />
-    <circle className="ni-ring-i" cx="12" cy="12" r="4" />
-    <circle className="ni-bull" cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
-  </svg>
-)
-
-const QuestIcon = () => (
-  <svg {...ico} className="ni ni-quest">
-    <path className="ni-star" d="M12 3.5l2.6 5.3 5.9.85-4.25 4.15 1 5.85L12 16.9l-5.25 2.75 1-5.85L3.5 9.65l5.9-.85z" />
-  </svg>
-)
-
-const ShopIcon = () => (
-  <svg {...ico} className="ni ni-shop">
-    <path d="M4.5 8.5h15L18.5 20h-13z" />
-    <path className="ni-bag-top" d="M4.5 8.5 6.5 4.5h11l2 4" />
-    <path className="ni-handle" d="M9 12a3 3 0 0 0 6 0" />
-  </svg>
-)
-
-const ProfileIcon = () => (
-  <svg {...ico} className="ni ni-profile">
-    <circle className="ni-head" cx="12" cy="8.5" r="3.8" />
-    <path d="M5 20a7 7 0 0 1 14 0" />
-  </svg>
-)
+import { HomeIcon, AboutIcon, LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon } from './NavIcons'
 
 const NAV_GROUPS = [
   {
@@ -168,7 +106,7 @@ export default function LearnSidebar({ active, onChange, onGoHome, onGoAbout, ba
           data-tip={item.tip}
           data-tip-side="right"
         >
-          <span className="ls-nav-icon"><item.Icon /></span>
+          <span className="ls-nav-icon"><item.Icon alert={item.id === 'quests' && badge > 0} /></span>
           <span className="ls-nav-label">{item.label}</span>
           {badge > 0 && (
             <span className="ls-nav-badge" key={badge} aria-label={`${badge} ready`}>{badge}</span>

@@ -943,14 +943,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.lv-title {
-  font-size: var(--fs-micro);
-  text-transform: uppercase;
-  letter-spacing: var(--ls-label);
-  color: var(--evergreen);
-  font-weight: var(--fw-bold);
-}
-
 .lv-track {
   height: 7px;
   background: var(--paper-deep);
@@ -2040,13 +2032,6 @@
   animation: fx-slide-up var(--dur-modal) var(--ease-snap) 400ms backwards;
 }
 
-.rt-levelup-sub {
-  font-size: var(--fs-caption);
-  color: var(--ink-faint);
-  margin-top: var(--sp-1);
-  animation: fx-fade-in var(--dur-open) var(--ease-out) 530ms backwards;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════════
    PRACTICE VIEW
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -2261,6 +2246,25 @@
 .pv-data-note { margin: 0; min-height: 1.2em; font-size: var(--fs-caption); color: var(--ink-muted); }
 .pv-data-note.is-ok  { color: var(--moss); }
 .pv-data-note.is-bad { color: var(--berry-ink); }
+
+/* ── Account: username, email, password, sign out ── */
+.pv-account-row {
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) auto;
+  align-items: end;
+  gap: var(--sp-2) var(--sp-3);
+}
+.pv-account-row .pv-data-note { grid-column: 1 / -1; }
+.pv-account-row--pw { grid-template-columns: minmax(0, 13rem) minmax(0, 13rem) auto; }
+.pv-account-fact { display: flex; flex-direction: column; gap: var(--sp-1); }
+.pv-account-email { font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--ink); word-break: break-all; }
+.pv-data-desc b { color: var(--ink); }
+
+@media (max-width: 640px) {
+  .pv-account-row,
+  .pv-account-row--pw { grid-template-columns: minmax(0, 1fr); }
+  .pv-account-row .btn { justify-self: start; }
+}
 
 .pv-tiles {
   display: grid;

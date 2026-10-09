@@ -27,6 +27,7 @@ import { getLocalDateKey, addDays } from '../utils/dateUtils'
 import { ACHIEVEMENTS } from '../data/achievements'
 import { SECTIONS, getSectionById } from '../data/learnData'
 import currency from './currencyService'
+import wheelService from './wheelService'
 import { emptyDaily } from './storageService'
 
 /** Every operation the reviewer's controls can ask for. */
@@ -52,6 +53,7 @@ export const OPS = {
   COMPLETE_MISSION:  'completeMission',
   UNLOCK_BADGES:     'unlockBadges',
   RESET_BADGES:      'resetBadges',
+  SPINS:             'spins',
 }
 
 /** Is this profile the reviewer's? */
@@ -326,6 +328,13 @@ export function apply(state, payload = {}, now = Date.now(), deps = {}) {
       const achievements = { ...state.achievements }
       for (const a of ACHIEVEMENTS) achievements[a.id] = achievements[a.id] ?? unlockedAt
       return done({ ...state, achievements }, [{ type: 'JUDGE_BADGES_UNLOCKED' }])
+    }
+
+    /* Bank extra spins on the wheel. The spin itself is still the learner's
+       press, through the real draw and the real payout. */
+    case OPS.SPINS: {
+      const next = wheelService.grantSpins(state, payload.count ?? 1)
+      return done(next, [{ type: 'JUDGE_SPINS', extra: next.wheel.extraSpins }])
     }
 
     case OPS.RESET_BADGES:

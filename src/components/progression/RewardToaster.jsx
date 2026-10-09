@@ -43,7 +43,6 @@ const LIFETIME = {
   DAILY_GOAL_MET: 3000,
   TEAM_MISSION_COMPLETE: 3600,
   TEAM_MISSION_CLAIMED: 2400,
-  DAILY_CYCLE_COMPLETE: 4200,
   LEVEL_UP: 4200,
 }
 
@@ -184,13 +183,6 @@ function Toast({ reward }) {
           </span>
         </div>
       )
-    case 'DAILY_CYCLE_COMPLETE':
-      return (
-        <div className="rt-toast rt-toast--gold">
-          <span className="rt-toast-icon rt-toast-icon--pop"><Icon name="calendar" size={20} /></span>
-          <span><b>Seven days complete</b><em>A fresh bonus track starts tomorrow</em></span>
-        </div>
-      )
     default:
       return null
   }
@@ -252,8 +244,7 @@ function LevelUpBanner({ reward, onDismiss }) {
           <span className="rt-levelup-bolt"><BoltIcon size={16} /></span>
         </div>
         <div className="rt-levelup-label">Level up</div>
-        <div className="rt-levelup-title">{reward.title}</div>
-        <div className="rt-levelup-sub">You reached level {reward.level}</div>
+        <div className="rt-levelup-title">Level {reward.level}</div>
       </div>
     </div>
   )

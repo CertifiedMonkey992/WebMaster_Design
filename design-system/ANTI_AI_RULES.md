@@ -69,6 +69,12 @@ product. Bone, warm ink, evergreen, terracotta, ochre, berry. If a new colour
 is needed, it is warm, or it is not needed. **Any hex whose blue channel is
 its largest channel is a bug.**
 
+*Revision 9 — one scoped exception.* The sidebar's full-colour nav icons use
+their own named palette (`--ni-*`, `VISUAL_SYSTEM.md` → *The nav icons*),
+including a blue dumbbell and a purple disc, drawn to a reference the
+product owner supplied. No `--ni-` token is read outside `.ni` icons, and
+there is still no gradient and no indigo-to-cyan wash anywhere.
+
 ## 7. Glassmorphism
 
 **BAD** — `backdrop-filter: blur(18px)` with a translucent white ground on a
@@ -262,7 +268,8 @@ a commented optical correction gets converted.
 Run this against any UI diff before committing.
 
 - [ ] No new hex literal. Every colour is a token.
-- [ ] No cool hue. No hex whose blue channel is the largest.
+- [ ] No cool hue. No hex whose blue channel is the largest. (The `--ni-`
+      tokens read by `.ni` nav icons are the one named exception — rev 9.)
 - [ ] No new radius value outside the five-step scale.
 - [ ] No `box-shadow` on a resting surface.
 - [ ] No `transition: all`. Every `infinite` animation is a loop listed in `MOTION_RULES.md`.

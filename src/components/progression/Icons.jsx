@@ -346,6 +346,51 @@ const LINE_ICONS = {
       <path d="m12 5 7 7-7 7" />
     </>
   ),
+  /* The daily spin: a wheel under its pointer. */
+  wheel: (
+    <>
+      <circle cx="12" cy="13" r="8.5" />
+      <path d="M12 4.5v17M3.5 13h17M6 7l12 12M18 7 6 19" strokeWidth="1.4" />
+      <path d="M9.5 1.8h5L12 5.6Z" fill="currentColor" />
+    </>
+  ),
+  /* Account controls (sign-in page, Profile → Account). */
+  eye: (
+    <>
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  'eye-off': (
+    <>
+      <path d="M10.6 5.6A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16.6 16.6 0 0 1-2.6 3.4M6.6 6.7C3.9 8.4 2.5 12 2.5 12S6 18.5 12 18.5c1.9 0 3.5-.6 4.9-1.5" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3.5 3.5l17 17" />
+    </>
+  ),
+  user: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+    </>
+  ),
+  'log-out': (
+    <>
+      <path d="M9.5 20.5H5.5a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2h4" />
+      <path d="M16 16.5 20.5 12 16 7.5M20.5 12H9.5" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="8.5" y="8.5" width="12" height="12" rx="2" />
+      <path d="M15.5 8.5V5.5a2 2 0 0 0-2-2h-8a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h3" />
+    </>
+  ),
+  key: (
+    <>
+      <circle cx="8" cy="15" r="4.5" />
+      <path d="m11.2 11.8 9.3-9.3M17.5 5.5l2.5 2.5M15 8l2 2" />
+    </>
+  ),
 }
 
 /** Generic line icon. Names come from quest templates and achievements. */

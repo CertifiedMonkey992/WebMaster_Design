@@ -12,6 +12,7 @@ import useProgressWidth from '../../hooks/useProgressWidth'
 import RollingNumber from '../../motion/RollingNumber'
 import { useLandedValue } from '../../motion/flight'
 import Reveal from '../../motion/Reveal'
+import { formatNumber } from '../../utils/progressionUtils'
 
 export default function ProgressCard({ style, className = '' }) {
   const { vm } = useProgression()
@@ -24,12 +25,12 @@ export default function ProgressCard({ style, className = '' }) {
     <div className={`progress-card ${className}`.trim()} style={style}>
       <div className="pc-header">
         Your Progress
-        <span className="pc-header-tag" data-tip="Levels come from total XP">
-          {vm.levelTitle}
+        <span className="pc-header-tag" data-tip="Total XP earned — levels come from it">
+          <RollingNumber value={vm.xp} format={formatNumber} /> XP
         </span>
       </div>
 
-      <LevelProgress size="md" showTitle={false} />
+      <LevelProgress size="md" />
 
       <div className="pc-goal">
         <div className="pc-goal-top">

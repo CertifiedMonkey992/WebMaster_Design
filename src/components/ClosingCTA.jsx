@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ClosingCTA.jsx — THE LAST THING ON THE PAGE
    ---------------------------------------------------------------------------
-   One promise the build actually keeps: the course opens without an account.
+   One promise the build actually keeps: lesson one is short.
    The three figures are read from real course data, and they are TALLIED as
    they arrive — the page counting the course out for you.
 
@@ -15,7 +15,9 @@ import { SECTIONS, TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
 
 /* Lesson one's real length — the heading's promise is read from the course. */
 const FIRST_MINUTES = parseInt(SECTIONS[0].lessons[0].duration, 10)
-import { DAILY_BONUS } from '../config/dailyBonusConfig'
+import { SLOTS, percentOf } from '../config/wheelConfig'
+
+const JACKPOT = SLOTS.find((s) => s.tier === 'jackpot')
 import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import CountUp from '../motion/CountUp'
@@ -46,7 +48,7 @@ export default function ClosingCTA() {
   const stats = [
     { value: TOTAL_LESSONS, label: 'interactive lessons', tip: 'Predictions, real models to train and test in your browser, and a Check at the end of each' },
     { value: TOTAL_SECTIONS, label: 'modules in three parts', tip: 'Understand AI → use it well → use it responsibly, ending in a capstone' },
-    { value: DAILY_BONUS.CYCLE_LENGTH, suffix: '-day', label: 'bonus track', tip: `Gems, XP, hearts, and a Streak Shield on day ${DAILY_BONUS.CYCLE_LENGTH}` },
+    { value: JACKPOT.amount, label: 'gem jackpot on the daily spin', tip: `One free spin a day; the jackpot comes up ${percentOf(JACKPOT.weight)} of the time` },
   ]
 
   return (
@@ -62,8 +64,8 @@ export default function ClosingCTA() {
           </SplitText>
           <Reveal as="p" className="cta-body" delay={DUR.move * 0.5}>
             You sort real systems, write a spam filter by hand and watch a feed
-            learn from you. There is nothing to register for: open the course, and
-            your progress saves in this browser as you go.
+            learn from you. Make a free account and your progress saves in this
+            browser as you go.
           </Reveal>
 
           <div ref={actionRef} className="cta-action">

@@ -23,6 +23,8 @@ import {
 import { load, save, peekUpdatedAt, clear, createDefaultState, sanitizeState, migrate, exportState, getProfileKey } from '../services/storageService'
 import progression, { ACTIONS, reduce, reconcile, buildViewModel } from '../services/progressionService'
 import { getLocalDateKey } from '../utils/dateUtils'
+import { secureInt, secureId } from '../utils/random'
+import { WHEEL } from '../config/wheelConfig'
 
 /* Split contexts: progression state changes rarely, the clock changes every
    second. Keeping them apart means a ticking countdown does not re-render the
@@ -68,9 +70,10 @@ function createActions(dispatch) {
      *  the same purchase is refused rather than charged twice. */
     purchaseItem:   (itemId, txnId) => dispatch(ACTIONS.PURCHASE_ITEM, { itemId, txnId }),
 
-    /** Claim today's daily bonus. Safe to call twice — the second call is
-     *  refused by the stored claim date rather than paying again. */
-    claimDailyBonus: () => dispatch(ACTIONS.CLAIM_DAILY_BONUS),
+    /** Spin the wheel. The draw is made HERE, with the browser's
+     *  cryptographic random source, and handed to the reducer with a one-shot
+     *  id — so the reducer stays pure and a replayed spin is refused. */
+    spinWheel: () => dispatch(ACTIONS.SPIN_WHEEL, { roll: secureInt(WHEEL.WEIGHT_TOTAL), spinId: secureId('spin') }),
 
     claimQuest:     (questId) => dispatch(ACTIONS.CLAIM_QUEST, { questId }),
     claimAllQuests: () => dispatch(ACTIONS.CLAIM_ALL_QUESTS),
@@ -273,19 +276,8 @@ export function ProgressionProvider({ judge = false, children }) {
       set: (patch) => dispatch(ACTIONS.DEV_SET, patch),
       resetDailyQuests: () => dispatch(ACTIONS.DEV_RESET_DAILY),
       resetWeeklyQuests: () => dispatch(ACTIONS.DEV_RESET_WEEKLY),
-      setBonusDay: (day) => dispatch(ACTIONS.DEV_SET_BONUS_DAY, { day }),
-      resetDailyBonus: () => dispatch(ACTIONS.DEV_RESET_BONUS),
-      /** Claim every remaining day of the current track in one go. Each pass
-       *  clears the claim anchor first, which is exactly what a new calendar
-       *  day would do — so this exercises the real claim path seven times. */
-      completeBonusCycle: () => {
-        for (let i = 0; i < 8; i++) {
-          const bonus = stateRef.current.dailyBonus
-          dispatch(ACTIONS.DEV_SET_BONUS_DAY, { day: bonus.cycleDay })
-          const events = dispatch(ACTIONS.CLAIM_DAILY_BONUS)
-          if (events.some((e) => e.type === 'DAILY_CYCLE_COMPLETE')) break
-        }
-      },
+      /** Give today's free spin back (and clear the clock guard). */
+      resetWheel: () => dispatch(ACTIONS.DEV_RESET_WHEEL),
       /** Rewind stored dates by N days to simulate time passing. */
       shiftDays: (days) => {
         const s = stateRef.current
@@ -312,10 +304,10 @@ export function ProgressionProvider({ judge = false, children }) {
           },
           daily: { ...s.daily, dateKey: shift(s.daily.dateKey) },
           weekly: { ...s.weekly, weekKey: shiftWeek(s.weekly.weekKey) },
-          dailyBonus: {
-            ...s.dailyBonus,
-            lastClaimDate: shift(s.dailyBonus.lastClaimDate),
-            cycleStartDate: shift(s.dailyBonus.cycleStartDate),
+          wheel: {
+            ...s.wheel,
+            dayKey: shift(s.wheel.dayKey),
+            highWater: Math.max(0, s.wheel.highWater - days * 86400000),
           },
           quests: {
             ...s.quests,
@@ -384,13 +376,13 @@ const NOOP_ACTIONS = {
   awardXP: NOOP, awardGems: NOOP, spendGems: NOOP,
   loseHeart: NOOP, restoreHeart: NOOP, restoreAllHearts: NOOP, refillHeartsWithGems: NOOP,
   recordAnswer: NOOP, completeLesson: NOOP, completePractice: NOOP, addPracticeTime: NOOP,
-  purchaseItem: NOOP, claimDailyBonus: NOOP,
+  purchaseItem: NOOP, spinWheel: NOOP,
   claimQuest: NOOP, claimAllQuests: NOOP, claimTeamReward: NOOP, rerollTeamMission: NOOP,
   setDailyGoal: NOOP, reconcileNow: NOOP, judge: NOOP,
   savePart: NOOP, saveJournal: NOOP, recordScan: NOOP,
   exportProgress: () => '', importProgress: () => false,
-  dev: { set: NOOP, resetDailyQuests: NOOP, resetWeeklyQuests: NOOP, setBonusDay: NOOP,
-         resetDailyBonus: NOOP, completeBonusCycle: NOOP, shiftDays: NOOP, reset: NOOP, raw: () => null },
+  dev: { set: NOOP, resetDailyQuests: NOOP, resetWeeklyQuests: NOOP, resetWheel: NOOP,
+         shiftDays: NOOP, reset: NOOP, raw: () => null },
 }
 const NOOP_REWARDS = { rewards: [], dismissReward: NOOP, pushRewards: NOOP }
 
@@ -543,11 +535,16 @@ const VISIBLE = new Set([
   'STREAK_UPDATED', 'STREAK_MILESTONE', 'STREAK_LOST', 'HEART_LOST',
   'HEARTS_EMPTY', 'HEARTS_RESTORED', 'SECTION_COMPLETE', 'PERFECT_LESSON',
   'DAILY_GOAL_MET', 'TEAM_MISSION_COMPLETE', 'TEAM_MISSION_CLAIMED',
-  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED', 'DAILY_CYCLE_COMPLETE',
+  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED',
 ])
 
+/* A spin's payout is revealed by the wheel when it stops (it flies its own
+   reward to the counter), so a toast must not announce it the moment Spin
+   is pressed. */
+const fromWheel = (event) => typeof event.reason === 'string' && event.reason.startsWith('wheel:')
+
 function isVisibleReward(event) {
-  return VISIBLE.has(event.type)
+  return VISIBLE.has(event.type) && !fromWheel(event)
 }
 
 /**

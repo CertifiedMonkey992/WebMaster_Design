@@ -177,14 +177,13 @@ there. Both are useful information.
 Corollary: if a feature does not exist (a leaderboard, a class dashboard, a
 sync service), the UI does not pretend. Say what it is.
 
-The same rule cuts the other way, and the local profiles are the case in
-point. They exist, so the UI says so — but it says exactly what they are: a
-name on a shelf that keeps two people's progress apart on one browser, with
-no server, no registration and a passphrase that protects nothing. A sign-in
-page that borrowed the shape of a real one and implied a real one would be
-inventing a feature just as surely as a fake testimonial would. The page
-therefore carries the guest path as its own sentence, and the privacy policy
-lists the profile store beside every other key.
+The same rule cuts the other way, and the accounts are the case in point.
+Since 2026-10 the course requires one, so the sign-in page looks like any
+ordinary sign-in page — but it says exactly what the account is: an email,
+a hashed password and an optional username, kept in this browser, with no
+server behind it. It never implies sync, a friends list or a protection it
+cannot give, and the privacy policy lists the account store beside every
+other key.
 
 ### 9. Subtraction first
 

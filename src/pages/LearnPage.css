@@ -265,23 +265,18 @@ html:has(.learn-app) body {
 .ls-nav-btn:hover .ls-nav-label { transform: translateX(3px); }
 
 .ls-nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  color: var(--ink-faint);
-  transition: color var(--dur-hover) var(--ease-out);
 }
-
-.ls-nav-btn:hover .ls-nav-icon { color: var(--ink); }
 
 .ls-nav-btn.active {
   color: var(--evergreen);
   font-weight: var(--fw-bold);
 }
 
-.ls-nav-btn.active .ls-nav-icon { color: var(--evergreen); }
 
 /* A count on a destination with something waiting (claimable quests). */
 .ls-nav-badge {
@@ -299,42 +294,87 @@ html:has(.learn-app) body {
   animation: fx-pop-in var(--dur-lift) var(--ease-spring) both;
 }
 
-/* ── Nav icons: one move each, depicting the destination ── */
+/* ── Nav icons (components/learn/NavIcons.jsx) ──────────────────────────────
+   Full-colour illustrations on the --ni-* palette (VISUAL_SYSTEM.md → The
+   nav icons). Each keeps one move, played on hover and held while active. */
 
+.nf-red { fill: var(--ni-red); }
+.nf-red-deep { fill: var(--ni-red-deep); }
+.nf-red-mid { fill: var(--ni-red-mid); }
+.nf-red-edge { fill: var(--ni-red-edge); }
+.nf-red-seam { fill: var(--ni-red-seam); }
+.nf-yellow { fill: var(--ni-yellow); }
+.nf-yellow-light { fill: var(--ni-yellow-light); }
+.nf-yellow-deep { fill: var(--ni-yellow-deep); }
+.nf-amber { fill: var(--ni-amber); }
+.nf-gold-dark { fill: var(--ni-gold-dark); }
+.nf-maroon { fill: var(--ni-maroon); }
+.nf-wood { fill: var(--ni-wood); }
+.nf-wood-light { fill: var(--ni-wood-light); }
+.nf-brown { fill: var(--ni-brown); }
+.nf-brown-light { fill: var(--ni-brown-light); }
+.nf-blue { fill: var(--ni-blue); }
+.nf-blue-light { fill: var(--ni-blue-light); }
+.nf-blue-pale { fill: var(--ni-blue-pale); }
+.nf-blue-shirt { fill: var(--ni-blue-shirt); }
+.nf-blue-collar { fill: var(--ni-blue-collar); }
+.nf-green { fill: var(--ni-green); }
+.nf-purple { fill: var(--ni-purple); }
+.nf-gray { fill: var(--ni-gray); }
+.nf-gray-light { fill: var(--ni-gray-light); }
+.nf-gray-frame { fill: var(--ni-gray-frame); }
+.nf-skin { fill: var(--ni-skin); }
+.nf-skin-shade { fill: var(--ni-skin-shade); }
+.nf-hair { fill: var(--ni-hair); }
+.nf-white { fill: var(--ni-white); }
+.ns-red { stroke: var(--ni-red); }
+.ns-orange { stroke: var(--ni-orange); }
+.ns-yellow-edge { stroke: var(--ni-yellow-edge); }
+.ns-white { stroke: var(--ni-white); }
+.ns-hair { stroke: var(--ni-hair); }
+.ns-gray { stroke: var(--ni-gray); }
+
+.ni { display: block; overflow: visible; }
 .ni * { transform-box: fill-box; transition: transform var(--dur-move) var(--ease-spring); }
 
+/* Learn: the roof lifts. */
 .ni-roof { transform-origin: 50% 100%; }
-.ls-nav-btn:hover .ni-roof { transform: translateY(-2px) rotate(-4deg); }
-.ni-door { transform-origin: 50% 100%; }
-.ls-nav-btn:hover .ni-door { transform: scaleY(0.6); }
+.ls-nav-btn:hover .ni-roof,
+.ls-nav-btn.active .ni-roof { transform: translateY(-1.5px); }
 
-.ls-nav-btn:hover .ni-about-dot { transform: translateY(-2px); }
+/* Practice: the dumbbell is lifted. */
+.ni-bell { transform-origin: 50% 50%; }
+.ls-nav-btn:hover .ni-bell { transform: rotate(-14deg) translateY(-1px); }
 
-.ni-page-l { transform-origin: 100% 50%; }
-.ni-page-r { transform-origin: 0% 50%; }
-.ls-nav-btn:hover .ni-page-l,
-.ls-nav-btn.active .ni-page-l { transform: scaleX(0.84) skewY(-6deg); }
-.ls-nav-btn:hover .ni-page-r,
-.ls-nav-btn.active .ni-page-r { transform: scaleX(0.84) skewY(6deg); }
+/* Quests: the chest hops; a waiting quest's dot pings once. */
+.ni-chest { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-chest { animation: ni-hop var(--dur-open) var(--ease-spring); }
+@keyframes ni-hop { 40% { transform: translateY(-2.5px) scaleX(1.04); } }
+.ni-dot { transform-origin: 50% 50%; animation: fx-pop-in var(--dur-lift) var(--ease-spring) both; }
 
-.ni-ring-o, .ni-ring-i, .ni-bull { transform-origin: 50% 50%; }
-.ls-nav-btn:hover .ni-ring-o { transform: scale(0.82); }
-.ls-nav-btn:hover .ni-ring-i { transform: scale(1.2); transition-delay: var(--lag-follow); }
-.ls-nav-btn:hover .ni-bull { transform: scale(1.8); transition-delay: var(--lag-finish); }
+/* Shop: the awning flaps lift. */
+.ni-awning { transform-origin: 50% 0%; }
+.ls-nav-btn:hover .ni-awning { transform: scaleY(0.88); }
 
-.ni-star { transform-origin: 50% 55%; }
-.ls-nav-btn:hover .ni-star { transform: rotate(72deg) scale(1.1); }
-.ls-nav-btn.active .ni-star { fill: rgba(var(--evergreen-rgb), 0.18); }
-
-.ni-handle { transform-origin: 50% 0%; }
-.ls-nav-btn:hover .ni-handle { animation: ni-hop var(--dur-open) var(--ease-spring); }
-@keyframes ni-hop { 40% { transform: translateY(-3px) scaleX(1.15); } }
-.ls-nav-btn:hover .ni-bag-top { transform: translateY(-1px); }
-
+/* Profile: the head nods. */
 .ni-head { transform-origin: 50% 100%; }
 .ls-nav-btn:hover .ni-head { animation: ni-nod var(--dur-reveal) var(--ease-out); }
-@keyframes ni-nod { 30% { transform: translateY(1.5px) rotate(-8deg); } 65% { transform: translateY(-0.5px) rotate(6deg); } }
-.ls-nav-btn.active .ni-head { fill: rgba(var(--evergreen-rgb), 0.18); }
+@keyframes ni-nod { 30% { transform: translateY(0.8px) rotate(-7deg); } 65% { transform: translateY(-0.3px) rotate(5deg); } }
+
+/* Home: the globe turns. */
+.ni-land { transform-origin: 50% 50%; }
+.ls-nav-btn:hover .ni-land { transform: translateX(3px); }
+
+/* About: the dot of the "i" hops. */
+.ni-about-dot { transform-origin: 50% 50%; }
+.ls-nav-btn:hover .ni-about-dot { transform: translateY(-1.5px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ni * { transition: none; }
+  .ls-nav-btn:hover .ni-chest,
+  .ls-nav-btn:hover .ni-head,
+  .ni-dot { animation: none; }
+}
 
 /* ── Main column ──────────────────────────────────────────────────────────── */
 

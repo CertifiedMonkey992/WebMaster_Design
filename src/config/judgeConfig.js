@@ -13,12 +13,23 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* The credentials shown on the sign-in page. They are deliberately public:
-   this is a demonstration profile on the reader's own machine, holding no
-   personal data and reaching no server. */
+   this is a demonstration account on the reader's own machine, holding no
+   personal data and reaching no server.
+
+   `hash` is the password run through the same PBKDF2 the sign-in form uses
+   (services/accountService.js → hashSecret), computed once offline so the
+   seeded account needs no work at start-up. Changing `password` means
+   recomputing it:
+     node -e "const c=require('crypto'),s=c.randomBytes(16);console.log(s.toString('base64'),c.pbkdf2Sync('NEW',s,600000,32,'sha256').toString('base64'))" */
 export const JUDGE_LOGIN = {
-  handle: 'judge@lunx.app',
+  email: 'judge@lunx.app',
   password: 'tsa2027',
-  name: 'TSA Judge',
+  username: 'TSA_Judge',
+  hash: {
+    iterations: 600000,
+    salt: 'NVZN7ePRh94XauwE151kgg==',
+    hash: 'JcPhOHu1t9cbHUu1LvG1R1kD/H3U+iYh58B8Ju50qTA=',
+  },
 }
 
 /** Gems the reviewer's profile holds. Displayed as ∞ while topping up. */

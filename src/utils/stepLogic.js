@@ -5,7 +5,7 @@
    step renderer, the lesson, Practice and the content loader. No React.
 
    An answer is one object for every step type:
-     { filled, selected, confidence, assign, text, value, fields, done }
+     { filled, selected, assign, text, value, fields, done }
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /**
@@ -19,7 +19,7 @@
  *   fields?: ComposeField[], goal?: string, min?: number,
  * }} Step
  * @typedef {{
- *   filled?: (string|null)[], selected?: any, confidence?: string|null,
+ *   filled?: (string|null)[], selected?: any,
  *   assign?: Record<string, string>, text?: string, value?: string,
  *   fields?: Record<string, string>, done?: boolean,
  * }} Answer
@@ -27,7 +27,7 @@
 
 /** @type {Readonly<Answer>} */
 export const EMPTY_ANSWER = Object.freeze({
-  filled: [], selected: null, confidence: null, assign: {}, text: '', value: '', fields: {}, done: false,
+  filled: [], selected: null, assign: {}, text: '', value: '', fields: {}, done: false,
 })
 
 const CHECK_TYPES = new Set(['fill-blank', 'binary', 'mcq', 'recall', 'predict', 'sort', 'number'])
@@ -110,10 +110,9 @@ export function isAnswerCorrect(step, answer = EMPTY_ANSWER) {
 /** @param {Step | null | undefined} step @param {Answer} [answer] */
 export function canCheckStep(step, answer = EMPTY_ANSWER) {
   if (!step) return false
-  const { filled = [], selected = null, confidence = null, assign = {}, value = '' } = answer
+  const { filled = [], selected = null, assign = {}, value = '' } = answer
   switch (step.type) {
     case 'fill-blank': return filled.filter(Boolean).length === (step.answers ?? []).length
-    case 'predict': return selected !== null && confidence !== null
     case 'sort': return (step.items ?? []).every((it) => assign[it.id])
     case 'number': return parseNumber(value) !== null
     default: return selected !== null

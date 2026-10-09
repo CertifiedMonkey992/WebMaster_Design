@@ -135,7 +135,7 @@ export default function Footer() {
             already use it every day.
           </p>
           <p className="ft-figures">
-            {TOTAL_LESSONS} lessons · {TOTAL_SECTIONS} modules · no account
+            {TOTAL_LESSONS} lessons · {TOTAL_SECTIONS} modules · free
           </p>
         </div>
 

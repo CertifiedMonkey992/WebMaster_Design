@@ -47,10 +47,10 @@ export const SITE = {
   },
 
   /* When the privacy policy and terms last changed. */
-  policiesUpdated: '2026-09-25',
+  policiesUpdated: '2026-10-08',
 }
 
-const DESCRIPTION = 'LunX is a field guide to how AI works for high school students: interactive lessons on machine learning, neural networks, AI tools and ethics, with XP, streaks and badges. No account needed.'
+const DESCRIPTION = 'LunX is a field guide to how AI works for high school students: interactive lessons on machine learning, neural networks, AI tools and ethics, with XP, streaks and badges. Free.'
 
 /* Order matters: it is the book's order, and sets which way a page turns. */
 export const ROUTES = [
@@ -69,13 +69,13 @@ export const ROUTES = [
     sitemap: { priority: '0.8', changefreq: 'monthly' },
   },
   {
-    /* Profiles are optional and live only in the reader's browser, so this
-       page is not something search should send anyone to — and it carries
-       the reviewer's credentials, which are for judges, not for crawlers. */
+    /* Accounts live only in the reader's browser, so this page is not
+       something search should send anyone to — and it carries the
+       reviewer's credentials, which are for judges, not for crawlers. */
     page: 'signin',
     path: 'signin/',
     title: 'Sign in · LunX',
-    description: 'Keep separate progress on one browser with an optional local profile, or open the TSA reviewer profile with every module unlocked.',
+    description: 'Sign in to LunX or create a free account. Accounts are kept in your browser; TSA judges can use the reviewer account.',
     noindex: true,
   },
   {
@@ -96,7 +96,7 @@ export const ROUTES = [
     page: 'privacy',
     path: 'privacy/',
     title: 'Privacy policy · LunX',
-    description: 'What LunX stores, where it stays, and what it never collects: progress lives in your browser, with no accounts and no tracking cookies.',
+    description: 'What LunX stores, where it stays, and what it never collects: your account and progress live in your browser, with no tracking cookies.',
     sitemap: { priority: '0.3', changefreq: 'yearly' },
   },
   {
@@ -110,7 +110,7 @@ export const ROUTES = [
     page: 'learn',
     path: 'learn/',
     title: 'The course · LunX',
-    description: 'Start the LunX course: 22 short, interactive lessons on how AI works, from what counts as AI to the ethics of using it. Progress saves in your browser.',
+    description: 'Start the LunX course: 22 short, interactive lessons on how AI works, from what counts as AI to the ethics of using it. Free account; progress saves in your browser.',
     sitemap: { priority: '0.9', changefreq: 'weekly' },
   },
   {

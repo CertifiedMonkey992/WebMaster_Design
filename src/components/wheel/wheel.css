@@ -1,0 +1,396 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   wheel.css — THE DAILY SPIN
+   ---------------------------------------------------------------------------
+   Authoritative reference: design-system/COMPONENT_RULES.md → Daily spin,
+   MOTION_RULES.md → The daily spin.
+
+   The wheel is printed in the product's own inks, one per tier, so a slot's
+   rarity reads before its label does: paper for the common slots, warm
+   paper for uncommon, evergreen for rare, clay for epic and ochre for the
+   jackpot. Flat fills, a hairline between slots, an evergreen rim with paper
+   pegs, a clay pointer. No gradient, no glow; the only light is the burst
+   when a reward is won (motion/burst.js).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wh {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: var(--sp-8);
+  align-items: center;
+}
+
+/* ── The wheel ── */
+.wh-stage {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.wh-disc {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.wh-disc-art { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.wh-rim { fill: var(--evergreen); }
+.wh-peg { fill: var(--surface-raised); }
+
+.wh-seg {
+  stroke: var(--line-strong);
+  stroke-width: 0.6;
+  transition: opacity var(--dur-open) var(--ease-out), stroke var(--dur-hover) var(--ease-out);
+}
+
+.wh-slot--common   .wh-seg { fill: var(--surface-raised); }
+.wh-slot--uncommon .wh-seg { fill: var(--paper); }
+.wh-slot--rare     .wh-seg { fill: var(--evergreen); }
+.wh-slot--epic     .wh-seg { fill: var(--clay); }
+.wh-slot--jackpot  .wh-seg { fill: var(--ochre); }
+
+/* Labels are in the drawing's user units (the wheel scales as one object). */
+.wh-amount {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  fill: var(--ink);
+}
+
+.wh-unit {
+  font-family: var(--font-ui);
+  font-size: 6.5px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  fill: var(--ink-muted);
+}
+
+.wh-slot--jackpot .wh-unit { fill: var(--ink); font-weight: var(--fw-black); }
+
+.wh-slot--rare .wh-amount,
+.wh-slot--epic .wh-amount,
+.wh-slot--rare .wh-unit,
+.wh-slot--epic .wh-unit { fill: var(--surface-raised); }
+
+/* The economy icons take their colour from `color`. On the dark slots the
+   gem is drawn in light ochre so it still reads. */
+.wh-icon--gem    { color: var(--ochre); }
+.wh-icon--xp     { color: var(--ochre); }
+.wh-icon--shield { color: var(--evergreen); }
+.wh-slot--rare .wh-icon--gem,
+.wh-slot--epic .wh-icon--gem,
+.wh-slot--rare .wh-icon--shield { color: var(--ochre-bright); }
+.wh-slot--jackpot .wh-icon--gem { color: var(--surface-raised); }
+
+/* The win: every other slot steps back and the winner keeps a clay edge. */
+.wh.is-won .wh-slot:not(.is-won) .wh-seg { opacity: 0.45; }
+.wh-slot.is-won .wh-seg { stroke: var(--clay-deep); stroke-width: 2.4; }
+.wh-slot--epic.is-won .wh-seg { stroke: var(--ink); }
+
+.wh-pointer {
+  position: absolute;
+  top: -6%;
+  left: 50%;
+  width: 13%;
+  translate: -50% 0;
+  overflow: visible;
+  z-index: 1;
+}
+
+.wh-pointer path { fill: var(--clay); stroke: var(--surface-raised); stroke-width: 2; }
+.wh-pointer circle { fill: var(--surface-raised); }
+
+.wh.is-won .wh-pointer { animation: wh-tick var(--dur-open) var(--ease-spring); }
+@keyframes wh-tick { 40% { rotate: -9deg; } 70% { rotate: 5deg; } }
+
+.wh-hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 17%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
+  background: var(--evergreen);
+  border: 3px solid var(--surface-raised);
+}
+
+/* ── Beside the wheel ── */
+.wh-side { display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+
+.wh-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--ink-muted);
+}
+
+.wh-status.is-ready { color: var(--evergreen); }
+
+.wh-result {
+  min-height: 2.6em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wh-result-text { font-family: var(--font-display); font-size: var(--fs-title); font-weight: var(--fw-semi); color: var(--ink); }
+.wh-result-text.is-quiet { font-family: var(--font-ui); font-size: var(--fs-body); color: var(--ink-muted); font-weight: var(--fw-semi); }
+.wh-result em { font-size: var(--fs-caption); color: var(--ink-muted); font-style: normal; }
+.wh.is-won .wh-result-text { animation: fx-slide-up var(--dur-enter) var(--ease-snap); }
+
+.wh-result-tier {
+  align-self: flex-start;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.wh-chip-label--rare    { color: var(--evergreen); }
+.wh-chip-label--epic    { color: var(--clay); }
+.wh-chip-label--jackpot { color: var(--ochre-ink); }
+
+.wh-spin { align-self: stretch; }
+
+.wh-refusal { font-size: var(--fs-small); font-weight: var(--fw-semi); color: var(--berry-ink); }
+
+/* ── The odds ── */
+.wh-odds {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+  margin-top: var(--sp-2);
+}
+
+.wh-odds-cap {
+  text-align: left;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-bottom: var(--sp-1);
+}
+
+.wh-odds thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.wh-odds th,
+.wh-odds td {
+  padding: var(--sp-1) var(--sp-2) var(--sp-1) 0;
+  border-top: 1px solid var(--line-faint);
+  text-align: left;
+  vertical-align: top;
+  color: var(--ink);
+}
+
+.wh-odds th { font-weight: var(--fw-bold); white-space: nowrap; }
+.wh-odds-pct { color: var(--ink-faint); }
+.wh-odds-total { text-align: right; padding-right: 0; font-weight: var(--fw-bold); white-space: nowrap; }
+
+.wh-chip {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--sp-2);
+  border-radius: var(--r-xs);
+  border: 1px solid var(--line-strong);
+  vertical-align: -1px;
+}
+
+.wh-chip--common   { background: var(--surface-raised); }
+.wh-chip--uncommon { background: var(--paper); }
+.wh-chip--rare     { background: var(--evergreen); }
+.wh-chip--epic     { background: var(--clay); }
+.wh-chip--jackpot  { background: var(--ochre); }
+
+.wh-note { font-size: var(--fs-caption); color: var(--ink-faint); line-height: var(--lh-snug); }
+
+/* ── Showcase: the landing page's frame ── */
+.wh--showcase { grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: var(--sp-5); }
+.wh--showcase .wh-stage { max-width: 220px; }
+.wh--showcase .wh-odds,
+.wh--showcase .wh-note { display: none; }
+
+@media (max-width: 720px) {
+  .wh { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); }
+  .wh-stage { max-width: 260px; }
+  .wh--showcase { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wh.is-won .wh-pointer,
+  .wh.is-won .wh-result-text { animation: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE TOP-BAR BUTTON AND THE PANEL
+   ---------------------------------------------------------------------------
+   Where the daily bonus used to open from, in the same place. While a spin
+   is waiting the button is clay with a pinging dot (an Invitation); once
+   spun it is quiet and counts down to the reset.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wh-indicator {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 5px var(--sp-3);
+  font: inherit;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
+  color: var(--ink-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    transform var(--dur-move) var(--ease-snap);
+}
+
+.wh-indicator:hover { background: rgba(var(--ink-rgb), 0.05); color: var(--ink); }
+.wh-indicator:active { transform: translateY(1px) scale(0.96); transition-duration: var(--dur-micro); }
+.wh-indicator:focus-visible { outline: 2px solid var(--evergreen); outline-offset: 2px; }
+
+.wh-indicator.is-ready {
+  color: var(--clay-ink);
+  background: var(--clay-tint);
+  border-color: rgba(var(--clay-rgb), 0.3);
+}
+
+.wh-indicator.is-ready:hover { border-color: var(--clay); }
+.wh-indicator-icon { display: grid; place-items: center; }
+
+/* Hovering a waiting wheel gives it a quarter turn. */
+.wh-indicator .li--wheel circle,
+.wh-indicator .li--wheel path:nth-child(2) { transform-origin: 12px 13px; transition: transform var(--dur-open) var(--ease-snap); }
+.wh-indicator.is-ready:hover .li--wheel circle,
+.wh-indicator.is-ready:hover .li--wheel path:nth-child(2) { transform: rotate(90deg); }
+
+.wh-indicator-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--clay);
+  border: 2px solid var(--paper);
+}
+
+.wh-indicator-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--clay);
+  animation: fx-ping var(--loop-ping) var(--ease-out) infinite;
+}
+
+/* During a spin the top bar is lifted above the scrim, so the reward's
+   destination is lit while everything else is dimmed. */
+.fx-lift-topbar .learn-topbar { z-index: calc(var(--z-modal) + 1); }
+
+.wh-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  background: rgba(var(--ink-rgb), 0.42);
+  animation: fx-fade-in var(--dur-enter) var(--ease-out) both;
+  overflow-y: auto;
+}
+
+.wh-overlay.is-leaving { animation: wh-fade-out var(--dur-hover) var(--ease-in) both; }
+.wh-overlay.is-leaving .wh-modal { animation: wh-sink var(--dur-hover) var(--ease-in) both; }
+
+@keyframes wh-fade-out { to { opacity: 0; } }
+@keyframes wh-sink { to { opacity: 0; transform: translateY(16px) scale(0.97); } }
+
+.wh-modal {
+  position: relative;
+  width: min(46rem, 100%);
+  max-height: calc(100vh - 2.5rem);
+  overflow-y: auto;
+  padding: var(--sp-6);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-modal);
+  animation: wh-rise var(--dur-modal) var(--ease-snap) both;
+}
+
+@keyframes wh-rise {
+  from { opacity: 0; transform: translateY(40px) scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
+
+.wh-head { padding-right: calc(var(--tap-min) + var(--sp-4)); margin-bottom: var(--sp-6); }
+
+.wh-eyebrow {
+  display: block;
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--clay);
+}
+
+.wh-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-display);
+  color: var(--ink);
+  line-height: var(--lh-tight);
+}
+
+.wh-close {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-4);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--ink-muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-spring);
+}
+
+.wh-close:hover { color: var(--ink); border-color: var(--line-strong); transform: rotate(90deg); }
+
+.wh-judge-margin { margin-top: var(--sp-5); }
+
+@media (max-width: 560px) {
+  .wh-modal { padding: var(--sp-5) var(--sp-4); }
+  .wh-indicator-text { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wh-indicator-dot::after { animation: none; }
+  .wh-indicator .li--wheel circle,
+  .wh-indicator .li--wheel path:nth-child(2) { transition: none; }
+}

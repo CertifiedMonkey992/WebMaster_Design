@@ -18,7 +18,7 @@
 
    The hero carries the page's primary action, above the fold on every
    screen: one button into the course, with the three facts that remove the
-   last hesitation (free, no account, how long lesson one takes). COMPONENT_RULES.md →
+   last hesitation (free, how long lesson one takes). COMPONENT_RULES.md →
    Links into the course.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -131,7 +131,7 @@ export default function Hero() {
         <Reveal as="p" variant="left" immediate delay={60} className="hero-eyebrow">
           <b>Grades 9–12</b>
           <span className="hero-live" aria-hidden="true" />
-          <span>{TOTAL_LESSONS} lessons · no account needed</span>
+          <span>{TOTAL_LESSONS} lessons · free</span>
         </Reveal>
 
         {/* The product's one italic-clay emphasis, on the half of the sentence
@@ -165,7 +165,7 @@ export default function Hero() {
               <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
             </svg>
           </PageLink>
-          <span className="hero-cta-note">Free · no account · lesson one takes {FIRST_MINUTES} minutes</span>
+          <span className="hero-cta-note">Free account · lesson one takes {FIRST_MINUTES} minutes</span>
         </Reveal>
 
         <Reveal as="ol" className="hero-path" variant="left" stagger immediate delay={620}>

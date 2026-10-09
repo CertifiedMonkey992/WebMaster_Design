@@ -13,8 +13,8 @@
 
      content = { title, subtitle, takeaway, tabs: [{ id, label, graded?, steps }] }
 
-   A lesson's tabs are its three PARTS (8.15 of the course plan): explore,
-   explain & apply, check. Only a part marked `graded` spends hearts.
+   A lesson's tabs are its two PARTS (2026-10): Learn, then a graded Check.
+   Only a part marked `graded` spends hearts.
 
    Practice draws from the same content — graded steps of what the learner
    has finished, with the items they missed first.

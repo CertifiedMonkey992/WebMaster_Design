@@ -4,24 +4,24 @@
    Hearts, gems, XP and the streak are the REAL progression state, and every
    graded answer is reported to the central engine.
 
-   A lesson is three PARTS (its tabs), each ending at a natural stopping point:
+   A lesson is two PARTS (its tabs) since the 2026-10 simplification:
 
-     Part 1  Recall → Predict → Explore     nothing here is graded
-     Part 2  Explain → Apply                nothing here is graded
-     Part 3  Check → Carry forward          the only part that spends hearts
+     Part 1  Learn    short explanations, one activity where it earns its
+                      place, and a practice question or two — nothing graded
+     Part 2  Check    a few questions; the only part that spends hearts
 
-   The heart rule: a prediction is made BEFORE the explanation, and a wrong
-   one is the point of the exercise — so predictions, recalls, simulations
-   and applied questions never cost a heart and never pay answer XP. Only a
-   step in a part marked `graded` goes through progression.recordAnswer:
+   (Case Files, projects and the capstone keep their own parts.) The heart
+   rule: practice questions and simulations never cost a heart and never
+   pay answer XP. Only a step in a part marked `graded` goes through
+   progression.recordAnswer:
 
      wrong answer   → a real heart is spent, and the item is flagged for
                       spaced review in Practice
      correct answer → real XP (budgeted per item, so replays cannot farm it)
      item finished  → progression.completeLesson → everything updates at once
 
-   Every committed prediction and every reflection is written to the Field
-   Journal (progression.saveJournal). Finishing a part saves a resume point
+   Every answered quick question and every reflection is written to the
+   Field Journal (progression.saveJournal). Finishing a part saves a resume point
    (progression.savePart), so a lesson reopened tomorrow starts where the
    learner stopped. Completion is dispatched exactly once (`committedRef`).
 
@@ -45,7 +45,7 @@ import { LiveHeart, LiveGem, LiveFlame } from '../progression/LiveIcons'
 import { formatClock } from '../../utils/dateUtils'
 import StepBody, {
   EMPTY_ANSWER, correctLabel, isAnswerCorrect, canCheckStep, canContinue,
-  isCheckStep, isGradable, composeText, CONFIDENCE,
+  isCheckStep, isGradable, composeText,
 } from './StepRenderer'
 import { inline } from './Rich'
 import { getLessonIcon } from './LessonIcons'
@@ -76,8 +76,6 @@ function CloseButton({ onClick, className = '' }) {
     </button>
   )
 }
-
-const confidenceLabel = (id) => CONFIDENCE.find((c) => c.id === id)?.label ?? ''
 
 export default function LessonModal({ lessonId, onClose }) {
   const { state, vm, actions } = useProgression()
@@ -306,7 +304,6 @@ export default function LessonModal({ lessonId, onClose }) {
         key: `${currentTab.id}:${currentStep.id}`,
         prompt: currentStep.prompt.replace(/\*/g, ''),
         text: (chosen?.text ?? '').replace(/\*/g, ''),
-        confidence: answer.confidence,
         ...(result === null ? {} : { correct: result }),
       })
     }
@@ -512,7 +509,7 @@ export default function LessonModal({ lessonId, onClose }) {
           )}
           {lesson && (
             <div className="lm-welcome-meta">
-              <span data-tip="Predictions and practice never cost a heart">
+              <span data-tip="Practice questions never cost a heart">
                 <HeartIcon size={15} fill={vm.hearts / vm.maxHearts} /> {gradedTotal ? `Only the ${gradedTotal}-question Check spends hearts` : 'No hearts at stake'}
               </span>
               <span data-tip={isReplay ? 'Rewards are paid once per item' : 'Pass the Check without losing a heart'}>
@@ -593,10 +590,6 @@ export default function LessonModal({ lessonId, onClose }) {
   /* ── Step runner ── */
   const v = verdicts[stepKey]
   const why = currentStep?.why
-  const predictionText = currentStep?.type === 'predict' && v
-    ? `You said “${(currentStep.options.find((o) => o.id === v.answer.selected)?.text ?? '').replace(/\*/g, '')}” — ${confidenceLabel(v.answer.confidence).toLowerCase()}.`
-    : null
-  const confidentMiss = currentStep?.type === 'predict' && v?.result === false && v.answer.confidence === 'sure'
 
   return (
     <div className={overlayCls} {...dialogProps}>
@@ -691,7 +684,7 @@ export default function LessonModal({ lessonId, onClose }) {
         <div className="lm-action lm-action--neutral" key="answering">
           <span className="lm-key-hint" aria-hidden="true">
             {isCheck
-              ? <>{currentStep?.type === 'predict' ? 'Choose, rate your confidence' : 'Choose'} · <kbd>Enter</kbd> to {currentStep?.type === 'predict' ? 'lock it in' : 'check'}</>
+              ? <>Choose · <kbd>Enter</kbd> to check</>
               : <><kbd>Enter</kbd> to continue</>}
             {currentTab.graded && isGradable(currentStep) ? ' · graded' : ''}
           </span>
@@ -701,7 +694,7 @@ export default function LessonModal({ lessonId, onClose }) {
               disabled={!checkReady}
               onClick={check}
             >
-              {currentStep?.type === 'predict' ? 'Lock in prediction' : 'Check'}
+              Check
             </button>
           ) : (
             <button
@@ -724,8 +717,7 @@ export default function LessonModal({ lessonId, onClose }) {
               </svg>
             </span>
             <div>
-              <div className="lm-fb-title">{currentStep?.type === 'predict' ? 'You called it' : 'Right'}</div>
-              {predictionText && <div className="lm-fb-correct">{predictionText}</div>}
+              <div className="lm-fb-title">Right</div>
               {currentStep?.reveal && <p className="lm-fb-why">{inline(currentStep.reveal)}</p>}
               {why && <p className="lm-fb-why">{inline(why)}</p>}
               {currentStep?.source && <p className="lm-fb-correct">{inline(currentStep.source)}</p>}
@@ -743,12 +735,9 @@ export default function LessonModal({ lessonId, onClose }) {
             </span>
             <div>
               <div className="lm-fb-title">
-                {currentStep?.type === 'predict'
-                  ? (v?.result === null ? 'Here’s what happens' : confidentMiss ? 'A confident miss — the kind you remember' : 'Not what happens — no heart spent')
-                  : 'Not quite — no heart spent'}
+                {currentStep?.type === 'predict' && v?.result === null ? 'Here’s what happens' : 'Not quite — no heart spent'}
               </div>
-              {predictionText && <div className="lm-fb-correct">{predictionText}</div>}
-              {currentStep?.type !== 'predict' && correctLabel(currentStep) && (
+              {correctLabel(currentStep) && (
                 <div className="lm-fb-correct">Answer: <strong>{correctLabel(currentStep)}</strong></div>
               )}
               {currentStep?.reveal && <p className="lm-fb-why">{inline(currentStep.reveal)}</p>}

@@ -188,6 +188,30 @@ There is no separate "warning". A warning in this product is either a cost
 (`--berry`) or a thing to attend to (`--clay`). Adding a fourth semantic hue
 would break the four-hue discipline for no gain.
 
+### The nav icons (revision 9)
+
+The left sidebar's icons are full-colour illustrations drawn to a reference
+the product owner supplied (2026-10): a birdhouse (Learn), a dumbbell
+(Practice), a treasure chest (Quests), a shopfront (Shop), an avatar
+(Profile), and, in the same manner, a globe (Home) and an "i" in a disc
+(About). Their colours are a deliberate, **scoped** departure from the warm
+palette — a named exception, like a second ink used for one plate:
+
+```css
+--ni-red:    #FF4B4B   /* birdhouse roof, chest dot */
+--ni-yellow: #FFC800   /* birdhouse wall, chest gold; #FBE56D its shine */
+--ni-blue:   #1CB0F6   /* dumbbell, globe; #61C8F9 its shine */
+--ni-purple: #CE82FF   /* the About disc */
+--ni-brown:  #A56644   /* shopfront; #AA572A the chest's wood */
+/* …and the rest of the --ni-* set in index.css */
+```
+
+Rules: every `--ni-` token is read **only** by `.ni` icons
+(`components/learn/NavIcons.jsx`), through `nf-*` / `ns-*` classes — never
+by text, borders, surfaces or any other icon. Flat fills, no outlines, no
+gradients; one lighter shine per object. The sidebar around them keeps the
+paper palette, the evergreen rail and the ink labels exactly.
+
 ### Light on the economy (revision 4)
 
 The economy icons are small physical objects, and physical treasure catches
@@ -392,7 +416,7 @@ as the icon set. No gradient meshes, no glow, no 3D, no isometric.**
 | **Mascot** | There is none, and none is being invented. A mascot the product does not have is a decoration with a face. If one is ever added, it is drawn in the icon language and appears only in empty and completion states. |
 | **Course / module art** | A flat emblem per module, in that module's tint, stroked like the icons. No orbiting rings, no glowing spheres. |
 | **The field guide** | The landing hero's one depicted object: a clothbound book in `--evergreen` with `--surface` pages, chapter tabs in the seven chapter inks (`guideData.js → CHAPTER_INK`; every one passes AA as text), a `--clay` ribbon, and a compass drawn in the 2px icon language. Its only "illustration" is the compass, and it is there because the product is a guide. Pages carry real course data. The page and cover shading are two-stop, one-hue gradients depicting depth on a physical surface — the one sanctioned use. |
-| **Rewards** | The existing `ShopArt` and `DailyBonusArt` sets stay: small, flat, legible at 40px. Repalette to warm tokens. |
+| **Rewards** | The existing `ShopArt` set stays: small, flat, legible at 40px, in warm tokens. The daily spin uses the economy icons themselves on its slots. |
 | **Economy icons** | Gem, heart, flame, bolt and shield are drawn as small objects: a back plate, a face, a shade facet, a warm shine mark. Revision 4 lets their faces take a two-stop, one-hue gradient toward the `-bright` token and gives the gem a lit crown in `--gem-light` — the one place in the product where things look like treasure. |
 | **Empty states** | Text first. An illustration only if it explains something a sentence cannot. |
 | **Completion** | A stamp, not a firework. A rubber-stamp mark in `--moss` reads as earned; particles read as a slot machine. |

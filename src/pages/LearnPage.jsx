@@ -13,8 +13,8 @@ import RewardToaster   from '../components/progression/RewardToaster'
 import QuestPanel, { QuestBoard } from '../components/progression/QuestPanel'
 import DevPanel        from '../components/progression/DevPanel'
 import JudgeConsole    from '../components/judge/JudgeConsole'
-import DailyBonusIndicator from '../components/daily/DailyBonusIndicator'
-import DailyBonusModal     from '../components/daily/DailyBonusModal'
+import WheelIndicator from '../components/wheel/WheelIndicator'
+import WheelModal     from '../components/wheel/WheelModal'
 
 import { ProgressionProvider, useProgression } from '../state/ProgressionContext'
 import { useAuth } from '../state/AuthContext'
@@ -46,7 +46,7 @@ function Course({ onGoHome, onGoAbout }) {
   const [activeLessonId, setActiveLessonId] = useState(null)
   const [scan, setScan] = useState(null)
   const [questPanelOpen, setQuestPanelOpen] = useState(false)
-  const [bonusOpen, setBonusOpen] = useState(false)
+  const [wheelOpen, setWheelOpen] = useState(false)
 
   const navigate = (id) => {
     if (id === activeNav) return
@@ -55,8 +55,8 @@ function Course({ onGoHome, onGoAbout }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  /* The daily bonus opens only from its button in the top bar: a waiting
-     reward is announced by the button's dot, never by a panel on arrival. */
+  /* The daily spin opens only from its button in the top bar: a waiting
+     spin is announced by the button's dot, never by a panel on arrival. */
 
   return (
     <div className="learn-app">
@@ -78,7 +78,7 @@ function Course({ onGoHome, onGoAbout }) {
           <span className="lt-brand-text">LunX</span>
         </button>
         <div className="lt-actions">
-          <DailyBonusIndicator onOpen={() => setBonusOpen(true)} />
+          <WheelIndicator onOpen={() => setWheelOpen(true)} />
           <PlayerStatusBar onOpenShop={() => navigate('shop')} />
         </div>
       </header>
@@ -110,7 +110,7 @@ function Course({ onGoHome, onGoAbout }) {
       {scan && <ScanModal which={scan} onClose={() => setScan(null)} />}
 
       <QuestPanel open={questPanelOpen} onClose={() => setQuestPanelOpen(false)} />
-      <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />
+      <WheelModal open={wheelOpen} onClose={() => setWheelOpen(false)} />
 
       <RewardToaster />
       {/* Two consoles in one corner is worse than one. The reviewer's desk

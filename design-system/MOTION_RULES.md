@@ -56,7 +56,7 @@
 >    fully settles; it idles like an engine.
 > 3. **The demonstrations loop.** A demo learner does not run its scene once
 >    and stop — it keeps going, day after day: finishes lessons, completes
->    quests, is paid, claims the bonus, keeps the streak, rolls to tomorrow,
+>    quests, is paid, spins the wheel, keeps the streak, rolls to tomorrow,
 >    and when it reaches the end of its week the frame cues *Back to the
 >    start* and the learner returns to its seed in view (`useSceneLoop`),
 >    then starts again. A visitor who watches for a minute sees the whole
@@ -460,7 +460,7 @@ it has hard limits.
 - **The lesson ticker**: two rows drifting in opposite directions, ~60s per
   cycle; slows under the pointer; scroll velocity pushes it.
 - **The course frame's tour** (landing, section 1): see *Auto-tour*.
-- **Reward art floating in its tile**: today's daily-bonus art, the shop
+- **Reward art floating in its tile**: the shop
   items in the landing's shop list — ≤ 4px on `--idle-float`, each item on a
   different multiple.
 - **Clocks**: the closing heading's clock and every countdown clock tick once
@@ -491,7 +491,6 @@ The sanctioned idle events:
 | **Streak Shield** | a glint crossing the face |
 | **Streak week** | a warm sheen runs across the ticked days, left to right |
 | **Milestone path** | a spark walks from today's streak to the next stone (Invitation) |
-| **Locked bonus days** | a ripple runs down the row: each waiting reward lifts a little in turn |
 | **Quest icons** | each quest's icon ticks once, one row after another |
 | **Course ticks** | a wave runs along the lessons already done and lands on the next one |
 | **Closing tally** | the rules under the three figures are drawn again, one after another |
@@ -523,7 +522,7 @@ perform differently without a list of pages anywhere.
 
 | Tier | What | Level | Rest after it | Own cooldown |
 |---|---|---|---|---|
-| **Major** | a Demonstration with an outcome: the book's showcase, a quest completed and paid, a bonus day claimed, a streak extended, a lesson completed | 3 | 2.4–4.6s | ≥ 14s, and never two Majors back to back |
+| **Major** | a Demonstration with an outcome: the book's showcase, a quest completed and paid, a spin of the wheel, a streak extended, a lesson completed | 3 | 2.4–4.6s | ≥ 14s, and never two Majors back to back |
 | **Minor** | a Demonstration of one part: a heart lost and refilled, a quest row opening, a ghost fill, the book standing ajar or peeking, a locked module previewing | 2 | 1.8–3.4s | ≥ 6s |
 | **Accent** | a single gesture: a gem tipping to the light, the scribble re-inked, a highlighter laid again, the thumb tabs riffling, a flame flaring | 1 | 1.2–2.6s | ≥ 3.5s |
 
@@ -577,11 +576,11 @@ Every product frame on the landing page has its own **demo learner**
   written from the landing page.
 - It keeps its own **clock**, which a scene can move to *tomorrow*: the
   engine reconciles exactly as it would overnight — quests regenerate, the
-  streak goes at risk, the bonus track moves on, hearts refill.
-- A visitor can use the frame's controls themselves (claim a quest, claim the
-  bonus). The scene yields and the click acts on the demo learner.
-- After a scene has run its course (a week of demo days, or a finished bonus
-  track), the learner resets to its seed. In `considered` mode that happens
+  streak goes at risk, a new day's spin appears, hearts refill.
+- A visitor can use the frame's controls themselves (claim a quest, spin the
+  wheel). The scene yields and the click acts on the demo learner.
+- After a scene has run its course (a week of demo days), the learner resets
+  to its seed. In `considered` mode that happens
   **while its frame is off screen**, so nobody watches a number run
   backwards. In `continuous` mode (revision 6) the reset is a narrated step
   of its own: the frame cues *Back to the start*, then the learner returns to
@@ -604,8 +603,7 @@ Every product frame on the landing page has its own **demo learner**
 | Streak frame | **a day kept**: cue *Next day*; the flame goes at risk and today's square pings; cue *Finishes practice*; the flame flares, the number rolls, today's square stamps, the marker walks; at a milestone the stone rings and its gems fly to the gem pill | Major |
 | Streak frame | **a heart spent and refilled**: cue; the heart cracks and drops; the recovery ring runs; the heart blooms back | Minor |
 | Streak frame | the gem pill tips toward the light | Accent |
-| Bonus frame | **a day claimed**: cue; the claim button presses; the real claim sequence; cue *Next day*; the next day's card becomes today | Major |
-| Bonus frame | a locked day lifts to show what it holds | Accent |
+| Spin frame | **a spin**: cue *Spins the wheel*; the Spin button presses; the real draw and the wheel's spin (below); cue *Won …*; then cue *Next day* and a new spin appears | Major |
 | Quest frame | **a quest finished and paid**: cue *Finishes a lesson*; the bars move, the row that moved opens; a completed row's claim presses; its gems fly to the frame's gem counter | Major |
 | Quest frame | **tomorrow's quests**: cue *Next day*; the list is dealt again | Minor |
 | Quest frame | a shop item the learner can afford lifts from its row | Accent |
@@ -619,7 +617,7 @@ Every product frame on the landing page has its own **demo learner**
 |---|---|---|
 | Learn | the Continue card: the ring is drawn again and the arrow leans on | Minor |
 | Learn | a locked module previews: its lock lifts off and settles, its hint underlines | Minor |
-| Top bar | the gem tips to the light · the flame flares · the waiting gift shakes | Accent |
+| Top bar | the gem tips to the light · the flame flares | Accent |
 | Sidebar | a quest row opens to show its reward and what is left, then closes | Minor |
 | Sidebar | a claimable quest's gem hops toward the gem counter and settles back | Minor |
 | Sidebar | light runs along the XP bar | Accent |
@@ -636,7 +634,7 @@ a real figure, never flies a reward that was not earned, never stamps.
 
 - the current lesson's ping; a claimable reward's shine and its gem's bob;
   a primary "start" action's shine
-- today's daily-bonus art bob, the gift's shake, the indicator's ping
+- the daily-spin button's ping while a spin waits
 - the next milestone stone's beckon; today's streak square ping
 - a blank's pulse while a chip is dragged
 - the flame flicker and the low-heart beat
@@ -681,7 +679,7 @@ near the viewport.
 | Lesson ticker | — | drifts; scroll velocity pushes it | — |
 | Course | eyebrow rule draws, words rise, frame stands up | **the frame tours the real course by itself**, and now and then the demo learner finishes the lesson it is holding on | — |
 | Streaks | frame slides in from its own side | embers rise from the flame, a sheen runs the week; the demo learner keeps a day, spends and refills a heart | — |
-| Daily bonus | days are dealt when the frame is seen | today's art floats and twinkles; the demo learner claims today and moves to tomorrow | — |
+| Daily spin | — | the demo learner spins the wheel with the real odds, then moves to tomorrow | — |
 | Quests & shop | quest bars fill when seen | shop items float, price gems glint; the demo learner finishes lessons, completes a quest and is paid | — |
 | Closing | the tally counts, the clock sweeps | the clock ticks each second; the rules under the tally are drawn again in turn; the tally column floats on a slower parallax than the copy | — |
 
@@ -938,6 +936,28 @@ More life, no more cost:
   runs (it *is* the content), but nothing around it animates.
 
 ---
+
+## The daily spin (2026-10)
+
+The wheel is a **Report**: the result is decided and paid by the reducer on
+the press, and the wheel then shows it. It never turns first and decides
+later.
+
+- **Duration** `--dur-spin` / `DUR.spin` (3.8s), easing `EASE.spin` — a
+  fast start and a long, even deceleration. At least five full turns, landing
+  on a random point **inside** the winning slot, well clear of its edges.
+- **The counter waits.** The reward's counter is held (`hold()`) until the
+  wheel stops; then light rings and bursts from the hub and the reward flies
+  to its counter (`fly()`). A jackpot or epic win gets a larger ring and
+  burst — no confetti, no sound.
+- **No spoilers.** Toasts never announce a spin's payout (`wheel:` ledger
+  reasons are excluded); the wheel reveals it.
+- **The pointer** ticks once (`--dur-open`, spring) when the wheel stops.
+- **Reduced motion, or a hidden tab:** the disc jumps to the result, the slot
+  is highlighted, nothing flies. A timer lands the result if a tab is hidden
+  mid-spin.
+- **The top-bar button** pings while a spin waits (`--loop-ping`) — an
+  Invitation, like the old bonus button.
 
 ## Prohibited outright
 

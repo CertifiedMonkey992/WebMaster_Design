@@ -9,7 +9,9 @@
 
 /* ── Persistence ─────────────────────────────────────────────────────────── */
 export const STORAGE_KEY = 'lunx_user_progress_v1'
-export const STATE_VERSION = 1
+/* 2 (2026-10): the daily bonus track became the daily spin (state.wheel),
+   and lessons went from three parts to two, so saved resume points reset. */
+export const STATE_VERSION = 2
 
 /* ── Hearts ──────────────────────────────────────────────────────────────── */
 export const HEARTS = {
@@ -92,16 +94,6 @@ export const LEVELS = {
   BASE: 100,      // XP from level 1 → 2
   STEP: 50,       // extra XP added to each subsequent level gap
   MAX_LEVEL: 99,
-  /** Display titles unlocked at given levels (highest match wins). */
-  TITLES: [
-    { level: 1,  title: 'Curious'    },
-    { level: 3,  title: 'Explorer'   },
-    { level: 6,  title: 'Analyst'    },
-    { level: 10, title: 'Engineer'   },
-    { level: 15, title: 'Researcher' },
-    { level: 22, title: 'Architect'  },
-    { level: 30, title: 'Luminary'   },
-  ],
 }
 
 /* ── Quests ──────────────────────────────────────────────────────────────── */

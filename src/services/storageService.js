@@ -14,7 +14,7 @@
 
 import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS, COURSEWORK } from '../config/progressionConfig'
 import { SHIELD } from '../config/shopConfig'
-import { normalizeDay } from '../config/dailyBonusConfig'
+import { WHEEL } from '../config/wheelConfig'
 import { normalizePowers } from '../config/judgeConfig'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
 import { getLevelFromXP } from '../utils/progressionUtils'
@@ -99,17 +99,10 @@ export function createDefaultState(now = Date.now()) {
     /* Achievements — id -> unlockedAt timestamp */
     achievements: {},
 
-    /* Daily login bonus.
-       `lastClaimDate` is the idempotency anchor: while it reads today, every
-       further claim today is refused — including after a refresh, because it
-       persists with everything else. */
-    dailyBonus: {
-      cycleDay: 1,            // the cycle day on offer NEXT (1..CYCLE_LENGTH)
-      lastClaimDate: null,    // "YYYY-MM-DD" of the last claim
-      cycleStartDate: null,   // "YYYY-MM-DD" the current cycle began
-      cyclesCompleted: 0,     // full 7-day tracks finished
-      totalClaimed: 0,        // lifetime claims
-    },
+    /* The daily spin (services/wheelService.js). `dayKey` + `spinsUsed`
+       is the allowance and `seenIds` the duplicate guard; both persist with
+       everything else, so a refresh can never hand out a second spin. */
+    wheel: emptyWheel(),
 
     /* Shop
        `seenTxnIds` is the idempotency guard: every confirmed purchase carries
@@ -165,6 +158,20 @@ export function emptyDaily(dateKey) {
     sections: 0,
     correctAnswers: 0,
     goalAwarded: false,
+  }
+}
+
+export function emptyWheel() {
+  return {
+    dayKey: null,      // UTC "YYYY-MM-DD" the `spinsUsed` count belongs to
+    spinsUsed: 0,      // free spins taken on that day
+    extraSpins: 0,     // banked by the reviewer's controls only
+    lastSpin: null,    // { id, at, slotId, granted, substituted }
+    history: [],       // newest first: { at, slotId }
+    seenIds: [],       // newest first — the duplicate guard
+    totalSpins: 0,
+    jackpots: 0,
+    highWater: 0,      // the latest clock time a spin was taken at
   }
 }
 
@@ -263,15 +270,7 @@ export function sanitizeState(raw, now = Date.now()) {
   if (isObj(raw.sectionsCompleted)) s.sectionsCompleted = { ...raw.sectionsCompleted }
   if (isObj(raw.achievements)) s.achievements = { ...raw.achievements }
 
-  if (isObj(raw.dailyBonus)) {
-    s.dailyBonus = {
-      cycleDay: normalizeDay(raw.dailyBonus.cycleDay),
-      lastClaimDate: typeof raw.dailyBonus.lastClaimDate === 'string' ? raw.dailyBonus.lastClaimDate : null,
-      cycleStartDate: typeof raw.dailyBonus.cycleStartDate === 'string' ? raw.dailyBonus.cycleStartDate : null,
-      cyclesCompleted: Math.max(0, Math.floor(num(raw.dailyBonus.cyclesCompleted, 0))),
-      totalClaimed: Math.max(0, Math.floor(num(raw.dailyBonus.totalClaimed, 0))),
-    }
-  }
+  if (isObj(raw.wheel)) s.wheel = sanitizeWheel(raw.wheel)
 
   if (isObj(raw.shop)) {
     s.shop = {
@@ -394,6 +393,35 @@ function sanitizeScan(scan) {
   }
 }
 
+const intIn = (v, lo, hi) => Math.min(hi, Math.max(lo, Math.floor(num(v, lo))))
+const isDayKey = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
+
+function sanitizeWheel(w) {
+  const base = emptyWheel()
+  const spin = w.lastSpin
+  return {
+    dayKey: isDayKey(w.dayKey) ? w.dayKey : null,
+    spinsUsed: intIn(w.spinsUsed, 0, WHEEL.SPINS_PER_DAY),
+    extraSpins: intIn(w.extraSpins, 0, WHEEL.EXTRA_SPINS_MAX),
+    lastSpin: isObj(spin) && typeof spin.id === 'string' && typeof spin.slotId === 'string' && Number.isFinite(spin.at)
+      ? {
+          id: spin.id,
+          at: spin.at,
+          slotId: spin.slotId,
+          granted: isObj(spin.granted) ? { type: String(spin.granted.type), amount: num(spin.granted.amount, 0), label: String(spin.granted.label ?? '') } : null,
+          substituted: spin.substituted === true,
+        }
+      : null,
+    history: Array.isArray(w.history)
+      ? w.history.filter((h) => isObj(h) && Number.isFinite(h.at) && typeof h.slotId === 'string').slice(0, WHEEL.HISTORY).map((h) => ({ at: h.at, slotId: h.slotId }))
+      : base.history,
+    seenIds: Array.isArray(w.seenIds) ? w.seenIds.filter((id) => typeof id === 'string').slice(0, WHEEL.SEEN_IDS) : base.seenIds,
+    totalSpins: Math.max(0, Math.floor(num(w.totalSpins, 0))),
+    jackpots: Math.max(0, Math.floor(num(w.jackpots, 0))),
+    highWater: Math.max(0, num(w.highWater, 0)),
+  }
+}
+
 function isValidQuest(q) {
   return isObj(q) && typeof q.id === 'string' && typeof q.type === 'string' && Number.isFinite(q.target)
 }
@@ -418,7 +446,13 @@ function isValidTeam(t) {
    the shape changes; sanitizeState then fills in anything still missing.
    ─────────────────────────────────────────────────────────────────────────── */
 const MIGRATIONS = {
-  // 1: (state) => ({ ...state, version: 2, newField: default }),
+  /* The seven-day bonus track became the daily spin, and lessons went from
+     three parts to two — a saved "resume at part 3" no longer points at the
+     same place, so resume points start again (finished lessons are kept). */
+  1: (state) => {
+    const { dailyBonus: _dropped, ...rest } = state
+    return { ...rest, version: 2, wheel: emptyWheel(), lessonParts: {} }
+  },
 }
 
 export function migrate(raw) {
@@ -432,12 +466,12 @@ export function migrate(raw) {
   return state
 }
 
-/* ── Which profile is being read and written ─────────────────────────────────
-   One key held all progress before accounts existed, and that key is still
-   the GUEST profile's — a visitor who never signs in reads and writes
-   exactly what they always did. A signed-in profile gets a key of its own
-   (accountService.progressKey), set here by the auth layer before the
-   progression provider mounts.
+/* ── Which account is being read and written ─────────────────────────────────
+   Each account has a key of its own (accountService.progressKey), set here
+   by the auth layer before the progression provider mounts. The unsuffixed
+   key held all progress before accounts were required; the course is only
+   mounted for a signed-in account, so it is read once (when the first
+   account adopts it) and never written again.
    ─────────────────────────────────────────────────────────────────────────── */
 
 let activeKey = STORAGE_KEY
@@ -447,7 +481,7 @@ export function getProfileKey() {
   return activeKey
 }
 
-/** Point every read and write at a profile's key. Pass nothing for guest. */
+/** Point every read and write at an account's key. */
 export function setProfileKey(key) {
   activeKey = typeof key === 'string' && key ? key : STORAGE_KEY
   return activeKey

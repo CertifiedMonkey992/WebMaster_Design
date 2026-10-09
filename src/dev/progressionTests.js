@@ -22,8 +22,9 @@ import * as learn from '../data/learnData'
 import * as cfg from '../config/progressionConfig'
 import * as shop from '../config/shopConfig'
 import * as shopSvc from '../services/shopService'
-import * as bonusSvc from '../services/dailyBonusService'
-import * as dbCfg from '../config/dailyBonusConfig'
+import * as wheelSvc from '../services/wheelService'
+import * as wheelCfg from '../config/wheelConfig'
+import * as rnd from '../utils/random'
 import * as putils from '../utils/progressionUtils'
 import * as showcase from '../data/showcaseState'
 import { getLocalDateKey } from '../utils/dateUtils'
@@ -695,241 +696,171 @@ export async function runProgressionTests() {
   }
 
   /* ═════════════════════════════════════════════════════════════════════════
-     DAILY LOGIN BONUS
+     DAILY SPIN (the wheel that replaced the daily bonus)
      ═════════════════════════════════════════════════════════════════════════ */
 
-  /* ── TEST 24: a brand-new learner is offered Day 1 ── */
+  /* A roll that lands in a given slot: the first value of its range. */
+  const rollFor = (slotId) => {
+    let edge = 0
+    for (const slot of wheelCfg.SLOTS) {
+      if (slot.id === slotId) return edge
+      edge += slot.weight
+    }
+    return -1
+  }
+  const spin = (s, slotId, t = T0, spinId = `t-${slotId}-${t}`) => run(s, A.SPIN_WHEEL, { roll: rollFor(slotId), spinId }, t)
+
+  /* ── TEST 24: the reward table is a probability distribution ── */
   {
-    const s = fresh()
-    const v = bonusSvc.getBonusView(s, T0)
-    ok('T24 new user is on day 1', v.currentDay === 1, v.currentDay)
-    ok('T24 new user has a reward waiting', v.available === true)
-    ok('T24 nothing claimed yet', s.dailyBonus.totalClaimed === 0 && s.dailyBonus.lastClaimDate === null)
-    ok('T24 day 1 card reads "today"', v.days[0].status === 'today', v.days[0].status)
-    ok('T24 every other day is locked',
-      v.days.slice(1).every(d => d.status === 'locked'),
-      JSON.stringify(v.days.map(d => d.status)))
-    ok('T24 opening the app claims nothing',
-      prog.reconcile(s, T0).state.dailyBonus.totalClaimed === 0)
-    ok('T24 cycle length matches the configured track',
-      dbCfg.CYCLE.length === dbCfg.DAILY_BONUS.CYCLE_LENGTH, dbCfg.CYCLE.length)
-    ok('T24 every reward has a type the service can apply',
-      dbCfg.CYCLE.every(r => Object.values(dbCfg.REWARD_TYPES).includes(r.type)))
-    ok('T24 track days are 1..7 in order',
-      dbCfg.CYCLE.every((r, i) => r.day === i + 1))
+    const total = wheelCfg.SLOTS.reduce((sum, s) => sum + s.weight, 0)
+    ok('T24 the weights sum to exactly 100%', total === wheelCfg.WHEEL.WEIGHT_TOTAL, total)
+    ok('T24 every weight is a positive integer', wheelCfg.SLOTS.every(s => Number.isInteger(s.weight) && s.weight > 0))
+    ok('T24 every slot has a type the service can pay',
+      wheelCfg.SLOTS.every(s => Object.values(wheelCfg.REWARD_TYPES).includes(s.type) && s.amount > 0))
+    ok('T24 slot ids are unique', new Set(wheelCfg.SLOTS.map(s => s.id)).size === wheelCfg.SLOTS.length)
+    const tier = (id) => wheelCfg.SLOTS.filter(s => s.tier === id).reduce((sum, s) => sum + s.weight, 0)
+    ok('T24 tiers are 55 / 27 / 13 / 4.5 / 0.5 %',
+      tier('common') === 550 && tier('uncommon') === 270 && tier('rare') === 130 && tier('epic') === 45 && tier('jackpot') === 5,
+      ['common', 'uncommon', 'rare', 'epic', 'jackpot'].map(tier).join('/'))
+    const tiersShown = wheelSvc.ODDS.tiers.reduce((sum, t) => sum + t.weight, 0)
+    ok('T24 the odds shown to learners add up to 100%', tiersShown === 1000, tiersShown)
+    /* Every one of the 1000 draws maps to a slot, and each slot owns exactly
+       its weight's worth of them — the wheel IS the table. */
+    const counts = {}
+    for (let r = 0; r < 1000; r++) {
+      const slot = wheelCfg.slotForRoll(r)
+      counts[slot?.id ?? 'none'] = (counts[slot?.id ?? 'none'] ?? 0) + 1
+    }
+    ok('T24 every draw lands on a slot', !counts.none, counts.none)
+    ok('T24 each slot owns exactly its weight in draws',
+      wheelCfg.SLOTS.every(s => counts[s.id] === s.weight), JSON.stringify(counts))
+    ok('T24 the jackpot is worth far more than the common reward',
+      wheelCfg.SLOTS.find(s => s.tier === 'jackpot').amount >= 10 * wheelCfg.SLOTS.find(s => s.id === 'gems-20').amount)
+    /* The fair-draw helper: rejection sampling keeps it inside [0, n). */
+    let inRange = true
+    for (let i = 0; i < 2000; i++) { const v = rnd.secureInt(1000); if (!(Number.isInteger(v) && v >= 0 && v < 1000)) inRange = false }
+    ok('T24 the secure draw stays in 0–999', inRange)
   }
 
-  /* ── TEST 25: claiming pays exactly once, through the central systems ── */
+  /* ── TEST 25: a new learner has one spin, and opening the app spends nothing ── */
   {
     const s = fresh()
-    const r = run(s, A.CLAIM_DAILY_BONUS, {}, T0)
-    ok('T25 day 1 pays 20 gems', r.state.gems === s.gems + 20, `${s.gems} -> ${r.state.gems}`)
-    ok('T25 claim is recorded', r.state.dailyBonus.lastClaimDate === putils_today(T0), r.state.dailyBonus.lastClaimDate)
-    ok('T25 cycle advances to day 2', r.state.dailyBonus.cycleDay === 2, r.state.dailyBonus.cycleDay)
-    ok('T25 totalClaimed increments', r.state.dailyBonus.totalClaimed === 1)
-    ok('T25 emits DAILY_BONUS_CLAIMED', r.events.some(e => e.type === 'DAILY_BONUS_CLAIMED'))
-    ok('T25 gems land in the ledger',
-      r.state.ledger.some(e => e.reason === 'daily-bonus-day-1' && e.amount === 20),
-      JSON.stringify(r.state.ledger[0]))
-    ok('T25 counts toward lifetime gem stats',
-      r.state.stats.totalGemsEarned === s.stats.totalGemsEarned + 20)
+    const v = wheelSvc.getWheelView(s, T0)
+    ok('T25 one spin waiting', v.available === true && v.spinsLeft === 1, v.spinsLeft)
+    ok('T25 opening the app spins nothing', prog.reconcile(s, T0).state.wheel.totalSpins === 0)
+    ok('T25 the reset is the next UTC midnight',
+      v.resetAt > T0 && v.resetAt - T0 <= DAY && new Date(v.resetAt).getUTCHours() === 0 && new Date(v.resetAt).getUTCMinutes() === 0)
+  }
 
-    /* Clicking again in the same instant must not pay again. */
-    const again = run(r.state, A.CLAIM_DAILY_BONUS, {}, T0)
-    ok('T25 second claim pays nothing', again.state.gems === r.state.gems, again.state.gems)
-    ok('T25 second claim is refused', again.events.some(e => e.type === 'DAILY_BONUS_ALREADY_CLAIMED'))
-    ok('T25 second claim does not advance the cycle', again.state.dailyBonus.cycleDay === 2)
+  /* ── TEST 26: a spin pays exactly the slot it lands on, once ── */
+  {
+    const s = fresh()
+    const r = spin(s, 'gems-35')
+    const spun = r.events.find(e => e.type === 'WHEEL_SPUN')
+    ok('T26 the result is the drawn slot', spun?.slotId === 'gems-35', spun?.slotId)
+    ok('T26 the slot index points at it on the wheel', wheelCfg.SLOTS[spun?.slotIndex]?.id === 'gems-35')
+    ok('T26 35 gems were paid', r.state.gems === s.gems + 35, `${s.gems} -> ${r.state.gems}`)
+    ok('T26 the gems are in the ledger', r.state.ledger.some(e => e.reason === 'wheel:gems-35' && e.amount === 35))
+    ok('T26 the spin is recorded', r.state.wheel.totalSpins === 1 && r.state.wheel.lastSpin?.slotId === 'gems-35')
+    ok('T26 no spins left today', wheelSvc.getWheelView(r.state, T0).spinsLeft === 0)
 
-    /* Ten rapid clicks — the reducer always sees the latest state. */
+    const again = spin(r.state, 'gems-500', T0 + 1000, 'second')
+    ok('T26 a second spin today is refused', again.events.some(e => e.type === 'WHEEL_REFUSED' && e.reason === 'none-left'))
+    ok('T26 a refused spin pays nothing', again.state.gems === r.state.gems, again.state.gems)
+
+    /* The same spin id replayed (a double click, a retried dispatch). */
+    const banked = run(r.state, A.JUDGE, { op: 'enable', stock: false }, T0).state
+    const extra = run(banked, A.JUDGE, { op: 'spins', count: 1 }, T0).state
+    const replay = run(extra, A.SPIN_WHEEL, { roll: rollFor('gems-20'), spinId: `t-gems-35-${T0}` }, T0)
+    ok('T26 a replayed spin id is refused', replay.events.some(e => e.type === 'WHEEL_REFUSED' && e.reason === 'duplicate'))
+
     let spam = r.state
-    for (let i = 0; i < 10; i++) spam = run(spam, A.CLAIM_DAILY_BONUS, {}, T0).state
-    ok('T25 ten rapid clicks pay nothing extra', spam.gems === r.state.gems, spam.gems)
-    ok('T25 ten rapid clicks claim once', spam.dailyBonus.totalClaimed === 1, spam.dailyBonus.totalClaimed)
+    for (let i = 0; i < 10; i++) spam = run(spam, A.SPIN_WHEEL, { roll: rollFor('gems-500'), spinId: `spam-${i}` }, T0).state
+    ok('T26 ten rapid clicks pay nothing extra', spam.gems === r.state.gems && spam.wheel.totalSpins === 1, spam.gems)
 
-    /* A refresh reloads the anchor, so the guard survives it. */
     const revived = store.sanitizeState(JSON.parse(JSON.stringify(r.state)), T0)
-    ok('T25 claim survives a save/load round trip',
-      revived.dailyBonus.lastClaimDate === r.state.dailyBonus.lastClaimDate &&
-      revived.dailyBonus.cycleDay === 2 && revived.dailyBonus.totalClaimed === 1,
-      JSON.stringify(revived.dailyBonus))
-    ok('T25 replay after a reload is refused',
-      run(revived, A.CLAIM_DAILY_BONUS, {}, T0).state.gems === revived.gems)
-    ok('T25 view reports claimed for today', bonusSvc.getBonusView(r.state, T0).available === false)
+    ok('T26 the spin survives a save/load round trip',
+      revived.wheel.dayKey === r.state.wheel.dayKey && revived.wheel.spinsUsed === 1 && revived.wheel.lastSpin?.slotId === 'gems-35')
+    ok('T26 a spin after a reload is refused',
+      spin(revived, 'gems-500', T0 + 5000, 'after-reload').events.some(e => e.type === 'WHEEL_REFUSED'))
+    ok('T26 a bad draw is refused',
+      run(fresh(), A.SPIN_WHEEL, { roll: 1000, spinId: 'x' }, T0).events.some(e => e.reason === 'bad-roll') &&
+      run(fresh(), A.SPIN_WHEEL, { roll: 2.5, spinId: 'y' }, T0).events.some(e => e.reason === 'bad-roll'))
   }
 
-  /* ── TEST 26: the calendar drives availability, not elapsed hours ── */
+  /* ── TEST 27: the allowance resets at UTC midnight, and the clock guard ── */
   {
-    const s = run(fresh(), A.CLAIM_DAILY_BONUS, {}, T0).state
+    const s = spin(fresh(), 'xp-25').state
+    const midnight = wheelSvc.nextResetAt(T0)
+    ok('T27 still spent a minute before the reset', wheelSvc.getWheelView(s, midnight - 60000).available === false)
+    ok('T27 a new spin a minute after it', wheelSvc.getWheelView(s, midnight + 60000).available === true)
+    const next = spin(s, 'gems-20', midnight + 60000)
+    ok('T27 the next day spins for real', next.state.wheel.totalSpins === 2 && next.state.gems === s.gems + 20)
 
-    /* Eleven hours later is still the same calendar day. */
-    ok('T26 same day 11h later is still claimed',
-      bonusSvc.getBonusView(s, T0 + 11 * 3600000).available === false)
-
-    /* The next calendar day opens Day 2. */
-    const d2 = bonusSvc.getBonusView(s, T0 + DAY)
-    ok('T26 next day is available', d2.available === true)
-    ok('T26 next day offers day 2', d2.nextDay === 2, d2.nextDay)
-
-    const r2 = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + DAY)
-    ok('T26 day 2 pays 30 XP', r2.state.xp === s.xp + 30, `${s.xp} -> ${r2.state.xp}`)
-    ok('T26 day 2 XP lands in the ledger',
-      r2.state.ledger.some(e => e.kind === 'xp' && e.reason === 'daily-bonus-day-2'))
-    ok('T26 day 2 advances to day 3', r2.state.dailyBonus.cycleDay === 3)
-
-    /* Crossing midnight is one day even when only minutes have passed. */
-    const lateNight = new Date(T0); lateNight.setHours(23, 55, 0, 0)
-    const justAfter = new Date(T0 + DAY); justAfter.setHours(0, 5, 0, 0)
-    const late = run(fresh(lateNight.getTime()), A.CLAIM_DAILY_BONUS, {}, lateNight.getTime()).state
-    ok('T26 ten minutes across midnight is a new day',
-      bonusSvc.getBonusView(late, justAfter.getTime()).available === true)
+    /* Set the clock forward, spin, set it back: spins pause instead of
+       handing out another one. */
+    const ahead = spin(fresh(), 'gems-20', T0 + 3 * DAY).state
+    const back = wheelSvc.getWheelView(ahead, T0)
+    ok('T27 a clock set back pauses spins', back.available === false && back.clockBlocked === true)
+    ok('T27 a clock set back is refused by the reducer',
+      spin(ahead, 'gems-20', T0, 'back').events.some(e => e.reason === 'clock'))
+    ok('T27 small drift is tolerated',
+      wheelSvc.getWheelView(spin(fresh(), 'gems-20', T0).state, T0 - 60000).clockBlocked === false)
   }
 
-  /* ── TEST 27: a missed day does not reset the track ── */
+  /* ── TEST 28: every reward type lands through the central systems ── */
   {
-    /* Claim day 1 on Monday, skip Tuesday, return Wednesday. */
-    const mon = run(fresh(), A.CLAIM_DAILY_BONUS, {}, T0).state
-    const wed = bonusSvc.getBonusView(mon, T0 + 2 * DAY)
-    ok('T27 a reward is waiting after a missed day', wed.available === true)
-    ok('T27 the track resumes at day 2', wed.nextDay === 2, wed.nextDay)
-    ok('T27 the miss is reported', wed.missedDays === 1, wed.missedDays)
+    const xp = spin({ ...fresh(), xp: 95, level: 1 }, 'xp-25')
+    ok('T28 XP is paid', xp.state.xp === 120, xp.state.xp)
+    ok('T28 XP counts toward the daily goal', xp.state.daily.xp >= 25, xp.state.daily.xp)
+    ok('T28 XP can level the learner up', xp.events.some(e => e.type === 'LEVEL_UP'))
 
-    const claimed = run(mon, A.CLAIM_DAILY_BONUS, {}, T0 + 2 * DAY)
-    ok('T27 day 2 is what actually pays out',
-      claimed.events.some(e => e.type === 'DAILY_BONUS_CLAIMED' && e.day === 2))
-    ok('T27 cycle continues to day 3', claimed.state.dailyBonus.cycleDay === 3)
+    const shield = spin(fresh(), 'shield')
+    ok('T28 a shield lands in the bank', shield.state.streak.shields === 1, shield.state.streak.shields)
+    const full = { ...fresh(), streak: { ...fresh().streak, shields: shop.SHIELD.MAX_OWNED } }
+    const swapped = spin(full, 'shield')
+    const ev = swapped.events.find(e => e.type === 'WHEEL_SPUN')
+    ok('T28 a full shield bank pays the fallback', swapped.state.gems === full.gems + 75 && ev?.substituted === true, swapped.state.gems)
+    ok('T28 shields stay capped', swapped.state.streak.shields === shop.SHIELD.MAX_OWNED)
 
-    /* A long absence behaves the same way under the shipped CONTINUE rule. */
-    const muchLater = bonusSvc.getBonusView(mon, T0 + 40 * DAY)
-    ok('T27 a 40-day absence still resumes at day 2', muchLater.nextDay === 2, muchLater.nextDay)
-    ok('T27 shipped policy is CONTINUE',
-      dbCfg.DAILY_BONUS.ON_MISSED_DAY === dbCfg.MISSED_DAY_POLICY.CONTINUE)
+    const jackpot = spin(fresh(), 'gems-500')
+    ok('T28 the jackpot pays 500 gems', jackpot.state.ledger.some(e => e.reason === 'wheel:gems-500' && e.amount === 500) && jackpot.state.gems >= fresh().gems + 500, jackpot.state.gems)
+    ok('T28 jackpots are counted', jackpot.state.wheel.jackpots === 1)
+    ok('T28 wheel gems are spendable', shopSvc.getAvailability(jackpot.state, 'streak_shield').ok === true)
   }
 
-  /* ── TEST 28: a full seven-day cycle, then a clean restart ── */
+  /* ── TEST 29: the draw does not depend on the learner ── */
   {
-    let s = fresh()
-    const before = { gems: s.gems, xp: s.xp }
-    const claimedDays = []
-
-    for (let day = 0; day < 7; day++) {
-      const r = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + day * DAY)
-      s = r.state
-      const event = r.events.find(e => e.type === 'DAILY_BONUS_CLAIMED')
-      claimedDays.push(event?.day)
-    }
-
-    ok('T28 the seven claims were days 1..7',
-      JSON.stringify(claimedDays) === JSON.stringify([1, 2, 3, 4, 5, 6, 7]),
-      JSON.stringify(claimedDays))
-    ok('T28 day 7 grants a streak shield', s.streak.shields === 1, s.streak.shields)
-    ok('T28 cycle counted as complete', s.dailyBonus.cyclesCompleted === 1, s.dailyBonus.cyclesCompleted)
-    ok('T28 pointer wraps back to day 1', s.dailyBonus.cycleDay === 1, s.dailyBonus.cycleDay)
-    ok('T28 seven claims recorded', s.dailyBonus.totalClaimed === 7, s.dailyBonus.totalClaimed)
-
-    /* Gems: 20 + 30 + 50 = 100 across days 1, 3 and 5. XP: 30 + 75 = 105. */
-    ok('T28 gem rewards all landed', s.gems >= before.gems + 100, `${before.gems} -> ${s.gems}`)
-    ok('T28 xp rewards all landed', s.xp >= before.xp + 105, `${before.xp} -> ${s.xp}`)
-
-    /* Finishing the track resets ONLY the bonus cycle. */
-    const view = bonusSvc.getBonusView(s, T0 + 6 * DAY)
-    ok('T28 completion is flagged for the UI', view.cycleJustCompleted === true)
-    ok('T28 all seven cards read claimed',
-      view.days.every(d => d.status === 'claimed'),
-      JSON.stringify(view.days.map(d => d.status)))
-
-    const day8 = bonusSvc.getBonusView(s, T0 + 7 * DAY)
-    ok('T28 the new cycle opens at day 1', day8.nextDay === 1 && day8.available === true, day8.nextDay)
-    const r8 = run(s, A.CLAIM_DAILY_BONUS, {}, T0 + 7 * DAY)
-    /* Measured against the state AFTER day 8's rollover, which may itself
-       pay out a quest the week's bonus gems completed but nobody claimed. */
-    const rolled8 = prog.reconcile(s, T0 + 7 * DAY).state
-    ok('T28 day 1 of cycle 2 pays 20 gems again', r8.state.gems === rolled8.gems + 20, `${rolled8.gems} -> ${r8.state.gems}`)
-    ok('T28 progression is untouched by the reset',
-      r8.state.xp === s.xp && r8.state.streak.shields === s.streak.shields &&
-      r8.state.stats.totalGemsEarned > 0,
-      `xp ${r8.state.xp} shields ${r8.state.streak.shields}`)
+    const rich = { ...fresh(), gems: 99999, xp: 50000 }
+    const poor = { ...fresh(), gems: 0 }
+    const same = (roll) => run(rich, A.SPIN_WHEEL, { roll, spinId: `r${roll}` }, T0).events.find(e => e.type === 'WHEEL_SPUN')?.slotId
+      === run(poor, A.SPIN_WHEEL, { roll, spinId: `p${roll}` }, T0).events.find(e => e.type === 'WHEEL_SPUN')?.slotId
+    ok('T29 the same draw gives the same slot whatever the balance', [0, 299, 300, 650, 994, 995, 999].every(same))
   }
 
-  /* ── TEST 29: rewards that would land on a full resource pay the fallback ── */
+  /* ── TEST 30: the reviewer can bank spins; nobody else can ── */
   {
-    /* Day 4 is hearts. A learner returning the next day is almost always at
-       full hearts, so without a fallback that day would pay nothing. */
-    const full = { ...fresh(), hearts: 5, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } }
-    const r = run(full, A.CLAIM_DAILY_BONUS, {}, T0)
-    ok('T29 hearts stay capped at max', r.state.hearts === 5, r.state.hearts)
-    ok('T29 full hearts pay gems instead', r.state.gems === full.gems + 15, `${full.gems} -> ${r.state.gems}`)
-    ok('T29 the substitution is reported',
-      r.events.some(e => e.type === 'DAILY_BONUS_CLAIMED' && e.substituted === true))
-
-    /* With room to spare, the hearts themselves are what land. */
-    const hurt = { ...fresh(), hearts: 2, heartAnchor: T0, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } }
-    const r2 = run(hurt, A.CLAIM_DAILY_BONUS, {}, T0)
-    ok('T29 missing hearts are restored', r2.state.hearts === 4, r2.state.hearts)
-    ok('T29 no gem substitution when hearts land', r2.state.gems === hurt.gems, r2.state.gems)
-    ok('T29 hearts never exceed the maximum',
-      run({ ...fresh(), hearts: 4, heartAnchor: T0, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } },
-        A.CLAIM_DAILY_BONUS, {}, T0).state.hearts === 5)
-
-    /* Same rule for a full shield bank on day 7. */
-    const maxed = {
-      ...fresh(),
-      streak: { ...fresh().streak, shields: shop.SHIELD.MAX_OWNED },
-      dailyBonus: { ...fresh().dailyBonus, cycleDay: 7 },
-    }
-    const r3 = run(maxed, A.CLAIM_DAILY_BONUS, {}, T0)
-    ok('T29 shields stay capped', r3.state.streak.shields === shop.SHIELD.MAX_OWNED, r3.state.streak.shields)
-    ok('T29 a full shield bank pays gems instead', r3.state.gems === maxed.gems + 60, r3.state.gems)
+    const learner = run(fresh(), A.JUDGE, { op: 'spins', count: 5 }, T0).state
+    ok('T30 an ordinary learner cannot bank spins', learner.wheel.extraSpins === 0)
+    const judged = run(run(fresh(), A.JUDGE, { op: 'enable', stock: false }, T0).state, A.JUDGE, { op: 'spins', count: 2 }, T0).state
+    ok('T30 the reviewer banks spins', wheelSvc.getWheelView(judged, T0).spinsLeft === 3, wheelSvc.getWheelView(judged, T0).spinsLeft)
+    let s = judged
+    for (let i = 0; i < 3; i++) s = spin(s, 'gems-20', T0, `j${i}`).state
+    ok('T30 banked spins are real spins', s.wheel.totalSpins === 3 && s.wheel.extraSpins === 0, s.wheel.totalSpins)
+    ok('T30 the bank is capped', run(judged, A.JUDGE, { op: 'spins', count: 99 }, T0).state.wheel.extraSpins === wheelCfg.WHEEL.EXTRA_SPINS_MAX)
   }
 
-  /* ── TEST 30: bonus rewards feed the rest of the progression system ── */
+  /* ── TEST 31: corrupted, absent or old wheel state degrades safely ── */
   {
-    /* A day-7 shield must be a REAL shield: it has to rescue a streak. */
-    let s = { ...fresh(), dailyBonus: { ...fresh().dailyBonus, cycleDay: 7 } }
-    s = run(s, A.CLAIM_DAILY_BONUS, {}, T0).state
-    ok('T30 the bonus shield is in the bank', s.streak.shields === 1, s.streak.shields)
-
-    s = {
-      ...s,
-      streak: { ...s.streak, current: 9, longest: 9, lastActivityDate: putils_today(T0), lastStreakDate: putils_today(T0) },
-    }
-    const missed = prog.reconcile(s, T0 + 2 * DAY)
-    ok('T30 the bonus shield rescues a real streak', missed.state.streak.current === 9, missed.state.streak.current)
-    ok('T30 the bonus shield is consumed once', missed.state.streak.shields === 0, missed.state.streak.shields)
-
-    /* Gems from the bonus are spendable in the shop like any others. */
-    const rich = run({ ...fresh(), gems: 90, dailyBonus: { ...fresh().dailyBonus, cycleDay: 5 } },
-      A.CLAIM_DAILY_BONUS, {}, T0).state
-    ok('T30 shop sees the new balance', rich.gems === 140, rich.gems)
-    ok('T30 bonus gems can buy a shield',
-      shopSvc.getAvailability(rich, 'streak_shield').ok === true)
-    const bought = run(rich, A.PURCHASE_ITEM, { itemId: 'streak_shield', txnId: 'db1' }, T0)
-    ok('T30 the purchase settles', bought.state.gems === 40 && bought.state.streak.shields === 1,
-      `${bought.state.gems} gems, ${bought.state.streak.shields} shields`)
-
-    /* XP from the bonus levels the learner up through the normal path. */
-    const xpDay = run({ ...fresh(), xp: 95, level: 1, dailyBonus: { ...fresh().dailyBonus, cycleDay: 6 } },
-      A.CLAIM_DAILY_BONUS, {}, T0)
-    ok('T30 bonus XP triggers a level up', xpDay.events.some(e => e.type === 'LEVEL_UP'))
-    ok('T30 bonus XP counts toward the daily goal', xpDay.state.daily.xp >= 75, xpDay.state.daily.xp)
-  }
-
-  /* ── TEST 31: corrupted or absent bonus state degrades safely ── */
-  {
-    ok('T31 missing block falls back to day 1',
-      store.sanitizeState({ xp: 10 }, T0).dailyBonus.cycleDay === 1)
-    ok('T31 a garbage day is normalised into range',
-      store.sanitizeState({ dailyBonus: { cycleDay: 99 } }, T0).dailyBonus.cycleDay >= 1 &&
-      store.sanitizeState({ dailyBonus: { cycleDay: 99 } }, T0).dailyBonus.cycleDay <= 7,
-      store.sanitizeState({ dailyBonus: { cycleDay: 99 } }, T0).dailyBonus.cycleDay)
-    ok('T31 a negative day is normalised',
-      store.sanitizeState({ dailyBonus: { cycleDay: -4 } }, T0).dailyBonus.cycleDay === 1)
-    ok('T31 a non-string claim date is dropped',
-      store.sanitizeState({ dailyBonus: { lastClaimDate: 42 } }, T0).dailyBonus.lastClaimDate === null)
-    ok('T31 negative counters are floored at zero',
-      store.sanitizeState({ dailyBonus: { totalClaimed: -9 } }, T0).dailyBonus.totalClaimed === 0)
-    /* A save written before the daily bonus existed must still open. */
-    ok('T31 a pre-bonus save still loads',
-      store.sanitizeState({ xp: 500, gems: 300, streak: { current: 4 } }, T0).dailyBonus.totalClaimed === 0)
+    ok('T31 a missing block falls back to a fresh wheel', store.sanitizeState({ xp: 10 }, T0).wheel.totalSpins === 0)
+    ok('T31 spins used are clamped', store.sanitizeState({ wheel: { spinsUsed: 99 } }, T0).wheel.spinsUsed === wheelCfg.WHEEL.SPINS_PER_DAY)
+    ok('T31 a garbage day key is dropped', store.sanitizeState({ wheel: { dayKey: 'yesterday' } }, T0).wheel.dayKey === null)
+    ok('T31 a forged extra-spin count is capped',
+      store.sanitizeState({ wheel: { extraSpins: 1e9 } }, T0).wheel.extraSpins === wheelCfg.WHEEL.EXTRA_SPINS_MAX)
+    const v1 = store.migrate({ version: 1, xp: 40, dailyBonus: { cycleDay: 3 }, lessonParts: { 'm01-l01': 2 } })
+    ok('T31 a version-1 save migrates', v1.version === 2 && !('dailyBonus' in v1) && v1.wheel && Object.keys(v1.lessonParts).length === 0)
+    const loaded = store.sanitizeState(v1, T0)
+    ok('T31 a migrated save has a spin waiting', wheelSvc.getWheelView(loaded, T0).available === true)
   }
 
   /* ── TEST 32: a completed daily quest left unclaimed is paid at the reset ── */
@@ -1018,17 +949,6 @@ export async function runProgressionTests() {
     ok('T36 a real gap is still sold', bought.state.hearts === 5 && bought.state.gems === short.gems - shop.EXTRA_HEART_COST)
   }
 
-  /* ── TEST 37: the day-4 hearts bonus falls back once regen has refilled ── */
-  {
-    const s = { ...fresh(), hearts: 4, heartAnchor: T0 - 31 * 60000, dailyBonus: { ...fresh().dailyBonus, cycleDay: 4 } }
-    const r = run(s, A.CLAIM_DAILY_BONUS, {}, T0)
-    const claimed = r.events.find(e => e.type === 'DAILY_BONUS_CLAIMED')
-    ok('T37 day 4 pays hearts', claimed?.reward?.type === dbCfg.REWARD_TYPES.HEARTS, claimed?.reward?.type)
-    ok('T37 hearts are full after regen', r.state.hearts === 5, r.state.hearts)
-    ok('T37 the fallback was paid instead', claimed?.substituted === true)
-    ok('T37 fallback gems landed', r.state.gems === s.gems + (claimed?.reward?.fallback?.amount ?? -1), `${s.gems} -> ${r.state.gems}`)
-  }
-
   /* ── TEST 38: a minutes mission counts seconds, not per-lesson floors ── */
   {
     let s = fresh()
@@ -1109,7 +1029,7 @@ export async function runProgressionTests() {
 
   /* ── TEST 44: the demo learner is settled — nothing pays out on its first tick ── */
   {
-    const seeds = [['showcase', showcase.getShowcaseState()], ['bonus', showcase.getBonusShowcaseState()]]
+    const seeds = [['showcase', showcase.getShowcaseState()]]
     for (const [name, seed] of seeds) {
       const r = prog.reduce(seed, { type: A.RECONCILE }, Date.now())
       ok(`T44 ${name} seed unlocks nothing on reconcile`, !r.events.some(e => e.type === 'ACHIEVEMENT_UNLOCKED'), r.events.map(e => e.type).join())

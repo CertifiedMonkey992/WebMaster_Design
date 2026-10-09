@@ -24,7 +24,8 @@ import FxLayer from './motion/FxLayer'
 import { turnPage } from './motion/pageTurn'
 import { afterArrival, setStageMode } from './motion/stage'
 import { NavProvider, usePageMeta } from './nav'
-import { AuthProvider } from './state/AuthContext'
+import { AuthProvider, useAuth } from './state/AuthContext'
+import { currentAccount } from './services/accountService'
 import { PAGES, routeOf, pageFromLocation } from './site'
 import { initAnalytics, pageview } from './services/analytics'
 /* Last, so the shared verbs (magnet, press, reveal) sit on top of the
@@ -60,17 +61,38 @@ const hrefOf = (page) => BASE + (routeOf(page).path ?? '') + devQuery()
    Old hash addresses (#/about) are pages, not sections. */
 const sectionOf = (hash) => (hash.length > 1 && !hash.startsWith('#/') ? hash.slice(1) : null)
 
-/* Old hash addresses (#/about) become real ones before anything renders. */
-function initialPage() {
-  const page = pageFromLocation(window.location, BASE)
-  if (/^#\/(about|learn)$/.test(window.location.hash)) {
+/* Pages that need an account. Signed out, every way to one of them — a
+   button, a typed address, Back, a bookmark — lands on the sign-in page. */
+const PROTECTED = new Set(['learn'])
+const gate = (page, signedIn) => (PROTECTED.has(page) && !signedIn ? 'signin' : page)
+
+/* Old hash addresses (#/about) become real ones before anything renders, and
+   a signed-out visit to the course becomes a visit to the sign-in page. */
+function initialPage(signedIn) {
+  const asked = pageFromLocation(window.location, BASE)
+  const page = gate(asked, signedIn)
+  if (page !== asked || /^#\/(about|learn)$/.test(window.location.hash)) {
     window.history.replaceState(null, '', hrefOf(page))
   }
   return page
 }
 
+/* AuthProvider is outermost: it points storage at the signed-in account's
+   key while it renders, before any page reads it, and the page switch below
+   needs to know who is signed in before it decides what to show. */
 export default function App() {
-  const [currentPage,  setCurrentPage]  = useState(initialPage)
+  return (
+    <AuthProvider>
+      <Site />
+    </AuthProvider>
+  )
+}
+
+function Site() {
+  const { signedIn } = useAuth()
+  const signedInRef = useRef(signedIn)
+  signedInRef.current = signedIn
+  const [currentPage,  setCurrentPage]  = useState(() => initialPage(signedIn))
   /* A section to land on when a page opens (the footer's "TSA compliance"). */
   const [anchor,       setAnchor]       = useState(() => sectionOf(window.location.hash))
   const pageRef = useRef(currentPage)
@@ -84,7 +106,14 @@ export default function App() {
      first, so the turn shows the real page, not a loader. 'instant' because
      the html element scrolls smoothly, and the new page must start at its
      top, not travel. */
-  const go = useCallback((page, { push = true, section = null } = {}) => {
+  const go = useCallback((asked, { push = true, replace = false, section = null } = {}) => {
+    /* The account book, not only the last render: a sign-in that has just
+       finished has written its session, but this component has not
+       re-rendered with it yet. */
+    const page = gate(asked, signedInRef.current || Boolean(currentAccount()))
+    /* Turned away from the course: the address must say where the reader
+       actually is, not where they asked to go. */
+    if (page !== asked && !push) replace = true
     const from = pageRef.current
     if (page === from) {
       if (section) {
@@ -96,7 +125,8 @@ export default function App() {
       }
       return
     }
-    if (push) window.history.pushState(null, '', hrefOf(page) + (section ? `#${section}` : ''))
+    if (replace) window.history.replaceState(null, '', hrefOf(page) + (section ? `#${section}` : ''))
+    else if (push) window.history.pushState(null, '', hrefOf(page) + (section ? `#${section}` : ''))
     navigated.current = true
     /* If the page's code cannot be fetched (a deploy replaced the chunks, the
        network dropped), a full navigation gets a fresh copy instead of
@@ -169,12 +199,19 @@ export default function App() {
     return () => setStageMode('considered')
   }, [currentPage])
 
+  /* Signed out while on the course (here, or in another tab): back to the
+     sign-in page, replacing the course's address rather than stacking it. */
+  useEffect(() => {
+    if (!signedIn && PROTECTED.has(currentPage)) go('signin', { push: false, replace: true })
+  }, [signedIn, currentPage, go])
+
   /* Once the page has arrived, fetch the pages a visitor is likely to open
      next, so the first page turn does not wait on the network. */
   useEffect(() => afterArrival(() => {
-    const next = currentPage === 'landing' ? ['learn', 'about'] : currentPage === 'learn' ? [] : ['learn']
+    const ahead = signedIn ? 'learn' : 'signin'
+    const next = currentPage === 'landing' ? [ahead, 'about'] : currentPage === 'learn' ? [] : [ahead]
     next.forEach((p) => LOADERS[p]?.().catch(() => {}))
-  }), [currentPage])
+  }), [currentPage, signedIn])
 
   let page
   if (currentPage === 'landing') {
@@ -199,6 +236,12 @@ export default function App() {
         <TitleSequence />
       </div>
     )
+  } else if (currentPage === 'learn' && !signedIn) {
+    /* Signed out on the course (the account signed out here or in another
+       tab): never mount the course for nobody — show the sign-in page while
+       the effect above corrects the address. */
+    const SignInPage = LAZY.signin
+    page = <SignInPage />
   } else if (currentPage === 'learn') {
     /* LearnPage brings its own ProgressionProvider, so the learner's state
        code loads with the course rather than with the home page. */
@@ -215,12 +258,9 @@ export default function App() {
   }
 
   return (
-    /* AuthProvider is outermost: it points storage at the signed-in
-       profile's key while it renders, before any page reads it, and the
-       boundary below must be able to render a signed-in chrome around a page
-       that failed. The boundary stays scoped to the PAGE, as it was — a
-       lesson that throws must not take the navbar and the banner with it. */
-    <AuthProvider>
+    /* The boundary stays scoped to the PAGE — a lesson that throws must not
+       take the navbar and the banner with it. */
+    <>
       <NavProvider value={nav}>
         <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); const m = document.querySelector('main'); m?.focus(); m?.scrollIntoView() }}>
           Skip to content
@@ -233,6 +273,6 @@ export default function App() {
         </ErrorBoundary>
         <ConsentBanner />
       </NavProvider>
-    </AuthProvider>
+    </>
   )
 }

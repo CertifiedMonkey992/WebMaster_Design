@@ -13,20 +13,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { useProgression } from '../../state/ProgressionContext'
 import useProgressWidth from '../../hooks/useProgressWidth'
-import { formatNumber, getXPProgress, getLevelTitle } from '../../utils/progressionUtils'
+import { formatNumber, getXPProgress } from '../../utils/progressionUtils'
 import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
 import { BoltIcon } from './Icons'
 import { useLevelPreviews } from '../learn/previews'
 
-export default function LevelProgress({ size = 'md', showTitle = true }) {
+export default function LevelProgress({ size = 'md' }) {
   const { vm, showcase } = useProgression()
   const xp = useLandedValue('xp', vm.xp)
   const p = getXPProgress(xp)
   const level = p.level
-  /* The badge, the label and the title all read the LANDED level, so none
-     of them can run ahead of the others while XP is still in the air. */
-  const levelTitle = getLevelTitle(level)
+  /* The badge and the label both read the LANDED level, so neither can run
+     ahead of the other while XP is still in the air. */
   const fillWidth = useProgressWidth(p.percent)
   const targetRef = useFlightTarget('xp')
   const blockRef = useRef(null)
@@ -62,7 +61,7 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
 
   return (
     <div className={`lv-block lv-${size}`} ref={setBlock}>
-      <div className={`lv-badge${turning ? ' is-turning' : ''}`} aria-hidden="true" data-tip={`Level ${level} · ${levelTitle}`}>
+      <div className={`lv-badge${turning ? ' is-turning' : ''}`} aria-hidden="true" data-tip={`Level ${level}`}>
         <span className="lv-badge-num"><RollingNumber value={level} /></span>
         <span className="lv-badge-bolt fx-zap"><BoltIcon size={12} /></span>
       </div>
@@ -70,7 +69,6 @@ export default function LevelProgress({ size = 'md', showTitle = true }) {
       <div className="lv-col">
         <div className="lv-top">
           <span className="lv-label">Level {level}</span>
-          {showTitle && <span className="lv-title">{levelTitle}</span>}
         </div>
 
         <div

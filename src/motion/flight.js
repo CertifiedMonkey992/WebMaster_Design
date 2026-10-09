@@ -56,7 +56,7 @@ function isShowing(el, allowCovered = false) {
   const cy = r.top + r.height / 2
   if (cx < 0 || cy < 0 || cx > window.innerWidth || cy > window.innerHeight) return false
   /* Behind a translucent scrim is still "there" for a flight that starts in
-     front of that scrim (the daily bonus panel). */
+     front of that scrim (the daily spin panel). */
   if (allowCovered) return true
   /* Covered by a modal? elementFromPoint skips pointer-events:none layers,
      so the fx layer and tooltips never count as covering anything. */
@@ -107,7 +107,7 @@ function subscribe(key, fn) {
 
 /**
  * Hold a counter at its old value BEFORE its flight launches — for a
- * sequence that charges up first (the daily bonus). Returns a release
+ * sequence that plays first (the daily spin). Returns a release
  * function; the hold also lets go on its own after `ms`.
  */
 export function hold(key, ms = 2200) {

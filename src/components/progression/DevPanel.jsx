@@ -79,7 +79,7 @@ export default function DevPanel() {
 
   const rows = [
     ['XP', vm.xp],
-    ['Level', `${vm.level} (${vm.levelTitle})`],
+    ['Level', String(vm.level)],
     ['Gems', vm.gems],
     ['Hearts', `${vm.hearts}/${vm.maxHearts}`],
     ['Streak', `${vm.streak} (best ${vm.longestStreak})`],
@@ -91,9 +91,9 @@ export default function DevPanel() {
     ['Today', getLocalDateKey()],
     ['Last streak day', state.streak.lastStreakDate ?? '—'],
     ['Shields', `${vm.shields}/${vm.maxShields}`],
-    ['Bonus day', `${vm.dailyBonus.currentDay}/${vm.dailyBonus.cycleLength}`],
-    ['Bonus ready', vm.dailyBonus.available ? 'yes' : 'claimed today'],
-    ['Last bonus claim', state.dailyBonus.lastClaimDate ?? '—'],
+    ['Spins left', String(vm.wheel.spinsLeft)],
+    ['Spin day (UTC)', state.wheel.dayKey ?? '—'],
+    ['Last spin', state.wheel.lastSpin?.slotId ?? '—'],
   ]
 
   return (
@@ -152,23 +152,12 @@ export default function DevPanel() {
           </div>
 
           <div className="dev-group">
-            <div className="dev-group-label">Daily bonus</div>
+            <div className="dev-group-label">Daily spin</div>
             <div className="dev-buttons">
-              <button onClick={() => actions.claimDailyBonus()} disabled={!vm.dailyBonus.available}>
-                Claim today
+              <button onClick={() => actions.spinWheel()} disabled={!vm.wheel.available}>
+                Spin
               </button>
-              <button onClick={() => actions.dev.setBonusDay(vm.dailyBonus.nextDay)}>
-                Simulate next day
-              </button>
-              <button onClick={() => actions.dev.completeBonusCycle()}>Complete cycle</button>
-              <button onClick={() => actions.dev.resetDailyBonus()}>Reset bonus</button>
-            </div>
-            <div className="dev-buttons">
-              {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-                <button key={day} onClick={() => actions.dev.setBonusDay(day)}>
-                  Day {day}
-                </button>
-              ))}
+              <button onClick={() => actions.dev.resetWheel()}>Give today’s spin back</button>
             </div>
           </div>
 

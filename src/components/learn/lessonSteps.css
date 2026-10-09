@@ -173,24 +173,7 @@
   color: var(--ink);
 }
 
-/* ── Prediction: the confidence row ── */
-.st-confidence {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-  margin-top: var(--sp-5);
-  animation: fx-fade-in var(--dur-open) var(--ease-out) 260ms backwards;
-}
-.st-confidence-label {
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semi);
-  color: var(--ink-muted);
-  margin-right: var(--sp-2);
-}
-
-/* The segmented control: confidence, sort bins. A control, so --r-sm. */
+/* The segmented control: sort bins, simulation options. A control, so --r-sm. */
 .st-seg {
   padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--line-strong);

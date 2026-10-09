@@ -85,13 +85,6 @@ export function getXPProgress(xp) {
   }
 }
 
-/** Flavour title for a level ("Explorer", "Architect"…).
- *  @param {number} level */
-export function getLevelTitle(level) {
-  let title = LEVELS.TITLES[0]?.title ?? 'Learner'
-  for (const t of LEVELS.TITLES) if (level >= t.level) title = t.title
-  return title
-}
 
 /* ── Deterministic randomness ────────────────────────────────────────────────
    Quest generation must be stable: opening the site five times on the same

@@ -14,8 +14,9 @@
      closing       the shared closing CTA
 
    Every figure is read from course data or config — nothing is typed in —
-   so this page cannot describe a course the product does not have. LunX has
-   no accounts and no analytics, so it does not claim a learner count.
+   so this page cannot describe a course the product does not have. LunX's
+   accounts live in each reader's browser and it runs no analytics, so it
+   does not claim a learner count.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import Navbar     from '../components/Navbar'
@@ -160,7 +161,7 @@ export default function AboutPage() {
               <div><dt>Course</dt><dd className="tnum">{TOTAL_SECTIONS} modules · {TOTAL_LESSONS} lessons · {TOTAL_MINUTES} min</dd></div>
               <div><dt>Pages</dt><dd>Home, Course, Sign in, About, Contact, Privacy, Terms</dd></div>
               <div><dt>Built with</dt><dd>React 18, Vite 5, hand-written CSS</dd></div>
-              <div><dt>Accounts</dt><dd>Optional, and local — no server, nothing registered</dd></div>
+              <div><dt>Accounts</dt><dd>Required, and local — kept in this browser, no server</dd></div>
             </dl>
           </Reveal>
         </section>
@@ -258,10 +259,10 @@ export default function AboutPage() {
                 <div>
                   <h3 className="ab-principle-title">Practice, not playback</h3>
                   <p className="ab-principle-text">
-                    Lessons are experiments, not videos: predict first, then train,
-                    break and test a real model in your browser. A wrong prediction
-                    costs nothing — only the Check at the end spends hearts, so being
-                    wrong early is safe and being careless late is not.
+                    Lessons are short and hands-on: a few clear explanations, often a
+                    real model to train or test in your browser, and a practice
+                    question. Practice costs nothing — only the Check at the end
+                    spends hearts.
                   </p>
                 </div>
               </li>
@@ -419,10 +420,10 @@ export default function AboutPage() {
               <li className="ab-step">
                 <span className="ab-step-num">2</span>
                 <div className="ab-step-body">
-                  <h3 className="ab-step-title">Predict, explore, then check</h3>
+                  <h3 className="ab-step-title">Learn, then check</h3>
                   <p className="ab-step-text">
-                    Three parts: predict and explore with a real model, explain and
-                    apply, then a graded Check. Predictions never cost a heart; a wrong
+                    Two parts: Learn — short explanations, an activity and a practice
+                    question — then a graded Check. Practice never costs a heart; a wrong
                     Check answer does, and hearts refill one every {HEARTS.RECOVERY_MINUTES} minutes.
                   </p>
                 </div>

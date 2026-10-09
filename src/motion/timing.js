@@ -18,6 +18,10 @@ export const DUR = {
   settle: 600,
   turn: 760,
   celebrate: 800,
+  /* The daily spin's wheel (MOTION_RULES.md → The daily spin): long enough
+     to read as a wheel slowing down, short enough not to keep anyone
+     waiting. */
+  spin: 3800,
 }
 
 export const EASE = {
@@ -29,6 +33,8 @@ export const EASE = {
   press: 'cubic-bezier(0.4, 0, 0.6, 1)',
   in: 'cubic-bezier(0.5, 0, 0.75, 0)',
   swing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+  /* A fast start and a long, even deceleration onto the result. */
+  spin: 'cubic-bezier(0.15, 0.55, 0.12, 1)',
 }
 
 export const STAGGER = 40
