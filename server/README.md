@@ -94,6 +94,20 @@ is built the same either way.
 
 ## Deploying
 
+**Free, on Oracle Cloud (Always Free):** create an Ubuntu instance, open TCP
+80 and 443 in its subnet's security list, SSH in and run
+```bash
+curl -fsSL https://raw.githubusercontent.com/CertifiedMonkey992/WebMaster_Design/main/server/deploy/setup-oracle.sh | bash
+```
+It installs Node, the service, Caddy with HTTPS on `<ip>.sslip.io`, the
+firewall rules and nightly backups, and prints the URL to put in
+`LUNX_SERVER_URL` (step 4 below). Update later with
+`sudo /opt/lunx/server/deploy/update.sh`. Always Free instances that sit
+idle for a week can be reclaimed; upgrading the account to Pay As You Go
+(still free within the limits) stops that.
+
+**Anywhere else:**
+
 1. **Host the server** on anything that runs a long-lived Node process with
    a persistent disk — a small VPS, Fly.io or Render with a volume, Railway,
    a school server. Start command:
