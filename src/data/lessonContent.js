@@ -16,12 +16,11 @@
    A lesson's tabs are its two PARTS (2026-10): Learn, then a graded Check.
    Only a part marked `graded` spends hearts.
 
-   Practice draws from the same content — graded steps of what the learner
-   has finished, with the items they missed first.
+   Practice (services/practiceService.js → buildBank) draws its questions
+   from the same content.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useState } from 'react'
-import { getLessonById } from './learnData'
 import { isGradable } from '../utils/stepLogic'
 
 const MODULES = {
@@ -117,38 +116,3 @@ export function countGraded(content) {
 
 /** The key a graded step is remembered by for spaced review. */
 export const reviewKeyOf = (itemId, tabId, stepId) => `${itemId}:${tabId}:${stepId}`
-
-const PRACTICE_TYPES = new Set(['mcq', 'binary', 'fill-blank'])
-
-/**
- * Build a practice deck from loaded content. Items the learner missed come
- * first (spaced review), then graded steps from finished items, shuffled.
- * Call preloadContent() for the same ids first.
- */
-export function buildPracticeDeck(completedIds = [], size = 5, reviewKeys = []) {
-  const byKey = new Map()
-  const ids = completedIds.length ? completedIds : ['m01-l01']
-  for (const id of ids) {
-    const content = getLessonContent(id)
-    if (!content) continue
-    for (const tab of content.tabs) {
-      if (!tab.graded) continue
-      for (const step of tab.steps) {
-        if (!PRACTICE_TYPES.has(step.type)) continue
-        const key = reviewKeyOf(id, tab.id, step.id)
-        byKey.set(key, { ...step, sourceLesson: id, key, sourceTitle: getLessonById(id)?.title })
-      }
-    }
-  }
-
-  const review = reviewKeys.map((k) => byKey.get(k)).filter(Boolean).map((s) => ({ ...s, isReview: true }))
-  const rest = [...byKey.values()].filter((s) => !reviewKeys.includes(s.key))
-
-  /* Shuffle with Math.random: practice is meant to vary every session. */
-  for (let i = rest.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[rest[i], rest[j]] = [rest[j], rest[i]]
-  }
-
-  return [...review.slice(0, Math.ceil(size / 2) + 1), ...rest].slice(0, Math.max(1, size))
-}

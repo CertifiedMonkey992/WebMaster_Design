@@ -32,6 +32,10 @@
 
 import { STORAGE_KEY } from '../config/progressionConfig'
 import { JUDGE_LOGIN } from '../config/judgeConfig'
+import {
+  PASSWORD_MIN, USERNAME_MIN, USERNAME_MAX, normEmail, normName,
+  emailProblem, passwordProblem, usernameProblem, CODE_ALPHABET, normalizeCode,
+} from '../utils/accountRules'
 
 export const ACCOUNTS_KEY = 'lunx_accounts_v1'
 /** The stable id of the seeded reviewer account. */
@@ -39,11 +43,8 @@ export const JUDGE_ID = 'judge'
 
 const BOOK_VERSION = 2
 
-export const PASSWORD_MIN = 8
-const PASSWORD_MAX = 128
-export const USERNAME_MIN = 3
-export const USERNAME_MAX = 20
-const EMAIL_MAX = 254
+/* The rules themselves are shared with the LunX server (utils/accountRules.js). */
+export { PASSWORD_MIN, USERNAME_MIN, USERNAME_MAX }
 
 /** PBKDF2 work factor (OWASP's 2023 figure for PBKDF2-HMAC-SHA256). */
 const ITERATIONS = 600000
@@ -51,48 +52,25 @@ const ITERATIONS = 600000
 const MAX_FAILURES = 5
 const LOCK_MS = 30 * 1000
 
-/** Usernames nobody may take, because the product already uses them. */
-const RESERVED = new Set(['judge', 'tsa_judge', 'admin', 'administrator', 'guest', 'lunx', 'moderator', 'support', 'root', 'system'])
-/* A short list of words a school product should not show as someone's name.
-   Matched anywhere in the username, case-insensitively. */
-const BLOCKED = ['fuck', 'shit', 'bitch', 'cunt', 'dick', 'pussy', 'nigg', 'fag', 'slut', 'whore', 'rape', 'nazi', 'hitler', 'porn', 'sex']
-
 /* ── Validation ──────────────────────────────────────────────────────────── */
 
-const normEmail = (v) => String(v ?? '').trim().toLowerCase()
-const normName = (v) => String(v ?? '').trim()
-
 /** An error message for an email address, or null when it is usable. */
-export function validateEmail(value) {
-  const email = normEmail(value)
-  if (!email) return 'Enter your email address.'
-  if (email.length > EMAIL_MAX || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return 'Enter a valid email address, like name@school.edu.'
-  return null
-}
+export const validateEmail = emailProblem
 
 /** An error message for a new password, or null when it is acceptable. */
-export function validatePassword(value) {
-  const password = String(value ?? '')
-  if (!password) return 'Enter a password.'
-  if (password.length < PASSWORD_MIN) return `Use at least ${PASSWORD_MIN} characters.`
-  if (password.length > PASSWORD_MAX) return `Use at most ${PASSWORD_MAX} characters.`
-  return null
-}
+export const validatePassword = passwordProblem
 
 /**
  * An error message for a username, or null when it is acceptable and free.
- * An empty username is allowed — it is optional.
+ * An empty username is allowed on a local build — it is optional.
  * @param {string} value
  * @param {{ exceptId?: string|null, book?: any }} [opts]
  */
 export function validateUsername(value, { exceptId = null, book = null } = {}) {
-  const name = normName(value)
-  if (!name) return null
-  if (name.length < USERNAME_MIN || name.length > USERNAME_MAX) return `Use ${USERNAME_MIN}–${USERNAME_MAX} characters.`
-  if (!/^[A-Za-z0-9_]+$/.test(name)) return 'Use only letters, numbers and underscores.'
-  const key = name.toLowerCase()
-  if (RESERVED.has(key)) return 'That username is reserved. Try another.'
-  if (BLOCKED.some((w) => key.includes(w))) return 'Please choose a different username.'
+  const problem = usernameProblem(value)
+  if (problem) return problem
+  const key = normName(value).toLowerCase()
+  if (!key) return null
   const taken = (book ?? readBook()).accounts.some((a) => a.id !== exceptId && a.username && a.username.toLowerCase() === key)
   if (taken) return 'That username is already taken. Try another.'
   return null
@@ -164,8 +142,6 @@ function legacyDigest(text) {
    16 characters from Crockford's base-32 alphabet (no I, L, O or U, so
    nothing reads as something else), shown as four groups of four: 80 bits.
    ─────────────────────────────────────────────────────────────────────────── */
-const CODE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
-
 function newRecoveryCode() {
   const bytes = randomBytes(16)
   const chars = Array.from(bytes, (b) => CODE_ALPHABET[b % 32])
@@ -173,9 +149,7 @@ function newRecoveryCode() {
 }
 
 /** Uppercase, drop separators, and read the look-alikes as what they mean. */
-export function normalizeRecoveryCode(text) {
-  return String(text ?? '').toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1')
-}
+export const normalizeRecoveryCode = normalizeCode
 
 /* ── Storage ─────────────────────────────────────────────────────────────── */
 

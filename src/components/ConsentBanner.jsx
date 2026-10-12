@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react'
 import { SITE } from '../site'
 import { CONSENT_KEY, choice, onChoice, setChoice } from '../services/analytics'
 import { PageLink } from '../nav'
+import { CONNECTED, SERVER_HOST } from '../config/serverConfig'
 
 const NOTED = 'noted'
 
@@ -65,9 +66,13 @@ export default function ConsentBanner() {
         {asking ? 'Can LunX count your visit?' : 'Your progress stays with you'}
       </h2>
       <p className="consent-text">
-        {asking
-          ? <>Your course progress stays in this browser either way. If you allow it, LunX also counts page views anonymously with GoatCounter: no cookies, nothing that identifies you.</>
-          : <>LunX saves your course progress in this browser so the course works. It sets no cookies, runs no tracking, and sends your progress nowhere.</>}
+        {CONNECTED
+          ? (asking
+            ? <>Your account and progress are kept on the LunX server either way, so the course works on any device. If you allow it, LunX also counts page views anonymously with GoatCounter: no cookies, nothing that identifies you.</>
+            : <>LunX keeps your account and progress on its own server, {SERVER_HOST}, so the course works on any device you sign in on. It sets no cookies and runs no tracking.</>)
+          : (asking
+            ? <>Your course progress stays in this browser either way. If you allow it, LunX also counts page views anonymously with GoatCounter: no cookies, nothing that identifies you.</>
+            : <>LunX saves your course progress in this browser so the course works. It sets no cookies, runs no tracking, and sends your progress nowhere.</>)}
       </p>
       <div className="consent-actions">
         {asking ? (

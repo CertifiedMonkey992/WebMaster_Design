@@ -10,8 +10,11 @@
 /* ── Persistence ─────────────────────────────────────────────────────────── */
 export const STORAGE_KEY = 'lunx_user_progress_v1'
 /* 2 (2026-10): the daily bonus track became the daily spin (state.wheel),
-   and lessons went from three parts to two, so saved resume points reset. */
-export const STATE_VERSION = 2
+   and lessons went from three parts to two, so saved resume points reset.
+   3 (2026-10, revision 10): the review pile became the Practice history
+   (state.practice), and server rewards claimed into the economy are
+   remembered (state.serverAwards). */
+export const STATE_VERSION = 3
 
 /* ── Hearts ──────────────────────────────────────────────────────────────── */
 export const HEARTS = {
@@ -74,6 +77,45 @@ export const COURSEWORK = {
   REVIEW_LIMIT: 60,
   /** Items in a Launch or Final Scan. */
   SCAN_ITEMS: 12,
+}
+
+/* ── Practice (revision 10) ──────────────────────────────────────────────────
+   The adaptive Practice tab keeps a history of every answered question and
+   schedules each CONCEPT (data/concepts.js) on a Leitner ladder: a miss puts
+   it in box 0, due at once; each correct review on or after its due date
+   moves it up a box. Three spaced correct answers (box 3) is "mastered" — a
+   single lucky guess never is. Every number here is a tunable default, not a
+   claim about learning science beyond "spacing beats cramming".
+   ─────────────────────────────────────────────────────────────────────────── */
+export const PRACTICE = {
+  /** The session lengths Quick practice offers. */
+  SESSION_SIZES: [5, 10, 15],
+  DEFAULT_SIZE: 10,
+  /** A focused session (mistakes, due, weak, older) asks at most this many. */
+  FOCUSED_SIZE: 8,
+  /** Days until a concept or question is due again, by box (0 = missed). */
+  BOX_DAYS: [0, 1, 3, 7, 16, 35],
+  /** The box at which a concept counts as mastered. */
+  MASTERED_BOX: 3,
+  /** Correct answers in a row that take a missed concept off the mistakes list. */
+  CLEAR_RUN: 2,
+  /** A review answered this long before it was due still moves up a box. */
+  EARLY_GRACE_HOURS: 12,
+  /** Not practiced for this many days: "older material". */
+  OLDER_DAYS: 10,
+  /** Accuracy below this, over at least WEAK_MIN_ATTEMPTS answers, is "weak". */
+  WEAK_ACCURACY: 0.7,
+  WEAK_MIN_ATTEMPTS: 3,
+  /** A missed question queues at most this many follow-ups per session. */
+  MAX_FOLLOW_UPS: 3,
+  /** At most this many questions on one concept in a session (mistakes mode: +1). */
+  PER_CONCEPT: 2,
+  /** Stored history bounds. */
+  LOG_LIMIT: 400,
+  SESSION_LIMIT: 40,
+  CREDIT_LIMIT: 400,
+  /** Server rewards already claimed into the economy, remembered for dedupe. */
+  AWARD_MEMORY: 200,
 }
 
 /* ── Goals ───────────────────────────────────────────────────────────────── */
@@ -158,6 +200,6 @@ export const MISC = {
 export const HEART_RECOVERY_MS = HEARTS.RECOVERY_MINUTES * 60 * 1000
 
 export default {
-  STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, XP, GOALS, COURSEWORK,
+  STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, XP, GOALS, COURSEWORK, PRACTICE,
   LEVELS, QUESTS, STREAK, TEAM, MISC, HEART_RECOVERY_MS,
 }

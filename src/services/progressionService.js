@@ -23,7 +23,7 @@
    why a backend can later replace the persistence layer without touching it.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { XP, CURRENCY, HEARTS, COURSEWORK } from '../config/progressionConfig'
+import { XP, CURRENCY, HEARTS, COURSEWORK, PRACTICE } from '../config/progressionConfig'
 import { SHIELD, SHOP_ITEMS } from '../config/shopConfig'
 import { getLevelFromXP, getXPProgress, clamp } from '../utils/progressionUtils'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
@@ -36,6 +36,8 @@ import teamService from './teamQuestService'
 import shopService from './shopService'
 import wheelService from './wheelService'
 import judgeService from './judgeService'
+import practice from './practiceService'
+import { practiceSessionXp, PRACTICE_XP } from '../utils/practiceXp'
 import { deriveCourse, getSectionById, getLessonById, isLesson } from '../data/learnData'
 
 /* ── Action names ────────────────────────────────────────────────────────── */
@@ -52,6 +54,13 @@ export const ACTIONS = {
   COMPLETE_LESSON:    'COMPLETE_LESSON',
   COMPLETE_PRACTICE:  'COMPLETE_PRACTICE',
   ADD_PRACTICE_TIME:  'ADD_PRACTICE_TIME',
+  /* An answered question that pays nothing and costs nothing — a Learn
+     part's practice question, or a question inside a Practice session —
+     recorded in the Practice history (services/practiceService.js). */
+  RECORD_ATTEMPT:     'RECORD_ATTEMPT',
+  /* A reward the LunX server recorded (a league result, a won challenge),
+     claimed into this economy once. */
+  CLAIM_SERVER_AWARD: 'CLAIM_SERVER_AWARD',
   PURCHASE_ITEM:      'PURCHASE_ITEM',
   SPIN_WHEEL:         'SPIN_WHEEL',
   CLAIM_QUEST:        'CLAIM_QUEST',
@@ -283,17 +292,21 @@ function checkSectionCompletion(state, lessonId, now) {
  * Correct → XP through the central system, capped per lesson so replaying a
  *           lesson can never farm XP.
  * Wrong   → one heart, through the central heart system.
+ *
+ * Either way the answer joins the Practice history under `reviewKey`, so a
+ * missed Check question comes back in Review mistakes and a right one is
+ * scheduled for spaced review (services/practiceService.js).
  */
-export function recordAnswer(state, { lessonId, correct, maxAnswerXP = 0, reviewKey = null }, now = Date.now()) {
+export function recordAnswer(state, { lessonId, correct, maxAnswerXP = 0, reviewKey = null, answer = null }, now = Date.now()) {
   const acc = { state, events: [] }
+  if (reviewKey) {
+    acc.state = practice.recordAttempt(acc.state, { key: reviewKey, correct: Boolean(correct), source: 'check', answer }, now).state
+  }
 
   if (!correct) {
     acc.state = addCounters(acc.state, {
       stats: { totalWrongAnswers: 1 },
     })
-    /* A missed Check item comes back later, in Practice, until it is answered
-       right there (completePractice → cleared). */
-    if (reviewKey) acc.state = flagForReview(acc.state, reviewKey, lessonId, now)
     merge(acc, currency.loseHeart(acc.state, 'wrong-answer', now))
     return acc
   }
@@ -424,16 +437,52 @@ export function completeLesson(state, payload, now = Date.now()) {
   return acc
 }
 
-/** A standalone practice / review session. Never costs hearts. */
-export function completePractice(state, { seconds = 0, correct = 0, total = 0, cleared = [] } = {}, now = Date.now()) {
+/**
+ * A finished Practice session. Never costs hearts.
+ *
+ * A session run in the Practice tab names its `sessionId`, and everything
+ * about it — what was answered, what was right, which questions are fresh
+ * enough to pay — is read from the attempts it recorded (RECORD_ATTEMPT),
+ * then paid by the shared practice rule (utils/practiceXp.js). A session id
+ * is closed once: replaying the completion pays nothing.
+ *
+ * The reviewer's console, the developer panel and the landing page's demo
+ * learners finish a session without answering questions; they pass counts
+ * (`correct`, `total`) instead, which the same rule pays as fresh answers.
+ */
+export function completePractice(state, payload = {}, now = Date.now()) {
+  const { sessionId = null, seconds = 0, mode = 'quick', topic = null, startMistakes = [] } = payload
   const acc = { state, events: [] }
   const safeSeconds = clamp(Math.floor(seconds), 0, 60 * 60)
 
-  /* Review items answered right in this session leave the review pile. */
-  if (Array.isArray(cleared) && cleared.length && acc.state.review) {
-    const review = { ...acc.state.review }
-    for (const key of cleared) delete review[key]
-    acc.state = { ...acc.state, review }
+  let summary
+  let pay
+  const recorded = sessionId ? practice.sessionEntries(acc.state, sessionId) : []
+  if (recorded.length) {
+    pay = practice.sessionXp(acc.state, recorded, now)
+    const closed = practice.closeSession(acc.state, { sessionId, mode, topic, startMistakes }, now)
+    if (closed.duplicate || !closed.summary) return { state, events: [{ type: 'PRACTICE_DUPLICATE', sessionId }] }
+    acc.state = closed.state
+    summary = closed.summary
+  } else {
+    const p = practice.practiceOf(acc.state)
+    const id = sessionId ? String(sessionId).slice(0, 48) : `s${now.toString(36)}`
+    if (p.sessions.some((s) => s.id === id)) return { state, events: [{ type: 'PRACTICE_DUPLICATE', sessionId: id }] }
+    const total = clamp(Math.floor(payload.total ?? 0), 0, 50)
+    const correct = clamp(Math.floor(payload.correct ?? 0), 0, total)
+    const since = now - PRACTICE_XP.WINDOW_HOURS * 3600000
+    const recent = p.sessions.filter((s) => s.at >= since)
+    pay = practiceSessionXp({
+      answered: total,
+      freshCorrect: correct,
+      sessionsInWindow: recent.length,
+      xpInWindow: recent.reduce((sum, s) => sum + (s.xp || 0), 0),
+    })
+    summary = {
+      id, at: now, mode: practice.MODES[mode] ? mode : 'quick', topic: null, total, correct,
+      xp: pay.xp, reduced: pay.reduced, capped: pay.capped, concepts: [], corrected: [], needs: [], modules: [],
+    }
+    acc.state = { ...acc.state, practice: { ...p, sessions: [summary, ...p.sessions].slice(0, PRACTICE.SESSION_LIMIT) } }
   }
 
   acc.state = addCounters(acc.state, {
@@ -442,10 +491,39 @@ export function completePractice(state, { seconds = 0, correct = 0, total = 0, c
     stats: { totalPracticeSessions: 1, totalPracticeSeconds: safeSeconds },
   })
 
-  acc.events.push({ type: 'PRACTICE_COMPLETE', correct, total })
+  acc.events.push({
+    type: 'PRACTICE_COMPLETE',
+    sessionId: summary.id,
+    correct: summary.correct,
+    total: summary.total,
+    xp: pay.xp,
+    bonus: pay.bonus,
+    perAnswer: pay.perAnswer,
+    reduced: pay.reduced,
+    capped: pay.capped,
+  })
 
-  merge(acc, awardXP(acc.state, XP.PRACTICE, 'practice-complete'))
+  merge(acc, awardXP(acc.state, pay.xp, 'practice-complete'))
   merge(acc, recordActivity(acc.state, { xp: xpAwarded(acc.events), seconds: safeSeconds }, now))
+  merge(acc, runPipeline(acc.state, now))
+  return acc
+}
+
+/**
+ * Claim a reward the LunX server recorded — a league result, a tournament
+ * round, a won challenge — into this economy. The server pays it once (its
+ * reward has a unique key); this pays it once here, by remembering its id.
+ */
+export function claimServerAward(state, { id, gems = 0, kind = 'reward' } = {}, now = Date.now()) {
+  if (typeof id !== 'string' || !id || id.length > 64) return { state, events: [] }
+  const seen = state.serverAwards ?? []
+  if (seen.includes(id)) return { state, events: [{ type: 'AWARD_ALREADY_CLAIMED', id }] }
+  const acc = { state: { ...state, serverAwards: [id, ...seen].slice(0, PRACTICE.AWARD_MEMORY) }, events: [] }
+  const amount = clamp(Math.floor(gems), 0, 1000)
+  if (amount > 0) {
+    merge(acc, currency.awardGems(acc.state, amount, kind.startsWith('challenge') ? 'challenge-reward' : 'league-reward', { awardId: id }))
+  }
+  acc.events.push({ type: 'SERVER_AWARD_CLAIMED', id, gems: amount, kind })
   merge(acc, runPipeline(acc.state, now))
   return acc
 }
@@ -472,19 +550,6 @@ export function addPracticeTime(state, seconds, now = Date.now()) {
    a resume point, a journal entry and a scan are things the learner did, not
    things the economy rewards, so none of them can be farmed.
    ─────────────────────────────────────────────────────────────────────────── */
-
-function flagForReview(state, key, lessonId, now) {
-  const review = { ...(state.review ?? {}) }
-  const existing = review[key]
-  review[key] = { lessonId, since: existing?.since ?? now, misses: (existing?.misses ?? 0) + 1 }
-  /* Bounded: the oldest flags give way first. */
-  const keys = Object.keys(review)
-  if (keys.length > COURSEWORK.REVIEW_LIMIT) {
-    keys.sort((a, b) => review[a].since - review[b].since)
-    for (const k of keys.slice(0, keys.length - COURSEWORK.REVIEW_LIMIT)) delete review[k]
-  }
-  return { ...state, review }
-}
 
 /** Remember how many parts of an item are finished, so it resumes there. */
 export function savePart(state, { lessonId, part }) {
@@ -617,6 +682,12 @@ function reduceAction(state, action, now) {
     case ACTIONS.ADD_PRACTICE_TIME:
       return addPracticeTime(state, payload.seconds ?? 0, now)
 
+    case ACTIONS.RECORD_ATTEMPT:
+      return practice.recordAttempt(state, payload, now)
+
+    case ACTIONS.CLAIM_SERVER_AWARD:
+      return claimServerAward(state, payload, now)
+
     case ACTIONS.PURCHASE_ITEM: {
       const result = shopService.purchaseItem(acc.state, payload, now)
       acc.state = result.state
@@ -745,6 +816,7 @@ export function buildViewModel(state, now = Date.now()) {
     unlockAll: judgeService.hasPower(state, 'unlockAll'),
   })
   const hearts = currency.getHeartRecoveryTime(state, now)
+  const practiceView = practice.practiceSummary(state, now)
 
   return {
     xp: state.xp,
@@ -802,13 +874,18 @@ export function buildViewModel(state, now = Date.now()) {
     /* Coursework */
     lessonParts: state.lessonParts ?? {},
     journal: state.journal ?? {},
-    reviewCount: Object.keys(state.review ?? {}).length,
     scans: state.scans ?? { launch: null, final: null },
+    /* Practice, at the level that needs no lesson content: how many
+       concepts are tracked, missed, due and mastered. The Practice tab
+       builds the full picture itself, once the questions are loaded. */
+    practice: practiceView,
+    reviewCount: practiceView.missedQuestions,
+    serverAwards: state.serverAwards ?? [],
   }
 }
 
 export default {
   ACTIONS, reduce, reconcile, buildViewModel, awardXP,
   completeLesson, completePractice, recordAnswer, applyRollover, runPipeline,
-  savePart, saveJournal, recordScan,
+  savePart, saveJournal, recordScan, claimServerAward,
 }

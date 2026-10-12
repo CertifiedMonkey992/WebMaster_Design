@@ -641,6 +641,14 @@
 
 @keyframes fx-fade-in { from { opacity: 0; } }
 
+/* Leaving: a scrim fades; a dialog sinks a little as it goes. These lived in
+   the daily bonus's stylesheet until the daily spin replaced it (2026-10),
+   which left the shop dialog, the quest panel, the level-up banner and the
+   popover scrim pointing at keyframes that no longer existed — so they
+   vanished without their exit. Shared here, where they belong. */
+@keyframes db-fade-out { to { opacity: 0; } }
+@keyframes db-sink { to { opacity: 0; transform: translateY(16px) scale(0.97); } }
+
 @keyframes fx-slide-up {
   from { opacity: 0; transform: translateY(14px); }
 }

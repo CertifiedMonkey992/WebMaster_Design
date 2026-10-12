@@ -1,10 +1,17 @@
-/* Runs the progression engine's self-check suite (src/dev/progressionTests.js)
-   under Node, so `npm test` and CI exercise the same reducer the app does.
+/* Runs the engine's self-check suites under Node, so `npm test` and CI
+   exercise the same reducer the app does:
 
-   The suite is written for the browser console, with Vite-style imports, so
-   it is bundled first with the esbuild Vite already ships.
+     src/dev/progressionTests.js   the progression engine
+     src/dev/practiceTests.js      the adaptive Practice engine (revision 10)
+     src/dev/leagueTests.js        the shared league rules and week boundaries
 
-   It runs twice: once on the real clock, and once with `Date` pinned to a
+   (The LunX server has its own suite, server/test/, which `npm test` runs
+   after this one.)
+
+   The suites are written for the browser console, with Vite-style imports,
+   so they are bundled first with the esbuild Vite already ships.
+
+   They run twice: once on the real clock, and once with `Date` pinned to a
    day on which the quest seeds once dealt a set the suite could not drive
    (2026-01-01T12:00Z). Both must pass. */
 
@@ -21,7 +28,13 @@ const PINNED = process.env.PIN_DATE
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const out = mkdtempSync(path.join(tmpdir(), 'lunx-tests-'))
-const bundle = path.join(out, 'progressionTests.mjs')
+const bundle = path.join(out, 'selfTests.mjs')
+
+const SUITES = [
+  ['engine', 'runProgressionTests', 'src/dev/progressionTests.js'],
+  ['practice', 'runPracticeTests', 'src/dev/practiceTests.js'],
+  ['leagues', 'runLeagueTests', 'src/dev/leagueTests.js'],
+]
 
 /** Swap the global Date for one whose "now" is `ms`; returns the restore. */
 function pinDate(ms) {
@@ -39,16 +52,24 @@ function pinDate(ms) {
 async function runOnce(label) {
   /* A distinct module instance per run, so nothing memoised in the first
      run (the showcase seed, for one) leaks into the pinned one. */
-  const { runProgressionTests } = await import(`${pathToFileURL(bundle).href}?run=${label}`)
-  const result = await runProgressionTests()
-  for (const f of result.failures) console.error(`FAIL [${label}]  ${f.name}${f.detail ? `  (${f.detail})` : ''}`)
-  console.log(`${label}: ${result.summary}`)
-  return result.failures.length === 0
+  const mod = await import(`${pathToFileURL(bundle).href}?run=${encodeURIComponent(label)}`)
+  let allOk = true
+  for (const [name, fn] of SUITES) {
+    const result = await mod[fn]()
+    for (const f of result.failures) console.error(`FAIL [${label} · ${name}]  ${f.name}${f.detail ? `  (${f.detail})` : ''}`)
+    console.log(`${label} · ${name}: ${result.summary}`)
+    if (result.failures.length) allOk = false
+  }
+  return allOk
 }
 
 try {
   await build({
-    entryPoints: [path.join(root, 'src/dev/progressionTests.js')],
+    stdin: {
+      contents: SUITES.map(([, fn, file]) => `export { ${fn} } from './${file}'`).join('\n'),
+      resolveDir: root,
+      sourcefile: 'self-tests.js',
+    },
     bundle: true,
     platform: 'node',
     format: 'esm',

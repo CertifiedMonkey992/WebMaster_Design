@@ -1,0 +1,294 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   social.css — WHAT FRIENDS AND LEAGUES SHARE (revision 10)
+   ---------------------------------------------------------------------------
+   Avatars, the Test account label, countdowns, state notices, the profile
+   dialog, and the one ROW every social list uses (a leaderboard, a friends
+   list, requests, search results): one container, rows on --line-faint, no
+   card per person. COMPONENT_RULES.md → Friends, Leagues.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Avatar: initials on a warm ground, round (VISUAL_SYSTEM.md → Avatars) ── */
+.av {
+  --av-size: 28px;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: var(--av-size);
+  height: var(--av-size);
+  border-radius: 50%;
+  font-family: var(--font-ui);
+  font-size: calc(var(--av-size) * 0.38);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-normal);
+  line-height: 1;
+  color: var(--surface-raised);
+  user-select: none;
+}
+.av--evergreen { background: var(--evergreen); }
+.av--clay      { background: var(--clay); }
+.av--moss      { background: var(--moss); }
+.av--ochre     { background: var(--ochre-ink); }
+.av--berry     { background: var(--berry); }
+.av--ink       { background: var(--ink-muted); }
+.av--tan       { background: var(--tan-deep); color: var(--ink); }
+
+/* ── The label every test account carries ── */
+.test-tag {
+  display: inline-block;
+  padding: 0 var(--sp-1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-xs);
+  background: var(--paper);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* ── An inline text button (a link that does something here) ── */
+.sx-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--fw-semi);
+  color: var(--evergreen);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.sx-link:hover { color: var(--evergreen-deep); }
+
+/* ── A reward to claim: ochre fill, ink text, the product's press
+   (VISUAL_SYSTEM.md → Educational states → Earned / claimable) ── */
+.sx-claim { background: var(--ochre); color: var(--ink); white-space: nowrap; }
+.sx-claim:hover { background: var(--ochre-bright); }
+.sx-claim .gi { color: var(--ink); }
+.sx-claimed { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-caption); color: var(--moss); white-space: nowrap; }
+
+/* ── Countdown: a clock that keeps time ── */
+.cd {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cd .ico-hand { animation: pg-tick 60s steps(60) infinite; }
+
+/* ── A line of state: loading, error, empty ── */
+.sn { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); padding: var(--sp-3) 0; }
+.sn-title { font-family: var(--font-display); font-size: var(--fs-lead); color: var(--ink); }
+.sn-body { font-size: var(--fs-small); color: var(--ink-muted); max-width: 40rem; line-height: var(--lh-normal); }
+.sn--loading .sn-title { font-family: var(--font-ui); font-size: var(--fs-small); color: var(--ink-muted); }
+.sn--error .sn-title { color: var(--berry-ink); }
+.sn-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+
+/* ── The social row: one container, rows on hairlines ── */
+.sl {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.sl-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  min-height: 3.25rem;
+}
+.sl-row + .sl-row { border-top: 1px solid var(--line-faint); }
+
+/* A row that opens a profile is a button, styled as the row. */
+.sl-open {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sl-open:hover .sl-name { text-decoration: underline; text-underline-offset: 3px; }
+/* Takes the row's free width rather than shrinking to its content, so the
+   name line below wraps only when it truly does not fit. */
+.sl-who { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-width: 0; }
+.sl-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--sp-2);
+  min-width: 0;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+/* Where a row is narrow (a phone) the Test account label drops under the
+   name rather than squeezing it; only a name too long for the row on its
+   own is cut short. */
+.sl-name > span:first-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sl-sub { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-caption); color: var(--ink-muted); }
+.sl-end { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.sl-figure { font-size: var(--fs-body); font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.sl-figure small { font-size: var(--fs-caption); font-weight: var(--fw-semi); color: var(--ink-faint); }
+
+/* ── Moderation (Profile → Moderation, moderators only) ── */
+.md-item { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); }
+.md-item + .md-item { border-top: 1px solid var(--line-faint); }
+.md-head { display: flex; align-items: center; gap: var(--sp-3); min-width: 0; }
+.md-meta { font-size: var(--fs-caption); color: var(--ink-muted); }
+.md-note {
+  margin: 0;
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--line-strong);
+  font-size: var(--fs-small);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.md-facts { margin: 0; font-size: var(--fs-caption); color: var(--ink-muted); line-height: var(--lh-normal); }
+.md-facts b { color: var(--ink); font-weight: var(--fw-semi); }
+.md-log { display: flex; flex-direction: column; gap: var(--sp-1); }
+.md-log ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1); }
+.md-log li { font-size: var(--fs-caption); color: var(--ink-muted); line-height: var(--lh-normal); }
+.md-log b { color: var(--ink); font-weight: var(--fw-semi); }
+.md-when { color: var(--ink-faint); }
+
+/* ── Dialog layer (the shop's construction) ── */
+.sd-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+}
+.sd-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(var(--ink-rgb), 0.42);
+  animation: fx-fade-in var(--dur-enter) var(--ease-out) both;
+}
+.sd {
+  position: relative;
+  width: min(30rem, 100%);
+  max-height: calc(100vh - var(--sp-12));
+  overflow-y: auto;
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-modal);
+  animation: fx-slide-up var(--dur-modal) var(--ease-snap) both;
+}
+.sd-layer.is-leaving .sd-scrim { animation: db-fade-out var(--dur-hover) var(--ease-in) both; }
+.sd-layer.is-leaving .sd { animation: db-sink var(--dur-hover) var(--ease-in) both; }
+.sd-close {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+.sd-close:hover { background: rgba(var(--ink-rgb), 0.05); color: var(--ink); }
+
+/* ── Profile card ── */
+.pc-head { display: flex; align-items: center; gap: var(--sp-4); padding-right: var(--sp-8); }
+.pc-id { min-width: 0; }
+.pc-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-title);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.pc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-top: 2px; font-size: var(--fs-small); color: var(--ink-muted); }
+
+.pc-league {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+.pc-best { font-weight: var(--fw-medium); color: var(--ink-faint); }
+
+.pc-private {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+
+.pc-figures {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-faint);
+  border-bottom: 1px solid var(--line-faint);
+}
+.pc-figures dt { font-size: var(--fs-micro); font-weight: var(--fw-bold); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-faint); }
+.pc-figures dd { font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--ink); }
+.pc-since { margin-top: var(--sp-3); font-size: var(--fs-caption); color: var(--ink-faint); }
+
+.pc-trophies { list-style: none; margin: var(--sp-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.pc-trophies li { display: flex; align-items: center; gap: var(--sp-3); }
+.pc-trophies b { display: block; font-size: var(--fs-small); font-weight: var(--fw-semi); color: var(--ink); }
+.pc-trophies em { display: block; font-style: normal; font-size: var(--fs-caption); color: var(--ink-muted); }
+.pc-more { font-size: var(--fs-caption); color: var(--ink-faint); }
+
+.pc-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-5); }
+.pc-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-faint);
+  font-size: var(--fs-small);
+  color: var(--ink);
+}
+.pc-confirm-actions { display: flex; gap: var(--sp-2); }
+.pc-optional { font-weight: var(--fw-medium); color: var(--ink-faint); }
+.pc-note { min-height: 1.2em; margin-top: var(--sp-2); font-size: var(--fs-small); color: var(--ink-muted); }
+.pc-note.is-ok { color: var(--moss); }
+.pc-note.is-bad { color: var(--berry-ink); }
+
+/* ── Small screens: the dialog becomes a sheet ── */
+@media (max-width: 560px) {
+  .sd-layer { align-items: flex-end; padding: 0; }
+  .sd {
+    width: 100%;
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    max-height: 92vh;
+    padding: var(--sp-6) var(--sp-5) calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+    animation-name: fx-rise-sheet;
+  }
+  .pc-figures { grid-template-columns: repeat(2, 1fr); }
+  .sl-row { padding: var(--sp-2) var(--sp-3); }
+}

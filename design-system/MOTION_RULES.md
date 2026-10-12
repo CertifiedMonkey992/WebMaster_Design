@@ -707,6 +707,12 @@ between them is a page turn (`src/motion/pageTurn.js`, View Transitions):
   old page moves a third of the way left and dims to 92%.
 - **Back home**: the same, mirrored.
 - No View Transitions support, or reduced motion: the swap is instant.
+- **A turn never holds the page back** (revision 11). The browser runs the
+  swap only after it has snapshotted a frame; a page that is not painting
+  (a background window, a hot reload) may not paint for a long time. A turn
+  whose swap has not happened within 400 ms is skipped and the swap runs at
+  once, and a new turn first applies any swap still pending, so pages
+  always change in the order they were asked for.
 - Inside the app, destinations keep `.view-enter` (a rise from the direction
   the nav moved).
 
@@ -855,6 +861,29 @@ later.
   mid-spin.
 - **The top-bar button** pings while a spin waits (`--loop-ping`) — an
   Invitation, like the old bonus button.
+
+## Practice, Leagues and Friends (revision 10)
+
+No new verb, no new loop. These views move only through the existing
+vocabulary:
+
+- **Arrival** — the view change every destination already uses
+  (`view-enter`); lists Reveal once with `--stagger`, never on re-render.
+- **Leaderboard** — when a figure changes the rank and the weekly XP
+  **Roll**; the learner's row is located by its tint, not by motion. Rows
+  never re-sort with animation (a list that shuffles itself is noise).
+- **Results** — a promotion, a podium finish or a won challenge **Stamps**
+  its badge once when first shown; claiming its gems is the quest claim's
+  **Fly** to the gem counter.
+- **Countdowns** — tick once a second (already sanctioned under Ambient →
+  *Clocks*).
+- **Copy the friend code** — the button's label swaps to "Copied" (a Report,
+  `--dur-move`), and back after `--life-toast`.
+- **Practice runner** — the lesson's own step motion: the verdict bar rises,
+  the right option is stamped, a miss shakes once. A "Same idea, new
+  question" label Reveals with the follow-up question.
+- **Badges, medals, trophies** — still. They are records, not toys; the only
+  light in the product stays on the economy icons.
 
 ## Prohibited outright
 

@@ -391,6 +391,141 @@ const LINE_ICONS = {
       <path d="m11.2 11.8 9.3-9.3M17.5 5.5l2.5 2.5M15 8l2 2" />
     </>
   ),
+
+  /* ── Revision 10: Practice modes (VISUAL_SYSTEM.md → The set, by meaning) ── */
+  /* Review mistakes: an arrow that loops back on itself. */
+  review: (
+    <>
+      <path d="M4.2 12.5a7.8 7.8 0 1 0 2.4-6.3" />
+      <path d="M4 3.6v4.8h4.8" />
+      <path d="m10 10 4 4M14 10l-4 4" />
+    </>
+  ),
+  /* Due for review: a calendar page with a tick. */
+  due: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+      <path className="ico-check" pathLength="1" d="m8.6 15.2 2.3 2.3 4.6-4.6" />
+    </>
+  ),
+  /* Older material: an hourglass, its sand run through. */
+  hourglass: (
+    <>
+      <path d="M6 3h12M6 21h12" />
+      <path d="M7.5 3c0 4.6 4.5 6.2 4.5 9s-4.5 4.4-4.5 9M16.5 3c0 4.6-4.5 6.2-4.5 9s4.5 4.4 4.5 9" />
+      <path d="M9.5 19.2h5" strokeWidth="2.6" />
+    </>
+  ),
+  /* Mixed practice: crossing paths. */
+  shuffle: (
+    <>
+      <path d="M3 7h3.2c2 0 3.2 1 4.4 2.7l2.8 4.6c1.2 1.7 2.4 2.7 4.4 2.7H21" />
+      <path d="M3 17h3.2c1.4 0 2.4-.5 3.3-1.4M14.5 8.4c.9-.9 1.9-1.4 3.3-1.4H21" />
+      <path d="m18 4 3 3-3 3M18 14l3 3-3 3" />
+    </>
+  ),
+  'trending-up': (
+    <>
+      <path d="m3 17 6-6 4 4 8-8" />
+      <path d="M15 7h6v6" />
+    </>
+  ),
+
+  /* ── Revision 10: friends, leagues, notifications ── */
+  'user-plus': (
+    <>
+      <circle cx="9.5" cy="8" r="4" />
+      <path d="M2.5 21a7 7 0 0 1 14 0" />
+      <path d="M19 7.5v6M16 10.5h6" />
+    </>
+  ),
+  'user-check': (
+    <>
+      <circle cx="9.5" cy="8" r="4" />
+      <path d="M2.5 21a7 7 0 0 1 14 0" />
+      <path d="m16 10.5 2 2 4-4" />
+    </>
+  ),
+  'user-minus': (
+    <>
+      <circle cx="9.5" cy="8" r="4" />
+      <path d="M2.5 21a7 7 0 0 1 14 0" />
+      <path d="M16 10.5h6" />
+    </>
+  ),
+  hash: <path d="M4.5 9h15M3.5 15h15M10 3.5 8 20.5M16 3.5l-2 17" />,
+  search: (
+    <>
+      <circle cx="10.8" cy="10.8" r="7" />
+      <path d="m20.5 20.5-4.7-4.7" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2.4" />
+      <path d="m3.8 6.6 8.2 6.2 8.2-6.2" />
+    </>
+  ),
+  ban: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m5.7 5.7 12.6 12.6" />
+    </>
+  ),
+  /* A friend challenge: two crossed blades. */
+  swords: (
+    <>
+      <path d="M3.5 3.5 14.6 14.6M13 16.8l3.8-3.8M15.8 15.8l4.4 4.4" />
+      <path d="M20.5 3.5 9.4 14.6M11 16.8 7.2 13M8.2 15.8l-4.4 4.4" />
+    </>
+  ),
+  medal: (
+    <>
+      <circle cx="12" cy="15" r="6" />
+      <path d="M8 3h8l-2.6 6.4M8 3l2.6 6.4" />
+      <path d="M12 12.6v4.8" />
+    </>
+  ),
+  crown: (
+    <>
+      <path d="M3 8.5 7.5 12 12 5l4.5 7L21 8.5 19.2 18H4.8L3 8.5Z" />
+      <path d="M5 21h14" />
+    </>
+  ),
+  /* The clapper is its own group so an arriving notification can ring it. */
+  bell: (
+    <>
+      <path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.6 2H4.4Z" />
+      <path className="ico-clapper" d="M10 21a2 2 0 0 0 4 0" />
+    </>
+  ),
+  sliders: (
+    <>
+      <path d="M4 7h9M17.5 7H20M4 17h3.5M12 17h8" />
+      <circle cx="15.2" cy="7" r="2.2" />
+      <circle cx="9.8" cy="17" r="2.2" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="12" cy="5.5" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="18.5" r="1.5" fill="currentColor" stroke="none" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M19.8 12a7.8 7.8 0 1 1-2.4-5.6" />
+      <path d="M20 3.6v4.8h-4.8" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z" />
+    </>
+  ),
 }
 
 /** Generic line icon. Names come from quest templates and achievements. */

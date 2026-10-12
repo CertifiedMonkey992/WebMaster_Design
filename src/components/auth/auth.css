@@ -233,7 +233,9 @@
   font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   color: var(--ink);
-  word-break: break-all;
+  /* A narrow card breaks the code after a hyphen, between groups of four,
+     and only splits a group when one group alone cannot fit. */
+  overflow-wrap: anywhere;
 }
 
 /* ── The site's links ── */

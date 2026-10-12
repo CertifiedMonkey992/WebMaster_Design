@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    ContactPages.jsx — THE CONTACT FORM, AND THE THANK-YOU PAGE AFTER IT
    ---------------------------------------------------------------------------
-   LunX has no server, so the form does not pretend to "send". It checks the
+   The form sends nothing itself, and does not pretend to "send". It checks the
    message, then hands it to a channel the team really reads, already written:
 
      SITE.contact.email set   → the reader's email app opens with a draft
@@ -197,8 +197,8 @@ export function ContactPage() {
 
           <p className="ct-how" id="ct-how">
             {byEmail()
-              ? 'LunX has no server: this opens your email app with the message written, and you press Send there.'
-              : <>LunX has no server: this opens GitHub with your message written as a new issue, and you press “Submit” there. Issues are <strong>public</strong>, so don’t include personal details. You’ll need a free GitHub account.</>}
+              ? 'LunX doesn’t send this form itself: it opens your email app with the message written, and you press Send there.'
+              : <>LunX doesn’t send this form itself: it opens GitHub with your message written as a new issue, and you press “Submit” there. Issues are <strong>public</strong>, so don’t include personal details. You’ll need a free GitHub account.</>}
           </p>
         </form>
 

@@ -91,7 +91,7 @@ export const DAILY_TEMPLATES = [
   {
     key: 'review-round',
     type: QUEST_TYPES.COMPLETE_PRACTICE,
-    icon: 'target',
+    icon: 'review',
     category: QUEST_CATEGORY.MASTERY,
     title: { easy: 'Review Round', medium: 'Sharpen Up', hard: 'Drill Sergeant' },
     describe: (t) => `Finish ${t} practice session${t === 1 ? '' : 's'}`,

@@ -1,0 +1,128 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   friends.css — THE FRIENDS TAB AND FRIEND CHALLENGES (revision 10)
+   ---------------------------------------------------------------------------
+   COMPONENT_RULES.md → Friends, Friend challenges. The header, the segmented
+   control and the section titles are the quest board's (qp-*); every list is
+   the social row (social.css). What is here: the friend code, the three
+   lookups, the challenge form, and a challenge's standings.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fr-lead { margin-top: var(--sp-2); max-width: 42rem; font-size: var(--fs-small); color: var(--ink-muted); line-height: var(--lh-normal); }
+
+/* Four sections on one line at every width: the sliding indicator spans the
+   control's height, so a wrapped second row would put it across both. */
+.fr-tabs .qp-tab { min-width: 0; white-space: nowrap; }
+
+.fr-stack { display: flex; flex-direction: column; gap: var(--sp-5); }
+.fr-stack > section { display: flex; flex-direction: column; gap: var(--sp-2); }
+
+.fr-quiet { font-size: var(--fs-small); color: var(--ink-muted); line-height: var(--lh-normal); }
+.fr-error { font-size: var(--fs-caption); color: var(--berry-ink); }
+.fr-note { min-height: 1.2em; font-size: var(--fs-small); color: var(--ink-muted); }
+.fr-note.is-ok { color: var(--moss); }
+.fr-note.is-bad { color: var(--berry-ink); }
+.fr-state { display: inline-flex; align-items: center; gap: var(--sp-1); font-size: var(--fs-caption); font-weight: var(--fw-semi); color: var(--ink-muted); white-space: nowrap; }
+.fr-judge { margin: 0; }
+
+/* ── Your friend code: large, in mono, four and four ── */
+.fr-code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--line);
+}
+.fr-code-title { font-family: var(--font-display); font-size: var(--fs-lead); font-weight: var(--fw-semi); color: var(--ink); }
+.fr-code-help { font-size: var(--fs-small); color: var(--ink-muted); max-width: 38rem; }
+.fr-code-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); margin-top: var(--sp-2); }
+.fr-code-text {
+  font-family: var(--font-mono);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--ls-label);
+  color: var(--ink);
+}
+/* "Copied" swaps in as a Report (MOTION_RULES.md → Copy the friend code). */
+.fr-copy-label { display: inline-block; animation: fx-slide-up var(--dur-move) var(--ease-snap) both; }
+
+/* A person row is two parts — the profile button (avatar and name) and its
+   actions — so the actions sit at the right edge. */
+.fr-row { grid-template-columns: minmax(0, 1fr) auto; }
+
+/* ── The three lookups ── */
+.fr-stack > .fr-lookups { gap: var(--sp-4); }
+.fr-lookup { display: flex; flex-direction: column; gap: var(--sp-2); }
+.fr-lookup .form-label { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.fr-lookup-row { display: flex; gap: var(--sp-2); max-width: 30rem; }
+.fr-lookup-row .form-input { flex: 1; min-width: 0; }
+.fr-help { font-size: var(--fs-caption); color: var(--ink-faint); max-width: 34rem; line-height: var(--lh-normal); }
+.fr-results { margin-top: var(--sp-1); }
+
+/* ── Challenges ── */
+.ch-league-note { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-small); color: var(--ink-muted); }
+.ch-new { align-self: flex-start; }
+
+.ch-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--line);
+}
+.ch-field { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.ch-field .form-input { max-width: 26rem; }
+.ch-seg { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.ch-help { font-size: var(--fs-caption); color: var(--ink-muted); line-height: var(--lh-normal); }
+.ch-friends { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4); }
+.ch-friend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 2.25rem;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+  cursor: pointer;
+}
+.ch-friend input { width: 16px; height: 16px; accent-color: var(--evergreen); }
+.ch-actions { display: flex; gap: var(--sp-2); }
+
+.ch-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+.ch-card + .ch-card { margin-top: var(--sp-3); }
+.ch-card.is-cancelled { opacity: 0.8; }
+.ch-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
+.ch-title { font-family: var(--font-display); font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--ink); }
+.ch-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--sp-1); margin-top: 2px; font-size: var(--fs-caption); color: var(--ink-muted); }
+
+/* Standings sit inside the card: rows without a second box around them. */
+.ch-standings { background: none; border: none; border-radius: 0; }
+.ch-row { grid-template-columns: 1.75rem 1fr auto; padding: var(--sp-2) 0; }
+.ch-row.is-you { background: none; }
+.ch-rank { display: grid; place-items: center; font-weight: var(--fw-bold); color: var(--ink-muted); }
+.ch-who { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.ch-track { display: block; height: 4px; border-radius: var(--r-pill); background: var(--paper-deep); overflow: hidden; }
+.ch-fill { display: block; height: 100%; border-radius: var(--r-pill); background: var(--ochre); transition: width var(--dur-settle) var(--ease-settle); }
+.ch-fill.is-you { background: var(--moss); }
+.ch-result { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); font-size: var(--fs-small); color: var(--ink); }
+
+@media (max-width: 520px) {
+  .fr-tabs .qp-tab { padding-inline: var(--sp-1); }
+  .fr-tabs .qp-tab > svg { display: none; }
+}
+
+@media (max-width: 640px) {
+  .fr-hide-narrow { display: none; }
+  .fr-row { grid-template-columns: 1fr auto; }
+  .fr-row > .sl-end { grid-column: 1 / -1; justify-content: flex-start; }
+  .fr-row .sl-figure { margin-right: auto; }
+  .ch-invite { grid-template-columns: auto 1fr; }
+  .ch-invite > .sl-end { grid-column: 1 / -1; }
+}

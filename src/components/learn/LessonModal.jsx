@@ -47,6 +47,9 @@ import StepBody, {
   EMPTY_ANSWER, correctLabel, isAnswerCorrect, canCheckStep, canContinue,
   isCheckStep, isGradable, composeText,
 } from './StepRenderer'
+import { answerSummary, answerForGrading } from '../../utils/stepLogic'
+import { report } from '../../services/activityOutbox'
+import { secureId } from '../../utils/random'
 import { inline } from './Rich'
 import { getLessonIcon } from './LessonIcons'
 import SplitText from '../../motion/SplitText'
@@ -90,6 +93,10 @@ export default function LessonModal({ lessonId, onClose }) {
   const number = lessonNumber(lessonId)
 
   const [isReplay] = useState(() => Boolean(state.lessons[lessonId]))
+  /* One id for this sitting of the lesson. On a connected build the server
+     grades the Check answers sent under it, and accepts the completion only
+     if they are all there (services/activityOutbox.js). */
+  const [sessionId] = useState(() => secureId('ls'))
   /* A lesson left part-way through resumes at its next part. */
   const [resumeAt] = useState(() => (state.lessons[lessonId] ? 0 : (state.lessonParts?.[lessonId] ?? 0)))
 
@@ -222,6 +229,7 @@ export default function LessonModal({ lessonId, onClose }) {
       seconds,
       accuracy: gradedTotal ? gradedCorrect / gradedTotal : 1,
     }))
+    report('complete', { lessonId, sessionId })
     setSessionXP(earnedRef.current.xp)
     setSessionGems(earnedRef.current.gems)
   }
@@ -288,13 +296,21 @@ export default function LessonModal({ lessonId, onClose }) {
     const result = isAnswerCorrect(currentStep, answer)
     const ok = result !== false
 
+    const questionKey = reviewKeyOf(lessonId, currentTab.id, currentStep.id)
     if (stepGraded) {
       tally(actions.recordAnswer({
         lessonId,
         correct: ok,
         maxAnswerXP,
-        reviewKey: reviewKeyOf(lessonId, currentTab.id, currentStep.id),
+        reviewKey: questionKey,
+        answer: answerSummary(currentStep, answer),
       }))
+      report('answer', { key: questionKey, context: 'check', sessionId, answer: answerForGrading(currentStep, answer) })
+    } else if (isGradable(currentStep)) {
+      /* A Learn part's practice question costs and pays nothing, but it is
+         still evidence: it joins the Practice history, so a miss here comes
+         back in Review mistakes. */
+      actions.recordAttempt({ key: questionKey, correct: ok, source: 'learn', answer: answerSummary(currentStep, answer) })
     }
 
     if (currentStep.type === 'predict') {

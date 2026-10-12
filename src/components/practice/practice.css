@@ -1,0 +1,394 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   practice.css — THE PRACTICE TAB (revision 10)
+   ---------------------------------------------------------------------------
+   COMPONENT_RULES.md → Practice. The header, tabs and sections are the quest
+   board's (qp-*, progression.css); the verdict bar and the step body are the
+   lesson's (lm-*, LessonModal.css / lessonSteps.css). What is here is only
+   what Practice adds: the recommendation, the mode rows, the attention rows,
+   the history line, "The idea", and the summary.
+
+   Card edges on the dashboard: the recommendation, the modes, Needs
+   attention — three. The history is text on the page, not a fourth box.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Header ── */
+.pr-head { display: flex; align-items: flex-start; gap: var(--sp-4); }
+.pr-head-icon { flex: none; padding-top: var(--sp-1); }
+.pr-lead {
+  margin-top: var(--sp-2);
+  max-width: 40rem;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+
+.pr-note {
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  line-height: var(--lh-normal);
+}
+.pr-note--bad { color: var(--berry-ink); }
+
+.pr-link {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--fw-semi);
+  color: var(--evergreen);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.pr-link:hover { color: var(--evergreen-deep); }
+
+/* ── The recommendation: the page's "do this next" (the current treatment) ── */
+.pr-rec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface);
+  /* The one thicker border on the page (VISUAL_SYSTEM.md → Borders). */
+  border: 1.5px solid var(--clay);
+  border-radius: var(--r-md);
+}
+
+.pr-rec-eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--clay-ink);
+}
+
+.pr-rec-main { display: flex; align-items: center; gap: var(--sp-4); }
+
+.pr-rec-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: var(--clay);
+  color: var(--surface-raised);
+}
+
+.pr-rec-text { flex: 1; min-width: 0; }
+
+.pr-rec-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semi);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+}
+
+.pr-rec-reason {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+}
+
+.pr-rec-go { flex: none; }
+
+/* On the summary the next step is one of several actions, so it steps
+   down: evergreen hairline, no clay on the box. */
+.pr-rec--next { border: 1px solid var(--line); width: 100%; text-align: left; }
+.pr-rec--next .pr-rec-icon { background: var(--paper-deep); color: var(--ink-muted); }
+
+/* ── Empty state ── */
+.pr-empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); }
+.pr-empty-title { font-family: var(--font-display); font-size: var(--fs-lead); color: var(--ink); }
+.pr-empty-body { font-size: var(--fs-small); color: var(--ink-muted); max-width: 36rem; }
+
+/* ── The modes: rows in one container ── */
+.pr-modes,
+.pr-attn {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.pr-mode {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  animation: rv-up var(--dur-open) var(--ease-snap) backwards;
+  animation-delay: calc(80ms + var(--i, 0) * var(--stagger));
+}
+
+.pr-mode + .pr-mode,
+.pr-mode + .pr-topics,
+.pr-topics + .pr-mode { border-top: 1px solid var(--line-faint); }
+
+.pr-mode-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  background: var(--paper-deep);
+  color: var(--ink-muted);
+}
+
+.pr-mode-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.pr-mode-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+
+.pr-mode-count {
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-xs);
+  background: var(--evergreen-tint);
+  color: var(--evergreen);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+}
+
+.pr-mode-desc { font-size: var(--fs-small); color: var(--ink-muted); line-height: var(--lh-normal); }
+
+/* A mode with nothing in it keeps its row and says why. */
+.pr-mode.is-empty .pr-mode-icon { color: var(--ink-faint); }
+.pr-mode.is-empty .pr-mode-name { color: var(--ink-muted); }
+
+.pr-sizes { display: inline-flex; gap: var(--sp-1); }
+
+/* ── By topic ── */
+.pr-topics { padding: 0 var(--sp-4) var(--sp-3); }
+
+.pr-topic-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line-faint);
+}
+
+.pr-topic {
+  display: grid;
+  grid-template-columns: 2rem 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--line-faint);
+}
+.pr-topic:last-child { border-bottom: none; }
+
+.pr-topic-n {
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+.pr-topic-body { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.pr-topic-title { font-family: var(--font-display); font-size: var(--fs-body); color: var(--ink); }
+
+.pr-topic-meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: var(--fs-caption);
+  color: var(--ink-muted);
+}
+
+.pr-topic-track {
+  width: 5rem;
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--paper-deep);
+  overflow: hidden;
+}
+.pr-topic-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--moss);
+  transition: width var(--dur-settle) var(--ease-settle);
+}
+.pr-topic.is-locked .pr-topic-title { color: var(--ink-muted); }
+
+/* ── Needs attention ── */
+.pr-attn-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+}
+.pr-attn-row + .pr-attn-row { border-top: 1px solid var(--line-faint); }
+
+.pr-attn-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pr-attn-name { font-family: var(--font-display); font-size: var(--fs-body); color: var(--ink); }
+.pr-attn-meta { font-size: var(--fs-caption); color: var(--ink-faint); }
+.pr-attn-reason { font-size: var(--fs-small); color: var(--ink-muted); }
+
+/* Answers as marks: a tick or a cross — shape carries it, not colour alone. */
+.pr-marks { display: inline-flex; gap: 3px; }
+.pr-mark {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-xs);
+}
+.pr-mark.is-ok { background: var(--moss-tint); color: var(--moss); }
+.pr-mark.is-miss { background: var(--paper-deep); color: var(--ink-muted); }
+
+/* ── History ── */
+.pr-history { display: flex; flex-direction: column; gap: var(--sp-2); padding-top: var(--sp-2); }
+.pr-history-line { font-size: var(--fs-small); color: var(--ink-muted); }
+.pr-history-line b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.pr-rule { font-size: var(--fs-caption); color: var(--ink-faint); line-height: var(--lh-normal); max-width: 44rem; }
+
+/* ── The runner (on top of the old practice runner, progression.css) ── */
+.pr-why {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  margin-bottom: var(--sp-3);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  animation: rv-up var(--dur-open) var(--ease-snap) backwards;
+}
+.pr-why.is-follow { color: var(--evergreen); }
+.pr-why-src { text-transform: none; letter-spacing: var(--ls-normal); font-weight: var(--fw-semi); }
+
+.pr-last {
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--paper-deep);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+
+/* The question holds focus for the keyboard. It is not a Tab stop
+   (tabindex -1, like <main> after a page change), so it draws no ring; Tab
+   moves on to the options, which keep the standard one. */
+.pr-body:focus { outline: none; }
+
+.pr-runner .lm-action--neutral .lm-key-hint { margin-left: auto; }
+.pr-end { flex: none; }
+
+.pr-verdict .lm-feedback { align-items: flex-start; }
+
+.pr-idea {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  max-width: 40rem;
+}
+.pr-idea-label {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.pr-idea-title { font-family: var(--font-display); font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--ink); }
+.pr-idea-p { font-size: var(--fs-small); line-height: var(--lh-normal); color: var(--ink-muted); }
+.pr-idea-list { margin: 0; padding-left: var(--sp-4); font-size: var(--fs-small); color: var(--ink-muted); line-height: var(--lh-normal); }
+.pr-idea-list b { color: var(--ink); }
+
+.pr-queued {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--evergreen);
+}
+
+/* ── Summary ── */
+.pr-summary {
+  max-width: 40rem;
+  margin: var(--sp-6) auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+}
+
+.pr-stamp { margin-bottom: var(--sp-2); }
+
+.pr-sum-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  color: var(--ink);
+}
+
+.pr-sum-score { font-size: var(--fs-body); color: var(--ink-muted); }
+.pr-sum-score b { color: var(--ink); font-weight: var(--fw-bold); }
+
+.pr-sum-facts {
+  width: 100%;
+  margin: var(--sp-3) 0 var(--sp-2);
+  text-align: left;
+  border-top: 1px solid var(--line);
+}
+.pr-sum-facts > div {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--line-faint);
+}
+.pr-sum-facts dt {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: 2px;
+}
+.pr-sum-facts dd { font-size: var(--fs-small); color: var(--ink); line-height: var(--lh-normal); }
+.pr-sum-needs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1); }
+.pr-sum-needs b { font-weight: var(--fw-semi); }
+.pr-sum-xp .bi { display: inline-block; vertical-align: -3px; color: var(--ochre); }
+
+.pr-sum-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2); margin-top: var(--sp-2); }
+
+/* ── Small screens ── */
+@media (max-width: 640px) {
+  .pr-head-icon { display: none; }
+  .pr-rec-main { flex-wrap: wrap; }
+  .pr-rec-go { width: 100%; justify-content: center; }
+  .pr-mode { grid-template-columns: auto 1fr; }
+  .pr-mode > .pr-sizes { grid-column: 2; }
+  .pr-mode-go { grid-column: 2; justify-self: start; }
+  .pr-attn-row { grid-template-columns: 1fr auto; }
+  .pr-attn-row > .btn { grid-column: 1 / -1; justify-self: start; }
+  .pr-sum-facts > div { grid-template-columns: 1fr; gap: var(--sp-1); }
+  .pr-runner .lm-action { flex-wrap: wrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-mode, .pr-why { animation: none; }
+}

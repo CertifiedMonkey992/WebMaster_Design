@@ -212,6 +212,63 @@ by text, borders, surfaces or any other icon. Flat fills, no outlines, no
 gradients; one lighter shine per object. The sidebar around them keeps the
 paper palette, the evergreen rail and the ink labels exactly.
 
+Revision 10 (2026-10) adds two destinations to the same family, drawn the
+same way from the same tokens: **Friends** (two learners side by side) and
+**Leagues** (a gold trophy shield). Both appear only on a build connected to
+a LunX server (`COMPONENT_RULES.md` → Friends, Leagues).
+
+### The league palette (revision 10)
+
+The ten leagues are named for metals and stones — Bronze, Silver, Gold,
+Sapphire, Ruby, Emerald, Amethyst, Pearl, Obsidian, Diamond — and a league
+badge has to *be* the stone it is named for. Sapphire is blue and amethyst
+is purple; drawing them in warm stand-ins would make the badges lie. So the
+badges get a second **scoped** palette, the same kind of named exception as
+the nav icons:
+
+```css
+/* three steps per league: face, shade, shine */
+--lg-bronze:   #C27A3E   --lg-bronze-deep:   #8E5527   --lg-bronze-light:   #E2A671
+--lg-silver:   #AEB6BD   --lg-silver-deep:   #7E8890   --lg-silver-light:   #DCE1E5
+--lg-gold:     #EDB22C   --lg-gold-deep:     #B98410   --lg-gold-light:     #FFDD7A
+--lg-sapphire: #2F6AD0   --lg-sapphire-deep: #1C4795   --lg-sapphire-light: #7DA6EE
+--lg-ruby:     #D2334A   --lg-ruby-deep:     #971D32   --lg-ruby-light:     #F07D8D
+--lg-emerald:  #1F9C58   --lg-emerald-deep:  #12703E   --lg-emerald-light:  #6CD29A
+--lg-amethyst: #9459D0   --lg-amethyst-deep: #6534A0   --lg-amethyst-light: #C59BEF
+--lg-pearl:    #E9DCD2   --lg-pearl-deep:    #B9A496   --lg-pearl-light:    #FFF8F1
+--lg-obsidian: #3B3147   --lg-obsidian-deep: #221B2B   --lg-obsidian-light: #76658A
+--lg-diamond:  #86D4EE   --lg-diamond-deep:  #3E9EC4   --lg-diamond-light:  #E1F7FF
+```
+
+Rules: every `--lg-` token is read **only** by `.lg` artwork —
+`components/leagues/LeagueArt.jsx` (the ten badges, the medals and the
+trophies) — through `lf-*` fill classes. Never by text, borders, surfaces,
+bars or any other icon. The leaderboard, the ladder and every label around a
+badge keep the paper palette; a league's *name* is ink, never its stone.
+
+**How prestige reads**, so the family stays one family: every badge is a
+crest on the same 48-unit grid with the same back plate, shade facet and one
+shine. What grows is the crest, not the colour count — Bronze to Gold are a
+plain shield with a rim, then a star; Sapphire, Ruby and Emerald set a cut
+stone in the shield; Amethyst and Pearl add laurel; Obsidian adds a gold
+trim; Diamond is a brilliant-cut stone under a crown with laurel. A lower
+league is a smaller badge in the same language, never a broken one.
+
+**States**: *earned* — full colour; *current* — full colour inside a 1.5px
+ink ring (the streak week marks today the same way); *locked* — the crest's
+silhouette in `--paper-deep` with a `--line` edge and a small lock, which is
+the "locked" composition every other locked object here already uses.
+
+### Avatars (revision 10)
+
+A learner on a leaderboard or in a friends list is shown by a round avatar:
+their initials (Manrope `--fw-bold`) in white on one of seven warm grounds
+they choose — `--evergreen`, `--clay`, `--moss`, `--ochre-ink`, `--berry`,
+`--ink-muted`, `--tan-deep` (with ink initials). There are no uploaded
+photos: the course is for 14–18-year-olds and a server that accepted images
+would need moderation it does not have. Sizes: 28px in a row, 40px in a
+profile header, 56px in a profile card.
+
 ### Light on the economy (revision 4)
 
 The economy icons are small physical objects, and physical treasure catches
@@ -392,6 +449,45 @@ One family, already drawn and already coherent (`LearnSidebar.jsx`,
 - When it is the only content of a control that has an accessible label.
 - When it distinguishes a state a colour alone cannot (locked, completed).
 
+### The set, by meaning (revision 10)
+
+One glyph per meaning, everywhere it appears. A screen that needs "friend
+request" uses `user-plus`, whether it is the Friends tab, a profile card or
+a toast.
+
+| Meaning | Icon | Where |
+|---|---|---|
+| Practice (the destination) | dumbbell (`.ni`) | sidebar; the Practice header |
+| Practice, in a line of text or a quest | `review` | hearts panel, practice quests |
+| Review mistakes | `review` — a looped arrow with a cross | Practice |
+| Due for review | `due` — a calendar with a tick | Practice |
+| Weak areas | `trending-up` | Practice |
+| Quests, goals, accuracy | `target` | Quests, gems panel, Field Kit, profile |
+| Older material | `hourglass` | Practice |
+| Mixed practice | `shuffle` | Practice |
+| Quick practice | `timer` | Practice |
+| By topic | `book` | Practice |
+| Friends | `users` | Friends tab, profile |
+| Add a friend / a request | `user-plus` | Add friends, requests |
+| Accepted | `user-check` | requests, toasts |
+| Remove a friend | `user-minus` | friend menu |
+| Friend code | `hash` | Add friends |
+| Search by username | `search` | Add friends |
+| Email | `mail` | Add friends |
+| Block | `ban` | friend menu, profile |
+| Report | `flag` | friend menu, profile |
+| Friend challenge | `swords` | Friends → Challenges |
+| League | the league's badge (`.lg`) | Leagues, profiles, rows |
+| Weekly rank / podium | `medal` (line) or the drawn medals (`.lg`) | leaderboard |
+| Tournament | `crown` | Leagues |
+| Notifications | `bell` | nav badges, toasts |
+| Privacy | `eye` / `eye-off` | Profile → Privacy |
+
+The line icons (`Icons.jsx → LINE_ICONS`) keep the spec above: 24-unit box,
+2px round strokes, `currentColor`. The full-colour pictures — nav icons,
+league badges, medals, trophies — are the illustration layer and never sit
+in the same row as a line icon of the same meaning.
+
 ### When not to
 
 - Beside every heading. A heading is already a heading.
@@ -418,6 +514,7 @@ as the icon set. No gradient meshes, no glow, no 3D, no isometric.**
 | **The field guide** | The landing hero's one depicted object: a clothbound book in `--evergreen` with `--surface` pages, chapter tabs in the seven chapter inks (`guideData.js → CHAPTER_INK`; every one passes AA as text), a `--clay` ribbon, and a compass drawn in the 2px icon language. Its only "illustration" is the compass, and it is there because the product is a guide. Pages carry real course data. The page and cover shading are two-stop, one-hue gradients depicting depth on a physical surface — the one sanctioned use. |
 | **Rewards** | The existing `ShopArt` set stays: small, flat, legible at 40px, in warm tokens. The daily spin uses the economy icons themselves on its slots. |
 | **Economy icons** | Gem, heart, flame, bolt and shield are drawn as small objects: a back plate, a face, a shade facet, a warm shine mark. Revision 4 lets their faces take a two-stop, one-hue gradient toward the `-bright` token and gives the gem a lit crown in `--gem-light` — the one place in the product where things look like treasure. |
+| **League badges, medals, trophies** *(rev 10)* | Flat crests in the scoped `--lg-*` palette (§2 → The league palette): a back plate, a face, one shade facet, one shine — the economy icons' construction without their gradient. Medals (1st, 2nd, 3rd) are discs on a ribbon in gold, silver and bronze; trophies are cups for a promotion, a podium finish, a tournament round and a friend challenge. Each is earned by a recorded result and is shown with the sentence saying why. |
 | **Empty states** | Text first. An illustration only if it explains something a sentence cannot. |
 | **Completion** | A stamp, not a firework. A rubber-stamp mark in `--moss` reads as earned; particles read as a slot machine. |
 | **Decorative** | None. There is no category for "art added because the area looked bare". |

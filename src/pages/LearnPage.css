@@ -319,6 +319,8 @@ html:has(.learn-app) body {
 .nf-blue-shirt { fill: var(--ni-blue-shirt); }
 .nf-blue-collar { fill: var(--ni-blue-collar); }
 .nf-green { fill: var(--ni-green); }
+.nf-green-light { fill: var(--ni-green-light); }
+.nf-orange { fill: var(--ni-orange); }
 .nf-purple { fill: var(--ni-purple); }
 .nf-gray { fill: var(--ni-gray); }
 .nf-gray-light { fill: var(--ni-gray-light); }
@@ -333,6 +335,10 @@ html:has(.learn-app) body {
 .ns-white { stroke: var(--ni-white); }
 .ns-hair { stroke: var(--ni-hair); }
 .ns-gray { stroke: var(--ni-gray); }
+.ns-yellow-light { stroke: var(--ni-yellow-light); }
+/* A sticker edge: the stroke is painted under the fill, so it shows only as
+   a halo where one shape overlaps another. */
+.ni-halo { paint-order: stroke; }
 
 .ni { display: block; overflow: visible; }
 .ni * { transform-box: fill-box; transition: transform var(--dur-move) var(--ease-spring); }
@@ -368,6 +374,15 @@ html:has(.learn-app) body {
 /* About: the dot of the "i" hops. */
 .ni-about-dot { transform-origin: 50% 50%; }
 .ls-nav-btn:hover .ni-about-dot { transform: translateY(-1.5px); }
+
+/* Friends: the friend behind leans in. */
+.ni-pal { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-pal,
+.ls-nav-btn.active .ni-pal { transform: translateX(-1.2px) rotate(-7deg); }
+
+/* Leagues: the shield is raised. */
+.ni-crest { transform-origin: 50% 100%; }
+.ls-nav-btn:hover .ni-crest { transform: translateY(-1.5px) rotate(-5deg); }
 
 @media (prefers-reduced-motion: reduce) {
   .ni * { transition: none; }

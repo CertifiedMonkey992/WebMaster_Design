@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import LearnSidebar from '../components/learn/LearnSidebar'
 import ModuleList   from '../components/learn/ModuleList'
 import RightSidebar from '../components/learn/RightSidebar'
 import LessonModal  from '../components/learn/LessonModal'
 import ScanModal    from '../components/learn/ScanModal'
-import PracticeSession from '../components/learn/PracticeSession'
+import PracticeView from '../components/practice/PracticeView'
 import ProfileView  from '../components/learn/ProfileView'
 import ShopView     from '../components/shop/ShopView'
 
@@ -15,15 +15,26 @@ import DevPanel        from '../components/progression/DevPanel'
 import JudgeConsole    from '../components/judge/JudgeConsole'
 import WheelIndicator from '../components/wheel/WheelIndicator'
 import WheelModal     from '../components/wheel/WheelModal'
+import PageLoading    from '../components/PageLoading'
+import { Notice }     from '../components/social/SocialBits'
 
 import { ProgressionProvider, useProgression } from '../state/ProgressionContext'
 import { useAuth } from '../state/AuthContext'
+import { SocialProvider, useSocial } from '../state/SocialContext'
+import { CONNECTED } from '../config/serverConfig'
 
 import './LearnPage.css'
 import '../components/progression/progression.css'
 
+/* Friends and Leagues exist only on a build connected to a LunX server, and
+   are fetched the first time they are opened. */
+const FriendsView = lazy(() => import('../components/friends/FriendsView'))
+const LeaguesView = lazy(() => import('../components/leagues/LeaguesView'))
+
 /* Destination order, so a view change knows which way it travelled. */
-const NAV_ORDER = ['learn', 'practice', 'quests', 'shop', 'profile']
+const NAV_ORDER = CONNECTED
+  ? ['learn', 'practice', 'friends', 'leagues', 'quests', 'shop', 'profile']
+  : ['learn', 'practice', 'quests', 'shop', 'profile']
 
 /* The learner's state lives with the course: App loads this page lazily, so
    the progression code is fetched with it, not with the home page. */
@@ -33,26 +44,42 @@ export default function LearnPage(props) {
     /* Keyed on the profile: signing in or out remounts the engine against
        the right learner rather than swapping state underneath it. */
     <ProgressionProvider key={profileKey} judge={isJudge}>
-      <Course {...props} />
+      <CourseGate {...props} />
     </ProgressionProvider>
+  )
+}
+
+/* A connected build opening this account on a device with nothing saved
+   waits for the server's copy rather than flashing a brand-new learner. */
+function CourseGate(props) {
+  const { ready } = useProgression()
+  if (!ready) return <PageLoading label="Fetching your progress…" />
+  if (!CONNECTED) return <Course {...props} />
+  return (
+    <SocialProvider>
+      <Course {...props} />
+    </SocialProvider>
   )
 }
 
 function Course({ onGoHome, onGoAbout }) {
   const { vm } = useProgression()
   const { isJudge } = useAuth()
+  const social = useSocial()
   const [activeNav, setActiveNav] = useState('learn')
+  const [profileFocus, setProfileFocus] = useState(null)
   const [dir, setDir] = useState(1)
   const [activeLessonId, setActiveLessonId] = useState(null)
   const [scan, setScan] = useState(null)
   const [questPanelOpen, setQuestPanelOpen] = useState(false)
   const [wheelOpen, setWheelOpen] = useState(false)
 
-  const navigate = (id) => {
+  const navigate = (id, focus = null) => {
+    setProfileFocus(id === 'profile' ? focus : null)
     if (id === activeNav) return
     setDir(NAV_ORDER.indexOf(id) >= NAV_ORDER.indexOf(activeNav) ? 1 : -1)
     setActiveNav(id)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (!focus) window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   /* The daily spin opens only from its button in the top bar: a waiting
@@ -65,7 +92,11 @@ function Course({ onGoHome, onGoAbout }) {
         onChange={navigate}
         onGoHome={onGoHome}
         onGoAbout={onGoAbout}
-        badges={{ quests: vm.quests.claimableCount }}
+        badges={{
+          quests: vm.quests.claimableCount,
+          friends: social ? social.badges.friends + social.badges.challenges : 0,
+          leagues: social ? social.badges.leagues : 0,
+        }}
       />
 
       <header className="learn-topbar">
@@ -88,10 +119,21 @@ function Course({ onGoHome, onGoAbout }) {
             the nav moved rather than swapping in place. */}
         <div className="view-enter" key={activeNav} style={{ '--dir': dir }}>
           {activeNav === 'learn'    && <ModuleList onStartLesson={setActiveLessonId} onStartScan={setScan} />}
-          {activeNav === 'practice' && <PracticeSession />}
+          {activeNav === 'practice' && <PracticeView onGoLearn={() => navigate('learn')} />}
+          {CONNECTED && (activeNav === 'friends' || activeNav === 'leagues') && (
+            <Suspense fallback={<Notice kind="loading" title="Opening…" />}>
+              {activeNav === 'friends' && <FriendsView />}
+              {activeNav === 'leagues' && (
+                <LeaguesView
+                  onGoPractice={() => navigate('practice')}
+                  onGoProfile={() => navigate('profile', 'privacy')}
+                />
+              )}
+            </Suspense>
+          )}
           {activeNav === 'quests'   && <QuestBoard />}
           {activeNav === 'shop'     && <ShopView onNavigate={navigate} />}
-          {activeNav === 'profile'  && <ProfileView />}
+          {activeNav === 'profile'  && <ProfileView focus={profileFocus} />}
         </div>
       </main>
 

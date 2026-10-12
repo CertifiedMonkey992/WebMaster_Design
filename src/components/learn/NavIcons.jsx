@@ -207,4 +207,50 @@ export function AboutIcon({ size = 30 }) {
   )
 }
 
-export default { LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon, HomeIcon, AboutIcon }
+/* ── Friends: two learners side by side (revision 10) ───────────────────────
+   A green friend behind, a blue one in front with a white halo where they
+   overlap — the reference's sticker edge, as on the chest's dot. On hover the
+   friend behind leans in. */
+export function FriendsIcon({ size = 30, alert = false }) {
+  return (
+    <svg {...svg(size)} className="ni ni-friends">
+      <g className="ni-pal">
+        <path className="nf-green" d="M13.6 27.4c0-4.9 3.5-8.1 7.9-8.1s7.9 3.2 7.9 8.1v.9H13.6Z" />
+        <circle className="nf-green" cx="21.5" cy="11" r="4.7" />
+        <ellipse className="nf-green-light" cx="19.7" cy="9.2" rx="1.4" ry="1" transform="rotate(-35 19.7 9.2)" />
+      </g>
+      <g className="ns-white ni-halo" strokeWidth="1.8">
+        <path className="nf-blue" d="M2.4 29.2c0-5.8 4.3-9.5 9.6-9.5s9.6 3.7 9.6 9.5v.4H2.4Z" />
+        <circle className="nf-blue" cx="12" cy="12.4" r="5.6" />
+      </g>
+      <ellipse className="nf-blue-light" cx="9.8" cy="10.2" rx="1.7" ry="1.15" transform="rotate(-35 9.8 10.2)" />
+      {alert && <circle className="ni-dot nf-red ns-white" cx="26.4" cy="5.6" r="4" strokeWidth="1.4" />}
+    </svg>
+  )
+}
+
+/* ── Leagues: a gold trophy shield (revision 10) ────────────────────────────
+   A crest with a lit left half and a shaded right half, a white star, and one
+   shine. On hover it is raised, as a winner raises a shield. */
+const CREST = 'M16 2.8 27.2 6.8v8.6c0 7-4.7 11.8-11.2 13.8C9.5 27.2 4.8 22.4 4.8 15.4V6.8Z'
+
+export function LeaguesIcon({ size = 30, alert = false }) {
+  const uid = useUid()
+  return (
+    <svg {...svg(size)} className="ni ni-leagues">
+      <defs><clipPath id={`${uid}c`}><path d={CREST} /></clipPath></defs>
+      <g className="ni-crest">
+        <path className="nf-yellow" d={CREST} />
+        <g clipPath={`url(#${uid}c)`}>
+          <rect className="nf-yellow-deep" x="16" y="0" width="14" height="32" />
+          <rect className="nf-orange" x="0" y="24.6" width="32" height="8" />
+        </g>
+        <path className="nf-white" d="m16 9 2.05 4.15 4.58.67-3.31 3.23.78 4.56L16 19.45l-4.1 2.16.78-4.56-3.31-3.23 4.58-.67Z" />
+        <path className="ns-yellow-light" d="M8.6 9.2v5.4" fill="none" strokeWidth="1.8" strokeLinecap="round" />
+      </g>
+      {alert && <circle className="ni-dot nf-red ns-white" cx="26.4" cy="5.6" r="4" strokeWidth="1.4" />}
+    </svg>
+  )
+}
+
+export default { LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon, HomeIcon, AboutIcon, FriendsIcon, LeaguesIcon }

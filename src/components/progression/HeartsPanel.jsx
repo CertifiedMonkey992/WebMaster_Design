@@ -110,7 +110,7 @@ export default function HeartsPanel({ onClose, onOpenShop }) {
           <span><b>{HEARTS.RECOVERY_MINUTES} min</b> brings one back</span>
         </li>
         <li style={{ '--i': 2 }}>
-          <span className="pg-how-ico pg-how-ico--free"><Icon name="target" size={17} strokeWidth={2.2} /></span>
+          <span className="pg-how-ico pg-how-ico--free"><Icon name="review" size={17} strokeWidth={2.2} /></span>
           <span><b>Practice</b> is always free</span>
         </li>
       </ol>

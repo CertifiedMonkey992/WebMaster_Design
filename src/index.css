@@ -214,6 +214,45 @@
   --ni-hair:         #3D3D3D;
   --ni-white:        #FFFFFF;
 
+  /* ── The league palette (VISUAL_SYSTEM.md → The league palette, rev 10) ──
+     The ten league badges, the medals and the trophies are named for metals
+     and stones, and a sapphire has to be blue. A second named, scoped
+     exception to the warm palette: read ONLY by `.lg` artwork (components/
+     leagues/LeagueArt.jsx) through `lf-*` classes — never by text, borders,
+     surfaces or bars. Three steps per league: face, shade (-deep), shine
+     (-light). */
+  --lg-bronze:         #C27A3E;
+  --lg-bronze-deep:    #8E5527;
+  --lg-bronze-light:   #E2A671;
+  --lg-silver:         #AEB6BD;
+  --lg-silver-deep:    #7E8890;
+  --lg-silver-light:   #DCE1E5;
+  --lg-gold:           #EDB22C;
+  --lg-gold-deep:      #B98410;
+  --lg-gold-light:     #FFDD7A;
+  --lg-sapphire:       #2F6AD0;
+  --lg-sapphire-deep:  #1C4795;
+  --lg-sapphire-light: #7DA6EE;
+  --lg-ruby:           #D2334A;
+  --lg-ruby-deep:      #971D32;
+  --lg-ruby-light:     #F07D8D;
+  --lg-emerald:        #1F9C58;
+  --lg-emerald-deep:   #12703E;
+  --lg-emerald-light:  #6CD29A;
+  --lg-amethyst:       #9459D0;
+  --lg-amethyst-deep:  #6534A0;
+  --lg-amethyst-light: #C59BEF;
+  --lg-pearl:          #E9DCD2;
+  --lg-pearl-deep:     #B9A496;
+  --lg-pearl-light:    #FFF8F1;
+  --lg-obsidian:       #3B3147;
+  --lg-obsidian-deep:  #221B2B;
+  --lg-obsidian-light: #76658A;
+  --lg-diamond:        #86D4EE;
+  --lg-diamond-deep:   #3E9EC4;
+  --lg-diamond-light:  #E1F7FF;
+  --lg-white:          #FFFFFF;
+
   /* ── Spacing (8pt, with 4px for the inside of small controls) ──────────── */
   /* The smallest control a finger can hit reliably (44px, WCAG 2.5.8).
      Applied under `pointer: coarse` only; a mouse needs no such room. */

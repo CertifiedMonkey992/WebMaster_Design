@@ -4,8 +4,9 @@
    A shared bar the whole squad fills together. Nobody is ranked against
    anybody — the reward is granted to everyone or to nobody.
 
-   The squad is locally simulated until there is a backend, and the card says
-   so out loud rather than pretending strangers are online.
+   The squad is simulated in the browser — on a connected build too, which
+   has friends but no squads — and the card says so out loud rather than
+   pretending strangers are online.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useRef, useState } from 'react'
@@ -47,7 +48,7 @@ export default function TeamMissionCard() {
         <div className="tm-titles">
           <div className="tm-eyebrow">
             Team mission
-            {team.simulated && <span className="tm-sim" title="Squadmates are simulated locally until accounts ship">Local preview</span>}
+            {team.simulated && <span className="tm-sim" title="Squadmates are simulated in this browser — they are not real learners">Local preview</span>}
           </div>
           <h3 className="tm-title">{team.mission.title}</h3>
           <p className="tm-tagline">{team.mission.tagline}</p>

@@ -9,7 +9,8 @@
 
    The Field Journal: every prediction the learner committed to (with how
    sure they were and whether it held) and every reflection they wrote,
-   grouped by item. It lives in this browser with the rest of their progress.
+   grouped by item. It lives with the rest of their progress: in this browser,
+   and on a connected build in their account on the LunX server too.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useState } from 'react'
@@ -17,6 +18,7 @@ import { useProgression } from '../../state/ProgressionContext'
 import { FIELD_KIT } from '../../data/achievements'
 import { ALL_LESSONS, lessonNumber, KIND_LABEL } from '../../data/learnData'
 import { Icon } from '../progression/Icons'
+import { CONNECTED } from '../../config/serverConfig'
 
 export function FieldKit() {
   const { state } = useProgression()
@@ -66,7 +68,7 @@ export function FieldJournal() {
         </p>
       </header>
       {items.length === 0 && (
-        <p className="pv-data-desc">Your answers and reflections from each lesson collect here, on this browser only. The capstone asks you to reread them.</p>
+        <p className="pv-data-desc">Your answers and reflections from each lesson collect here, {CONNECTED ? 'saved with your account and seen by nobody else' : 'on this browser only'}. The capstone asks you to reread them.</p>
       )}
       <ul className="fj-items">
         {items.map((l) => {

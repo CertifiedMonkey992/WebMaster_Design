@@ -3,9 +3,21 @@
 An interactive field guide to how AI works, built for high-school learners
 as a TSA Webmaster entry. Twenty-one short lessons across seven modules, with
 XP, levels, streaks, hearts, gems, daily and weekly quests, a daily spin, a
-small shop and achievements. There is no server: accounts and progress live
-in the browser's local storage, and the course asks you to sign in or create
-a free account first.
+small shop, achievements, and an adaptive Practice tab built from each
+learner's own answers. The course asks you to sign in or create a free
+account first.
+
+LunX comes in two builds from the same code:
+
+- **Local** (the default, and the live site unless a server is configured):
+  no server at all. Accounts and progress live in the browser's local
+  storage and nothing is transmitted.
+- **Connected**: built with `VITE_LUNX_SERVER` pointing at the LunX server in
+  [`server/`](server/README.md). Accounts and progress are kept on that
+  server, and it adds weekly **Leagues** (ten tiers and a Diamond
+  Tournament), **Friends** (friend codes, search, requests, blocking and
+  reporting) and **friend challenges**. The server grades answers and
+  decides all league XP, rewards and week boundaries itself.
 
 Live site: https://certifiedmonkey992.github.io/WebMaster_Design/
 
@@ -33,10 +45,16 @@ can be switched off in the console to see the plain course, and judges are
 equally welcome to create an ordinary account and walk it as a student
 would.
 
-Accounts are local: they are created in this browser and nothing is
+On a local build, accounts are created in this browser and nothing is
 transmitted. Passwords and recovery codes are stored only as salted PBKDF2
 hashes, but anyone with access to the browser can read the progress stored
 beside them. See `PRIVACY` on the site for every key it writes.
+
+On a connected build the same account is seeded on the server, and its
+**Leagues** tab opens a reviewer's sandbox: a closed board of labelled test
+accounts, with controls that make them study, end the week now (real ranks,
+promotion and rewards) or send the reviewer a real friend request or
+challenge. No real learner is ever on the reviewer's board.
 
 ## Stack
 
@@ -54,17 +72,22 @@ beside them. See `PRIVACY` on the site for every key it writes.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5176
-npm test           # progression engine self-checks, run under Node
-npm run lint       # eslint
-npm run typecheck  # tsc (also covers the .tsx components)
-npm run build      # writes the published site to docs/
+npm run dev            # http://localhost:5176 — a local build
+npm run dev:connected  # the LunX server on :8787 and the site on :5177, pointed at it
+npm test               # engine, Practice and league self-checks, then the server suite
+npm run lint           # eslint
+npm run typecheck      # tsc
+npm run build          # writes the published site to docs/
 ```
 
-The self-check suite (`src/dev/progressionTests.js`) drives the real reducer
-with an injected clock, so calendar rollovers, streak gaps and heart recovery
-are tested deterministically. It can also be run from the app: open the
-course with `?dev=1` and press "Run self-tests" in the developer panel.
+The self-check suites (`src/dev/progressionTests.js`, `practiceTests.js`,
+`leagueTests.js`) drive the real code with an injected clock, so calendar
+rollovers, streak gaps, heart recovery, spaced-review intervals and league
+week boundaries are tested deterministically, in two time zones and on a
+pinned date as well as today. The server suite (`server/test/`) runs a real
+HTTP server on an in-memory database with a clock the tests move by hand.
+The engine suite can also be run from the app: open the course with
+`?dev=1` and press "Run self-tests" in the developer panel.
 
 CI (`.github/workflows/ci.yml`) runs lint, typecheck, the tests and the
 build on every push and pull request, and publishes the site when those
@@ -92,6 +115,14 @@ which is why `docs/` used to be committed. A workflow cannot change that
 setting for itself, so it is a one-time choice by someone with admin
 access to the repository.
 
+### Publishing a connected build
+
+Set the repository variable **`LUNX_SERVER_URL`** (Settings → Secrets and
+variables → Actions → Variables) to the deployed server's origin, and CI
+builds a connected site on the next push to `main`. Without it the build is
+local. Deploying the server itself is described in
+[`server/README.md`](server/README.md).
+
 ### Where the build output goes
 
 Vite writes to `docs/` (`build.outDir` in `vite.config.js`) — a name left
@@ -105,11 +136,13 @@ page's head, plus `404.html`, `sitemap.xml`, `robots.txt` and `.nojekyll`.
 
 ## Progress data
 
-Progress is saved under one local-storage key (`lunx_user_progress_v1`).
-The Profile page can export it as a JSON file and import that file again on
-another browser. Corrupt or partial data is repaired to a valid state on
-load rather than crashing the app. See the privacy page for everything the
-site stores.
+Each account's progress is saved under its own local-storage key
+(`lunx_user_progress_v1__<account>`); on a connected build a copy is kept on
+the server too, so it follows the account between devices, and signing out
+removes the browser's copy once the server has every change. The Profile
+page can export progress as a JSON file and import it again. Corrupt or
+partial data is repaired to a valid state on load rather than crashing the
+app. The privacy page lists everything each build stores.
 
 ## Before changing the UI
 

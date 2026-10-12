@@ -25,6 +25,8 @@ import progression, { ACTIONS, reduce, reconcile, buildViewModel } from '../serv
 import { getLocalDateKey } from '../utils/dateUtils'
 import { secureInt, secureId } from '../utils/random'
 import { WHEEL } from '../config/wheelConfig'
+import { CONNECTED } from '../config/serverConfig'
+import { createProgressSync } from '../services/progressSync'
 
 /* Split contexts: progression state changes rarely, the clock changes every
    second. Keeping them apart means a ticking countdown does not re-render the
@@ -65,6 +67,11 @@ function createActions(dispatch) {
     completeLesson: (payload) => dispatch(ACTIONS.COMPLETE_LESSON, payload),
     completePractice: (payload) => dispatch(ACTIONS.COMPLETE_PRACTICE, payload),
     addPracticeTime: (seconds) => dispatch(ACTIONS.ADD_PRACTICE_TIME, { seconds }),
+    /** An answered question that pays and costs nothing (a Learn part's
+     *  question, a Practice question) — into the Practice history. */
+    recordAttempt:  (payload) => dispatch(ACTIONS.RECORD_ATTEMPT, payload),
+    /** Claim a server-recorded reward's gems, once. */
+    claimServerAward: (award) => dispatch(ACTIONS.CLAIM_SERVER_AWARD, award),
 
     /** Buy a shop item. `txnId` is minted per confirmation dialog, so replaying
      *  the same purchase is refused rather than charged twice. */
@@ -102,10 +109,17 @@ function createActions(dispatch) {
  * imported file or a blob copied between profiles.
  */
 export function ProgressionProvider({ judge = false, children }) {
+  /* The storage key this learner's progress lives under, fixed for the
+     provider's life (LearnPage remounts it when the account changes). Every
+     read and write names it, so a write landing during a sign-out can never
+     reach another account's key. */
+  const keyRef = useRef(null)
+  if (keyRef.current === null) keyRef.current = getProfileKey()
+
   /* ── Load once, reconcile against the real clock ── */
   const bootRef = useRef(null)
   if (bootRef.current === null) {
-    const loaded = load()
+    const loaded = load(Date.now(), keyRef.current)
     const claimed = assertJudge(loaded.state, judge, loaded.isNew)
     const settled = reconcile(claimed, Date.now())
     bootRef.current = {
@@ -130,10 +144,19 @@ export function ProgressionProvider({ judge = false, children }) {
      newer state is adopted instead. */
   const savedAtRef = useRef(bootRef.current.savedAt)
 
+  /* Connected builds keep a copy on the LunX server (services/progressSync.js).
+     A device with nothing saved for this account waits for that copy before
+     showing the course, rather than flashing a brand-new learner. */
+  const syncRef = useRef(null)
+  const [ready, setReady] = useState(() => !CONNECTED || !bootRef.current.isNew)
+
   const persist = useCallback((next) => {
-    if (peekUpdatedAt() > savedAtRef.current) return false
-    const at = save(next)
-    if (at) savedAtRef.current = at
+    if (peekUpdatedAt(keyRef.current) > savedAtRef.current) return false
+    const at = save(next, keyRef.current)
+    if (at) {
+      savedAtRef.current = at
+      syncRef.current?.markDirty()
+    }
     return at > 0
   }, [])
 
@@ -149,6 +172,45 @@ export function ProgressionProvider({ judge = false, children }) {
 
   const dismissReward = useCallback((key) => {
     setRewards((prev) => prev.filter((r) => r.key !== key))
+  }, [])
+
+  /* ── Sync with the server's copy (connected builds) ─────────────────────── */
+  useEffect(() => {
+    if (!CONNECTED) return undefined
+    const sync = createProgressSync({
+      getState: () => stateRef.current,
+      adopt: (raw, why) => {
+        const settled = reconcile(assertJudge(sanitizeState(migrate(raw), Date.now()), judge, false), Date.now())
+        stateRef.current = settled.state
+        setState(settled.state)
+        /* The server's copy wins over whatever this browser held. */
+        savedAtRef.current = Number.MAX_SAFE_INTEGER
+        const at = save(settled.state, keyRef.current)
+        savedAtRef.current = at || Date.now()
+        if (why === 'conflict') {
+          pushRewards([{ type: 'NOTICE', icon: 'refresh', tone: 'muted', title: 'Updated from your other device', text: 'Your newest progress is here now.' }])
+        }
+      },
+    })
+    syncRef.current = sync
+    let alive = true
+    const giveUp = window.setTimeout(() => { if (alive) setReady(true) }, 5000)
+    sync.pull().finally(() => {
+      if (!alive) return
+      clearTimeout(giveUp)
+      setReady(true)
+    })
+    const flush = () => sync.flush()
+    window.addEventListener('pagehide', flush)
+    return () => {
+      alive = false
+      clearTimeout(giveUp)
+      window.removeEventListener('pagehide', flush)
+      sync.flush()
+      sync.stop()
+      syncRef.current = null
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /* Persist the reconciled boot state so a first-ever visit is durable
@@ -232,9 +294,9 @@ export function ProgressionProvider({ judge = false, children }) {
      copy. The `storage` event only fires in OTHER tabs, never the writer. */
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key !== getProfileKey() || e.storageArea !== window.localStorage) return
-      if (peekUpdatedAt() <= savedAtRef.current) return
-      const loaded = load()
+      if (e.key !== keyRef.current || e.storageArea !== window.localStorage) return
+      if (peekUpdatedAt(keyRef.current) <= savedAtRef.current) return
+      const loaded = load(Date.now(), keyRef.current)
       const settled = reconcile(loaded.state, Date.now())
       savedAtRef.current = loaded.state.updatedAt
       stateRef.current = settled.state
@@ -321,7 +383,7 @@ export function ProgressionProvider({ judge = false, children }) {
         dispatch(ACTIONS.RECONCILE)
       },
       reset: () => {
-        clear()
+        clear(keyRef.current)
         const fresh = reconcile(createDefaultState(), Date.now()).state
         stateRef.current = fresh
         setState(fresh)
@@ -340,10 +402,13 @@ export function ProgressionProvider({ judge = false, children }) {
 
   const value = useMemo(() => ({
     state, vm, dispatch, actions,
+    /** False only while a connected build fetches this account's progress
+     *  onto a device that had none. */
+    ready,
     isNewUser: bootRef.current.isNew,
     recoveredFromCorruption: bootRef.current.recovered,
     devMode: isDevMode(),
-  }), [state, vm, dispatch, actions])
+  }), [state, vm, dispatch, actions, ready])
 
   const rewardValue = useMemo(() => ({ rewards, dismissReward, pushRewards }), [rewards, dismissReward, pushRewards])
 
@@ -376,6 +441,7 @@ const NOOP_ACTIONS = {
   awardXP: NOOP, awardGems: NOOP, spendGems: NOOP,
   loseHeart: NOOP, restoreHeart: NOOP, restoreAllHearts: NOOP, refillHeartsWithGems: NOOP,
   recordAnswer: NOOP, completeLesson: NOOP, completePractice: NOOP, addPracticeTime: NOOP,
+  recordAttempt: NOOP, claimServerAward: NOOP,
   purchaseItem: NOOP, spinWheel: NOOP,
   claimQuest: NOOP, claimAllQuests: NOOP, claimTeamReward: NOOP, rerollTeamMission: NOOP,
   setDailyGoal: NOOP, reconcileNow: NOOP, judge: NOOP,
@@ -535,7 +601,7 @@ const VISIBLE = new Set([
   'STREAK_UPDATED', 'STREAK_MILESTONE', 'STREAK_LOST', 'HEART_LOST',
   'HEARTS_EMPTY', 'HEARTS_RESTORED', 'SECTION_COMPLETE', 'PERFECT_LESSON',
   'DAILY_GOAL_MET', 'TEAM_MISSION_COMPLETE', 'TEAM_MISSION_CLAIMED',
-  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED',
+  'PURCHASE_COMPLETE', 'STREAK_SHIELD_USED', 'NOTICE',
 ])
 
 /* A spin's payout is revealed by the wheel when it stops (it flies its own

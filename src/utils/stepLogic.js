@@ -132,6 +132,62 @@ export function canContinue(step, answer = EMPTY_ANSWER) {
   }
 }
 
+/**
+ * A short, readable record of what the learner answered — kept in the
+ * Practice history so feedback can say "last time you chose …".
+ * @param {Step | null | undefined} step
+ * @param {Answer} [answer]
+ * @returns {string}
+ */
+export function answerSummary(step, answer = EMPTY_ANSWER) {
+  if (!step) return ''
+  const { filled = [], selected = null, assign = {}, value = '' } = answer
+  switch (step.type) {
+    case 'mcq':
+    case 'recall':
+    case 'predict':
+      return ((step.options ?? []).find((o) => o.id === selected)?.text ?? '').replace(/\*/g, '').slice(0, 120)
+    case 'binary':
+      return String(selected ?? '').slice(0, 120)
+    case 'fill-blank':
+      return filled.filter(Boolean).join(', ').slice(0, 120)
+    case 'number':
+      return String(value ?? '').slice(0, 40)
+    case 'sort': {
+      const items = step.items ?? []
+      const right = items.filter((it) => assign[it.id] === it.bin).length
+      return `${right} of ${items.length} sorted right`
+    }
+    default:
+      return ''
+  }
+}
+
+/**
+ * Only the part of an answer that grading reads — what the LunX server is
+ * sent, so it can grade the answer itself instead of being told the verdict.
+ * @param {Step | null | undefined} step
+ * @param {Answer} [answer]
+ * @returns {Answer}
+ */
+export function answerForGrading(step, answer = EMPTY_ANSWER) {
+  if (!step) return {}
+  switch (step.type) {
+    case 'fill-blank': return { filled: (answer.filled ?? []).slice(0, 8).map((x) => (x == null ? null : String(x).slice(0, 80))) }
+    case 'sort': {
+      /** @type {Record<string, string>} */
+      const assign = {}
+      for (const it of step.items ?? []) {
+        const bin = answer.assign?.[it.id]
+        if (typeof bin === 'string') assign[it.id] = bin.slice(0, 40)
+      }
+      return { assign }
+    }
+    case 'number': return { value: String(answer.value ?? '').slice(0, 40) }
+    default: return { selected: answer.selected == null ? null : String(answer.selected).slice(0, 80) }
+  }
+}
+
 /** The text a compose step saves to the journal.
  * @param {Step} step @param {Answer} answer */
 export function composeText(step, answer) {

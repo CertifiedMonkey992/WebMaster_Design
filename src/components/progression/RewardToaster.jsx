@@ -44,6 +44,9 @@ const LIFETIME = {
   TEAM_MISSION_COMPLETE: 3600,
   TEAM_MISSION_CLAIMED: 2400,
   LEVEL_UP: 4200,
+  /* Revision 10: a sentence from the LunX server or the sync — a league
+     result, a friend request, progress arriving from another device. */
+  NOTICE: 3800,
 }
 
 const EXIT_MS = 260
@@ -181,6 +184,13 @@ function Toast({ reward }) {
             <b>Shared reward claimed</b>
             {reward.auto && <em>{reward.mission.title} — paid for you before the week ended</em>}
           </span>
+        </div>
+      )
+    case 'NOTICE':
+      return (
+        <div className={`rt-toast rt-toast--${reward.tone ?? 'quest'}`}>
+          <span className="rt-toast-icon">{reward.art ?? <QuestIcon name={reward.icon ?? 'bell'} size={20} />}</span>
+          <span><b>{reward.title}</b>{reward.text && <em>{reward.text}</em>}</span>
         </div>
       )
     default:

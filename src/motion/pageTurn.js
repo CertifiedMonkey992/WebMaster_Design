@@ -14,6 +14,15 @@
    the new page is the real first frame. No support, or reduced motion: the
    update simply happens.
 
+   The update is never left waiting. The browser runs it only once it has
+   snapshotted a frame, and a page that is not painting (a background
+   window, a stalled preview, a hot reload in progress) may not paint for a
+   long time. So a turn whose update has not run within FIRST_FRAME_MS is
+   skipped and its update runs at once; and a new turn first applies any
+   update still pending, so pages change in the order they were asked for.
+   (Before this, a stalled turn could land AFTER a later one and put the
+   reader back on a page they had left.)
+
    The ::view-transition-* rules live here, in a constructed stylesheet
    adopted by the document, rather than in motion.css: the W3C CSS validator
    does not yet parse those pseudo-elements, and a browser without View
@@ -63,18 +72,47 @@ function installRules() {
 }
 
 let busy = false
+/** The running turn's update, until it has been applied. */
+let pending = null
+let current = null
+/* A snapshot takes one frame; this is many frames. */
+const FIRST_FRAME_MS = 400
 
 export function turnPage(update, { dir = 1 } = {}) {
   const root = document.documentElement
+  pending?.()
   if (busy || typeof document.startViewTransition !== 'function' || prefersReducedMotion() || !installRules()) {
     update()
     return
   }
   busy = true
   root.dataset.turn = dir < 0 ? 'back' : 'forward'
-  const transition = document.startViewTransition(() => { flushSync(update) })
-  transition.finished.finally(() => {
+  let applied = false
+  const apply = () => {
+    if (applied) return
+    applied = true
+    pending = null
+    flushSync(update)
+  }
+  pending = apply
+  const transition = document.startViewTransition(apply)
+  /* A skipped or aborted turn rejects `ready`; the page has changed either
+     way, so that is not an error. */
+  transition.ready.catch(() => {})
+  const release = () => {
+    clearTimeout(timer)
+    if (current !== transition) return
+    current = null
     delete root.dataset.turn
     busy = false
-  })
+  }
+  current = transition
+  const timer = window.setTimeout(() => {
+    if (applied) return
+    transition.skipTransition?.()
+    apply()
+    /* `finished` waits for a frame too; the next turn need not. */
+    release()
+  }, FIRST_FRAME_MS)
+  transition.finished.finally(release)
 }

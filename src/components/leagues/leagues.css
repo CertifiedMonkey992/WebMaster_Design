@@ -1,0 +1,89 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   leagues.css — THE LEAGUE ARTWORK'S COLOURS
+   ---------------------------------------------------------------------------
+   The only place the scoped league palette (--lg-*, index.css) is read
+   (VISUAL_SYSTEM.md → The league palette). Every class here colours a part
+   of a `.lg` drawing — never text, a border, a surface or a bar.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.lg { display: block; overflow: visible; flex: none; }
+
+/* The shade facet: the face's own deep step, laid over its right half. */
+.lg-shade { opacity: 0.38; }
+.lg-shine { opacity: 0.9; }
+
+.lf-white { fill: var(--lg-white); }
+
+.lf-bronze { fill: var(--lg-bronze); }
+.lf-bronze-deep { fill: var(--lg-bronze-deep); }
+.lf-bronze-light { fill: var(--lg-bronze-light); }
+.ls-bronze { stroke: var(--lg-bronze); }
+.ls-bronze-deep { stroke: var(--lg-bronze-deep); }
+.ls-bronze-light { stroke: var(--lg-bronze-light); }
+.lf-silver { fill: var(--lg-silver); }
+.lf-silver-deep { fill: var(--lg-silver-deep); }
+.lf-silver-light { fill: var(--lg-silver-light); }
+.ls-silver { stroke: var(--lg-silver); }
+.ls-silver-deep { stroke: var(--lg-silver-deep); }
+.ls-silver-light { stroke: var(--lg-silver-light); }
+.lf-gold { fill: var(--lg-gold); }
+.lf-gold-deep { fill: var(--lg-gold-deep); }
+.lf-gold-light { fill: var(--lg-gold-light); }
+.ls-gold { stroke: var(--lg-gold); }
+.ls-gold-deep { stroke: var(--lg-gold-deep); }
+.ls-gold-light { stroke: var(--lg-gold-light); }
+.lf-sapphire { fill: var(--lg-sapphire); }
+.lf-sapphire-deep { fill: var(--lg-sapphire-deep); }
+.lf-sapphire-light { fill: var(--lg-sapphire-light); }
+.ls-sapphire { stroke: var(--lg-sapphire); }
+.ls-sapphire-deep { stroke: var(--lg-sapphire-deep); }
+.ls-sapphire-light { stroke: var(--lg-sapphire-light); }
+.lf-ruby { fill: var(--lg-ruby); }
+.lf-ruby-deep { fill: var(--lg-ruby-deep); }
+.lf-ruby-light { fill: var(--lg-ruby-light); }
+.ls-ruby { stroke: var(--lg-ruby); }
+.ls-ruby-deep { stroke: var(--lg-ruby-deep); }
+.ls-ruby-light { stroke: var(--lg-ruby-light); }
+.lf-emerald { fill: var(--lg-emerald); }
+.lf-emerald-deep { fill: var(--lg-emerald-deep); }
+.lf-emerald-light { fill: var(--lg-emerald-light); }
+.ls-emerald { stroke: var(--lg-emerald); }
+.ls-emerald-deep { stroke: var(--lg-emerald-deep); }
+.ls-emerald-light { stroke: var(--lg-emerald-light); }
+.lf-amethyst { fill: var(--lg-amethyst); }
+.lf-amethyst-deep { fill: var(--lg-amethyst-deep); }
+.lf-amethyst-light { fill: var(--lg-amethyst-light); }
+.ls-amethyst { stroke: var(--lg-amethyst); }
+.ls-amethyst-deep { stroke: var(--lg-amethyst-deep); }
+.ls-amethyst-light { stroke: var(--lg-amethyst-light); }
+.lf-pearl { fill: var(--lg-pearl); }
+.lf-pearl-deep { fill: var(--lg-pearl-deep); }
+.lf-pearl-light { fill: var(--lg-pearl-light); }
+.ls-pearl { stroke: var(--lg-pearl); }
+.ls-pearl-deep { stroke: var(--lg-pearl-deep); }
+.ls-pearl-light { stroke: var(--lg-pearl-light); }
+.lf-obsidian { fill: var(--lg-obsidian); }
+.lf-obsidian-deep { fill: var(--lg-obsidian-deep); }
+.lf-obsidian-light { fill: var(--lg-obsidian-light); }
+.ls-obsidian { stroke: var(--lg-obsidian); }
+.ls-obsidian-deep { stroke: var(--lg-obsidian-deep); }
+.ls-obsidian-light { stroke: var(--lg-obsidian-light); }
+.lf-diamond { fill: var(--lg-diamond); }
+.lf-diamond-deep { fill: var(--lg-diamond-deep); }
+.lf-diamond-light { fill: var(--lg-diamond-light); }
+.ls-diamond { stroke: var(--lg-diamond); }
+.ls-diamond-deep { stroke: var(--lg-diamond-deep); }
+.ls-diamond-light { stroke: var(--lg-diamond-light); }
+
+/* A medal's place, embossed: the display face, as for any achievement figure. */
+.lg-medal-n {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-small);
+}
+
+/* Locked: the crest's silhouette in paper, with a lock — warm tokens only. */
+.lf-locked { fill: var(--paper-deep); }
+.ls-locked { stroke: var(--line-strong); }
+.lf-locked-ink { fill: var(--ink-faint); }
+.ls-locked-ink { stroke: var(--ink-faint); }

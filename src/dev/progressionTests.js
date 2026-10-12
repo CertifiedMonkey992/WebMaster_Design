@@ -27,6 +27,7 @@ import * as wheelCfg from '../config/wheelConfig'
 import * as rnd from '../utils/random'
 import * as putils from '../utils/progressionUtils'
 import * as showcase from '../data/showcaseState'
+import * as pxp from '../utils/practiceXp'
 import { getLocalDateKey } from '../utils/dateUtils'
 
 /** The local date key for an injected timestamp — used all over the bonus tests. */
@@ -359,7 +360,8 @@ export async function runProgressionTests() {
     const sixth = run(s, A.LOSE_HEART, { reason: 'test' }, T0 + 10)
     ok('T12 cannot go negative', sixth.state.hearts === 0, sixth.state.hearts)
     const practiced = run(s, A.COMPLETE_PRACTICE, { seconds: 120, correct: 4, total: 5 }, T0)
-    ok('T12 practice still works at 0 hearts', practiced.state.xp === cfg.XP.PRACTICE, practiced.state.xp)
+    const expected = pxp.practiceSessionXp({ answered: 5, freshCorrect: 4, sessionsInWindow: 0, xpInWindow: 0 }).xp
+    ok('T12 practice still works at 0 hearts', practiced.state.xp === expected && expected > 0, `${practiced.state.xp} vs ${expected}`)
     ok('T12 practice sets streak', practiced.state.streak.current === 1)
   }
 
@@ -858,7 +860,7 @@ export async function runProgressionTests() {
     ok('T31 a forged extra-spin count is capped',
       store.sanitizeState({ wheel: { extraSpins: 1e9 } }, T0).wheel.extraSpins === wheelCfg.WHEEL.EXTRA_SPINS_MAX)
     const v1 = store.migrate({ version: 1, xp: 40, dailyBonus: { cycleDay: 3 }, lessonParts: { 'm01-l01': 2 } })
-    ok('T31 a version-1 save migrates', v1.version === 2 && !('dailyBonus' in v1) && v1.wheel && Object.keys(v1.lessonParts).length === 0)
+    ok('T31 a version-1 save migrates all the way', v1.version === 3 && !('dailyBonus' in v1) && v1.wheel && Object.keys(v1.lessonParts).length === 0 && v1.practice && !('review' in v1))
     const loaded = store.sanitizeState(v1, T0)
     ok('T31 a migrated save has a spin waiting', wheelSvc.getWheelView(loaded, T0).available === true)
   }
@@ -1190,11 +1192,13 @@ export async function runProgressionTests() {
   {
     let s = fresh()
     const key = `${L0}:check:c1`
-    s = run(s, A.RECORD_ANSWER, { lessonId: L0, correct: false, maxAnswerXP: 25, reviewKey: key }, T0).state
-    ok('T51 a missed Check item is flagged', s.review[key]?.lessonId === L0)
+    s = run(s, A.RECORD_ANSWER, { lessonId: L0, correct: false, maxAnswerXP: 25, reviewKey: key, answer: 'b' }, T0).state
+    ok('T51 a missed Check item enters the practice history', s.practice.items[key]?.w === 1 && s.practice.items[key].ans === 'b')
     ok('T51 and still costs its heart', s.hearts === 4, s.hearts)
-    s = run(s, A.COMPLETE_PRACTICE, { seconds: 60, correct: 1, total: 5, cleared: [key] }, T0).state
-    ok('T51 answering it right in Practice clears it', s.review[key] === undefined)
+    ok('T51 the view model counts it as a mistake', prog.buildViewModel(s, T0).reviewCount === 1)
+    s = run(s, A.RECORD_ATTEMPT, { key, correct: true, source: 'practice', sessionId: 'p1' }, T0 + 60000).state
+    s = run(s, A.RECORD_ATTEMPT, { key, correct: true, source: 'practice', sessionId: 'p1' }, T0 + 120000).state
+    ok('T51 two right answers in a row clear it', prog.buildViewModel(s, T0 + 130000).reviewCount === 0)
   }
 
   /* ── TEST 52: the scans ── */

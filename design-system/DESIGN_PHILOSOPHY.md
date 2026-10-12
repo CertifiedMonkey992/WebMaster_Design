@@ -174,16 +174,26 @@ fourth feature that does not exist. If a section looks thin, it is either
 telling you the feature is thin, or telling you the section should not be
 there. Both are useful information.
 
-Corollary: if a feature does not exist (a leaderboard, a class dashboard, a
-sync service), the UI does not pretend. Say what it is.
+Corollary: if a feature does not exist (a class dashboard, say), the UI does
+not pretend. Say what it is.
 
 The same rule cuts the other way, and the accounts are the case in point.
 Since 2026-10 the course requires one, so the sign-in page looks like any
-ordinary sign-in page — but it says exactly what the account is: an email,
-a hashed password and an optional username, kept in this browser, with no
-server behind it. It never implies sync, a friends list or a protection it
-cannot give, and the privacy policy lists the account store beside every
-other key.
+ordinary sign-in page — but it says exactly what the account is.
+
+Revision 10 (2026-10) gave LunX a server of its own (`server/`), and with it
+the things that need one: leagues, friends, friend challenges and progress
+that follows an account between devices. They exist **only on a build
+connected to that server** (`VITE_LUNX_SERVER`). A build without one is the
+same course it always was — accounts in the browser, nothing transmitted —
+and it shows no Friends tab, no Leagues tab and no sentence about either.
+Each build's sign-in page, privacy policy and About page describe that
+build: where the account lives, what leaves the browser, and what does not.
+
+A leaderboard is real data or it is not shown. Every name on it is a real
+account; a test account (a developer's seed, or the reviewer's sandbox) is
+labelled as one wherever it appears, and never shares a league with a real
+learner outside development.
 
 ### 9. Subtraction first
 

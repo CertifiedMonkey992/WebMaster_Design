@@ -30,7 +30,12 @@ jobs:
           TZ: America/Los_Angeles
       # The published site is built here and nowhere else: docs/ is not
       # committed, so this is the only copy that reaches Pages.
+      # With the repository variable LUNX_SERVER_URL set (Settings → Secrets
+      # and variables → Actions → Variables), the build is CONNECTED to that
+      # LunX server (server/README.md); without it, the build is local.
       - run: npm run build
+        env:
+          VITE_LUNX_SERVER: ${{ vars.LUNX_SERVER_URL }}
       - name: Keep the built site for the deploy job
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3

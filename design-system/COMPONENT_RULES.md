@@ -70,8 +70,11 @@ Six bespoke button implementations existed before this pass (`.cl-btn`,
 
 ### Left sidebar (`LearnSidebar`)
 
-**Purpose** — get to the six places the product has, and show which one you
-are in.
+**Purpose** — get to the places the product has, and show which one you
+are in: Learn, Practice, Quests, Shop and Profile everywhere; **Friends** and
+**Leagues** too on a build connected to a LunX server (revision 10). They
+are three separate destinations — Practice, Friends, Leagues — never one page
+with tabs, and the two social ones are simply absent from a local build.
 
 - Ground `--surface`, right border `--line`, full height, sticky.
 - Wordmark at top: **Fraunces**, `--fs-title`, `--evergreen`, with the
@@ -83,7 +86,10 @@ are in.
   reference the product owner supplied (`NavIcons.jsx`): Learn a birdhouse,
   Practice a dumbbell, Quests a treasure chest (with a red dot only while a
   quest is ready to claim), Shop a shopfront, Profile an avatar, Home a
-  globe, About an "i" in a purple disc. Flat shapes, no outlines, one lighter
+  globe, About an "i" in a purple disc; revision 10 adds Friends (two
+  learners) and Leagues (a gold trophy shield). A count badge rides on
+  Friends while a request or a challenge invitation waits, and on Leagues
+  while a result has a reward to claim. Flat shapes, no outlines, one lighter
   shine per object, colours only from the `--ni-*` palette
   (`VISUAL_SYSTEM.md` → The nav icons). Each keeps **one** hover move that
   depicts the destination. They are the only full-colour icons in the
@@ -160,8 +166,24 @@ an ordinary, professional sign-in page in the product's materials.
   verb ("Signing in…") while the password is hashed.
 - **After creating an account or resetting a password**, one card shows the
   recovery code in `--font-mono` with a Copy button — it is shown once.
-- **It says what it is, in one line under the card**: accounts and progress
-  are saved in this browser on this device, because LunX has no server.
+- **Reset by email** (revision 11) exists only where it is true: a connected
+  build whose server sends email (`/api/health → mail`). There, "Forgot
+  password?" opens *Reset your password* with one field, the email, and
+  the button *Email me a link*; the recovery code form is one quiet link
+  away ("Have your recovery code? Use it instead"). After sending, one card
+  says *Check your email* — the same words whether or not the address has
+  an account — with *Back to sign in* and the recovery code link. Opening
+  the emailed link shows *Choose a new password*: one password field and
+  *Save and sign in*; the link's token leaves the address bar at once. An
+  expired link says so in the form's banner, with *Send a new link*.
+  Without email, "Forgot password?" opens the recovery code form, as
+  before, and nothing on the page mentions email.
+- **It says what it is, in one line under the card**: on a local build,
+  accounts and progress are saved in this browser on this device, because
+  that build has no server; on a connected build, the account and progress
+  are kept on the LunX server named in the line, so they follow the account
+  to any device. A connected build's *Create your account* asks for a
+  username, because friends and leaderboards show one.
 - **The reviewer's way in** is one quiet line under the card: "TSA judge?
   Use the reviewer account", with the credentials in mono. Pressing it fills
   the form.
@@ -555,6 +577,163 @@ a button in the top bar — and nowhere else.
 - **The top-bar button**: clay with a pinging dot while a spin waits; quiet,
   with the countdown, once spun.
 - **Mobile**: the wheel stacks above the controls.
+
+### Practice (revision 10)
+
+**Purpose** — review what *this* learner needs, chosen from their own answer
+history, or practise whatever they pick. Never costs a heart.
+
+- **The loudest object is the recommendation**: one card at the top in the
+  "current" treatment (1.5px clay border, clay eyebrow, solid clay button)
+  naming the mode, the count and the reason — "You missed *Overfitting*
+  twice, last on Oct 9." One press starts it; nothing has to be configured
+  first.
+- **The modes are rows in one container**, not a grid: Review mistakes,
+  Due for review, Improve weak areas, Older material, Mixed practice, Quick
+  practice (a 5 · 10 · 15 segmented control) and By topic (opens the studied
+  modules as rows with a mastery bar each). Each row: a 40px icon tile at
+  `--r-sm`, the mode in Manrope `--fw-semi`, one line saying what it draws
+  from **with the live count**, and an outline `btn-sm`. A mode with nothing
+  in it says why in that line and disables its button — it never hides.
+- **Needs attention**: the concepts most in need, as rows — concept name,
+  module, the reason, and the last eight attempts as marks (a check or a
+  cross, so shape carries it as well as colour). This is where the history
+  is visible.
+- **The runner** is the lesson's step body with a paper verdict bar: a miss
+  shows the right answer, the step's own explanation, and *The idea* — the
+  explanation card from the lesson the concept was taught in, quoted, never
+  rewritten. A miss queues one more question on the same concept, labelled
+  "Same idea, new question", when the bank has one.
+- **The summary**: answered, accuracy, topics, mistakes corrected, concepts
+  still needing attention, a comparison with the learner's recent sessions
+  when there are any, the XP the session actually paid (and why, when the
+  daily practice rule reduced it), and one recommended next step.
+- **Empty states** say what fills them: no mistakes yet ("anything you miss
+  in a Check comes back here"), nothing due, no lessons finished yet.
+
+### Leagues (revision 10, connected builds only)
+
+**Purpose** — this week's competition: where you stand, what moves you up,
+how long is left.
+
+- **Header**: the current league's badge (64px, the current ring), its name
+  in Fraunces `--fs-title`, and one line: rank, weekly XP, and the time left
+  as a ticking countdown in the learner's own time.
+- **The ladder**: the ten badges in one row (scrolls sideways on a phone):
+  earned in colour, current ringed, locked as silhouettes with the league's
+  name beneath each.
+- **The leaderboard is one container of rows**: rank (Manrope `--fw-bold`
+  tabular), avatar, username, an achievement mark (the drawn medal for 1–3),
+  weekly XP right-aligned. The learner's own row has the `--evergreen-tint`
+  ground and a "You" label. Two printed dividers cut the list: *Promotion
+  zone* (moss) after the last promoting rank and *Demotion zone* (berry)
+  before the first demoting one, each with a `--fs-micro` label. A line under
+  the header says how many places separate the learner from moving up or
+  from dropping.
+- **Not in a league yet**: one sentence saying the first lesson or practice
+  session of the week joins one, and the button that starts it.
+- **Last week**: a row with the outcome (promoted, stayed, dropped), the
+  final rank, and each reward with the sentence saying why; a reward with
+  gems is claimed by the reader's press (solid ochre, like a quest claim).
+- **The Diamond Tournament** appears only when the schedule has one: its
+  rules, the qualifying week, and — while it runs — the round's own
+  leaderboard. When none is scheduled the Diamond league says so in a line.
+- Rows open a profile card. Test accounts carry a printed `--r-xs` *Test
+  account* label everywhere they appear. Where a row is too narrow for the
+  name and the label on one line (a phone), the label drops beneath the
+  name; the name is cut short only when it alone does not fit.
+- **Rewards never go out of reach**: a reward from before the last result
+  that was never claimed is listed under it, as *Earlier rewards to claim*,
+  in the same award row.
+
+### Friends (revision 10, connected builds only)
+
+**Purpose** — the learner's own people: find them, keep them, compete with
+them. Separate from Leagues; a friend can be in any league.
+
+- **Four sections behind a segmented control**: *Friends*, *Requests* (with
+  the waiting count), *Add friends* and *Challenges*.
+- **Add friends**: the learner's own code first — `--font-mono`, large, in
+  four-and-four groups, with a Copy button that says "Copied" — then three
+  ways to look someone up, each one field and one button: friend code,
+  username, email. Results are profile rows with an explicit *Send request*
+  button; looking someone up never sends anything. The email way says, under
+  its field, that it only finds people who allowed it and never shows an
+  address.
+- **Friends**: rows — avatar, username, league badge (20px), weekly XP,
+  total XP — opening the profile card; the row's menu holds Challenge,
+  Remove, Block and Report.
+- **Requests**: incoming rows with Accept (solid) and Decline (quiet);
+  outgoing rows with Cancel; each with its date.
+- **The profile card** is a small dialog: avatar, username, league, the
+  public figures the learner allowed, trophies with their reasons, and the
+  actions the relationship permits. A private profile shows the name and
+  says it is private.
+- **Block and report** are in every profile card and friend menu. Blocking
+  removes the friendship and stops requests and challenges both ways;
+  reporting sends a reason to the team's moderators and says so.
+
+### Friend challenges (revision 10)
+
+- **Create**: one form — a format (XP race, Lesson race, Topic practice,
+  Quiz score), a topic where the format needs one, a duration (1, 3 or 7
+  days), and the friends to invite. One solid button.
+- **A challenge is a row group**: the objective in Fraunces, the time left,
+  and each participant as a row with a progress bar in `--ochre` (the
+  learner's in `--moss`) and their score. Invitations carry Accept and
+  Decline; an active challenge carries Leave.
+- **Results**: the final ranking, the winner's trophy with its reason, and
+  any gems to claim. Challenge results never change league XP — the card
+  says "Challenges don't count toward your league".
+
+### Privacy settings (revision 10, Profile → Privacy)
+
+Four switches, each one line saying exactly who it affects: *Show me in
+weekly leagues*, *Who can see my profile* (everyone · friends · only me),
+*Let people find me by username*, *Let people who know my email find me*
+(off by default). Under them, one sentence: the email address is never shown
+to anyone, whatever is chosen.
+
+- **The switch** (`.pv-switch`, `role="switch"`): a 42×24 pill track with an
+  18px round knob. Off: `--paper-deep` track, `--line-strong` edge. On:
+  `--evergreen` track and edge. The knob slides as a Response
+  (`--dur-move`, `--ease-out`, no spring). Each row's second line says what
+  the current setting means, and changes with it. Saved on the click — no
+  Save button, no confirmation.
+- The three-way *Who can see my profile* is the segmented control
+  (`.st-seg`), not a switch.
+- **Blocked learners** follow as rows (avatar, username, an *Unblock*
+  ghost button), with a one-line empty state.
+- The **Account** section on a connected build also holds the **avatar**
+  (the seven grounds as 32px avatars in a radio group, the chosen one in the
+  1.5px ink ring) and the **time zone** (shown, with a button to use this
+  device's when they differ; the server allows one change a week).
+
+### Moderation (revision 11, Profile → Moderation, moderators only)
+
+Present only on an account the server marks as a moderator
+(`npm run server -- --make-moderator <username>`); nobody else sees a trace
+of it. It is a Profile section in the card pattern (`.pv-data`), not a nav
+destination.
+
+- **Open / Closed** is the segmented control (`.st-seg`); Open carries the
+  count.
+- **Each report is a row in one container** (`.sl`): the reported
+  learner's avatar and username (with the *Test account* label where it
+  applies), one `--fs-caption` line — reason, who reported, when — the
+  reporter's note as a quotation behind a 2px `--line-strong` rule, and one
+  line of facts: how many different learners have reported the account,
+  and any suspension.
+- **Actions**, quiet to loud: *Dismiss* (ghost), *Reset name*, *Suspend…*,
+  *Delete account…* (outline). Suspending and deleting open the confirm
+  strip (`.pv-data-confirm`): the consequence in one sentence, for a
+  suspension the length as a segmented control (1 day · 7 days · 30 days ·
+  Until lifted), an optional note for the log, and one solid button. What
+  happened is said under the row, in `--moss`.
+- **Closed** reports show what was done and when; a suspended account
+  there carries *Lift suspension*.
+- **Recent actions** follow as plain lines — "Mod_Mia suspended Ben for 7
+  days — 'note' · Oct 12" — so moderation is never silent.
 
 ### Shop
 

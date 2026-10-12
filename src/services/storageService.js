@@ -12,12 +12,14 @@
    browser extension mangled a storage value.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS, COURSEWORK } from '../config/progressionConfig'
+import { STORAGE_KEY, STATE_VERSION, HEARTS, CURRENCY, GOALS, COURSEWORK, PRACTICE } from '../config/progressionConfig'
 import { SHIELD } from '../config/shopConfig'
 import { WHEEL } from '../config/wheelConfig'
 import { normalizePowers } from '../config/judgeConfig'
 import { getLocalDateKey, getWeekKey } from '../utils/dateUtils'
 import { getLevelFromXP } from '../utils/progressionUtils'
+import { CONCEPTS } from '../data/concepts'
+import { emptyPractice, isQuestionKey, practiceFromReview } from './practiceService'
 
 /** How many recent purchase ids are remembered for the duplicate guard. */
 export const TXN_HISTORY = 40
@@ -82,10 +84,19 @@ export function createDefaultState(now = Date.now()) {
     lessonParts: {},          // itemId -> parts finished (1, 2 …)
     /** The Field Journal: every committed prediction and every reflection. */
     journal: {},              // itemId -> { entries: [{ kind, key, prompt, … }] }
-    /** Missed Check items, waiting for spaced review in Practice. */
-    review: {},               // "item:part:step" -> { lessonId, since, misses }
     /** The Launch and Final Scans (ungraded diagnostics). */
     scans: { launch: null, final: null },
+
+    /* Practice history (services/practiceService.js): every answered
+       question, per question and per concept, with its review schedule;
+       the recent attempt log; finished sessions; and when each question last
+       paid practice XP. Replaced the v2 "review" pile of missed items. */
+    practice: emptyPractice(),
+
+    /* Rewards earned on the LunX server (a league result, a won challenge)
+       whose gems have been claimed into this economy — remembered so a
+       reward can never be claimed twice, here or on another device. */
+    serverAwards: [],
 
     /* Quests */
     quests: {
@@ -306,16 +317,10 @@ export function sanitizeState(raw, now = Date.now()) {
     }
   }
 
-  if (isObj(raw.review)) {
-    s.review = {}
-    for (const [key, rec] of Object.entries(raw.review).slice(0, COURSEWORK.REVIEW_LIMIT)) {
-      if (!isObj(rec) || typeof rec.lessonId !== 'string') continue
-      s.review[key] = {
-        lessonId: rec.lessonId,
-        since: num(rec.since, now),
-        misses: Math.max(1, Math.floor(num(rec.misses, 1))),
-      }
-    }
+  if (isObj(raw.practice)) s.practice = sanitizePractice(raw.practice)
+
+  if (Array.isArray(raw.serverAwards)) {
+    s.serverAwards = raw.serverAwards.filter((id) => typeof id === 'string' && id.length <= 64).slice(0, PRACTICE.AWARD_MEMORY)
   }
 
   if (isObj(raw.scans)) {
@@ -372,6 +377,84 @@ function isValidJournalEntry(e) {
     && typeof e.key === 'string'
     && typeof e.prompt === 'string'
     && (e.text === undefined || typeof e.text === 'string')
+}
+
+/* A practice record: only the course's own question keys and concept ids,
+   whole numbers where counts belong, and every list bounded — a hand-edited
+   backup can neither break the engine nor grow storage without limit. */
+function sanitizeStat(r) {
+  if (!isObj(r)) return null
+  const int = (v) => Math.max(0, Math.floor(num(v, 0)))
+  const c = int(r.c)
+  const w = int(r.w)
+  const stat = {
+    n: c + w,
+    c,
+    w,
+    first: num(r.first, 0),
+    last: num(r.last, 0),
+    lastOk: num(r.lastOk, 0),
+    lastMiss: num(r.lastMiss, 0),
+    run: Math.min(int(r.run), c),
+    box: Math.min(PRACTICE.BOX_DAYS.length - 1, int(r.box)),
+    due: num(r.due, 0),
+  }
+  if (typeof r.ans === 'string') stat.ans = r.ans.slice(0, 120)
+  return stat.n > 0 ? stat : null
+}
+
+function sanitizePractice(raw) {
+  const p = emptyPractice()
+  if (isObj(raw.items)) {
+    for (const [key, rec] of Object.entries(raw.items)) {
+      const stat = isQuestionKey(key) ? sanitizeStat(rec) : null
+      if (stat) p.items[key] = stat
+    }
+  }
+  if (isObj(raw.concepts)) {
+    for (const [id, rec] of Object.entries(raw.concepts)) {
+      const stat = CONCEPTS[id] ? sanitizeStat(rec) : null
+      if (stat) p.concepts[id] = stat
+    }
+  }
+  if (Array.isArray(raw.log)) {
+    p.log = raw.log
+      .filter((e) => isObj(e) && isQuestionKey(e.k) && typeof e.ok === 'boolean' && Number.isFinite(e.at))
+      .slice(0, PRACTICE.LOG_LIMIT)
+      .map((e) => {
+        const entry = { k: e.k, ok: e.ok, at: e.at, src: ['check', 'learn', 'practice'].includes(e.src) ? e.src : 'practice' }
+        if (typeof e.s === 'string') entry.s = e.s.slice(0, 48)
+        if (typeof e.a === 'string') entry.a = e.a.slice(0, 120)
+        return entry
+      })
+  }
+  if (Array.isArray(raw.sessions)) {
+    const strings = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string').slice(0, 20) : [])
+    p.sessions = raw.sessions
+      .filter((x) => isObj(x) && typeof x.id === 'string' && Number.isFinite(x.at))
+      .slice(0, PRACTICE.SESSION_LIMIT)
+      .map((x) => ({
+        id: x.id.slice(0, 48),
+        at: x.at,
+        mode: typeof x.mode === 'string' ? x.mode.slice(0, 16) : 'quick',
+        topic: typeof x.topic === 'string' ? x.topic.slice(0, 40) : null,
+        total: Math.max(0, Math.floor(num(x.total, 0))),
+        correct: Math.max(0, Math.min(Math.floor(num(x.total, 0)), Math.floor(num(x.correct, 0)))),
+        xp: Math.max(0, Math.floor(num(x.xp, 0))),
+        reduced: x.reduced === true,
+        capped: x.capped === true,
+        concepts: strings(x.concepts),
+        corrected: strings(x.corrected),
+        needs: strings(x.needs),
+        modules: strings(x.modules),
+      }))
+  }
+  if (isObj(raw.credits)) {
+    for (const [key, at] of Object.entries(raw.credits).slice(0, PRACTICE.CREDIT_LIMIT)) {
+      if (isQuestionKey(key) && Number.isFinite(at)) p.credits[key] = at
+    }
+  }
+  return p
 }
 
 function sanitizeScan(scan) {
@@ -453,6 +536,14 @@ const MIGRATIONS = {
     const { dailyBonus: _dropped, ...rest } = state
     return { ...rest, version: 2, wheel: emptyWheel(), lessonParts: {} }
   },
+  /* The review pile — missed Check items waiting for Practice — became the
+     Practice history. Every flagged item arrives as that many misses, so a
+     learner's mistakes are waiting in Review mistakes exactly as before. */
+  2: (state) => {
+    const { review, ...rest } = state
+    const practice = practiceFromReview(isObj(review) ? Object.fromEntries(Object.entries(review).slice(0, COURSEWORK.REVIEW_LIMIT)) : {})
+    return { ...rest, version: 3, practice, serverAwards: [] }
+  },
 }
 
 export function migrate(raw) {
@@ -475,6 +566,31 @@ export function migrate(raw) {
    ─────────────────────────────────────────────────────────────────────────── */
 
 let activeKey = STORAGE_KEY
+
+/* Keys whose account has signed out of this browser (connected builds).
+   A write that arrives late — from a provider that has not unmounted yet —
+   is refused, so nothing of that learner is written back after sign-out. */
+const retired = new Set()
+
+/** Remove an account's progress from this browser, and refuse late writes. */
+export function forgetProfile(key) {
+  if (typeof key !== 'string' || !key || key === STORAGE_KEY) return false
+  retired.add(key)
+  const store = getStorage()
+  if (!store) return false
+  try {
+    store.removeItem(key)
+    store.removeItem(`${key}__rev`)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** The account signed in again: its key may be written once more. */
+export function reviveProfile(key) {
+  retired.delete(key)
+}
 
 /** The storage key progress is currently read from and written to. */
 export function getProfileKey() {
@@ -508,14 +624,16 @@ function getStorage() {
   return storage
 }
 
-/** Load progression state. Always returns a complete, valid state object. */
-export function load(now = Date.now()) {
+/** Load progression state. Always returns a complete, valid state object.
+ *  `key` defaults to the active account's; a provider passes the key it
+ *  mounted with, so a sign-out mid-write can never cross accounts. */
+export function load(now = Date.now(), key = activeKey) {
   const store = getStorage()
   if (!store) return { state: createDefaultState(now), isNew: true, recovered: false }
 
   let text = null
   try {
-    text = store.getItem(activeKey)
+    text = store.getItem(key)
   } catch {
     return { state: createDefaultState(now), isNew: true, recovered: false }
   }
@@ -528,7 +646,7 @@ export function load(now = Date.now()) {
   } catch {
     /* Corrupted JSON — start fresh rather than crash, and keep the bad blob
        under a side key so nothing is silently destroyed. */
-    try { store.setItem(`${activeKey}__corrupt`, text.slice(0, 20000)) } catch { /* ignore */ }
+    try { store.setItem(`${key}__corrupt`, text.slice(0, 20000)) } catch { /* ignore */ }
     return { state: createDefaultState(now), isNew: true, recovered: true }
   }
 
@@ -540,11 +658,11 @@ export function load(now = Date.now()) {
 /** The `updatedAt` stamp of whatever is in storage right now, or 0 when
  *  there is nothing readable. Lets a tab find out whether another tab has
  *  written since it last did, before it overwrites anything. */
-export function peekUpdatedAt() {
+export function peekUpdatedAt(key = activeKey) {
   const store = getStorage()
   if (!store) return 0
   try {
-    const text = store.getItem(activeKey)
+    const text = store.getItem(key)
     if (!text) return 0
     const parsed = JSON.parse(text)
     return isObj(parsed) && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : 0
@@ -556,12 +674,12 @@ export function peekUpdatedAt() {
 /** Persist progression state. Returns the `updatedAt` stamp written, or 0
  *  when nothing was written. Failures are non-fatal — the session keeps
  *  working in memory even when storage is unavailable or full. */
-export function save(state) {
+export function save(state, key = activeKey) {
   const store = getStorage()
-  if (!store) return 0
+  if (!store || retired.has(key)) return 0
   try {
     const updatedAt = Date.now()
-    store.setItem(activeKey, JSON.stringify({ ...state, updatedAt }))
+    store.setItem(key, JSON.stringify({ ...state, updatedAt }))
     return updatedAt
   } catch {
     return 0
@@ -569,11 +687,11 @@ export function save(state) {
 }
 
 /** Wipe progression state (used by the developer panel). */
-export function clear() {
+export function clear(key = activeKey) {
   const store = getStorage()
   if (!store) return false
   try {
-    store.removeItem(activeKey)
+    store.removeItem(key)
     return true
   } catch {
     return false

@@ -9,12 +9,14 @@
    Everything here is data. The rules live in services/judgeService.js and
    the controls in components/judge/. Nothing in this file grants anything on
    its own — a profile has these powers only because accountService marked it
-   `judge`, and only in this browser.
+   `judge` (on a local build, only in this browser; on a connected build the
+   LunX server seeds the same account, server/accounts.js → ensureJudge).
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* The credentials shown on the sign-in page. They are deliberately public:
-   this is a demonstration account on the reader's own machine, holding no
-   personal data and reaching no server.
+   this is a demonstration account holding no personal data. On a local
+   build it lives on the reader's own machine; on a connected build it plays
+   in its own league of labelled test accounts and never meets a real learner.
 
    `hash` is the password run through the same PBKDF2 the sign-in form uses
    (services/accountService.js → hashSecret), computed once offline so the

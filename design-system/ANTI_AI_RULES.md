@@ -75,6 +75,12 @@ including a blue dumbbell and a purple disc, drawn to a reference the
 product owner supplied. No `--ni-` token is read outside `.ni` icons, and
 there is still no gradient and no indigo-to-cyan wash anywhere.
 
+*Revision 10 — a second scoped exception.* The ten league badges, the medals
+and the trophies use the `--lg-*` palette (`VISUAL_SYSTEM.md` → *The league
+palette*), because a sapphire badge has to be blue. No `--lg-` token is read
+outside `.lg` artwork. The leaderboard, its rows, its zones and its labels
+stay warm: a league's name is ink, never its stone.
+
 ## 7. Glassmorphism
 
 **BAD** — `backdrop-filter: blur(18px)` with a translucent white ground on a
@@ -269,7 +275,11 @@ Run this against any UI diff before committing.
 
 - [ ] No new hex literal. Every colour is a token.
 - [ ] No cool hue. No hex whose blue channel is the largest. (The `--ni-`
-      tokens read by `.ni` nav icons are the one named exception — rev 9.)
+      tokens read by `.ni` nav icons and the `--lg-` tokens read by `.lg`
+      league artwork are the two named exceptions — revs 9 and 10.)
+- [ ] Nothing social is shown on a build without a server, and nothing on a
+      leaderboard or a profile is invented: every learner shown is a real
+      account, or a test account labelled as one.
 - [ ] No new radius value outside the five-step scale.
 - [ ] No `box-shadow` on a resting surface.
 - [ ] No `transition: all`. Every `infinite` animation is a loop listed in `MOTION_RULES.md`.

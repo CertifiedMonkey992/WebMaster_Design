@@ -37,6 +37,7 @@ import CountUp from '../motion/CountUp'
 import { DUR } from '../motion/timing'
 import { useRef } from 'react'
 import { useAboutPreviews } from '../components/learn/previews'
+import { CONNECTED } from '../config/serverConfig'
 
 import '../components/showcase/showcase.css'
 import './AboutPage.css'
@@ -161,7 +162,7 @@ export default function AboutPage() {
               <div><dt>Course</dt><dd className="tnum">{TOTAL_SECTIONS} modules · {TOTAL_LESSONS} lessons · {TOTAL_MINUTES} min</dd></div>
               <div><dt>Pages</dt><dd>Home, Course, Sign in, About, Contact, Privacy, Terms</dd></div>
               <div><dt>Built with</dt><dd>React 18, Vite 5, hand-written CSS</dd></div>
-              <div><dt>Accounts</dt><dd>Required, and local — kept in this browser, no server</dd></div>
+              <div><dt>Accounts</dt><dd>{CONNECTED ? 'Required — kept on the LunX server, passwords hashed' : 'Required, and local — kept in this browser, no server'}</dd></div>
             </dl>
           </Reveal>
         </section>
@@ -271,9 +272,15 @@ export default function AboutPage() {
                 <div>
                   <h3 className="ab-principle-title">Your progress stays yours</h3>
                   <p className="ab-principle-text">
-                    There is no server and no analytics. XP, streaks and gems are saved
-                    in your own browser and are never sent anywhere. A profile, if you
-                    make one, is made there too.
+                    {CONNECTED ? (
+                      <>Your account and progress are kept on the LunX server so they follow
+                      you between devices, and nobody else sees them. Friends and leagues
+                      show your username and the figures you allow — never your email.</>
+                    ) : (
+                      <>There is no server and no analytics. XP, streaks and gems are saved
+                      in your own browser and are never sent anywhere. A profile, if you
+                      make one, is made there too.</>
+                    )}
                   </p>
                 </div>
               </li>
@@ -349,9 +356,14 @@ export default function AboutPage() {
             </Reveal>
 
             <Reveal as="p" className="ab-note" variant="fade" delay={DUR.open}>
-              We don’t count learners. LunX has no server and no analytics, so the
-              only figures we can show are the course’s own — each one read from the
-              course data, not typed in.
+              {CONNECTED ? (
+                <>We don’t publish learner numbers. The only figures on this page are the
+                course’s own — each one read from the course data, not typed in.</>
+              ) : (
+                <>We don’t count learners. LunX has no server and no analytics, so the
+                only figures we can show are the course’s own — each one read from the
+                course data, not typed in.</>
+              )}
             </Reveal>
           </div>
         </section>

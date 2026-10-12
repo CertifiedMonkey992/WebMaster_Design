@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   leagueView.css — THE LEAGUES TAB (revision 10)
+   ---------------------------------------------------------------------------
+   COMPONENT_RULES.md → Leagues. The header, sections and titles are the
+   quest board's (qp-*); the rows are the social row (social.css). What is
+   here: the badge header, the ladder, last week's result, the board's own
+   row and zone dividers, the tournament line, and the rules.
+
+   Card edges: last week's result and the board — two. Clay: the eyebrow.
+   The badges carry the only cool colours, in their own scoped palette.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Header ── */
+.lgv-head { display: flex; align-items: center; gap: var(--sp-5); }
+
+/* The current league: full colour inside a 1.5px ink ring — the way the
+   streak week marks today (VISUAL_SYSTEM.md → The league palette → States). */
+.lgv-head-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.lgv-head-text { min-width: 0; }
+.lgv-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--sp-1);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+.lgv-ends { color: var(--ink-faint); }
+
+/* ── The reviewer's sandbox note ── */
+.lgv-sandbox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  line-height: var(--lh-normal);
+}
+.lgv-sandbox b { color: var(--ink); }
+.lgv-note { font-size: var(--fs-small); }
+.lgv-note.is-ok { color: var(--moss); }
+.lgv-note.is-bad { color: var(--berry-ink); }
+
+/* ── The ladder: ten badges in a row ── */
+.lgv-ladder {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-1) 0 var(--sp-2);
+  display: grid;
+  grid-template-columns: repeat(10, minmax(3.5rem, 1fr));
+  gap: var(--sp-1);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.lgv-rung {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  scroll-snap-align: center;
+  text-align: center;
+}
+
+.lgv-rung-badge {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+}
+.lgv-rung.is-current .lgv-rung-badge { border-color: var(--ink); background: var(--surface); }
+
+.lgv-rung-name {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+.lgv-rung.is-locked .lgv-rung-name { color: var(--ink-faint); font-weight: var(--fw-medium); }
+.lgv-rung.is-current .lgv-rung-name { font-weight: var(--fw-bold); }
+
+/* ── Last week ── */
+.lgv-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+.lgv-result-eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.lgv-result-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+.lgv-result-line { font-size: var(--fs-small); color: var(--ink-muted); }
+
+.lgv-awards { list-style: none; margin: var(--sp-2) 0 0; padding: 0; }
+.lgv-award {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--line-faint);
+}
+.lgv-award-text b { display: block; font-size: var(--fs-small); font-weight: var(--fw-semi); color: var(--ink); }
+.lgv-award-text em { display: block; font-style: normal; font-size: var(--fs-caption); color: var(--ink-muted); }
+
+
+/* ── The board ── */
+.lgv-standing { margin-top: 2px; font-size: var(--fs-small); color: var(--ink-muted); }
+
+.lgv-row { position: relative; grid-template-columns: 2.25rem 1fr auto; }
+.lgv-row.is-you { background: var(--evergreen-tint); }
+
+.lgv-rank {
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--ink-muted);
+}
+
+.lgv-you {
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-xs);
+  background: var(--evergreen);
+  color: var(--surface-raised);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}
+
+/* A zone's edge, printed between two rows. */
+.lgv-divider {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  z-index: var(--z-base);
+  height: 0;
+  border-bottom: 1.5px dashed currentColor;
+  pointer-events: none;
+}
+.lgv-divider span {
+  position: absolute;
+  left: var(--sp-4);
+  top: -0.6rem;
+  padding: 0 var(--sp-1);
+  background: var(--surface);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  line-height: 1.1rem;
+}
+.lgv-divider.is-promote { color: var(--moss); }
+.lgv-divider.is-demote { color: var(--berry-ink); }
+.lgv-row.is-you .lgv-divider span { background: var(--surface); }
+
+/* ── Tournament and rules ── */
+.lgv-tourney { display: flex; flex-direction: column; gap: var(--sp-1); }
+.lgv-tourney .qp-section-title { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.lgv-tourney-line { font-size: var(--fs-small); color: var(--ink); line-height: var(--lh-normal); }
+.lgv-quiet {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-caption);
+  color: var(--ink-faint);
+  line-height: var(--lh-normal);
+}
+
+.lgv-how { font-size: var(--fs-small); color: var(--ink-muted); }
+.lgv-how summary {
+  cursor: pointer;
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+  width: fit-content;
+}
+.lgv-how ul { margin: var(--sp-2) 0 0; padding-left: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-1); line-height: var(--lh-normal); max-width: 46rem; }
+
+@media (max-width: 640px) {
+  .lgv-head { gap: var(--sp-3); }
+  .lgv-head-badge { width: 72px; height: 72px; }
+  .lgv-head-badge .lg { width: 52px; height: 52px; }
+  .lgv-award { grid-template-columns: auto 1fr; }
+  .lgv-award > :last-child { grid-column: 2; justify-self: start; }
+}

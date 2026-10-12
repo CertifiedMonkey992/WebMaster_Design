@@ -25,6 +25,7 @@
 import { useRef } from 'react'
 import { PageLink, useNav } from '../nav'
 import { SITE } from '../site'
+import { CONNECTED } from '../config/serverConfig'
 import { reopenChoices } from '../services/analytics'
 import { TOTAL_LESSONS, TOTAL_SECTIONS } from '../data/learnData'
 import { usePerformer } from '../motion/stage'
@@ -155,8 +156,8 @@ export default function Footer() {
       {/* ── The last line ─────────────────────────────────────────────────── */}
       <div className="ft-last">
         <p className="ft-privacy">
-          Your progress never leaves this browser.
-          {SITE.analytics.enabled ? '' : ' No server, no cookies, no tracking.'}
+          {CONNECTED ? 'Your account and progress are kept on the LunX server, shown to nobody else.' : 'Your progress never leaves this browser.'}
+          {SITE.analytics.enabled ? '' : CONNECTED ? ' No cookies, no tracking.' : ' No server, no cookies, no tracking.'}
         </p>
 
         <nav className="ft-legal" aria-label="Legal">

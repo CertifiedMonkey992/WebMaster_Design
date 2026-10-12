@@ -9,8 +9,11 @@
      Home        the globe turns           Learn     the roof lifts
      Practice    the dumbbell is lifted    Quests    the chest hops
      Shop        the awning lifts          Profile   the head nods
+     Friends     the friend leans in       Leagues   the shield is raised
 
-   A quest waiting to be claimed also puts the red dot on the chest.
+   A quest waiting to be claimed also puts the red dot on the chest; a
+   friend request or invite puts it on Friends, an unclaimed league reward
+   on Leagues. Friends and Leagues exist only on a connected build.
 
    Two moving objects replace per-item tints:
      · a HOVER GHOST that slides between items under the pointer
@@ -21,7 +24,8 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { HomeIcon, AboutIcon, LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon } from './NavIcons'
+import { HomeIcon, AboutIcon, LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon, FriendsIcon, LeaguesIcon } from './NavIcons'
+import { CONNECTED } from '../../config/serverConfig'
 
 const NAV_GROUPS = [
   {
@@ -31,9 +35,20 @@ const NAV_GROUPS = [
       { id: 'home',     label: 'Home',     Icon: HomeIcon, action: 'home', tip: 'Back to the LunX front page' },
       { id: 'about',    label: 'About',    Icon: AboutIcon, action: 'about', tip: 'Our story and the TSA compliance statement' },
       { id: 'learn',    label: 'Learn',    Icon: LearnIcon },
-      { id: 'practice', label: 'Practice', Icon: PracticeIcon, tip: 'Free review — never costs a heart' },
+      { id: 'practice', label: 'Practice', Icon: PracticeIcon, tip: 'Review built from your own answers — never costs a heart' },
     ],
   },
+  /* Revision 10: two destinations that exist only on a build connected to a
+     LunX server. On a local build the group is not there at all
+     (CLAUDE.md → Features that do not exist are not implied). */
+  ...(CONNECTED ? [{
+    id: 'together',
+    label: 'Together',
+    items: [
+      { id: 'friends', label: 'Friends', Icon: FriendsIcon, tip: 'Friend codes, requests and friend challenges' },
+      { id: 'leagues', label: 'Leagues', Icon: LeaguesIcon, tip: 'This week’s league: rank, zones and time left' },
+    ],
+  }] : []),
   {
     id: 'secondary',
     label: 'Progress',
@@ -106,7 +121,7 @@ export default function LearnSidebar({ active, onChange, onGoHome, onGoAbout, ba
           data-tip={item.tip}
           data-tip-side="right"
         >
-          <span className="ls-nav-icon"><item.Icon alert={item.id === 'quests' && badge > 0} /></span>
+          <span className="ls-nav-icon"><item.Icon alert={badge > 0 && ['quests', 'friends', 'leagues'].includes(item.id)} /></span>
           <span className="ls-nav-label">{item.label}</span>
           {badge > 0 && (
             <span className="ls-nav-badge" key={badge} aria-label={`${badge} ready`}>{badge}</span>

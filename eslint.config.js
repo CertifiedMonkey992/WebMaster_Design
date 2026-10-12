@@ -35,4 +35,13 @@ export default [
     files: ['vite.config.js', 'scripts/**/*.mjs', 'eslint.config.js'],
     languageOptions: { ecmaVersion: 2022, sourceType: 'module', globals: globals.node },
   },
+  /* The LunX server (revision 10): plain Node, no JSX. */
+  {
+    files: ['server/**/*.{js,mjs}'],
+    languageOptions: { ecmaVersion: 2024, sourceType: 'module', globals: globals.node },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+    },
+  },
 ]

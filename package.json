@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:connected": "node scripts/dev-connected.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node scripts/run-tests.mjs",
+    "server": "node --disable-warning=ExperimentalWarning --import ./server/resolve.mjs server/main.js",
+    "test": "node scripts/run-tests.mjs && npm run test:server",
+    "test:server": "node --disable-warning=ExperimentalWarning --import ./server/resolve.mjs --test \"server/test/*.test.js\"",
     "lint": "eslint .",
     "typecheck": "tsc"
   },
@@ -27,5 +30,8 @@
     "globals": "^17.12.0",
     "typescript": "^7.0.2",
     "vite": "^5.4.2"
+  },
+  "engines": {
+    "node": ">=22.13"
   }
 }

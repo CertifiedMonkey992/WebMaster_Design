@@ -2255,15 +2255,89 @@
   gap: var(--sp-2) var(--sp-3);
 }
 .pv-account-row .pv-data-note { grid-column: 1 / -1; }
+/* A grid's auto track takes the spare width; the button keeps its own. */
+.pv-account-row > .btn { justify-self: start; }
 .pv-account-row--pw { grid-template-columns: minmax(0, 13rem) minmax(0, 13rem) auto; }
 .pv-account-fact { display: flex; flex-direction: column; gap: var(--sp-1); }
 .pv-account-email { font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--ink); word-break: break-all; }
 .pv-data-desc b { color: var(--ink); }
 
+.pv-account-zone { font-size: var(--fs-body); font-weight: var(--fw-semi); color: var(--ink); }
+
+/* Avatar grounds (connected builds): seven round swatches, the chosen one in
+   the 1.5px ink ring the streak week uses for today. */
+.pv-avatars { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.pv-avatar-pick {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-out), transform var(--dur-move) var(--ease-snap);
+}
+.pv-avatar-pick:hover:not(:disabled) { border-color: var(--line-strong); }
+.pv-avatar-pick:active:not(:disabled) { transform: scale(0.94); }
+.pv-avatar-pick.is-on { border-color: var(--ink); }
+
+/* ── Privacy (connected builds): COMPONENT_RULES.md → Privacy settings ── */
+.pv-privacy-list { list-style: none; margin: 0; padding: 0; }
+.pv-privacy-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-faint);
+}
+.pv-privacy-item:first-child { border-top: none; padding-top: 0; }
+.pv-privacy-text b { display: block; font-size: var(--fs-small); font-weight: var(--fw-semi); color: var(--ink); }
+.pv-privacy-text span { display: block; margin-top: 2px; font-size: var(--fs-caption); color: var(--ink-muted); line-height: var(--lh-normal); max-width: 52ch; }
+
+/* A switch: a pill track and a round knob. Off is a quiet outline; on is
+   the evergreen of every chosen control. The knob's slide is a Response. */
+.pv-switch {
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--paper-deep);
+  cursor: pointer;
+  transition: background-color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+}
+.pv-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  transition: transform var(--dur-move) var(--ease-out), border-color var(--dur-hover) var(--ease-out);
+}
+.pv-switch:hover:not(:disabled) { border-color: var(--evergreen); }
+.pv-switch.is-on { background: var(--evergreen); border-color: var(--evergreen); }
+.pv-switch.is-on::after { transform: translateX(18px); border-color: var(--evergreen); }
+.pv-switch:disabled { cursor: default; opacity: 0.55; }
+
+.pv-blocked { list-style: none; margin: 0; padding: 0; }
+.pv-blocked li { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) 0; border-top: 1px solid var(--line-faint); }
+.pv-blocked li:first-child { border-top: none; }
+.pv-blocked-name { flex: 1; min-width: 0; font-size: var(--fs-small); font-weight: var(--fw-semi); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 @media (max-width: 640px) {
   .pv-account-row,
   .pv-account-row--pw { grid-template-columns: minmax(0, 1fr); }
   .pv-account-row .btn { justify-self: start; }
+  .pv-privacy-item--choice { grid-template-columns: minmax(0, 1fr); }
 }
 
 .pv-tiles {

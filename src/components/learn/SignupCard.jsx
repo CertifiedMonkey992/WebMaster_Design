@@ -1,10 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SignupCard.jsx — WHERE YOUR PROGRESS ACTUALLY LIVES
    ---------------------------------------------------------------------------
-   There is no server and no sync, so this says what is true and offers the
-   two things the product can actually do about it: the Profile page exports
-   progress as a file, which imports again on another device; and a profile
-   keeps two people apart on one browser.
+   On a local build there is no server and no sync, so this says what is
+   true and offers the two things the product can actually do about it: the
+   Profile page exports progress as a file, which imports again on another
+   device; and a profile keeps two people apart on one browser. On a build
+   connected to a LunX server, progress follows the account, and it says so.
 
    It deliberately does NOT sell the profile. Signing in adds nothing to the
    course — it only separates one learner's progress from another's on the
@@ -13,6 +14,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { PageLink } from '../../nav'
+import { CONNECTED } from '../../config/serverConfig'
 
 export default function SignupCard({ onExport, style, className = '' }) {
   return (
@@ -22,10 +24,15 @@ export default function SignupCard({ onExport, style, className = '' }) {
           <path d="M12 2.5 20 6v6c0 4.6-3.2 8.3-8 9.5-4.8-1.2-8-4.9-8-9.5V6Z" />
           <path d="m8.5 12 2.4 2.4 4.6-4.8" />
         </svg>
-        Progress is saved in this browser. Export it from your profile to move it
-        to another device; clearing site data clears the course. Sharing this
-        computer? A <PageLink page="signin" className="rail-note-link-inline">local
-        profile</PageLink> keeps your progress separate.
+        {CONNECTED ? (
+          <>Progress is saved to your account, so it follows you to any device you
+          sign in on. A backup file from your profile is a copy you keep yourself.</>
+        ) : (
+          <>Progress is saved in this browser. Export it from your profile to move it
+          to another device; clearing site data clears the course. Sharing this
+          computer? A <PageLink page="signin" className="rail-note-link-inline">local
+          profile</PageLink> keeps your progress separate.</>
+        )}
       </p>
       <button type="button" className="rail-note-link" onClick={onExport}>
         Export progress
