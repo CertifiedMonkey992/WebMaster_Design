@@ -11,8 +11,12 @@
    and scheduled by the Stage (MOTION_RULES.md → The Stage). Nothing is
    saved; the visitor's own progress is never read or written here.
 
+   Revision 12: the sections are the home page's feature rows (a 988px
+   column, copy and frame alternating sides, one paragraph each); the streak
+   row's frame has the otter peeking over its top edge. Eyebrow and Mark
+   stay exported for the About page.
+
    Choreography, per section (MOTION_RULES.md → Scroll):
-     · the eyebrow's index number and rule draw in
      · the heading assembles word by word
      · the paragraphs rise in sequence; each bold term gets a highlighter
        stroke laid under it as it comes into view
@@ -23,7 +27,6 @@
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { TOTAL_LESSONS } from '../../data/learnData'
-import { SHOP_ITEMS } from '../../config/shopConfig'
 import { STREAK, QUESTS } from '../../config/progressionConfig'
 import { WHEEL, SLOTS, percentOf } from '../../config/wheelConfig'
 import { SHORTEST_LESSON, LONGEST_LESSON } from '../guide/guideData'
@@ -40,6 +43,7 @@ import { DUR } from '../../motion/timing'
 import '../progression/icons.css'
 import '../wheel/wheel.css'
 import './showcase.css'
+import Otter from '../home/Otter'
 
 /* The four live frames (ShowcaseFrames.jsx) are most of this page's code and
    DOM, and all of them sit below the fold. Their code is fetched once the
@@ -82,7 +86,7 @@ export function Eyebrow({ index, children }) {
   )
 }
 
-function Section({ id, index, eyebrow, heading, children, frame: Frame, flip = false }) {
+function Section({ id, heading, children, frame: Frame, flip = false, peek = false }) {
   /* Writes --sp (0 entering → 1 leaving) for the frame's parallax. */
   const parallaxRef = useScrollProgress()
   const copyRef = useRef(null)
@@ -144,16 +148,16 @@ function Section({ id, index, eyebrow, heading, children, frame: Frame, flip = f
   })
 
   return (
-    <section className="sc-section" id={id} aria-labelledby={`${id}-heading`}>
-      <div className={`sc-wrap${flip ? ' flip' : ''}`}>
-        <div className="sc-copy" ref={copyRef}>
-          <Eyebrow index={index}>{eyebrow}</Eyebrow>
-          <SplitText as="h2" className="sc-heading" id={`${id}-heading`} stagger={48}>
+    <section className="sc-section fr" id={id} aria-labelledby={`${id}-heading`}>
+      <div className={`sc-wrap fr-wrap${flip ? ' flip' : ''}`}>
+        <div className="sc-copy fr-copy" ref={copyRef}>
+          <SplitText as="h2" className="sc-heading home-feature-heading" id={`${id}-heading`} stagger={48}>
             {heading}
           </SplitText>
           <Reveal stagger delay={220}>{children}</Reveal>
         </div>
-        <div className="sc-frame" ref={setFrameNode} style={{ '--side': flip ? -1 : 1 }}>
+        <div className="sc-frame fr-frame" ref={setFrameNode} style={{ '--side': flip ? -1 : 1 }}>
+          {peek && <span className="fr-peek" aria-hidden="true"><Otter pose="peek" region={`${id}:otter`} /></span>}
           {near && <Suspense fallback={null}><Frame /></Suspense>}
         </div>
       </div>
@@ -165,24 +169,12 @@ function Section({ id, index, eyebrow, heading, children, frame: Frame, flip = f
 
 function LearnSection() {
   return (
-    <Section
-      id="learn"
-      index={1}
-      eyebrow="The course"
-      heading={<>{TOTAL_LESSONS} lessons,<br />one module at a time.</>}
-      frame={CourseFrame}
-    >
-      <p className="sc-body">
-        Finishing a module <Mark>unlocks the next one</Mark>, so you learn how AI
-        works before the tools, and the tools before the ethics of using them.
-        Lessons take {SHORTEST_LESSON}–{LONGEST_LESSON} minutes, and the course
-        map always marks the one to do next.
-      </p>
-      <p className="sc-body">
-        Lessons are questions, not videos: fill in the blank, decide whether a
-        system is AI or ordinary code, choose the best answer. A wrong
-        answer <Mark tone="berry">costs a heart</Mark>, so you can’t click
-        through on autopilot.
+    <Section id="learn" heading="Learn by doing." frame={CourseFrame}>
+      <p className="home-feature-body">
+        {TOTAL_LESSONS} short lessons of {SHORTEST_LESSON}–{LONGEST_LESSON} minutes, each a Learn
+        part and a graded Check. You <Mark>train real models</Mark> in your browser, sort
+        real systems and look inside a neural network — and a wrong answer
+        in a Check <Mark tone="berry">costs a heart</Mark>.
       </p>
     </Section>
   )
@@ -192,24 +184,11 @@ function LearnSection() {
 
 function StreakSection() {
   return (
-    <Section
-      id="streak"
-      index={2}
-      eyebrow="Streaks"
-      heading={<>A day counts once<br />you finish something.</>}
-      flip
-      frame={StreakFrame}
-    >
-      <p className="sc-body">
-        Finishing a lesson or a practice session extends your streak; opening
-        LunX doesn’t. Days follow the <Mark tone="clay">calendar</Mark>, not
-        24-hour windows, so a lesson late at night and another the next morning
-        count as two days.
-      </p>
-      <p className="sc-body">
-        Streak milestones pay gems, starting at {STREAK.MILESTONES[0]} days and
-        going up to {STREAK.MILESTONES[STREAK.MILESTONES.length - 1]}. If you miss one day, a <Mark tone="moss">Streak Shield</Mark> covers
-        it, as long as you have one. Miss two days in a row and the streak resets.
+    <Section id="streak" heading="Keep your streak." flip peek frame={StreakFrame}>
+      <p className="home-feature-body">
+        A day counts once you finish a lesson or a practice session — opening
+        LunX doesn’t. Milestones from {STREAK.MILESTONES[0]} to {STREAK.MILESTONES[STREAK.MILESTONES.length - 1]} days
+        pay gems, and if you miss a day a <Mark tone="moss">Streak Shield</Mark> covers it.
       </p>
     </Section>
   )
@@ -218,25 +197,15 @@ function StreakSection() {
 /* ── 3. Daily spin ────────────────────────────────────────────────────────── */
 
 const JACKPOT = SLOTS.find((s) => s.tier === 'jackpot')
-const COMMON = SLOTS.filter((s) => s.tier === 'common')
 
 function WheelSection() {
   return (
-    <Section
-      id="daily-spin"
-      index={3}
-      eyebrow="Daily spin"
-      heading={<>One spin a day,<br />odds on the wheel.</>}
-      frame={WheelFrame}
-    >
-      <p className="sc-body">
-        Every day brings {WHEEL.SPINS_PER_DAY === 1 ? 'one free spin' : `${WHEEL.SPINS_PER_DAY} free spins`}.
-        The wheel pays gems, XP or a Streak Shield — most often {COMMON.map((s) => s.label).join(' or ')},
-        and once in a long while the <Mark>{JACKPOT.label} jackpot ({percentOf(JACKPOT.weight)})</Mark>.
-      </p>
-      <p className="sc-body">
-        The chance of every reward is printed beside the wheel, and the result
-        is drawn before it turns, so it always stops on what you actually won.
+    <Section id="daily-spin" heading="Spin once a day." frame={WheelFrame}>
+      <p className="home-feature-body">
+        {WHEEL.SPINS_PER_DAY === 1 ? 'One free spin' : `${WHEEL.SPINS_PER_DAY} free spins`} a day
+        pays gems, XP or a Streak Shield — and now and then
+        the <Mark>{JACKPOT.label} jackpot</Mark>, at {percentOf(JACKPOT.weight)}. The odds of
+        every reward are printed beside the wheel.
       </p>
     </Section>
   )
@@ -246,25 +215,12 @@ function WheelSection() {
 
 function QuestSection() {
   return (
-    <Section
-      id="quests"
-      index={4}
-      eyebrow="Quests & shop"
-      heading={<>Quests earn gems.<br />Gems buy second chances.</>}
-      flip
-      frame={QuestFrame}
-    >
-      <p className="sc-body">
-        Each day brings {inWords(QUESTS.DAILY_COUNT)} new quests: an easy one, a medium
-        one and a challenge, such as reaching your XP goal or finishing lessons
-        without losing a heart. Targets rise with your level, and weekly quests
-        work the same way over seven days.
-      </p>
-      <p className="sc-body">
-        The shop sells {inWords(SHOP_ITEMS.length)} things: <Mark tone="berry">a full heart
-        refill</Mark>, a single extra heart, and a <Mark tone="moss">Streak Shield</Mark>.
-        Nothing in it is cosmetic: every item either gets you back into a lesson
-        or protects your streak.
+    <Section id="quests" heading="Quests pay in gems." flip frame={QuestFrame}>
+      <p className="home-feature-body">
+        {inWords(QUESTS.DAILY_COUNT)[0].toUpperCase() + inWords(QUESTS.DAILY_COUNT).slice(1)} new
+        quests every day: an easy one, a medium one and a challenge. Gems buy
+        a <Mark tone="berry">heart refill</Mark>, a single heart or a Streak Shield — nothing in
+        the shop is cosmetic.
       </p>
     </Section>
   )

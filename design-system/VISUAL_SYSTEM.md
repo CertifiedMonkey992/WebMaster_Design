@@ -1,5 +1,33 @@
 # Visual System
 
+> **Revision 12 — the home page, rebuilt on a Duolingo-style structure
+> (2026-10-30).** The product owner asked for the landing page to follow the
+> layout, proportions and interaction quality of duolingo.com while keeping
+> LunX's own palette, type and content. The ground stays warm paper; the
+> reference's green becomes **evergreen**, its blue secondary text becomes
+> evergreen on `--surface-raised`, and its green footer becomes an evergreen
+> footer. Three additions, all scoped to the home page unless stated:
+>
+> | Token | Value | Use |
+> |---|---|---|
+> | `--fs-feature` | `clamp(2.25rem, 3.4vw, 3rem)` | the home page's feature-row and closing headings (the hero's own heading is `--fs-section`, as the reference's is the smaller of the two) |
+> | `--ledge` | `4px` | the solid bottom edge of a **ledge button** (`.btn-ledge`, COMPONENT_RULES → The ledge button). A ledge is an edge, not elevation: it has no blur and no alpha, and it collapses when pressed |
+> | `--ot-*` | warm browns and creams | the otter (below). A third named, scoped palette, read only by `.ot` artwork in `components/home/Otter.jsx` |
+>
+> Ledge buttons and the module strip's chips use `--r-lg` (12px): the
+> reference's buttons are a rounded, tactile object, and this is the one
+> place a control takes the container radius. Everywhere else a control
+> stays `--r-sm`.
+>
+> **The otter.** LunX's mascot — an original drawing, not derived from any
+> other product's character. Flat fills, no outline stroke, a darker shade of
+> the same hue for the side away from the light. Fur `--ot-fur` with
+> `--ot-fur-deep` for the far side, the tail and the inner ears; muzzle and
+> belly `--ot-cream` with `--ot-cream-deep`; eyes, nose and mouth `--ink`;
+> eye whites `--surface-raised`; cheeks `--clay` at 30% alpha. It wears an
+> evergreen scarf and carries the field guide. It appears only on the home
+> page: in the hero, peeking over a product frame, and in the closing scene.
+
 The authoritative token reference. Everything here is declared in
 `src/index.css` under `:root`. If a value you need is not in this document,
 it does not exist yet — add it here and in `index.css` together, or use the

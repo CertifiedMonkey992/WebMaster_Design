@@ -63,6 +63,39 @@
 }
 .btn-ghost:hover { color: var(--ink); background: rgba(var(--ink-rgb), 0.05); }
 
+/* The ledge button (COMPONENT_RULES.md → Revision 12): the home page's
+   tactile button. A solid edge in the deep shade of its face sits under it;
+   pressing sinks the face onto the edge. No blur — an edge, not elevation. */
+.btn.btn-ledge {
+  --ledge-ink: var(--evergreen-deep);
+  min-height: 50px;
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-lg);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  box-shadow: 0 var(--ledge) 0 var(--ledge-ink);
+  translate: none;
+  overflow: visible;
+}
+.btn.btn-ledge::before { content: none; }
+.btn-ledge.btn-primary:hover { background: var(--evergreen); filter: brightness(1.14); }
+.btn-ledge.btn-outline {
+  --ledge-ink: var(--line-strong);
+  background: var(--surface-raised);
+  color: var(--evergreen);
+  border: 2px solid var(--line-strong);
+  box-shadow: 0 calc(var(--ledge) - 2px) 0 var(--ledge-ink);
+}
+.btn-ledge.btn-outline:hover { background: var(--surface); border-color: var(--line-strong); color: var(--evergreen-deep); }
+.btn.btn-ledge:active:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(var(--ledge));
+  box-shadow: 0 0 0 var(--ledge-ink);
+}
+.btn-ledge.btn-outline:active:not(:disabled) { transform: translateY(calc(var(--ledge) - 2px)); }
+.btn-ledge.btn-sm { min-height: 40px; padding: 0 var(--sp-4); font-size: var(--fs-small); }
+
 .btn-sm { padding: var(--sp-1) var(--sp-3); font-size: var(--fs-small); }
 .btn-lg { padding: var(--sp-3) var(--sp-6); font-size: var(--fs-lead); }
 
@@ -305,293 +338,6 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   HERO
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.hero {
-  max-width: 76rem;
-  margin: 0 auto;
-  padding: calc(68px + var(--sp-16)) var(--sp-8) var(--sp-20);
-  display: grid;
-  grid-template-columns: 7fr 5fr;
-  gap: var(--sp-12);
-  align-items: center;
-}
-
-.hero-left { position: relative; z-index: var(--z-base); }
-
-/* The hero keeps the book's side dominant enough to open a spread in. */
-
-.hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-5);
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-bold);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.hero-eyebrow b {
-  padding: 2px var(--sp-2);
-  border-radius: var(--r-xs);
-  background: var(--evergreen-tint);
-  color: var(--evergreen);
-  font-weight: var(--fw-bold);
-}
-
-/* "Live" — the lessons really are available. A moss dot and its ping. */
-.hero-live {
-  position: relative;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--moss);
-  --ping-color: var(--moss);
-}
-
-.hero-live::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid var(--moss);
-  animation: fx-ping var(--loop-ping) var(--ease-out) infinite;
-}
-
-.hero-heading {
-  font-family: var(--font-display);
-  font-weight: var(--fw-bold);
-  font-size: var(--fs-page);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--ls-display);
-  color: var(--ink);
-  text-wrap: balance;
-  margin-bottom: var(--sp-5);
-}
-
-/* The inked rule under the clay phrase. Drawn once after the words land;
-   re-inked when the pointer crosses the phrase. */
-.hero-em { position: relative; white-space: nowrap; }
-
-.hero-scribble {
-  position: absolute;
-  left: -2%;
-  bottom: -0.12em;
-  width: 104%;
-  height: 0.32em;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.hero-scribble path {
-  fill: none;
-  stroke: var(--clay);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  opacity: 0.7;
-}
-
-/* Inked once, as the last word of the phrase lands. */
-.st.is-in .hero-scribble-a {
-  animation: fx-draw var(--dur-celebrate) var(--ease-settle) 900ms forwards;
-}
-
-/* Re-inked to a DIFFERENT hand-drawn shape (Roots & Routes' headline rule):
-   the old stroke is wiped away along its length while the new one is drawn
-   in after it. One gesture, one clock — the second stroke simply lags the
-   first. Revision 5: the pointer crossing the heading and the Stage (an
-   Accent) both do it the same way, by flipping data-ink (Hero.jsx) —
-   data-ink="b" wipes the first stroke and draws the second, data-ink="a"
-   wipes the second and draws the first. Each value has its own keyframe
-   names, so every flip restarts the gesture. */
-.hero-heading[data-ink='b'] .hero-scribble-a { animation: scribble-wipe-2 var(--dur-open) var(--ease-in) forwards; }
-.hero-heading[data-ink='b'] .hero-scribble-b { animation: scribble-draw-2 var(--dur-reveal) var(--ease-snap) calc(var(--dur-open) * 0.55) forwards; }
-.hero-heading[data-ink='a'] .hero-scribble-b { stroke-dashoffset: 0; animation: scribble-wipe-3 var(--dur-open) var(--ease-in) forwards; }
-.hero-heading[data-ink='a'] .hero-scribble-a { animation: scribble-draw-3 var(--dur-reveal) var(--ease-snap) calc(var(--dur-open) * 0.55) forwards; }
-
-@keyframes scribble-wipe-2 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
-@keyframes scribble-wipe-3 { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1; } }
-@keyframes scribble-draw-2 { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes scribble-draw-3 { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-
-.hero-sub {
-  font-size: var(--fs-lead);
-  line-height: var(--lh-relaxed);
-  color: var(--ink-muted);
-  max-width: 32rem;
-  margin-bottom: var(--sp-8);
-  text-wrap: pretty;
-}
-
-/* The four subjects are marked like terms in a field guide: a hover lays a
-   highlighter stroke under the words. */
-.hero-term {
-  color: var(--ink);
-  background-image: linear-gradient(var(--ochre-tint), var(--ochre-tint));
-  background-repeat: no-repeat;
-  background-size: 0% 42%;
-  background-position: 0 88%;
-  transition: background-size var(--dur-open) var(--ease-snap);
-}
-
-.hero-term:hover,
-.hero-term[data-marked] { background-size: 100% 42%; }
-
-/* Laid by the Stage (revision 5): a little slower than the hand's, so it
-   reads as a highlighter drawn along the words. */
-.hero-term[data-marked] { transition-duration: var(--dur-reveal); }
-
-/* ── The curriculum list ──────────────────────────────────────────────────────
-   Each module is a control that talks to the field guide: hover lifts that
-   chapter's pages off the book, click opens the book at it. One gesture, one
-   clock: every part of a row's hover runs on --dur-move; the tint leads, the
-   label follows by --lag-follow, the count and arrow finish at --lag-finish. */
-
-.hero-path {
-  list-style: none;
-  border-top: 1px solid var(--line);
-  max-width: 30rem;
-}
-
-/* Each item's --chapter is its chapter's ink, set inline (CHAPTER_INK);
-   the first chapter's stands in until it is. */
-.hero-path > li { --chapter: var(--moss); border-bottom: 1px solid var(--line-faint); }
-
-.hero-path-item {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-4);
-  padding: var(--sp-2) var(--sp-2) var(--sp-2) 0;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  isolation: isolate;
-}
-
-/* A tint that wipes in from the left edge. */
-.hero-path-item::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 0 calc(var(--sp-2) * -1);
-  z-index: -1;
-  border-radius: var(--r-sm);
-  background: rgba(var(--ink-rgb), 0.045);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform var(--dur-move) var(--ease-snap);
-}
-
-.hero-path-item:active::before { background: rgba(var(--ink-rgb), 0.08); }
-
-.hero-path-item:hover::before,
-.hero-path-item.is-lit::before,
-.hero-path-item:focus-visible::before { transform: scaleX(1); }
-
-.hero-path-item:focus-visible { outline-offset: 0; }
-
-.hero-path-num {
-  position: relative;
-  font-family: var(--font-ui);
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-bold);
-  letter-spacing: var(--ls-label);
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-  transition: color var(--dur-hover) var(--ease-out);
-}
-
-/* The chapter colour appears as a small tab mark beside the number. */
-.hero-path-num::before {
-  content: '';
-  position: absolute;
-  left: -10px; top: 50%;
-  width: 4px; height: 12px;
-  border-radius: var(--r-xs);
-  background: var(--chapter);
-  transform: translateY(-50%) scaleY(0);
-  transition: transform var(--dur-move) var(--ease-lift);
-}
-
-.hero-path-item.is-lit .hero-path-num,
-.hero-path-item.is-echo .hero-path-num,
-.hero-path-item:hover .hero-path-num { color: var(--chapter); }
-.hero-path-item.is-lit .hero-path-num::before,
-.hero-path-item.is-echo .hero-path-num::before,
-.hero-path-item:hover .hero-path-num::before { transform: translateY(-50%) scaleY(1); }
-
-/* Echo (revision 4): the book is showing this chapter on its own. The row
-   answers quietly — its chapter mark and a label nudge, no tint, no arrow —
-   so the hand's own highlight stays the louder of the two. */
-.hero-path-item.is-echo .hero-path-label { transform: translateX(3px); }
-
-.hero-path-label {
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  font-weight: var(--fw-semi);
-  color: var(--ink);
-  flex: 1;
-  transition: transform var(--dur-move) var(--ease-snap) var(--lag-follow);
-}
-
-.hero-path-item:hover .hero-path-label,
-.hero-path-item.is-lit .hero-path-label { transform: translateX(6px); }
-
-.hero-path-count {
-  position: relative;
-  display: grid;
-  font-size: var(--fs-caption);
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.hpc-rest, .hpc-hover {
-  grid-area: 1 / 1;
-  transition:
-    opacity var(--dur-hover) var(--ease-out) var(--lag-finish),
-    transform var(--dur-move) var(--ease-snap) var(--lag-finish);
-}
-
-.hpc-hover { opacity: 0; transform: translateY(8px); white-space: nowrap; color: var(--ink-muted); }
-
-.hero-path-item:hover .hpc-rest,
-.hero-path-item.is-lit .hpc-rest { opacity: 0; transform: translateY(-8px); }
-.hero-path-item:hover .hpc-hover,
-.hero-path-item.is-lit .hpc-hover { opacity: 1; transform: none; }
-
-.hero-path-arrow {
-  align-self: center;
-  color: var(--chapter);
-  opacity: 0;
-  transform: translateX(-6px);
-  transition:
-    opacity var(--dur-hover) var(--ease-out) var(--lag-finish),
-    transform var(--dur-move) var(--ease-snap) var(--lag-finish);
-}
-
-.hero-path-item:hover .hero-path-arrow,
-.hero-path-item.is-lit .hero-path-arrow { opacity: 1; transform: none; }
-.hero-path-item:active .hero-path-arrow { transform: translateX(3px); }
-
-.hero-path-meta {
-  margin-top: var(--sp-3);
-  font-size: var(--fs-caption);
-  color: var(--ink-faint);
-}
-
-/* The field guide lives in components/guide/fieldGuide.css. The column only
-   has to let it overhang: an open spread is wider than a closed book. */
-.hero-right { position: relative; min-width: 0; }
-
-/* ═══════════════════════════════════════════════════════════════════════════
    THE INPUT
    ---------------------------------------------------------------------------
    The one field style in the product, used by the contact form: label above,
@@ -639,77 +385,6 @@
 }
 
 .form-field:focus-within::after { transform: scaleX(1); }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   LESSON TICKER
-   ---------------------------------------------------------------------------
-   Every lesson title, drifting (motion/Marquee.jsx). Quiet by design: small
-   printed labels in muted ink, so the eye reads motion and the chapter inks,
-   not twenty-two competing headlines.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.ticker {
-  display: grid;
-  gap: var(--sp-3);
-  padding: var(--sp-8) 0 var(--sp-10);
-  border-top: 1px solid var(--line);
-  animation: fx-fade-in var(--dur-reveal) var(--ease-out) 900ms backwards;
-}
-
-.tk-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin-right: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--line);
-  border-radius: var(--r-xs);
-  background: var(--surface);
-  white-space: nowrap;
-  cursor: default;
-  transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
-}
-
-.tk-chip:hover { border-color: var(--line-strong); background: var(--surface-raised); }
-
-.tk-num {
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-black);
-  letter-spacing: var(--ls-label);
-  color: var(--chapter);
-  font-variant-numeric: tabular-nums;
-}
-
-.tk-ico {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--r-sm);
-  background: var(--paper-deep);
-  color: var(--chapter);
-}
-
-.tk-ico svg {
-  width: 14px;
-  height: 14px;
-  transition: transform var(--dur-move) var(--ease-spring);
-}
-
-.tk-chip:hover .tk-ico svg { transform: scale(1.14) rotate(-8deg); }
-
-.tk-title {
-  font-family: var(--font-display);
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semi);
-  color: var(--ink);
-}
-
-.tk-dur {
-  font-size: var(--fs-caption);
-  color: var(--ink-faint);
-  font-variant-numeric: tabular-nums;
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CLOSING CTA
@@ -865,10 +540,16 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .footer {
-  border-top: 1px solid var(--line);
-  background: var(--paper);
-  padding: var(--sp-16) var(--sp-8) var(--sp-8);
+  /* Revision 12: the footer is evergreen ground with paper type, on every
+     page — the home page's hill runs straight into it. */
+  position: relative;
+  z-index: var(--z-base);
+  background: var(--evergreen);
+  color: var(--paper);
+  padding: var(--sp-16) var(--sp-8) var(--sp-10);
 }
+
+.footer :focus-visible { outline-color: var(--surface-raised); }
 
 /* 5/3/3 — a dominant column, not three equal ones. */
 .ft-main {
@@ -876,7 +557,7 @@
   grid-template-columns: 5fr 3fr 3fr;
   gap: var(--sp-12);
   align-items: start;
-  max-width: 78rem;
+  max-width: 61.75rem;
   margin: 0 auto;
 }
 
@@ -894,7 +575,7 @@
   font-weight: var(--fw-semi);
   font-size: var(--fs-title);
   letter-spacing: var(--ls-title);
-  color: var(--evergreen);
+  color: var(--surface-raised);
 }
 
 .ft-mark:hover .wm-letter { transform: translateY(-4px) rotate(-6deg); }
@@ -921,13 +602,13 @@
   font-family: var(--font-display);
   font-size: var(--fs-body);
   line-height: var(--lh-normal);
-  color: var(--ink-muted);
+  color: rgba(var(--paper-rgb), 0.84);
 }
 
 .ft-figures {
   margin-top: var(--sp-3);
   font-size: var(--fs-caption);
-  color: var(--ink-faint);
+  color: rgba(var(--paper-rgb), 0.7);
   font-variant-numeric: tabular-nums;
 }
 
@@ -935,11 +616,9 @@
 
 .ft-col-heading {
   font-family: var(--font-ui);
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-semi);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--surface-raised);
   margin-bottom: var(--sp-4);
 }
 
@@ -952,8 +631,8 @@
   align-items: center;
   gap: var(--sp-2);
   font-size: var(--fs-small);
-  font-weight: var(--fw-medium);
-  color: var(--ink-muted);
+  font-weight: var(--fw-semi);
+  color: rgba(var(--paper-rgb), 0.8);
   text-decoration: none;
   position: relative;
   transition: color var(--dur-hover) var(--ease-out);
@@ -970,14 +649,14 @@
   position: absolute;
   left: 0; right: 0; bottom: -3px;
   height: 1px;
-  background: var(--line-strong);
+  background: rgba(var(--paper-rgb), 0.55);
   transform: scaleX(0);
   transform-origin: 0 50%;
   transition: transform var(--dur-move) var(--ease-snap);
 }
 
 .ft-link:hover,
-.ft-link:focus-visible { color: var(--ink); }
+.ft-link:focus-visible { color: var(--surface-raised); }
 .ft-link:hover .ft-link-label,
 .ft-link:focus-visible .ft-link-label { transform: translateX(3px); }
 .ft-link:hover .ft-link-label::after,
@@ -986,26 +665,26 @@
 /* The arrow leaves with the label: this link leaves LunX. */
 .ft-out {
   flex: none;
-  color: var(--ink-faint);
+  color: rgba(var(--paper-rgb), 0.6);
   transition: transform var(--dur-move) var(--ease-snap), color var(--dur-hover) var(--ease-out);
 }
 .ft-link:hover .ft-out,
-.ft-link:focus-visible .ft-out { transform: translate(2px, -2px); color: var(--clay-ink); }
+.ft-link:focus-visible .ft-out { transform: translate(2px, -2px); color: var(--tan); }
 
 /* ── The last line ────────────────────────────────────────────────────────── */
 
 .ft-last {
-  max-width: 78rem;
+  max-width: 61.75rem;
   margin: var(--sp-12) auto 0;
   padding-top: var(--sp-6);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(var(--paper-rgb), 0.2);
   display: flex;
   align-items: center;
   gap: var(--sp-6);
   flex-wrap: wrap;
 }
 
-.ft-privacy { font-size: var(--fs-caption); color: var(--ink-faint); }
+.ft-privacy { font-size: var(--fs-caption); color: rgba(var(--paper-rgb), 0.72); }
 
 .ft-legal {
   display: flex;
@@ -1022,20 +701,19 @@
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: var(--fs-caption);
-  color: var(--ink-faint);
+  color: rgba(var(--paper-rgb), 0.72);
   text-decoration: none;
   transition: color var(--dur-hover) var(--ease-out);
 }
 
 .ft-legal-link:hover,
-.ft-legal-link:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.ft-legal-link:focus-visible { color: var(--surface-raised); text-decoration: underline; text-underline-offset: 3px; }
 
-.ft-dot { color: var(--line-strong); font-size: var(--fs-caption); }
+.ft-dot { color: rgba(var(--paper-rgb), 0.35); font-size: var(--fs-caption); }
 
 .ft-updated {
   font-size: var(--fs-micro);
-  color: var(--ink-faint);
-  opacity: 0.75;
+  color: rgba(var(--paper-rgb), 0.6);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1043,16 +721,16 @@
   width: 32px; height: 32px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--line-strong);
+  border: 1px solid rgba(var(--paper-rgb), 0.32);
   border-radius: var(--r-sm);
   background: transparent;
-  color: var(--ink-muted);
+  color: var(--paper);
   cursor: pointer;
   overflow: hidden;
   transition: background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-lift) var(--ease-lift);
 }
 
-.ft-top:hover { background: var(--evergreen); border-color: transparent; color: var(--surface-raised); }
+.ft-top:hover { background: var(--surface-raised); border-color: transparent; color: var(--evergreen); }
 .ft-top:hover svg { animation: footer-lift var(--dur-reveal) var(--ease-snap); }
 .ft-top:active { transform: translateY(1px); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-micro); }
 
@@ -1068,27 +746,13 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 1100px) {
-  /* One column: the book comes straight after the promise, before the list
-     that drives it — on a phone the showcase should not be a screen away. */
-  .hero { grid-template-columns: 1fr; gap: 0; }
-  .hero-left { display: contents; }
-  .hero-left > * { grid-column: 1; }
-  .hero-eyebrow { order: 1; justify-self: start; }
-  .hero-heading { order: 2; }
-  .hero-sub { order: 3; margin-bottom: var(--sp-2); }
-  /* The primary action stays above the fold: right after the promise. */
-  .hero-cta { order: 4; margin: var(--sp-4) 0 var(--sp-6); }
-  .hero-right { order: 5; margin-bottom: var(--sp-6); }
-  .hero-path { order: 6; }
-  .hero-path-meta { order: 7; }
   .cta-wrap { grid-template-columns: 1fr; gap: var(--sp-8); align-items: start; }
 }
 
 @media (max-width: 820px) {
+  .cta-section { padding: var(--sp-16) var(--sp-5); }
   .nav-links { display: none; }
   .navbar { padding: 0 var(--sp-5); }
-  .hero { padding: calc(68px + var(--sp-10)) var(--sp-5) var(--sp-12); }
-  .cta-section { padding: var(--sp-16) var(--sp-5); }
   /* The footer's columns stack in reading order: what LunX is, then where
      to go. The last line wraps above the back-to-top control. */
   .footer { padding: var(--sp-12) var(--sp-5) var(--sp-8); }
@@ -1100,7 +764,6 @@
 }
 
 @media (max-width: 560px) {
-  .hero-em { white-space: normal; }
   /* One column: two link columns side by side is too narrow for a phone.
      Tighter than the desktop rhythm so the footer is not a whole screen. */
   .footer { padding: var(--sp-10) var(--sp-5) var(--sp-6); }
@@ -1122,35 +785,9 @@
   .nav-actions .btn { padding-left: var(--sp-3); padding-right: var(--sp-3); }
 }
 
-/* Touch: the hover-revealed count and arrow are simply shown. */
-@media (hover: none) {
-  .hpc-rest { opacity: 0; }
-  .hpc-hover { opacity: 1; transform: none; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .cta-stat::after, .cta-clock .cta-clock-sweep, .hero-live::after { animation: none !important; }
+  .cta-stat::after, .cta-clock .cta-clock-sweep { animation: none !important; }
   .cta-stats-plane { transform: none; }
-}
-
-/* ── The hero's primary action (site-quality pass) ───────────────────────── */
-
-.hero-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-3) var(--sp-4);
-  margin: calc(var(--sp-8) * -0.5) 0 var(--sp-8);
-}
-
-.hero-cta-note {
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semi);
-  color: var(--ink-faint);
-}
-
-@media (max-width: 560px) {
-  .hero-cta .btn { flex: 1 1 100%; justify-content: center; }
 }
 
 /* ── Skip link: the first thing a keyboard reaches ───────────────────────── */

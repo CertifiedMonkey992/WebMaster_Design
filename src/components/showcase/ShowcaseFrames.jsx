@@ -29,6 +29,13 @@ import CourseScene from './scenes/CourseScene'
 import StreakScene from './scenes/StreakScene'
 import WheelScene from './scenes/WheelScene'
 import QuestScene from './scenes/QuestScene'
+/* The frames mount the app's own components, whose styles load with the
+   Learn page — which a signed-out visitor never opens, so until now the
+   frames showed unstyled to exactly the people the home page is for. They
+   bring the stylesheets themselves (LearnPage.css scopes its global rules to
+   .learn-app, so nothing else on this page changes). */
+import '../../pages/LearnPage.css'
+import '../progression/progression.css'
 
 const noop = () => {}
 

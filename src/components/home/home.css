@@ -1,0 +1,658 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   home.css — THE HOME PAGE (revision 12)
+   ---------------------------------------------------------------------------
+   COMPONENT_RULES.md → Revision 12; tokens in index.css; motion verbs per
+   MOTION_RULES.md → Revision 12. The structure and proportions follow
+   duolingo.com's home page (a 988px column, a 70px header, a 424px hero
+   illustration beside a 480px text column, 330×50 buttons, 80px strip,
+   ~530px feature rows); the palette, type and content are LunX's.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.home {
+  --col: 61.75rem;          /* 988px — the page's one column */
+  --gutter: var(--sp-5);
+  --head: 70px;
+}
+
+.home-col { width: min(var(--col), 100% - 2 * var(--gutter)); margin-inline: auto; }
+
+/* ═══ HEADER ═══════════════════════════════════════════════════════════════ */
+
+.hh {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--z-raised);
+  height: var(--head);
+  background: var(--paper);
+  border-bottom: 2px solid transparent;
+  transition: border-color var(--dur-open) var(--ease-out);
+}
+
+.hh.is-past { border-bottom-color: var(--line); }
+
+.hh-bar {
+  width: min(var(--col), 100% - 2 * var(--gutter));
+  height: 100%;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.hh-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  color: var(--evergreen);
+  border-radius: var(--r-md);
+}
+
+.hh-logo-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  background: var(--evergreen);
+  box-shadow: inset 0 -3px 0 var(--evergreen-deep);
+  transition: transform var(--dur-lift) var(--ease-lift), background-color var(--dur-hover) var(--ease-out);
+}
+
+.hh-logo-mark svg { fill: var(--surface-raised); }
+
+.hh-logo-text {
+  font-family: var(--font-display);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  line-height: 1;
+}
+
+.hh-logo:hover .hh-logo-mark { transform: rotate(-10deg) scale(1.06); background: var(--clay); box-shadow: inset 0 -3px 0 var(--clay-deep); }
+.hh-logo:hover .wm-letter { transform: translateY(-3px); }
+.hh-logo:hover .wm-letter:nth-child(even) { transform: translateY(2px); }
+
+.hh-actions { display: flex; align-items: center; gap: var(--sp-1); }
+
+/* The quiet uppercase links — the reference's "site language" style. */
+.hh-quiet {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  transition: color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
+}
+
+.hh-quiet:hover { color: var(--evergreen); background: var(--evergreen-tint); }
+
+.hh-profile { margin-left: var(--sp-1); }
+
+/* The button's slot opens to its width as it arrives (a Report: the hero's
+   buttons have gone, so this one is the way in now). */
+.hh-cta-slot {
+  display: grid;
+  grid-template-columns: 0fr;
+  margin-left: 0;
+  padding-bottom: var(--ledge);
+  margin-bottom: calc(var(--ledge) * -1);
+  overflow: hidden;
+  transition:
+    grid-template-columns var(--dur-open) var(--ease-snap),
+    margin-left var(--dur-open) var(--ease-snap);
+}
+
+.hh-cta-slot > .hh-cta {
+  min-width: 0;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.92);
+  transition:
+    opacity var(--dur-hover) var(--ease-out),
+    transform var(--dur-open) var(--ease-lift),
+    box-shadow var(--dur-press) var(--ease-press),
+    filter var(--dur-hover) var(--ease-out);
+}
+
+.hh.is-past .hh-cta-slot { grid-template-columns: 1fr; margin-left: var(--sp-2); }
+.hh.is-past .hh-cta-slot > .hh-cta { opacity: 1; transform: none; transition-delay: var(--lag-finish), var(--lag-finish), 0ms, 0ms; }
+
+/* ═══ HERO ═════════════════════════════════════════════════════════════════ */
+
+.home-hero {
+  display: flex;
+  align-items: center;
+  min-height: max(36rem, 100svh - 80px);
+  padding: var(--head) 0 var(--sp-6);
+}
+
+.home-hero-inner {
+  width: min(var(--col), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 424px 480px;
+  justify-content: end;
+  align-items: center;
+  column-gap: var(--sp-4);
+}
+
+.home-hero-copy { text-align: center; }
+
+.home-hero-heading {
+  max-width: 30rem;
+  margin: 0 auto var(--sp-10);
+  font-family: var(--font-display);
+  font-size: var(--fs-section);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-title);
+  line-height: var(--lh-snug);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.home-hero-heading .em { font-weight: var(--fw-semi); }
+
+.home-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.home-hero-btn { width: min(330px, 100%); }
+
+/* ── The otter scene ─────────────────────────────────────────────────────── */
+
+.os-scene {
+  position: relative;
+  width: 424px;
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+
+.os-ground {
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  bottom: 1%;
+  height: 9%;
+  border-radius: 50%;
+  background: var(--paper-deep);
+}
+
+.os-otter {
+  position: absolute;
+  left: 50%;
+  bottom: 3%;
+  width: 74%;
+  translate: -50% 0;
+}
+
+.os-obj { position: absolute; line-height: 0; }
+
+/* Ambient (listed, revision 12): each object drifts on its own seeded,
+   stretched period, so no two move in step. The inner element drifts; the
+   outer one is free for its arrival and the hand. */
+.os-drift {
+  display: inline-block;
+  rotate: var(--r, 0deg);
+  animation: os-drift calc(var(--idle-float) * var(--k, 1)) var(--ease-swing) calc(-6s * var(--seed, 0)) infinite alternate;
+}
+
+@keyframes os-drift {
+  from { translate: 0 5px; rotate: var(--r, 0deg); }
+  to   { translate: 0 -9px; rotate: calc(var(--r, 0deg) * -0.5); }
+}
+
+/* Response: pointing at an object boops it. */
+.os-drift > * { transition: transform var(--dur-lift) var(--ease-lift); }
+.os-obj:hover .os-drift > * { transform: scale(1.16) rotate(-8deg); }
+
+/* ── Chapter tiles ───────────────────────────────────────────────────────── */
+
+.ct {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--surface-raised);
+  background: var(--chapter, var(--evergreen));
+  border-radius: var(--r-md);
+  box-shadow: inset 0 calc(var(--ledge) * -1) 0 rgba(var(--ink-rgb), 0.3);
+  font-family: var(--font-ui);
+  font-weight: var(--fw-black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.ct--sm { width: 36px; height: 30px; padding-bottom: 2px; border-radius: var(--r-sm); font-size: var(--fs-caption); box-shadow: inset 0 -3px 0 rgba(var(--ink-rgb), 0.3); }
+.ct--md { width: 60px; height: 60px; padding-bottom: 3px; border-radius: var(--r-lg); }
+.ct--md svg { width: 32px; height: 32px; stroke-width: 1.9; }
+.ct--lg { width: 64px; height: 64px; padding-bottom: 3px; border-radius: var(--r-lg); font-size: var(--fs-title); }
+
+/* ═══ THE OTTER ════════════════════════════════════════════════════════════ */
+
+.ot {
+  --lx: 0px;
+  --ly: 0px;
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ot g, .ot path, .ot ellipse, .ot circle, .ot rect { transform-box: view-box; }
+
+.ot-figure {
+  pointer-events: visiblePainted;
+  transform-origin: 110px 258px;
+  transition: scale var(--dur-lift) var(--ease-lift);
+}
+
+.ot-fur        { fill: var(--ot-fur); }
+.ot-fur-deep   { fill: var(--ot-fur-deep); }
+.ot-cream      { fill: var(--ot-cream); }
+.ot-cream-deep { fill: var(--ot-cream-deep); }
+.ot-white      { fill: var(--surface-raised); }
+.ot-ink        { fill: var(--ink); }
+.ot-green      { fill: var(--evergreen); }
+.ot-green-deep { fill: var(--evergreen-deep); }
+.ot-clay       { fill: var(--clay); }
+.ot-page       { fill: var(--surface-raised); }
+.ot-foil       { fill: var(--tan); }
+.ot-tongue     { fill: var(--berry-bright); }
+
+.ot-sheen     { fill: none; stroke: var(--ot-fur-light); stroke-width: 7; stroke-linecap: round; }
+.ot-stripe    { fill: none; stroke: var(--tan); stroke-width: 2.5; }
+.ot-foil-ring { fill: none; stroke: var(--tan); stroke-width: 2; }
+.ot-limb      { fill: none; stroke: var(--ot-fur); stroke-width: 21; stroke-linecap: round; }
+.ot-toes      { fill: none; stroke: var(--ot-fur-deep); stroke-width: 2; stroke-linecap: round; }
+.ot-whiskers  { fill: var(--ot-fur-deep); }
+.ot-whisker   { fill: none; stroke: var(--ot-fur-deep); stroke-width: 2; stroke-linecap: round; opacity: 0.7; }
+.ot-webs      { fill: none; stroke: var(--ot-fur); stroke-width: 2; stroke-linecap: round; }
+.ot-nose-shine { opacity: 0.5; }
+
+.ot-blush { fill: var(--clay); opacity: 0.3; transition: opacity var(--dur-lift) var(--ease-out); }
+
+.ot-brow {
+  fill: none;
+  stroke: var(--ot-fur-deep);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: translate var(--dur-move) var(--ease-snap);
+}
+
+.ot-mouth { fill: none; stroke: var(--ink); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.ot-mouth--open { opacity: 0; }
+.ot-mouth--smile, .ot-mouth--open { transition: opacity var(--dur-micro) var(--ease-out); }
+
+/* Happy: cheering, performing, or pointed at. */
+.ot--cheer .ot-mouth--open,
+.ot[data-act] .ot-mouth--open,
+.ot-figure:hover .ot-mouth--open { opacity: 1; }
+.ot--cheer .ot-mouth--smile,
+.ot[data-act] .ot-mouth--smile,
+.ot-figure:hover .ot-mouth--smile { opacity: 0; }
+
+/* Eyes: a blink (Idle event) and a gaze that follows the pointer (Response). */
+.ot .ot-eye { transform-box: fill-box; transform-origin: center; transition: scale var(--dur-micro) var(--ease-press); }
+.ot[data-blink] .ot-eye { scale: 1 0.08; }
+.ot-pupil { translate: var(--lx) var(--ly); transition: translate var(--dur-move) var(--ease-out); }
+
+/* Ambient (listed): it breathes, its tail sways, its scarf flutters. */
+.ot-torso { transform-origin: 110px 248px; animation: ot-breathe var(--idle-beat) var(--ease-swing) infinite alternate; }
+.ot-tail { transform-origin: 146px 222px; animation: ot-sway var(--idle-float) var(--ease-swing) infinite alternate; }
+.ot-scarf-ends { transform-origin: 64px 146px; animation: ot-flutter calc(var(--idle-float) * 0.45) var(--ease-swing) infinite alternate; }
+
+@keyframes ot-breathe { from { scale: 1 1; } to { scale: 1.012 1.026; } }
+@keyframes ot-sway    { from { rotate: -5deg; } to { rotate: 7deg; } }
+@keyframes ot-flutter { from { rotate: -7deg; } to { rotate: 5deg; } }
+
+/* Response: pointing at it squashes it and warms its cheeks. */
+.ot-figure:hover { scale: 1.035 0.965; }
+.ot-figure:hover .ot-blush { opacity: 0.55; }
+.ot-figure:hover .ot-brow { translate: 0 -3px; }
+
+/* Arms pivot at the shoulder. */
+.ot-arm--l { transform-origin: 76px 150px; }
+.ot-arm--r { transform-origin: 144px 150px; }
+.ot--cheer .ot-arm--l { rotate: 125deg; }
+.ot--cheer .ot-arm--r { rotate: -125deg; }
+
+/* ── Acts (Stage accents) ────────────────────────────────────────────────── */
+
+.ot--hold[data-act='wave'] .ot-arm--r { animation: ot-wave calc(var(--dur-celebrate) * 2) var(--ease-swing); }
+/* The paw clears the cheek at -100…-126deg, so the whole wave is seen. */
+@keyframes ot-wave {
+  0%, 100% { rotate: 0deg; }
+  18% { rotate: -120deg; }
+  32% { rotate: -100deg; }
+  46% { rotate: -126deg; }
+  60% { rotate: -100deg; }
+  74% { rotate: -118deg; }
+}
+
+.ot--cheer[data-act='wave'] .ot-arm--l { animation: ot-cheer-l calc(var(--dur-celebrate) * 2) var(--ease-swing); }
+.ot--cheer[data-act='wave'] .ot-arm--r { animation: ot-cheer-r calc(var(--dur-celebrate) * 2) var(--ease-swing); }
+@keyframes ot-cheer-l { 0%, 100% { rotate: 125deg; } 25%, 75% { rotate: 108deg; } 50% { rotate: 134deg; } }
+@keyframes ot-cheer-r { 0%, 100% { rotate: -125deg; } 25%, 75% { rotate: -134deg; } 50% { rotate: -108deg; } }
+
+.ot-head { transform-origin: 110px 140px; }
+.ot[data-act='read'] .ot-head { animation: ot-read calc(var(--dur-celebrate) * 2) var(--ease-swing); }
+.ot[data-act='read'] .ot-pupil { translate: -1px 5px; }
+.ot[data-act='read'] .ot-book { animation: ot-book calc(var(--dur-celebrate) * 2) var(--ease-swing); }
+@keyframes ot-read { 0%, 100% { rotate: 0deg; } 22%, 78% { rotate: 7deg; } }
+@keyframes ot-book { 0%, 100% { translate: 0 0; } 22%, 78% { translate: 0 -6px; } }
+
+.ot[data-act='hop'] { transform-origin: 50% 100%; animation: ot-hop var(--dur-celebrate) var(--ease-swing); }
+@keyframes ot-hop {
+  0%   { translate: 0 0;     scale: 1 1; }
+  16%  { translate: 0 0;     scale: 1.07 0.92; }
+  46%  { translate: 0 -24px; scale: 0.96 1.05; }
+  72%  { translate: 0 0;     scale: 1.06 0.94; }
+  88%  { translate: 0 0;     scale: 0.99 1.01; }
+  100% { translate: 0 0;     scale: 1 1; }
+}
+
+/* The peeking otter rises from behind its edge the first time it is seen,
+   and now and then ducks back down and pops up again. */
+.ot--peek .ot-head { translate: 0 0; transition: translate var(--dur-celebrate) var(--ease-lift); }
+.ot--peek:not([data-seen]) .ot-head { translate: 0 96px; }
+.ot--peek .ot-paws { transition: opacity var(--dur-hover) var(--ease-out) var(--dur-open), translate var(--dur-reveal) var(--ease-lift) var(--dur-open); }
+.ot--peek:not([data-seen]) .ot-paws { opacity: 0; translate: 0 10px; }
+.ot--peek[data-act='duck'] .ot-head { animation: ot-duck calc(var(--dur-celebrate) * 1.5) var(--ease-swing); }
+@keyframes ot-duck { 0%, 100% { translate: 0 0; } 30%, 52% { translate: 0 92px; } 70% { translate: 0 -6px; } }
+
+/* ═══ MODULE STRIP ═════════════════════════════════════════════════════════ */
+
+.ms {
+  height: 80px;
+  border-top: 2px solid var(--line);
+  background: var(--paper);
+}
+
+.ms-inner {
+  width: min(var(--col) + 4rem, 100% - var(--gutter));
+  height: 100%;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.ms-arrow {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--r-md);
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out), opacity var(--dur-hover) var(--ease-out), transform var(--dur-press) var(--ease-lift);
+}
+
+.ms-arrow:hover:not(:disabled) { color: var(--evergreen); background: var(--evergreen-tint); }
+.ms-arrow:active:not(:disabled) { transform: scale(0.88); transition-duration: var(--dur-hover), var(--dur-hover), var(--dur-hover), var(--dur-micro); }
+.ms-arrow:disabled { opacity: 0.3; cursor: default; }
+
+.ms-track {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: var(--sp-1);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: var(--sp-2) 0;
+  mask-image: linear-gradient(90deg, transparent, var(--ink) var(--sp-4), var(--ink) calc(100% - var(--sp-4)), transparent);
+}
+
+.ms-track::-webkit-scrollbar { display: none; }
+.ms-track > li { flex: none; scroll-snap-align: start; }
+
+.ms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--r-lg);
+  background: none;
+  cursor: pointer;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  transition: color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
+}
+
+.ms-chip .ct { transition: transform var(--dur-lift) var(--ease-lift); }
+.ms-chip:hover { color: var(--ink); background: rgba(var(--ink-rgb), 0.05); }
+.ms-chip:hover .ct { transform: translateY(-3px) rotate(-6deg); }
+.ms-chip:active .ct { transform: scale(0.9); transition-duration: var(--dur-micro); }
+
+/* ═══ FEATURE ROWS ═════════════════════════════════════════════════════════ */
+
+.home .fr {
+  border-top: none;
+  background: none;
+  overflow: visible;
+  padding: var(--sp-6) var(--gutter);
+}
+
+.home .ms + .fr { padding-top: var(--sp-24); }
+
+.home .fr-wrap {
+  max-width: var(--col);
+  min-height: 530px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: var(--sp-16);
+}
+
+.home .fr-wrap.flip { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+
+.home .home-feature-heading {
+  margin-bottom: var(--sp-5);
+  font-family: var(--font-display);
+  font-size: var(--fs-feature);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-display);
+  line-height: var(--lh-tight);
+  color: var(--evergreen);
+  text-wrap: balance;
+}
+
+.home-feature-body {
+  max-width: 30rem;
+  font-size: var(--fs-lead);
+  line-height: var(--lh-normal);
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.home .fr-frame { position: relative; }
+
+/* The otter peeking over the streak frame's top edge: its edge line (y=140
+   of 160 in the drawing) sits on the frame's top. */
+.fr-peek {
+  position: absolute;
+  z-index: 2;
+  top: calc(150px * -140 / 220);
+  right: 14%;
+  width: 150px;
+}
+
+/* ═══ COURSE MAP ═══════════════════════════════════════════════════════════ */
+
+.cm {
+  padding: var(--sp-20) var(--gutter) var(--sp-16);
+  text-align: center;
+}
+
+.home .cm-heading { margin-inline: auto; }
+.cm-body { margin: 0 auto var(--sp-5); }
+
+.cm-parts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2) var(--sp-6);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+}
+
+.cm-parts b {
+  margin-right: var(--sp-1);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-black);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--evergreen);
+}
+
+.cm-stage {
+  position: relative;
+  width: min(56rem, 100%);
+  height: 33rem;
+  margin: var(--sp-6) auto var(--sp-4);
+}
+
+.cm-book { position: absolute; inset: 0; }
+
+.cm-tiles { list-style: none; position: absolute; inset: 0; pointer-events: none; }
+.cm-tile-spot { display: contents; }
+.cm-tiles .os-obj { pointer-events: auto; }
+
+.cm-tile {
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: var(--r-lg);
+  background: none;
+  cursor: pointer;
+  transition: transform var(--dur-lift) var(--ease-lift);
+}
+
+.cm-tile:hover, .cm-tile:focus-visible { transform: translateY(-5px) scale(1.08); }
+.cm-tile:active { transform: translateY(2px) scale(0.95); transition-duration: var(--dur-micro); }
+
+.cm-btn { width: min(330px, 100%); }
+
+/* ═══ CLOSING SCENE ════════════════════════════════════════════════════════ */
+
+.home-closing {
+  position: relative;
+  padding: var(--sp-20) var(--gutter) 0;
+  text-align: center;
+  overflow: hidden;
+}
+
+.home .home-closing-heading { margin: 0 auto var(--sp-3); }
+
+.home-closing-note {
+  margin-bottom: var(--sp-8);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.home-closing-action { display: flex; justify-content: center; }
+
+.hc-scene {
+  position: relative;
+  height: 360px;
+  margin: var(--sp-4) calc(var(--gutter) * -1) 0;
+}
+
+.hc-hill {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 300px;
+  fill: var(--evergreen);
+}
+
+.hc-objects { position: absolute; inset: 0 0 90px; }
+.hc-objects .os-obj { z-index: 1; }
+
+.hc-otter {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  z-index: 2;
+  width: 200px;
+  translate: -50% 0;
+}
+
+/* ═══ RESPONSIVE ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1060px) {
+  .home-hero-inner { grid-template-columns: minmax(0, 380px) minmax(0, 440px); justify-content: center; column-gap: var(--sp-6); }
+  .home .fr-wrap, .home .fr-wrap.flip { grid-template-columns: 1fr; gap: var(--sp-10); min-height: 0; }
+  .home .fr-wrap.flip > .fr-copy { order: 0; }
+  .home .fr-wrap.flip > .fr-frame { order: 1; }
+  .home .fr { padding-block: var(--sp-12); }
+  .home .fr-copy { text-align: center; }
+  .home-feature-body { margin-inline: auto; }
+  .home .fr-frame { width: min(46rem, 100%); margin-inline: auto; }
+  /* Stacked, the peeking otter needs the room its head rises into. */
+  .home .fr-frame:has(.fr-peek) { margin-top: var(--sp-16); }
+}
+
+@media (max-width: 860px) {
+  .home-hero { min-height: 0; padding: calc(var(--head) + var(--sp-4)) 0 var(--sp-12); }
+  .home-hero-inner { grid-template-columns: 1fr; row-gap: var(--sp-8); }
+  .home-hero-art { display: flex; justify-content: center; }
+  .os-scene { width: min(340px, 100%); }
+  .home-hero-heading { margin-bottom: var(--sp-8); }
+
+  /* The stage gives up its scattered layout: the book, then the tiles in a
+     row below it. */
+  .cm-stage { height: auto; }
+  .cm-book { position: relative; }
+  .cm-tiles { position: static; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); margin-top: var(--sp-2); }
+  .cm-tiles .os-obj { position: static; }
+}
+
+@media (max-width: 720px) {
+  /* A phone: the wordmark alone, centred. The sticky bar at the bottom edge
+     is the way in once the hero's buttons have gone (StickyCta). */
+  .hh-bar { justify-content: center; }
+  .hh-actions { display: none; }
+  .hh-logo-text { font-size: var(--fs-title); }
+  .hh-logo-mark { width: 30px; height: 30px; }
+
+  .ms-label { font-size: var(--fs-caption); }
+  .home .ms + .fr { padding-top: var(--sp-16); }
+  .fr-peek { width: 120px; top: calc(120px * -140 / 220); }
+
+  .hc-scene { height: 280px; }
+  .hc-hill { height: 220px; }
+  .hc-otter { width: 150px; bottom: 40px; }
+  .hc-objects { inset: 0 0 70px; }
+  .hc-objects .os-drift > * { scale: 0.8; }
+  .hc-objects .hc-inner { display: none; }
+}
+
+@media (max-width: 480px) {
+  .home-hero-heading { font-size: var(--fs-title); }
+  .ct--lg { width: 52px; height: 52px; font-size: var(--fs-lead); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-drift, .ot *, .ot { animation: none !important; }
+  .hh-cta-slot, .hh-cta-slot > .hh-cta { transition: none; }
+}

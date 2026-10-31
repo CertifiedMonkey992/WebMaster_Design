@@ -98,6 +98,7 @@
   --surface:        #FBF7F0;   /* cards, rows, panels */
   --surface-raised: #FFFDF8;   /* the floating layer: modals, popovers */
   --surface-sunk:   #EDE5D6;   /* deliberately behind the ground */
+  --paper-rgb:      242, 235, 223;   /* paper as channels: text on the evergreen footer */
 
   /* ── Ink ───────────────────────────────────────────────────────────────────
      Contrast measured against --paper (WCAG AA is 4.5:1; every ink passes on
@@ -252,6 +253,20 @@
   --lg-diamond-deep:   #3E9EC4;
   --lg-diamond-light:  #E1F7FF;
   --lg-white:          #FFFFFF;
+
+  /* ── The otter (VISUAL_SYSTEM.md → Revision 12) ──────────────────────────
+     LunX's mascot on the home page. A third named, scoped palette, read ONLY
+     by `.ot` artwork (components/home/Otter.jsx). All warm: an otter is a
+     brown animal on a paper page. */
+  --ot-fur:        #8E5B3B;
+  --ot-fur-deep:   #6C4128;
+  --ot-fur-light:  #A6714D;
+  --ot-cream:      #F4E2C6;
+  --ot-cream-deep: #E0C39C;
+
+  /* ── The home page (revision 12) ────────────────────────────────────────── */
+  --fs-feature: clamp(2.25rem, 3.4vw, 3rem);  /* feature-row + closing headings */
+  --ledge: 4px;                                /* a ledge button's solid edge */
 
   /* ── Spacing (8pt, with 4px for the inside of small controls) ──────────── */
   /* The smallest control a finger can hit reliably (44px, WCAG 2.5.8).

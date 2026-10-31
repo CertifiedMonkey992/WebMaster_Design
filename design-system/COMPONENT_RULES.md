@@ -1,5 +1,53 @@
 # Component Rules
 
+> **Revision 12 — the home page (2026-10-30).** The landing page now follows
+> duolingo.com's structure (VISUAL_SYSTEM.md → Revision 12). These entries
+> replace *Landing navbar*, *Links into the course*, *The field guide
+> (landing hero)*, *Lesson ticker* and *Mascot* below wherever they disagree.
+> The About and site pages keep the navbar described below.
+>
+> - **Home header** (`components/home/HomeHeader.jsx`). Fixed, 70px, content
+>   in a 988px column: the wordmark at the left; *About* and the account
+>   control at the right in the quiet uppercase label style. Once the hero's
+>   buttons have scrolled away a 2px `--line` rule appears under it and a
+>   small ledge button, *Get started*, slides in at the right — the
+>   reference's behaviour. Below 720px the wordmark centres and the quiet
+>   links hide until the bar has its button.
+> - **Hero.** Fills the first screen above the module strip. A 424px otter
+>   scene at the left, a 480px column at the right holding the heading
+>   (`--fs-section`, centred, the one clay italic phrase) and two ledge
+>   buttons stacked at 330×50: *Get started* (solid) and *I already have an
+>   account* (outline, signed out only). Signed in, the solid button reads
+>   *Continue learning*. Below 720px it stacks: scene, heading, full-width
+>   buttons.
+> - **The ledge button** (`.btn-ledge` on `.btn`, plus `.btn-primary` or
+>   `.btn-outline`). Uppercase Manrope `--fw-black` `--fs-body`,
+>   `--ls-label`, `--r-lg`, 50px tall, a solid `--ledge` edge in the deep
+>   shade of its ground. Hover lightens the face; press sinks it by the
+>   ledge in `--dur-micro` and the edge collapses; release springs back on
+>   `--ease-lift`. No magnet and no pointer sheen — the ledge is the press
+>   feedback. Used on the home page only.
+> - **Module strip.** An 80px band under the hero with a 2px `--line` top
+>   rule: the seven modules as chips (an inked number tile and the title in
+>   uppercase label type), scrolled by an arrow at each end. A chip is a
+>   button: it scrolls to the course map and opens the field guide at that
+>   chapter.
+> - **Feature rows.** A 988px column, rows ~530px tall, copy and frame
+>   alternating sides: heading `--fs-feature` in evergreen Fraunces, one
+>   paragraph `--fs-lead` in `--ink-muted` at 30rem. The frames are the real
+>   product components on demo learners, exactly as before.
+> - **Course map.** A centred band: heading, one paragraph, the field guide
+>   with the seven chapter tiles floating around it, and an outline ledge
+>   button to the About page.
+> - **Closing scene.** Centred `--fs-feature` heading, one solid ledge
+>   button, then the otter on an evergreen hillside with the economy icons
+>   floating over it. The hill runs straight into the footer.
+> - **Footer** (all pages). Evergreen ground, `--surface-raised` headings,
+>   links in `--paper` at 80% alpha, the same columns and legal line as
+>   before, inside the 988px column.
+> - **Mascot.** There is one now: the otter (VISUAL_SYSTEM.md → Revision 12).
+>   Decorative (`aria-hidden`), never a control, never in the app.
+
 How the components of *this* product look and behave. Every rule assumes the
 tokens in `VISUAL_SYSTEM.md`.
 

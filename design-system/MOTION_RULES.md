@@ -1,5 +1,22 @@
 # Motion Rules
 
+> **Revision 12 — the home page's life (2026-10-30).** Everything below still
+> holds. The new home page adds these, all through `src/motion/`:
+>
+> | Motion | Category | How |
+> |---|---|---|
+> | Ledge press: the face sinks by `--ledge`, the edge collapses | Response | `--dur-micro` down, `--dur-press` `--ease-lift` up |
+> | Header rule and *Get started* arriving once the hero's buttons leave | Report | `--dur-open` `--ease-snap` |
+> | The otter's eyes follow the pointer (≤ 3px) | Response | one rAF per pointer frame, eased by CSS `--dur-move` |
+> | The otter blinks, now and then a double blink | Idle event | `idle.js`-style jittered timer, 2.6–6.4s |
+> | The otter's tail sways; the scene's objects drift | Ambient (listed) | `--idle-sweep` / `--idle-float` with per-object `--seed` |
+> | The otter waves; turns a page of its book; hops in the closing scene | Stage accents (`otter:wave`, `otter:read`, `otter:hop`) | `usePerformer`, `--dur-celebrate` |
+> | Pointing at the otter: it squashes and its cheeks warm | Response | `--dur-lift` `--ease-lift` |
+> | Module strip scrolls by a page per arrow press | Response | native smooth scroll |
+>
+> Under `prefers-reduced-motion` the otter is still, the objects do not
+> drift, and nothing registers with the Stage.
+
 > **Revision 7 — the title sequence — withdrawn (2026-10).** The
 > fifteen-second title sequence on first arrival was removed at the product
 > owner's request: the site must be usable the moment it loads, with no

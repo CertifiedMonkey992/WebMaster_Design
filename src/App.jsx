@@ -2,14 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import './App.css'
 import './components/SiteChrome.css'
 
-import Navbar          from './components/Navbar'
-import Hero            from './components/Hero'
-import LessonTicker    from './components/LessonTicker'
-import ProductSections from './components/showcase/ProductSections'
-import ClosingCTA      from './components/ClosingCTA'
-import Footer          from './components/Footer'
+import HomePage        from './components/home/HomePage'
 import ConsentBanner   from './components/ConsentBanner'
-import StickyCta       from './components/StickyCta'
 import PageLoading     from './components/PageLoading'
 import ErrorBoundary   from './components/ErrorBoundary'
 
@@ -213,25 +207,11 @@ function Site() {
 
   let page
   if (currentPage === 'landing') {
-    /* The hero's button and the closing CTA are the page's ways into the
-       course; the navbar's button is always on screen, and on a phone a
-       sticky button takes over once the hero's has scrolled away.
-       COMPONENT_RULES.md → Links into the course. */
-    page = (
-      <div className="app">
-        <Navbar pageLink={{ label: 'About', page: 'about' }} />
-
-        <main id="main" tabIndex={-1}>
-          <Hero />
-          <LessonTicker />
-          <ProductSections />
-          <ClosingCTA />
-        </main>
-
-        <Footer />
-        <StickyCta />
-      </div>
-    )
+    /* The home page (COMPONENT_RULES.md → Revision 12): its own header, the
+       hero's two buttons and the closing scene's are its ways into the
+       course; on a phone a sticky button takes over once the hero's have
+       scrolled away. */
+    page = <HomePage />
   } else if (currentPage === 'learn' && !signedIn) {
     /* Signed out on the course (the account signed out here or in another
        tab): never mount the course for nobody — show the sign-in page while
