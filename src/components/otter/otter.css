@@ -1,0 +1,106 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   otter.css — THE OTTER'S PAINT
+   ---------------------------------------------------------------------------
+   VISUAL_SYSTEM.md → Revision 13. Fills and strokes only: every movement is
+   the engine's (components/otter/engine.js), so nothing here animates. The
+   `--ot-*` palette is read by this file and nothing else.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ot {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Only the painted otter answers the pointer, never its empty box. */
+.ot-figure { pointer-events: visiblePainted; }
+
+.ot-fur        { fill: var(--ot-fur); }
+.ot-fur-deep   { fill: var(--ot-fur-deep); }
+.ot-cream      { fill: var(--ot-cream); }
+.ot-cream-deep { fill: var(--ot-cream-deep); }
+.ot-white      { fill: var(--surface-raised); }
+.ot-iris       { fill: var(--ot-iris); }
+.ot-ink        { fill: var(--ink); }
+.ot-mouth      { fill: var(--ot-mouth); }
+.ot-green      { fill: var(--evergreen); }
+.ot-green-deep { fill: var(--evergreen-deep); }
+.ot-clay       { fill: var(--clay); }
+.ot-page       { fill: var(--surface-raised); }
+.ot-foil       { fill: var(--tan); }
+.ot-tongue     { fill: var(--berry-bright); }
+.ot-stone      { fill: var(--ot-stone); }
+.ot-stone-light { fill: var(--ot-stone-light); }
+.ot-shadow     { fill: var(--paper-deep); }
+.ot-blush      { fill: var(--clay); }
+.ot-dots       { fill: var(--ot-fur-deep); opacity: 0.55; }
+.ot-shine      { opacity: 0.55; }
+
+.ot-brow {
+  fill: var(--ot-cream);
+  stroke: var(--ot-cream);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.ot-lash {
+  fill: none;
+  stroke: var(--ot-fur-deep);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.ot-lash--low { stroke-width: 2; }
+
+.ot-lip {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ot-sheen      { fill: none; stroke: var(--ot-fur-light); stroke-width: 6; stroke-linecap: round; }
+.ot-stripe     { fill: none; stroke: var(--tan); stroke-width: 2.5; }
+.ot-foil-ring  { fill: none; stroke: var(--tan); stroke-width: 2; }
+.ot-limb       { fill: none; stroke: var(--ot-fur); stroke-width: 16; stroke-linecap: round; }
+.ot-limb--upper { stroke-width: 19; }
+.ot-leg        { fill: none; stroke: var(--ot-fur); stroke-width: 17; stroke-linecap: round; }
+.ot-toes       { fill: none; stroke: var(--ot-fur-deep); stroke-width: 1.8; stroke-linecap: round; }
+.ot-webs       { fill: none; stroke: var(--ot-fur); stroke-width: 2; stroke-linecap: round; }
+.ot-whisker    { fill: none; stroke: var(--ot-fur-deep); stroke-width: 1.6; stroke-linecap: round; opacity: 0.75; }
+
+/* Small otters lose their finest lines. */
+.ot--small .ot-whisker,
+.ot--small .ot-dots { display: none; }
+
+/* ═══ The companion (COMPONENT_RULES.md → Revision 13) ════════════════════
+   The otter sits on the top edge of the Your Progress card: the box is the
+   part of the drawing above the card's edge (units 30–268 of the perch),
+   and the dangling feet overhang the card below it. It sits right of
+   centre, clear of the card's title and its XP tag. */
+
+.otc-perch { position: relative; }
+
+.otc {
+  --otc-w: 100px;
+  position: relative;
+  z-index: 1;
+  width: var(--otc-w);
+  height: calc(var(--otc-w) * (268 - 30) / 240);
+  margin-left: auto;
+  margin-right: 24%;
+  pointer-events: none;
+}
+
+.otc .ot {
+  position: absolute;
+  inset: 0 0 auto;
+}
+
+@media (max-width: 560px) {
+  .otc { --otc-w: 86px; margin-right: 18%; }
+}

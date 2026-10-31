@@ -172,16 +172,6 @@
   aspect-ratio: 1;
 }
 
-.os-ground {
-  position: absolute;
-  left: 16%;
-  right: 16%;
-  bottom: 1%;
-  height: 9%;
-  border-radius: 50%;
-  background: var(--paper-deep);
-}
-
 .os-otter {
   position: absolute;
   left: 50%;
@@ -230,140 +220,6 @@
 .ct--md { width: 60px; height: 60px; padding-bottom: 3px; border-radius: var(--r-lg); }
 .ct--md svg { width: 32px; height: 32px; stroke-width: 1.9; }
 .ct--lg { width: 64px; height: 64px; padding-bottom: 3px; border-radius: var(--r-lg); font-size: var(--fs-title); }
-
-/* ═══ THE OTTER ════════════════════════════════════════════════════════════ */
-
-.ot {
-  --lx: 0px;
-  --ly: 0px;
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.ot g, .ot path, .ot ellipse, .ot circle, .ot rect { transform-box: view-box; }
-
-.ot-figure {
-  pointer-events: visiblePainted;
-  transform-origin: 110px 258px;
-  transition: scale var(--dur-lift) var(--ease-lift);
-}
-
-.ot-fur        { fill: var(--ot-fur); }
-.ot-fur-deep   { fill: var(--ot-fur-deep); }
-.ot-cream      { fill: var(--ot-cream); }
-.ot-cream-deep { fill: var(--ot-cream-deep); }
-.ot-white      { fill: var(--surface-raised); }
-.ot-ink        { fill: var(--ink); }
-.ot-green      { fill: var(--evergreen); }
-.ot-green-deep { fill: var(--evergreen-deep); }
-.ot-clay       { fill: var(--clay); }
-.ot-page       { fill: var(--surface-raised); }
-.ot-foil       { fill: var(--tan); }
-.ot-tongue     { fill: var(--berry-bright); }
-
-.ot-sheen     { fill: none; stroke: var(--ot-fur-light); stroke-width: 7; stroke-linecap: round; }
-.ot-stripe    { fill: none; stroke: var(--tan); stroke-width: 2.5; }
-.ot-foil-ring { fill: none; stroke: var(--tan); stroke-width: 2; }
-.ot-limb      { fill: none; stroke: var(--ot-fur); stroke-width: 21; stroke-linecap: round; }
-.ot-toes      { fill: none; stroke: var(--ot-fur-deep); stroke-width: 2; stroke-linecap: round; }
-.ot-whiskers  { fill: var(--ot-fur-deep); }
-.ot-whisker   { fill: none; stroke: var(--ot-fur-deep); stroke-width: 2; stroke-linecap: round; opacity: 0.7; }
-.ot-webs      { fill: none; stroke: var(--ot-fur); stroke-width: 2; stroke-linecap: round; }
-.ot-nose-shine { opacity: 0.5; }
-
-.ot-blush { fill: var(--clay); opacity: 0.3; transition: opacity var(--dur-lift) var(--ease-out); }
-
-.ot-brow {
-  fill: none;
-  stroke: var(--ot-fur-deep);
-  stroke-width: 5;
-  stroke-linecap: round;
-  transition: translate var(--dur-move) var(--ease-snap);
-}
-
-.ot-mouth { fill: none; stroke: var(--ink); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
-.ot-mouth--open { opacity: 0; }
-.ot-mouth--smile, .ot-mouth--open { transition: opacity var(--dur-micro) var(--ease-out); }
-
-/* Happy: cheering, performing, or pointed at. */
-.ot--cheer .ot-mouth--open,
-.ot[data-act] .ot-mouth--open,
-.ot-figure:hover .ot-mouth--open { opacity: 1; }
-.ot--cheer .ot-mouth--smile,
-.ot[data-act] .ot-mouth--smile,
-.ot-figure:hover .ot-mouth--smile { opacity: 0; }
-
-/* Eyes: a blink (Idle event) and a gaze that follows the pointer (Response). */
-.ot .ot-eye { transform-box: fill-box; transform-origin: center; transition: scale var(--dur-micro) var(--ease-press); }
-.ot[data-blink] .ot-eye { scale: 1 0.08; }
-.ot-pupil { translate: var(--lx) var(--ly); transition: translate var(--dur-move) var(--ease-out); }
-
-/* Ambient (listed): it breathes, its tail sways, its scarf flutters. */
-.ot-torso { transform-origin: 110px 248px; animation: ot-breathe var(--idle-beat) var(--ease-swing) infinite alternate; }
-.ot-tail { transform-origin: 146px 222px; animation: ot-sway var(--idle-float) var(--ease-swing) infinite alternate; }
-.ot-scarf-ends { transform-origin: 64px 146px; animation: ot-flutter calc(var(--idle-float) * 0.45) var(--ease-swing) infinite alternate; }
-
-@keyframes ot-breathe { from { scale: 1 1; } to { scale: 1.012 1.026; } }
-@keyframes ot-sway    { from { rotate: -5deg; } to { rotate: 7deg; } }
-@keyframes ot-flutter { from { rotate: -7deg; } to { rotate: 5deg; } }
-
-/* Response: pointing at it squashes it and warms its cheeks. */
-.ot-figure:hover { scale: 1.035 0.965; }
-.ot-figure:hover .ot-blush { opacity: 0.55; }
-.ot-figure:hover .ot-brow { translate: 0 -3px; }
-
-/* Arms pivot at the shoulder. */
-.ot-arm--l { transform-origin: 76px 150px; }
-.ot-arm--r { transform-origin: 144px 150px; }
-.ot--cheer .ot-arm--l { rotate: 125deg; }
-.ot--cheer .ot-arm--r { rotate: -125deg; }
-
-/* ── Acts (Stage accents) ────────────────────────────────────────────────── */
-
-.ot--hold[data-act='wave'] .ot-arm--r { animation: ot-wave calc(var(--dur-celebrate) * 2) var(--ease-swing); }
-/* The paw clears the cheek at -100…-126deg, so the whole wave is seen. */
-@keyframes ot-wave {
-  0%, 100% { rotate: 0deg; }
-  18% { rotate: -120deg; }
-  32% { rotate: -100deg; }
-  46% { rotate: -126deg; }
-  60% { rotate: -100deg; }
-  74% { rotate: -118deg; }
-}
-
-.ot--cheer[data-act='wave'] .ot-arm--l { animation: ot-cheer-l calc(var(--dur-celebrate) * 2) var(--ease-swing); }
-.ot--cheer[data-act='wave'] .ot-arm--r { animation: ot-cheer-r calc(var(--dur-celebrate) * 2) var(--ease-swing); }
-@keyframes ot-cheer-l { 0%, 100% { rotate: 125deg; } 25%, 75% { rotate: 108deg; } 50% { rotate: 134deg; } }
-@keyframes ot-cheer-r { 0%, 100% { rotate: -125deg; } 25%, 75% { rotate: -134deg; } 50% { rotate: -108deg; } }
-
-.ot-head { transform-origin: 110px 140px; }
-.ot[data-act='read'] .ot-head { animation: ot-read calc(var(--dur-celebrate) * 2) var(--ease-swing); }
-.ot[data-act='read'] .ot-pupil { translate: -1px 5px; }
-.ot[data-act='read'] .ot-book { animation: ot-book calc(var(--dur-celebrate) * 2) var(--ease-swing); }
-@keyframes ot-read { 0%, 100% { rotate: 0deg; } 22%, 78% { rotate: 7deg; } }
-@keyframes ot-book { 0%, 100% { translate: 0 0; } 22%, 78% { translate: 0 -6px; } }
-
-.ot[data-act='hop'] { transform-origin: 50% 100%; animation: ot-hop var(--dur-celebrate) var(--ease-swing); }
-@keyframes ot-hop {
-  0%   { translate: 0 0;     scale: 1 1; }
-  16%  { translate: 0 0;     scale: 1.07 0.92; }
-  46%  { translate: 0 -24px; scale: 0.96 1.05; }
-  72%  { translate: 0 0;     scale: 1.06 0.94; }
-  88%  { translate: 0 0;     scale: 0.99 1.01; }
-  100% { translate: 0 0;     scale: 1 1; }
-}
-
-/* The peeking otter rises from behind its edge the first time it is seen,
-   and now and then ducks back down and pops up again. */
-.ot--peek .ot-head { translate: 0 0; transition: translate var(--dur-celebrate) var(--ease-lift); }
-.ot--peek:not([data-seen]) .ot-head { translate: 0 96px; }
-.ot--peek .ot-paws { transition: opacity var(--dur-hover) var(--ease-out) var(--dur-open), translate var(--dur-reveal) var(--ease-lift) var(--dur-open); }
-.ot--peek:not([data-seen]) .ot-paws { opacity: 0; translate: 0 10px; }
-.ot--peek[data-act='duck'] .ot-head { animation: ot-duck calc(var(--dur-celebrate) * 1.5) var(--ease-swing); }
-@keyframes ot-duck { 0%, 100% { translate: 0 0; } 30%, 52% { translate: 0 92px; } 70% { translate: 0 -6px; } }
 
 /* ═══ MODULE STRIP ═════════════════════════════════════════════════════════ */
 
@@ -486,7 +342,7 @@
 .fr-peek {
   position: absolute;
   z-index: 2;
-  top: calc(150px * -140 / 220);
+  top: calc(150px * -156 / 240);
   right: 14%;
   width: 150px;
 }
@@ -656,3 +512,6 @@
   .os-drift, .ot *, .ot { animation: none !important; }
   .hh-cta-slot, .hh-cta-slot > .hh-cta { transition: none; }
 }
+
+/* The otter's contact shadow on the evergreen hill is the hill's own shade. */
+.hc-otter .ot-shadow { fill: var(--evergreen-deep); }

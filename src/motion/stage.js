@@ -230,8 +230,9 @@ function regionOf(node) {
   return node?.closest?.('[data-stage-region]')?.getAttribute('data-stage-region') ?? null
 }
 
-/** Something the reader opened is in front of the page. */
-function somethingOpen() {
+/** Something the reader opened is in front of the page. Exported for the
+    otter's companion, which holds a reaction until the page is uncovered. */
+export function somethingOpen() {
   return Boolean(document.querySelector('[aria-modal="true"], .pg-popover, .lm-overlay'))
 }
 

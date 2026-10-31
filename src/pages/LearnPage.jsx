@@ -138,6 +138,7 @@ function Course({ onGoHome, onGoAbout }) {
       </main>
 
       <RightSidebar
+        destination={activeNav}
         onNavigate={navigate}
         onViewAllQuests={() => setQuestPanelOpen(true)}
       />

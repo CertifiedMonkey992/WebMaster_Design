@@ -64,6 +64,10 @@ There are no level titles: progress is shown as level, XP, lessons and streak.
   values — `leagueConfig.js` holds every league, tournament and challenge
   rule. `src/data/concepts.js` maps each of the 193 gradable questions to
   the concept it tests; Practice and its tests depend on that map.
+- The mascot is `src/components/otter/` (revision 13): a rig, an engine
+  and an act library, used on the home page, in the app's right column and
+  inside lessons. `npm run dev` serves a lab for it at `/otter-lab.html`
+  (not a build input).
 - `server/` is the LunX server: `node:http`, `node:sqlite`, `node:crypto`,
   nothing else. It imports the app's pure modules (course content, step
   grading, configs) through `server/resolve.mjs`, so a rule changes in one

@@ -1,5 +1,47 @@
 # Visual System
 
+> **Revision 13 — the otter, redrawn as a character (2026-10-30).** The
+> revision 12 otter read as a generic classroom mascot: a ball head on a
+> bean body, round ears on top (a bear's), big white eyes with a pinpoint
+> pupil and no lids, a mouth that could only swap between two drawings,
+> and single-tube arms. It is redrawn as an otter with a face that can act.
+> The palette, the flat-fill no-outline style, the evergreen scarf and the
+> field guide are kept.
+>
+> - **Silhouette.** A broad, flat-topped head that flows into a thick neck;
+>   small ears set low on the sides; a long body; webbed hind feet; a thick
+>   rudder of a tail lying along the ground and curling up at the tip.
+> - **Face.** A pale mask over the muzzle and cheeks with a low peak at the
+>   bridge of the nose; **cream brow marks** above the eyes that work as
+>   eyebrows; a wide otter nose; puffed whisker pads with whisker dots.
+> - **Eyes.** A dark warm iris (`--ot-iris`) with a near-black pupil filling
+>   most of the eye, two catchlights that lag the gaze, fur-coloured lids
+>   with a dark lash line, and a lower lid that pushes the eye into a smile.
+>   The white shows mostly when it looks aside.
+> - **Mouth.** One path from four numbers (smile, open, width, skew): a
+>   frown, a smirk, an "o" and a laugh are the same drawing. The inside is
+>   `--ot-mouth`, a deep warm brown, not ink.
+> - **Arms.** Two bones each, so a paw can wave beside the head, rest on a
+>   hip, tap the chin or clasp the other paw at the chest — an otter's
+>   resting pose.
+> - **Palette additions** (scoped, read only by `.ot` artwork in
+>   `components/otter/`): `--ot-iris`, `--ot-mouth`, and `--ot-stone` /
+>   `--ot-stone-light` for the pebble it keeps (sea otters keep a favourite
+>   stone; some otters juggle pebbles).
+>
+> **Emotions** (`rig.js → EMOTIONS`), each carried by brows, lids, eyes,
+> mouth, ears, head and body together: neutral, happy, excited, curious,
+> confused, surprised, proud, thinking, sleepy, asleep, sad, determined,
+> mischievous, celebrating, sympathetic, relaxed. A mood is one of these at
+> about half strength.
+>
+> **Poses.** `hold` (the field guide in both paws — home hero), `cheer`
+> (paws free — closing scene, lesson complete), `perch` (sat on a card's
+> top edge, feet over the front — the app), `peek` (head and paws over an
+> edge — a product frame, a lesson's answer bar). It now appears in the
+> app: COMPONENT_RULES.md → Revision 13. Under 90px wide it drops its
+> whiskers. No glow, no cool hue, no outline.
+
 > **Revision 12 — the home page, rebuilt on a Duolingo-style structure
 > (2026-10-30).** The product owner asked for the landing page to follow the
 > layout, proportions and interaction quality of duolingo.com while keeping

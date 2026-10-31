@@ -15,7 +15,7 @@ import Reveal from '../../motion/Reveal'
 import SplitText from '../../motion/SplitText'
 import { GemIcon, HeartIcon, FlameIcon, BoltIcon, ShieldIcon } from '../progression/Icons'
 import { getLessonIcon } from '../learn/LessonIcons'
-import Otter from './Otter'
+import Otter from '../otter/Otter'
 import { Floater, ChapterTile } from './Scenery'
 
 /* The scene's objects: the economy the course pays in, and two of the
@@ -38,8 +38,7 @@ export default function HomeHero() {
       <div className="home-hero-inner">
         <div className="home-hero-art">
           <Reveal className="os-scene" variant="scale" stagger immediate delay={80} aria-hidden="true">
-            <span className="os-ground" />
-            <span className="os-otter"><Otter pose="hold" region="hero:otter" /></span>
+            <span className="os-otter"><Otter pose="hold" mood="happy" region="hero:otter" greet /></span>
             {OBJECTS.map((o) => (
               <Floater key={o.key} at={o.at} seed={o.seed} k={o.k} r={o.r}>{o.node}</Floater>
             ))}

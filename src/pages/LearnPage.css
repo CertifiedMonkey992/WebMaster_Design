@@ -1386,7 +1386,7 @@ html:has(.learn-app) body {
     padding: var(--sp-6);
   }
   .learn-right-sticky { position: static; flex-direction: row; flex-wrap: wrap; }
-  .progress-card, .quest-widget { flex: 1 1 17rem; }
+  .otc-perch, .quest-widget { flex: 1 1 17rem; }
   .rail-note { flex: 1 1 100%; }
 }
 

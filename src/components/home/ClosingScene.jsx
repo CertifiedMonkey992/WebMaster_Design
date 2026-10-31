@@ -14,7 +14,7 @@ import { useAuth } from '../../state/AuthContext'
 import Reveal from '../../motion/Reveal'
 import SplitText from '../../motion/SplitText'
 import { GemIcon, HeartIcon, FlameIcon, BoltIcon, ShieldIcon } from '../progression/Icons'
-import Otter from './Otter'
+import Otter from '../otter/Otter'
 import { Floater } from './Scenery'
 
 /* Lesson one's real length, read from the course. */
@@ -59,7 +59,7 @@ export default function ClosingScene() {
             <Floater key={o.key} className={o.inner ? 'hc-inner' : ''} at={o.at} seed={o.seed} k={o.k} r={o.r}>{o.node}</Floater>
           ))}
         </Reveal>
-        <span className="hc-otter"><Otter pose="cheer" region="closing:otter" /></span>
+        <span className="hc-otter"><Otter pose="cheer" mood="excited" moodWeight={0.4} region="closing:otter" /></span>
       </div>
     </section>
   )

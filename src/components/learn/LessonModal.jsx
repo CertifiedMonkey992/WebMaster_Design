@@ -58,6 +58,7 @@ import { DUR, LAG } from '../../motion/timing'
 import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
 import { burst, ring, shake } from '../../motion/burst'
+import { AnswerOtter, CompleteOtter } from '../otter/LessonOtters'
 
 /* When each reward tile has landed and its figure should start counting:
    the tile's CSS delay (470ms + i × --lag-finish) plus most of its rise. */
@@ -104,6 +105,8 @@ export default function LessonModal({ lessonId, onClose }) {
   const [tabIdx, setTabIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [stepPhase, setStepPhase] = useState('answering')
+  /* Right answers in a row, for the otter over the answer bar. */
+  const runRef = useRef(0)
   const [answer, setAnswer] = useState(EMPTY_ANSWER)
   const [draggedChip, setDraggedChip] = useState(null)
   const [unlockedTabs, setUnlockedTabs] = useState([0])
@@ -333,6 +336,7 @@ export default function LessonModal({ lessonId, onClose }) {
         : (ok ? 'correct' : 'reveal')
 
     setVerdicts((v) => ({ ...v, [stepKey]: { ok, graded: stepGraded, answer, phase, result } }))
+    runRef.current = phase === 'correct' ? runRef.current + 1 : 0
     setStepPhase(phase)
   }
 
@@ -561,11 +565,14 @@ export default function LessonModal({ lessonId, onClose }) {
       <div className={overlayCls} {...dialogProps}>
         <div className="lm-complete">
           <CloseButton onClick={requestClose} className="lm-close--abs" />
-          <div className="lm-stamp" ref={stampRef} aria-hidden="true">
-            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-              <path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" />
-            </svg>
+          <div className="lm-complete-hero">
+            <CompleteOtter perfect={perfect} replay={isReplay} />
+            <div className="lm-stamp" ref={stampRef} aria-hidden="true">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                <path className="ico-check" pathLength="1" d="M20 6 9 17 4 12" />
+              </svg>
+            </div>
           </div>
           <SplitText as="h2" className="lm-complete-title" immediate delay={260} stagger={45}>
             {isReplay ? 'Review complete' : `${kindLine} complete`}
@@ -726,6 +733,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
       {stepPhase === 'correct' && (
         <div className="lm-action lm-action--correct" key="correct">
+          <AnswerOtter phase="correct" run={runRef.current - 1} />
           <div className="lm-feedback">
             <span className="lm-fb-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -745,6 +753,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
       {stepPhase === 'reveal' && (
         <div className="lm-action lm-action--reveal" key="reveal">
+          <AnswerOtter phase="reveal" />
           <div className="lm-feedback">
             <span className="lm-fb-icon lm-fb-icon--reveal">
               <Icon name="info" size={20} strokeWidth={2.4} />
@@ -767,6 +776,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
       {stepPhase === 'wrong' && (
         <div className="lm-action lm-action--wrong" key="wrong">
+          <AnswerOtter phase="wrong" />
           <div className="lm-feedback">
             <span className="lm-fb-icon lm-fb-icon--wrong">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>

@@ -1,5 +1,42 @@
 # Component Rules
 
+> **Revision 13 — the otter in the product (2026-10-30).** Revision 12's
+> "never in the app" is withdrawn: the product owner asked for the mascot
+> to answer what the learner actually does. It stays decorative —
+> `aria-hidden`, never focusable, never the only place information appears
+> — and every reaction answers a real event. Three new placements:
+>
+> - **The companion** (`otter/OtterCompanion.jsx`). The `perch` otter sits
+>   on the top edge of the Your Progress card, right of centre (clear of
+>   the title and the XP tag), 100px wide (86px on phones), feet over the
+>   card's front. It takes each destination's temperament and makes a
+>   small gesture on arriving: Learn curious (a nod), Practice determined,
+>   Quests eager, Shop mischievous (paws rubbed), Profile relaxed (a
+>   stretch), Friends happy (a wave), Leagues determined (a raised paw). It
+>   answers the progression engine's events (`otter/reactions.js`): events
+>   that arrive together are gathered for 380ms and the most important one
+>   wins — a section finished (a backflip), a level or a badge (a
+>   celebration; curious, then surprised, then delighted), a streak
+>   milestone (a dance), a quest (a fist pump and a twirl), a claim (a
+>   clap), a lost streak or empty hearts (a sigh, then a determined nod), a
+>   lost heart (sympathy), not enough gems (a shrug), XP (a hop). While a
+>   lesson or dialog covers the page it holds the reaction and plays it the
+>   moment the page is uncovered; offscreen it waits for the card to scroll
+>   into view, and gives up after 90s. Hello once a session.
+> - **The answer otter** (`otter/LessonOtters.jsx → AnswerOtter`). A `peek`
+>   otter, 112px, its edge on the answer bar's top border above Continue.
+>   Right: a nod or a raised paw and a wink, building to a bounce and then
+>   a clap over a run of right answers. Wrong: never disappointment — a
+>   tilt, a soft look and a slow blink, then an encouraging nod and a
+>   raised paw. Reveal: it leans in, then nods. Intensity `quiet`; hidden
+>   under 640px, where the lesson needs the room.
+> - **The completion otter** (`CompleteOtter`). A `cheer` otter, 136px
+>   (108px on phones), above the title; the moss stamp (58px) is pressed
+>   beside its feet like a seal. A lesson finished: it leaps, twirls and
+>   claps; a perfect Check: a backflip; a review: a nod.
+>
+> This replaces *Mascot* below and the revision 12 Mascot entry.
+
 > **Revision 12 — the home page (2026-10-30).** The landing page now follows
 > duolingo.com's structure (VISUAL_SYSTEM.md → Revision 12). These entries
 > replace *Landing navbar*, *Links into the course*, *The field guide

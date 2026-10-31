@@ -883,3 +883,46 @@ kbd,
 @media (hover: none) {
   .lm-key, .lm-key-hint { display: none; }
 }
+
+/* ── The otter (COMPONENT_RULES.md → Revision 13) ──────────────────────────
+   Over the answer bar: a peeking otter whose edge line (156 of its 176
+   units) sits on the bar's top border, above the Continue button, where
+   the lesson column leaves the page empty. Phones keep the room for the
+   lesson. */
+.lm-otter {
+  --lmo-w: 112px;
+  position: absolute;
+  right: var(--sp-8);
+  bottom: calc(100% + 2px - var(--lmo-w) * 20 / 240);
+  width: var(--lmo-w);
+  line-height: 0;
+}
+
+/* The completion screen: the otter celebrates, the stamp is pressed beside
+   its feet like a seal. */
+.lm-complete-hero {
+  position: relative;
+  margin-bottom: var(--sp-4);
+}
+
+.lm-complete-otter {
+  display: block;
+  width: 136px;
+}
+
+.lm-complete-hero .lm-stamp {
+  position: absolute;
+  right: -34px;
+  bottom: 2px;
+  width: 58px;
+  height: 58px;
+  margin: 0;
+  border-width: 2.5px;
+}
+
+.lm-complete-hero .lm-stamp svg { width: 28px; height: 28px; }
+
+@media (max-width: 640px) {
+  .lm-otter { display: none; }
+  .lm-complete-otter { width: 108px; }
+}

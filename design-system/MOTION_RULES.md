@@ -1,5 +1,75 @@
 # Motion Rules
 
+> **Revision 13 — the otter is alive (2026-10-30).** The product owner asked
+> for the mascot to become a character with presence across the whole
+> product — breathing, thinking, reacting to what the learner actually does
+> — instead of a drawing with a few CSS loops. Revision 12's otter rows are
+> replaced by this block; everything else below still holds, with the
+> exceptions named at the end.
+>
+> **One engine.** `components/otter/engine.js` drives every otter on the
+> page from a single shared animation frame, and only while at least one
+> otter is on screen in a visible tab. Each otter is a rig
+> (`components/otter/rig.js`): brows, both lids, the mouth, the arms (two
+> bones each, solved to a paw target) and a six-joint tail are paths
+> rebuilt from a few numbers, so a face can sit anywhere between two
+> emotions. Layers, slowest first: **mood** (the page's temperament, an
+> emotion held at about half strength) → **emotion** (springs carry the
+> face from one to the next, so *curious → surprised → delighted* is one
+> continuous change) → **act** (choreography, `components/otter/acts.js`)
+> → **life** (breathing, blinks, saccades) → **follow-through** (head lag,
+> ears, scarf, tail).
+>
+> | Motion | Category | How |
+> |---|---|---|
+> | Breathing: the chest and shoulders rise, the head follows a beat later — never the whole figure scaling | Ambient (listed) | engine; breaths of 3.7–4.9s, never two alike, slower and deeper when sleepy |
+> | Tail sway, scarf flutter, head lag, ears that overshoot and settle | Ambient / follow-through (listed) | spring chains pushed by the body's motion |
+> | Blinks (single, double, half; slow when drowsy); saccades, micro-saccades, looking about; an ear flick; a sniff; a small shift of posture | Idle events (listed) | jittered timers in the engine; a big change of gaze sometimes carries a blink |
+> | Dozing after 45s (home) or 70s (app) with no input; asleep 11s later; the first sign of the reader wakes it with a start and a sheepish smile | Idle event | `idleFor()` |
+> | The eyes follow the pointer and the head turns after them; near it, it pays attention (ears up, idle acts wait); pointing at it, it brightens | Response | the shared frame, while the pointer moves |
+> | A click: a boop on the nose (cross-eyed), a tickle on the belly, otherwise one of the pose's answers, never the same twice; five clicks in 2.6s make it dizzy | Response | `CLICK_ACTS`; clicks faster than a reaction can start bounce it instead of replacing it |
+> | Idle acts: each pose's repertoire, with rare acts (a juggle, a backflip, a dance, peekaboo, a sneeze) weighted low | Stage accent `otter:<region>` | `usePerformer`; never within 2.5s of the otter's last act, never while it is watching the pointer, never while dozing |
+> | Hello: it notices the reader, then waves — once a session on the home page and once in the app | Report (arrival) | `sessionStorage` |
+> | Reactions to the learner's real events — XP, a level, a quest, a badge, a lost streak, a lost heart, a lesson finished, an answer checked | Report | `components/otter/reactions.js`; see COMPONENT_RULES.md → Revision 13 |
+>
+> **Animation principles, applied.** Every act has anticipation (a dip, a
+> squint, a breath in), overlap (eyes lead, head follows, body arrives
+> last), follow-through (done by the engine, not the act) and squash and
+> stretch about the feet — with the skull kept rigid, so the head never
+> goes rubbery. Every play varies its speed and size by 8–12%.
+>
+> **Exceptions to the rules below, and why.**
+> - *Per-frame JS.* The rig is the one per-frame loop outside the sims. It
+>   is never idle (it breathes), so "a loop that runs while nothing is
+>   changing" does not describe it; it stops offscreen, in a hidden tab and
+>   under reduced motion, and drops to half rate when only breathing and
+>   the tail are moving. Measured: 0.4–0.6ms of script per frame on a
+>   laptop, about 2ms at 4× CPU throttle. Attributes are written only when
+>   they change.
+> - *SVG-child budget.* The otter is one region's ambient object; its
+>   per-frame writes (about 25 attributes) are the drawing itself and
+>   replace revision 12's three CSS loops.
+> - *Overshoot.* Faces settle without visible overshoot (damping ratio
+>   about 0.9); only the follow-through parts — ears, tail, scarf — bounce.
+>   That is weight, not a spring on a Response.
+> - *Lessons.* "A lesson performs nothing" still holds: the otter over the
+>   answer bar runs at intensity `quiet` (breathing, blinks, eyes) and only
+>   answers the learner's verdict, a Report. It never registers with the
+>   Stage.
+> - *Durations.* Acts last 0.7–3.8s — performances, like the field guide's
+>   repertoire, not transitions.
+>
+> **Reduced motion.** The otter is drawn once, with its expression; an
+> event or a click still changes the expression (a boop still surprises
+> it), but nothing moves, nothing ticks and nothing registers with the
+> Stage.
+>
+> **The lab.** `npm run dev`, then `/otter-lab.html`: every pose, emotion,
+> act, mood, intensity and event reaction on one page. It is not a build
+> input and never reaches the published site. In development,
+> `window.__otters`, `window.__otterLog` and `window.__otterStats` expose
+> the live otters, what they played, and what their frames cost.
+
 > **Revision 12 — the home page's life (2026-10-30).** Everything below still
 > holds. The new home page adds these, all through `src/motion/`:
 >
