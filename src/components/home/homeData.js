@@ -6,7 +6,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { ALL_LESSONS, ITEM_KIND, PARTS, SECTIONS, TOTAL_LESSONS, TOTAL_SECTIONS } from '../../data/learnData'
-import { CHAPTER_INK, lessonsIn, minutesOf, pad } from '../guide/guideData'
+import { CHAPTER_INK } from '../guide/guideData'
 
 const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
   'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen']
@@ -21,19 +21,6 @@ export function inWords(n) {
 export const inkOf = (i) => `var(${CHAPTER_INK[i % CHAPTER_INK.length]})`
 
 const isLesson = (l) => (l.kind ?? ITEM_KIND.LESSON) === ITEM_KIND.LESSON
-
-export const MODULES = SECTIONS.map((s, i) => ({
-  id: s.id,
-  index: i,
-  number: pad(i + 1),
-  title: s.title,
-  subtitle: s.subtitle,
-  question: s.question,
-  lessons: lessonsIn(s),
-  minutes: minutesOf(s),
-  firstLesson: s.lessons[0].id,
-  part: s.part,
-}))
 
 export const LESSONS = SECTIONS.flatMap((s, i) => s.lessons.filter(isLesson).map((l) => ({
   id: l.id,

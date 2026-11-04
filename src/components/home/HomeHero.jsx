@@ -3,8 +3,8 @@
    ---------------------------------------------------------------------------
    COMPONENT_RULES.md → Revision 14 → Hero. At the left a pill, the headline
    (its verb flips between what AI does; its second line is underlined by
-   hand), one paragraph, a search over the course's lessons and modules, and
-   the two ways in. At the right the seven modules as a fanned deck of cards.
+   hand), one paragraph and the two ways in. At the right the field guide
+   (guide/FieldGuide.jsx): the course as a book, built from the course data.
 
    Each line arrives with its own text effect (MOTION_RULES.md → Revision 14
    → Text effects), in reading order. The otter is not here: it runs in
@@ -16,8 +16,7 @@ import { useAuth } from '../../state/AuthContext'
 import Reveal from '../../motion/Reveal'
 import TextFx, { Rotator, Scramble, Squiggle } from '../../motion/TextFx'
 import { Icon } from '../progression/Icons'
-import LessonFinder from './LessonFinder'
-import ModuleStack from './ModuleStack'
+import FieldGuide from '../guide/FieldGuide'
 import { TOTAL_LESSONS, TOTAL_SECTIONS, inWords } from './homeData'
 
 export default function HomeHero() {
@@ -53,11 +52,7 @@ export default function HomeHero() {
             {`${inWords(TOTAL_LESSONS)} short lessons in ${inWords(TOTAL_SECTIONS).toLowerCase()} modules. Train real models in your browser, look inside a neural network, and learn when to trust what AI tells you.`}
           </TextFx>
 
-          <Reveal variant="wipe" immediate delay={1500}>
-            <LessonFinder />
-          </Reveal>
-
-          <Reveal className="home-hero-actions hx-actions" variant="up" stagger immediate delay={1750}>
+          <Reveal className="home-hero-actions hx-actions" variant="up" stagger immediate delay={1500}>
             <PageLink page="learn" className="btn btn-primary btn-ledge hx-btn">
               {account ? 'Continue learning' : 'Get started — it’s free'}
             </PageLink>
@@ -70,7 +65,7 @@ export default function HomeHero() {
         </div>
 
         <div className="hx-art">
-          <ModuleStack />
+          <FieldGuide />
         </div>
       </div>
     </section>
