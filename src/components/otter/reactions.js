@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    reactions.js — WHAT THE OTTER DOES WHEN SOMETHING REAL HAPPENS
    ---------------------------------------------------------------------------
-   MOTION_RULES.md → Revision 13 → Reports. Every entry answers an event the
+   MOTION_RULES.md → Revisions 13 and 14 → Reports. Every entry answers an event the
    progression engine actually emitted (ProgressionContext → VISIBLE). The
    otter never celebrates something that did not happen.
 
@@ -14,10 +14,10 @@
 export const EVENT_REACTIONS = {
   SECTION_COMPLETE:      { acts: ['backflip', 'celebrate'], priority: 9 },
   LEVEL_UP:              { acts: ['celebrate'], priority: 8 },
-  ACHIEVEMENT_UNLOCKED:  { acts: ['unlock'], priority: 8 },
+  ACHIEVEMENT_UNLOCKED:  { acts: ['backflip'], priority: 8 },
   STREAK_MILESTONE:      { acts: ['dance', 'celebrate'], priority: 7 },
-  QUEST_COMPLETED:       { acts: ['questCheer'], priority: 6 },
-  TEAM_MISSION_COMPLETE: { acts: ['questCheer'], priority: 6 },
+  QUEST_COMPLETED:       { acts: ['toss', 'celebrate'], priority: 6 },
+  TEAM_MISSION_COMPLETE: { acts: ['toss', 'celebrate'], priority: 6 },
   PERFECT_LESSON:        { acts: ['pawUp'], feel: 'proud', priority: 6 },
   DAILY_GOAL_MET:        { acts: ['pawUp'], feel: 'proud', priority: 5 },
   STREAK_LOST:           { acts: ['regroup', 'sympathy'], priority: 5 },
@@ -48,7 +48,7 @@ export function strongest(events) {
    arriving there (COMPONENT_RULES.md → Revision 13 → The companion). */
 export const DESTINATIONS = {
   learn:    { mood: 'curious',     weight: 0.38, arrive: ['nod'] },
-  practice: { mood: 'determined',  weight: 0.32, arrive: ['rubPaws'] },
+  practice: { mood: 'determined',  weight: 0.32, arrive: ['grab'] },
   quests:   { mood: 'excited',     weight: 0.3,  arrive: ['rubPaws'] },
   shop:     { mood: 'mischievous', weight: 0.34, arrive: ['rubPaws'] },
   profile:  { mood: 'relaxed',     weight: 0.5,  arrive: ['stretch'] },

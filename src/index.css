@@ -148,9 +148,11 @@
   --moss:      #3F6B45;   /* success, progress fill, completed */
   --moss-tint: rgba(63, 107, 69, 0.10);
 
-  --ochre:      #C08A1E;  /* gems, XP, rewards — value earned */
-  --ochre-ink:  #7F5C11;
-  --ochre-tint: rgba(192, 138, 30, 0.13);
+  /* Leaf green since 2026-11-03 (no gold anywhere): lighter and yellower
+     than --moss, so a reward never reads as "correct". */
+  --ochre:      #5E8C4A;  /* gems, XP, rewards — value earned */
+  --ochre-ink:  #3F6630;
+  --ochre-tint: rgba(94, 140, 74, 0.14);
 
   --berry:      #A02B37;  /* hearts, errors, cost */
   --berry-ink:  #8A2230;
@@ -160,17 +162,17 @@
 
   /* Channels, for tinted borders at a specific alpha. */
   --moss-rgb:  63, 107, 69;
-  --ochre-rgb: 192, 138, 30;
+  --ochre-rgb: 94, 140, 74;
   --berry-rgb: 160, 43, 55;
 
   /* ── Light on the economy (MOTION_RULES.md revision 4 → Light) ─────────────
      Only for the specular parts of the economy icons and the bloom a Report
      opens behind them. Never a text, border, button or surface colour. All
      warm: red is the largest channel of every one. */
-  --gem-light:        #F6DE9A;
-  --gem-light-rgb:    246, 222, 154;
-  --ochre-bright:     #E2A631;
-  --ochre-bright-rgb: 226, 166, 49;
+  --gem-light:        #D6EBC2;
+  --gem-light-rgb:    214, 235, 194;
+  --ochre-bright:     #86B86A;
+  --ochre-bright-rgb: 134, 184, 106;
   --berry-bright:     #CC4450;
   --berry-bright-rgb: 204, 68, 80;
   --clay-bright:      #DE6C3A;
@@ -254,20 +256,19 @@
   --lg-diamond-light:  #E1F7FF;
   --lg-white:          #FFFFFF;
 
-  /* ── The otter (VISUAL_SYSTEM.md → Revisions 12 and 13) ──────────────────
-     LunX's mascot. A third named, scoped palette, read ONLY by `.ot`
-     artwork (components/otter/). All warm: an otter is a brown animal on a
-     paper page. Revision 13 adds the iris (a warm near-black, so the eye
-     reads as an animal's and not a button) and the pebble it keeps. */
-  --ot-fur:        #8E5B3B;
-  --ot-fur-deep:   #6C4128;
-  --ot-fur-light:  #A6714D;
-  --ot-cream:      #F4E2C6;
-  --ot-cream-deep: #E0C39C;
-  --ot-iris:       #3B2416;
-  --ot-mouth:      #4E2117;
-  --ot-stone:      #9A8D7C;
-  --ot-stone-light: #C2B6A4;
+  /* ── The otter (VISUAL_SYSTEM.md → Revision 14) ─────────────────────────
+     LunX's mascot. A named, scoped palette, read ONLY by `.ot` artwork
+     (components/otter/). Revision 14 redraws it as a game character: a
+     heavy dark-brown outline, a dark brown body, a pale tan head with a
+     cream muzzle. All warm. */
+  --ot-line:       #2E1D12;   /* outline, eyes, nose */
+  --ot-fur:        #8A5634;   /* body, arms */
+  --ot-fur-deep:   #5F3A22;   /* legs, paws, ears, tail */
+  --ot-head:       #C99E70;   /* the head, paler than the body */
+  --ot-belly:      #A8774F;
+  --ot-cream:      #EED8B6;   /* muzzle */
+  --ot-mouth:      #5A1F1A;
+  --ot-tongue:     #D9675F;
 
   /* ── The home page (revision 12) ────────────────────────────────────────── */
   --fs-feature: clamp(2.25rem, 3.4vw, 3rem);  /* feature-row + closing headings */

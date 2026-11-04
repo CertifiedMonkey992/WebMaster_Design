@@ -1,8 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    OtterCompanion.jsx — THE OTTER IN THE APP
    ---------------------------------------------------------------------------
-   COMPONENT_RULES.md → Revision 13 → The companion. The otter sits on the top
-   edge of the Your Progress card, feet over the side, and:
+   COMPONENT_RULES.md → Revision 14 → The companion. The otter roams the top
+   edge of the Your Progress card (an OtterLane), hides behind it, plays
+   with the field guide, and:
 
      · takes the temperament of the destination it is in, and makes a small
        gesture on arriving there (reactions.js → DESTINATIONS)
@@ -18,7 +19,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useRef } from 'react'
-import Otter from './Otter'
+import OtterLane from './OtterLane'
 import { useRewards } from '../../state/ProgressionContext'
 import { somethingOpen } from '../../motion/stage'
 import { DESTINATIONS, strongest } from './reactions'
@@ -102,16 +103,13 @@ export default function OtterCompanion({ destination = 'learn' }) {
   }, [])
 
   return (
-    <div className="otc" aria-hidden="true">
-      <Otter
-        ref={otter}
-        pose="perch"
-        mood={here.mood}
-        moodWeight={here.weight}
-        intensity="calm"
-        region="app:otter"
-        cooldown={16000}
-      />
-    </div>
+    <OtterLane
+      ref={otter}
+      variant="card"
+      pose="stand"
+      mood={here.mood}
+      intensity="calm"
+      region="app:otter"
+    />
   )
 }

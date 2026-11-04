@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   text.css — THE TEXT EFFECTS
+   ---------------------------------------------------------------------------
+   MOTION_RULES.md → Revision 14 → Text effects. Read by TextFx.jsx only.
+   Entrances are animations with `backwards` fill, so each unit hands its
+   transform back when it lands; every duration is a token.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tx { --tx-stagger: 28ms; --tx-delay: 0ms; }
+.tx-w { display: inline-block; white-space: nowrap; }
+.tx-u { display: inline-block; }
+
+.tx:not(.is-in) .tx-u { opacity: 0; }
+
+.tx.is-in .tx-u {
+  animation-duration: var(--dur-celebrate);
+  animation-timing-function: var(--ease-snap);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--tx-delay) + var(--i, 0) * var(--tx-stagger));
+}
+
+.tx--tumble.is-in .tx-u { animation-name: tx-tumble; transform-origin: 50% 80%; }
+.tx--stomp.is-in  .tx-u { animation-name: tx-stomp; animation-timing-function: var(--ease-out); }
+.tx--flip.is-in   .tx-u { animation-name: tx-flip; transform-origin: 50% 0; }
+.tx--bounce.is-in .tx-u { animation-name: tx-bounce; animation-timing-function: var(--ease-out); transform-origin: 50% 100%; }
+.tx--pop.is-in    .tx-u { animation-name: tx-pop; animation-duration: var(--dur-reveal); animation-timing-function: var(--ease-spring); }
+.tx--blur.is-in   .tx-u { animation-name: tx-blur; animation-timing-function: var(--ease-out); }
+.tx--swing.is-in  .tx-u { animation-name: tx-swing; transform-origin: 0 50%; }
+.tx--skew.is-in   .tx-u { animation-name: tx-skew; }
+.tx--stomp { --tx-stagger: 110ms; }
+.tx--swing, .tx--skew { --tx-stagger: 70ms; }
+
+@keyframes tx-tumble {
+  0%   { opacity: 0; transform: translateY(-0.7em) rotate(-120deg) scale(0.3); }
+  55%  { opacity: 1; transform: translateY(0.05em) rotate(12deg) scale(1.08); }
+  78%  { transform: rotate(-4deg); }
+}
+@keyframes tx-stomp {
+  0%   { opacity: 0; transform: scale(2.8); }
+  45%  { opacity: 1; transform: scale(0.9); }
+  70%  { transform: scale(1.05); }
+}
+@keyframes tx-flip {
+  0%   { opacity: 0; transform: perspective(500px) rotateX(-100deg); }
+  60%  { opacity: 1; transform: perspective(500px) rotateX(18deg); }
+}
+@keyframes tx-bounce {
+  0%   { opacity: 0; transform: translateY(-1.1em); }
+  40%  { opacity: 1; transform: translateY(0) scale(1.18, 0.82); }
+  60%  { transform: translateY(-0.28em) scale(0.95, 1.05); }
+  80%  { transform: translateY(0) scale(1.04, 0.96); }
+}
+@keyframes tx-pop {
+  0%   { opacity: 0; transform: scale(0); }
+  70%  { opacity: 1; transform: scale(1.22); }
+}
+@keyframes tx-blur {
+  0%   { opacity: 0; filter: blur(12px); transform: scale(1.4); }
+  70%  { opacity: 1; filter: blur(0); }
+}
+@keyframes tx-swing {
+  0%   { opacity: 0; transform: perspective(600px) rotateY(85deg); }
+  65%  { opacity: 1; transform: perspective(600px) rotateY(-12deg); }
+}
+@keyframes tx-skew {
+  0%   { opacity: 0; transform: translateX(-0.8em) skewX(-28deg); }
+  60%  { opacity: 1; transform: translateX(0.08em) skewX(8deg); }
+}
+
+/* ── Block: a bar wipes across and leaves the text behind ─────────────── */
+
+.tx--block .tx-show { position: relative; display: inline-block; }
+.tx--block .tx-show::after {
+  content: '';
+  position: absolute;
+  inset: 0.08em -0.12em;
+  background: var(--tx-bar, var(--clay));
+  border-radius: var(--r-xs);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+.tx--block:not(.is-in) .tx-block-in { opacity: 0; }
+.tx--block.is-in .tx-show::after { animation: tx-bar var(--dur-turn) var(--ease-swing) var(--tx-delay) both; }
+.tx--block.is-in .tx-block-in { animation: tx-show-at var(--dur-turn) steps(1, end) var(--tx-delay) both; }
+
+@keyframes tx-bar {
+  0%   { transform: scaleX(0); transform-origin: 0 50%; }
+  48%  { transform: scaleX(1); transform-origin: 0 50%; }
+  52%  { transform: scaleX(1); transform-origin: 100% 50%; }
+  100% { transform: scaleX(0); transform-origin: 100% 50%; }
+}
+@keyframes tx-show-at {
+  0%   { opacity: 0; }
+  50%  { opacity: 1; }
+}
+
+/* ── Typewriter ───────────────────────────────────────────────────────── */
+
+.tx-ghost { visibility: hidden; }
+.tx-caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 0.95em;
+  margin: 0 0.04em -0.1em;
+  background: var(--clay);
+  border-radius: var(--r-xs);
+  animation: tx-caret var(--dur-celebrate) steps(1, end) infinite;
+}
+/* The caret blinks three more times once the line is typed, then goes. */
+.tx-type.is-done .tx-caret { animation-iteration-count: 4; animation-fill-mode: forwards; }
+
+@keyframes tx-caret {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ── Scramble ─────────────────────────────────────────────────────────── */
+
+.tx-scramble { font-variant-numeric: tabular-nums; white-space: pre; }
+.tx-scramble:not(.is-in) > [aria-hidden] { opacity: 0; }
+
+/* ── Rotator: the words share one cell, so the line never reflows ─────── */
+
+.tx-rot { display: inline-grid; vertical-align: bottom; overflow: hidden; padding: 0 0.06em 0.12em; margin: 0 -0.06em -0.12em; }
+.tx-rot-w {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(100%) rotateX(-70deg);
+  transform-origin: 50% 0;
+}
+.tx-rot-w.is-on { opacity: 1; transform: none; transition: transform var(--dur-reveal) var(--ease-spring), opacity var(--dur-hover) var(--ease-out); }
+.tx-rot-w.is-off {
+  transform: translateY(-100%) rotateX(70deg);
+  transform-origin: 50% 100%;
+  transition: transform var(--dur-open) var(--ease-in), opacity var(--dur-open) var(--ease-in);
+}
+
+/* ── Marker and squiggle ──────────────────────────────────────────────── */
+
+.tx-marker {
+  --tx-ink: var(--clay-tint);
+  background-image: linear-gradient(var(--tx-ink), var(--tx-ink));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 0% 42%;
+  transition: background-size var(--dur-turn) var(--ease-swing) var(--tx-delay);
+  border-radius: var(--r-xs);
+}
+.tx-marker--moss  { --tx-ink: var(--moss-tint); }
+.tx-marker--ochre { --tx-ink: var(--ochre-tint); }
+.tx-marker--evergreen { --tx-ink: var(--evergreen-tint); }
+.tx-marker.is-in { background-size: 100% 42%; }
+
+.tx-squiggle { position: relative; display: inline-block; white-space: nowrap; }
+.tx-squiggle-line {
+  position: absolute;
+  left: -2%;
+  bottom: -0.16em;
+  width: 104%;
+  height: 0.32em;
+  overflow: visible;
+}
+.tx-squiggle-line path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.tx-squiggle.is-in .tx-squiggle-line path {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--dur-turn) var(--ease-swing) var(--tx-delay);
+}
+
+/* ── RollText: letters roll over to a copy of themselves on hover ─────── */
+
+.tx-roll { display: inline-block; overflow: hidden; vertical-align: bottom; line-height: 1.25; }
+.tx-roll-row { display: inline-flex; }
+.tx-roll-c {
+  position: relative;
+  display: inline-block;
+  transition: transform var(--dur-open) var(--ease-snap);
+  transition-delay: calc(var(--i) * var(--stagger) / 2);
+}
+.tx-roll-c::after {
+  content: attr(data-ch);
+  position: absolute;
+  left: 0;
+  top: 100%;
+}
+:is(a, button):hover .tx-roll-c,
+:is(a, button):focus-visible .tx-roll-c { transform: translateY(-100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tx .tx-u, .tx-block-in { opacity: 1 !important; animation: none !important; }
+  .tx--block .tx-show::after { display: none; }
+  .tx-caret { display: none; }
+  .tx-rot-w, .tx-rot-w.is-off { transition: none; }
+  .tx-marker { transition: none; }
+  .tx-squiggle-line path { stroke-dashoffset: 0; transition: none; }
+  .tx-roll-c { transition: none; }
+  :is(a, button):hover .tx-roll-c { transform: none; }
+}

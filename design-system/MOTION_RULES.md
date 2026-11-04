@@ -1,5 +1,47 @@
 # Motion Rules
 
+> **Revision 14 — a playful landing page and a game-character otter
+> (2026-11-04).** The product owner asked for the landing page to carry as
+> many text animations and transitions as it can — "like a deck editor's
+> transitions and effects" — and for the otter to move like a game
+> character at the side of the screen. Revision 13's otter engine is
+> replaced; the rest of this document still holds, with these additions.
+>
+> **Text effects** (`src/motion/TextFx.jsx`, `text.css`). Every heading and
+> lead on the landing page arrives with its own named effect, in reading
+> order: `tumble`, `stomp`, `flip`, `bounce`, `pop`, `blur`, `swing`,
+> `skew`, `block` (a bar wipes across and leaves the text), `Typewriter`
+> (with a caret that blinks out), `Scramble` (decoded from noise, again on
+> hover), `Rotator` (one word flips to the next on its Stage turn),
+> `Marker` (a highlighter stroke), `Squiggle` (a hand-drawn underline) and
+> `RollText` (link letters roll over on hover). Each keeps its text for
+> screen readers and renders already arrived under reduced motion. They
+> stay on the landing page; the app keeps revision 13's restraint.
+>
+> **Section transitions** (`Reveal` variants in `motion.css`): `curtain`,
+> `iris`, `wipe`, `zoom`, `flip`, `deal`, `drop`, `swing`, `skew`. Each is a
+> Reveal — once, on first sight.
+>
+> **The otter** (`components/otter/engine.js`, `acts.js`). Acts are data —
+> keyframe tracks per part, a face timeline, the book's state — played as
+> Web Animations. Ambient: a breath and a blink, only on screen. The move
+> set: hop, bounce, nod, notice, peer, lookAround, sniff, boop, giggle,
+> sympathy, shrug, regroup, rubPaws, scratch, stretch, point, wave, pawUp,
+> clap, celebrate, backflip, dance, dizzy, duck (hides below its edge and
+> peeks back), and the field-guide acts grab, stash, toss, spinBook, read
+> and bonk (the book lands on its head). A run cycle plays while a lane
+> moves it.
+>
+> **Lanes** (`OtterLane.jsx`). The landing page's otter lives on the bottom
+> edge of the screen: it runs in on load, runs to each section's side as
+> the reader reaches it and does that section's act, ducks out of sight on
+> a hard scroll and peeks back, notices an approaching pointer and
+> sometimes hides from it. In the app it roams the top edge of the Your
+> Progress card and answers real events (reactions.js, unchanged in
+> spirit). Its own turns — a dash off one edge and back from the other, a
+> trip across, hide-and-seek, an act — go through the Stage.
+
+
 > **Revision 13 — the otter is alive (2026-10-30).** The product owner asked
 > for the mascot to become a character with presence across the whole
 > product — breathing, thinking, reacting to what the learner actually does

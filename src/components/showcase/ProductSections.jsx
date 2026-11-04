@@ -157,7 +157,7 @@ function Section({ id, heading, children, frame: Frame, flip = false, peek = fal
           <Reveal stagger delay={220}>{children}</Reveal>
         </div>
         <div className="sc-frame fr-frame" ref={setFrameNode} style={{ '--side': flip ? -1 : 1 }}>
-          {peek && <span className="fr-peek" aria-hidden="true"><Otter pose="peek" mood="curious" moodWeight={0.45} region={`${id}:otter`} /></span>}
+          {peek && <span className="fr-peek" aria-hidden="true"><Otter pose="peek" mood="mischievous" region={`${id}:otter`} /></span>}
           {near && <Suspense fallback={null}><Frame /></Suspense>}
         </div>
       </div>
@@ -184,7 +184,7 @@ function LearnSection() {
 
 function StreakSection() {
   return (
-    <Section id="streak" heading="Keep your streak." flip peek frame={StreakFrame}>
+    <Section id="streak" heading="Keep your streak." flip frame={StreakFrame}>
       <p className="home-feature-body">
         A day counts once you finish a lesson or a practice session — opening
         LunX doesn’t. Milestones from {STREAK.MILESTONES[0]} to {STREAK.MILESTONES[STREAK.MILESTONES.length - 1]} days

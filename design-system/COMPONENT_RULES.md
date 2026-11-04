@@ -1,5 +1,32 @@
 # Component Rules
 
+> **Revision 14 — the landing page in a community-hub format (2026-11-04).**
+> The product owner asked for the landing page to copy the *format* of a
+> reference site (Roots & Routes: Bothell) in LunX's own palette, type and
+> content. From the top: a sticky header (wordmark with a small uppercase
+> line, the page's sections centred, Sign in and Get started at the right);
+> a hero with a pill, the headline, one lead paragraph, a real search over
+> the course's lessons and modules with a Lessons/Modules toggle, the ways
+> in, and the seven modules as a fanned 3D deck of cards; a tinted band
+> with wavy edges holding the three Parts and the Case Files/capstone as
+> four cards; a heading row ("The real app, running.") with its link at the
+> right, over the product frames; every lesson in two drifting rows of
+> cards; a framed start card; the evergreen footer under a clay rule. Every
+> title and number is read from the course data (`home/homeData.js`). The
+> reference's testimonials are **not** copied: the drifting rows carry the
+> syllabus, never invented quotes. Revision 12's module strip, course map
+> and closing scene are removed. The deck's cards are the page's one
+> resting shadow (`--shadow-float`, the front card `--shadow-lift`): they
+> are a stack of objects in depth, and without it they read as one slab.
+>
+> **The otter is never the hero.** It is a small character (78px; 58px on a
+> phone) on the bottom edge of the screen, and one otter is on screen at a
+> time: the streak frame no longer has a peeking otter. In the app the
+> companion roams the Your Progress card's top edge (`OtterLane` card
+> variant); lessons keep the peeking otter over the answer bar and the
+> standing otter on the completion screen.
+
+
 > **Revision 13 — the otter in the product (2026-10-30).** Revision 12's
 > "never in the app" is withdrawn: the product owner asked for the mascot
 > to answer what the learner actually does. It stays decorative —

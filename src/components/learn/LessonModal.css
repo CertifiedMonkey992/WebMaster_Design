@@ -884,17 +884,16 @@ kbd,
   .lm-key, .lm-key-hint { display: none; }
 }
 
-/* ── The otter (COMPONENT_RULES.md → Revision 13) ──────────────────────────
-   Over the answer bar: a peeking otter whose edge line (156 of its 176
-   units) sits on the bar's top border, above the Continue button, where
+/* ── The otter (COMPONENT_RULES.md → Revision 14) ──────────────────────────
+   Over the answer bar: a peeking otter whose edge — the bottom of its
+   drawing — sits on the bar's top border, above the Continue button, where
    the lesson column leaves the page empty. Phones keep the room for the
    lesson. */
 .lm-otter {
-  --lmo-w: 112px;
   position: absolute;
   right: var(--sp-8);
-  bottom: calc(100% + 2px - var(--lmo-w) * 20 / 240);
-  width: var(--lmo-w);
+  bottom: calc(100% - 1px);
+  width: 100px;
   line-height: 0;
 }
 
@@ -907,7 +906,7 @@ kbd,
 
 .lm-complete-otter {
   display: block;
-  width: 136px;
+  width: 104px;
 }
 
 .lm-complete-hero .lm-stamp {
@@ -924,5 +923,5 @@ kbd,
 
 @media (max-width: 640px) {
   .lm-otter { display: none; }
-  .lm-complete-otter { width: 108px; }
+  .lm-complete-otter { width: 88px; }
 }

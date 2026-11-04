@@ -71,6 +71,30 @@
 .rv--scale.is-in:not(.rv--stagger), .rv--scale.rv--stagger.is-in > .rv-item { animation-name: rv-scale; }
 .rv--tilt.is-in:not(.rv--stagger),  .rv--tilt.rv--stagger.is-in > .rv-item  { animation-name: rv-tilt; animation-duration: var(--dur-celebrate); }
 
+/* Revision 14 — the landing page's transitions (MOTION_RULES.md → Revision 14
+   → Section transitions). A section or card arrives the way a slide does in
+   a deck editor; each is still a Reveal, once, on first sight. */
+.rv--curtain.is-in:not(.rv--stagger), .rv--curtain.rv--stagger.is-in > .rv-item { animation-name: rv-curtain; animation-duration: var(--dur-turn); animation-timing-function: var(--ease-swing); }
+.rv--iris.is-in:not(.rv--stagger),    .rv--iris.rv--stagger.is-in > .rv-item    { animation-name: rv-iris; animation-duration: var(--dur-turn); animation-timing-function: var(--ease-swing); }
+.rv--wipe.is-in:not(.rv--stagger),    .rv--wipe.rv--stagger.is-in > .rv-item    { animation-name: rv-wipe; animation-duration: var(--dur-turn); animation-timing-function: var(--ease-swing); }
+.rv--zoom.is-in:not(.rv--stagger),    .rv--zoom.rv--stagger.is-in > .rv-item    { animation-name: rv-zoom; animation-duration: var(--dur-celebrate); }
+.rv--flip.is-in:not(.rv--stagger),    .rv--flip.rv--stagger.is-in > .rv-item    { animation-name: rv-flip; animation-duration: var(--dur-celebrate); transform-origin: 50% 100%; }
+.rv--deal.is-in:not(.rv--stagger),    .rv--deal.rv--stagger.is-in > .rv-item    { animation-name: rv-deal; animation-duration: var(--dur-celebrate); animation-timing-function: var(--ease-lift); }
+.rv--drop.is-in:not(.rv--stagger),    .rv--drop.rv--stagger.is-in > .rv-item    { animation-name: rv-drop; animation-duration: var(--dur-celebrate); animation-timing-function: var(--ease-out); }
+.rv--swing.is-in:not(.rv--stagger),   .rv--swing.rv--stagger.is-in > .rv-item   { animation-name: rv-swing; animation-duration: var(--dur-celebrate); transform-origin: 50% 0; }
+.rv--skew.is-in:not(.rv--stagger),    .rv--skew.rv--stagger.is-in > .rv-item    { animation-name: rv-skew; }
+.rv--deal.rv--stagger.is-in > .rv-item, .rv--flip.rv--stagger.is-in > .rv-item { animation-delay: calc(var(--rv-delay, 0ms) + var(--i, 0) * var(--stagger) * 2.5); }
+
+@keyframes rv-curtain { from { clip-path: inset(100% 0 0 0 round var(--r-lg)); transform: translateY(30px); } }
+@keyframes rv-iris    { from { clip-path: circle(0% at 50% 60%); } to { clip-path: circle(150% at 50% 60%); } }
+@keyframes rv-wipe    { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes rv-zoom    { from { opacity: 0; transform: scale(1.18); filter: blur(6px); } }
+@keyframes rv-flip    { from { opacity: 0; transform: perspective(900px) rotateX(70deg); } 60% { opacity: 1; transform: perspective(900px) rotateX(-8deg); } }
+@keyframes rv-deal    { from { opacity: 0; transform: translate(-60px, 90px) rotate(-14deg) scale(0.85); } }
+@keyframes rv-drop    { 0% { opacity: 0; transform: translateY(-60px); } 50% { opacity: 1; transform: translateY(0); } 70% { transform: translateY(-12px); } 85% { transform: translateY(0); } }
+@keyframes rv-swing   { from { opacity: 0; transform: perspective(700px) rotateX(-80deg); } 60% { opacity: 1; transform: perspective(700px) rotateX(12deg); } }
+@keyframes rv-skew    { from { opacity: 0; transform: translateX(-50px) skewX(-14deg); } }
+
 @keyframes rv-up    { from { opacity: 0; transform: translateY(18px); } }
 @keyframes rv-fade  { from { opacity: 0; } }
 @keyframes rv-left  { from { opacity: 0; transform: translateX(-22px); } }

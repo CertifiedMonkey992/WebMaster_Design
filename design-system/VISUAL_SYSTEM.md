@@ -1,5 +1,37 @@
 # Visual System
 
+> **Revision 14 — the otter redrawn as a game character (2026-11-04).** The
+> product owner found the revision 13 otter too gentle and asked for one
+> like the attached reference: a pet with attitude, not a nerdy or cute
+> mascot. Redrawn upright with a heavy warm outline (`--ot-line`), a dark
+> brown body (`--ot-fur`), darker legs, paws, ears and tail
+> (`--ot-fur-deep`), a paler tan head (`--ot-head`) with scruffy cheeks and
+> crown, a cream muzzle, a big dark nose, round black eyes with two
+> glints, and a flat paddle tail. No scarf. Its prop is the field guide.
+> The face is a set of swappable eye shapes (open, wide, happy, shut, smug,
+> dizzy) and mouth shapes (smile, grin, o, flat, frown, smirk). The `--ot-*`
+> palette is replaced; the stone and iris tokens are gone.
+
+
+> **Amendment — no gold (2026-11-03).** The product owner asked for gold to
+> be removed everywhere: it read as out of place beside evergreen and clay.
+> The reward family keeps its token names but is retuned to a **leaf green**,
+> so gems, XP and rewards sit inside the green scheme:
+>
+> | Token | Was | Now |
+> |---|---|---|
+> | `--ochre` | `#C08A1E` | `#5E8C4A` |
+> | `--ochre-ink` | `#7F5C11` | `#3F6630` (5.9:1 on paper) |
+> | `--ochre-tint` | gold at 13% | `rgba(94, 140, 74, 0.14)` |
+> | `--ochre-bright` | `#E2A631` | `#86B86A` |
+> | `--gem-light` | `#F6DE9A` | `#D6EBC2` |
+>
+> Leaf green is lighter and yellower than `--moss` (success) and never
+> replaces it. Hand-drawn shop art follows the same mapping. Two scoped
+> palettes keep their golds because the gold is the object: the Gold league
+> badge (`--lg-gold-*`) and the Quests nav icon drawn to the owner's
+> reference (`--ni-yellow-*`).
+
 > **Revision 13 — the otter, redrawn as a character (2026-10-30).** The
 > revision 12 otter read as a generic classroom mascot: a ball head on a
 > bean body, round ears on top (a bear's), big white eyes with a pinpoint

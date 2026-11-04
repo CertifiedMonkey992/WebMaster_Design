@@ -1,24 +1,36 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    HomeHeader.jsx — THE HOME PAGE'S TOP EDGE
    ---------------------------------------------------------------------------
-   COMPONENT_RULES.md → Revision 12 → Home header.
-
-   Fixed, 70px, content in the page's 988px column. At the top of the page it
-   is quiet — the wordmark, About, and the account control — because the
-   hero's two buttons are right below it. Once those buttons have scrolled
-   away, a rule appears under the bar and a small ledge button slides in at
-   the right: the way into the course never leaves the screen.
+   COMPONENT_RULES.md → Revision 14 → Home header. Sticky, 70px: the wordmark
+   and its line at the left, the page's sections in the middle (each label
+   rolls over to a copy of itself on hover), and the account at the right —
+   Sign in and Get started, or the learner's name and Continue. A rule
+   appears under it once the hero's buttons have scrolled away.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect, useState } from 'react'
 import { PageLink } from '../../nav'
 import { useAuth } from '../../state/AuthContext'
+import { RollText } from '../../motion/TextFx'
+
+const SECTIONS = [
+  { id: 'parts', label: 'Course' },
+  { id: 'inside', label: 'Inside' },
+  { id: 'lessons', label: 'Lessons' },
+]
+
+export const jumpTo = (id) => (event) => {
+  const el = document.getElementById(id)
+  if (!el) return
+  event.preventDefault()
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  el.focus?.({ preventScroll: true })
+}
 
 export default function HomeHeader({ watch = '.home-hero-actions' }) {
   const { account, displayName } = useAuth()
   const [past, setPast] = useState(false)
 
-  /* "Past" once the hero's buttons are above the bar. */
   useEffect(() => {
     const target = document.querySelector(watch)
     if (!target || typeof IntersectionObserver === 'undefined') return undefined
@@ -39,38 +51,44 @@ export default function HomeHeader({ watch = '.home-hero-actions' }) {
           <span className="hh-logo-mark" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 14 14"><path d="M2 2h2.5v8H10v2H2V2Z" /></svg>
           </span>
-          <span className="hh-logo-text" aria-hidden="true">
-            {['L', 'u', 'n', 'X'].map((ch, i) => (
-              <span key={i} className="wm-letter" style={{ '--i': i }}>{ch}</span>
-            ))}
+          <span className="hh-logo-words" aria-hidden="true">
+            <span className="hh-logo-text">
+              {['L', 'u', 'n', 'X'].map((ch, i) => (
+                <span key={i} className="wm-letter" style={{ '--i': i }}>{ch}</span>
+              ))}
+            </span>
+            <span className="hh-logo-sub">Field guide to AI</span>
           </span>
         </PageLink>
 
+        <ul className="hh-nav">
+          {SECTIONS.map((s) => (
+            <li key={s.id}>
+              <a className="hh-link" href={`#${s.id}`} onClick={jumpTo(s.id)}><RollText>{s.label}</RollText></a>
+            </li>
+          ))}
+          <li><PageLink page="about" className="hh-link"><RollText>About</RollText></PageLink></li>
+        </ul>
+
         <div className="hh-actions">
-          <PageLink page="about" className="hh-quiet">About</PageLink>
           {account ? (
-            <PageLink
-              page="learn"
-              className={`nav-profile hh-profile${account.role === 'judge' ? ' is-judge' : ''}`}
-              aria-label={`Signed in as ${displayName}. Open the course.`}
-            >
-              <span className="nav-profile-mark" aria-hidden="true">{initial || '·'}</span>
-              <span className="nav-profile-name">{displayName}</span>
-            </PageLink>
+            <>
+              <PageLink
+                page="learn"
+                className={`nav-profile hh-profile${account.role === 'judge' ? ' is-judge' : ''}`}
+                aria-label={`Signed in as ${displayName}. Open the course.`}
+              >
+                <span className="nav-profile-mark" aria-hidden="true">{initial || '·'}</span>
+                <span className="nav-profile-name">{displayName}</span>
+              </PageLink>
+              <PageLink page="learn" className="btn btn-primary hh-btn">Continue</PageLink>
+            </>
           ) : (
-            <PageLink page="signin" section="signin" className="hh-quiet">Sign in</PageLink>
+            <>
+              <PageLink page="signin" section="signin" className="btn btn-outline hh-btn">Sign in</PageLink>
+              <PageLink page="learn" className="btn btn-primary hh-btn">Get started</PageLink>
+            </>
           )}
-          {/* The slot opens to the button's width as it arrives. */}
-          <span className="hh-cta-slot">
-            <PageLink
-              page="learn"
-              className="btn btn-primary btn-ledge btn-sm hh-cta"
-              tabIndex={past ? undefined : -1}
-              aria-hidden={past ? undefined : 'true'}
-            >
-              {account ? 'Continue' : 'Get started'}
-            </PageLink>
-          </span>
         </div>
       </nav>
     </header>

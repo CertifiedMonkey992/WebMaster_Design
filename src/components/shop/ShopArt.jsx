@@ -158,7 +158,7 @@ function StreakShield({ uid }) {
           <path d={FLAME_PATH} fill={`url(#${uid}-flame)`} />
           <path
             d="M52 62c1 7-2 11-6 15-3 3-6 7-6 12 0 8 7 14 15 14s16-6 16-14c0-7-4-11-9-15-1 3-2 5-4 6 1-6-2-12-6-18Z"
-            fill="#F3E4C0" opacity="0.85"
+            fill="#F4E2C6" opacity="0.85"
           />
         </g>
 
@@ -176,7 +176,7 @@ function StreakShield({ uid }) {
           <stop offset="100%" stopColor="#2E4736" />
         </linearGradient>
         <linearGradient id={`${uid}-flame`} x1="27" y1="24" x2="80" y2="106" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#E0BE85" />
+          <stop offset="0%" stopColor="#E8946A" />
           <stop offset="100%" stopColor="#B5502C" />
         </linearGradient>
       </defs>
@@ -189,15 +189,15 @@ function GemStack({ uid }) {
   return (
     <>
       <Ground id={`${uid}-g`} rx={30} cy={100} />
-      <circle cx="60" cy="56" r="30" fill="#C08A1E" opacity="0.14" />
+      <circle cx="60" cy="56" r="30" fill="#5E8C4A" opacity="0.14" />
 
       {/* Two small gems resting behind */}
       <g transform="translate(20 58) scale(0.32)">
-        <path d="M22 6h56l22 26-50 62L0 32Z" fill="#D9A93E" />
+        <path d="M22 6h56l22 26-50 62L0 32Z" fill="#86B86A" />
         <path d="M22 6h56l14 26H8Z" fill="#FFFDF8" opacity="0.32" />
       </g>
       <g transform="translate(74 62) scale(0.28)">
-        <path d="M22 6h56l22 26-50 62L0 32Z" fill="#7F5C11" />
+        <path d="M22 6h56l22 26-50 62L0 32Z" fill="#3F6630" />
         <path d="M22 6h56l14 26H8Z" fill="#FFFDF8" opacity="0.22" />
       </g>
 
@@ -205,7 +205,7 @@ function GemStack({ uid }) {
       <g transform="translate(31 22) scale(0.58)">
         <path d="M22 6h56l22 26-50 62L0 32Z" fill={`url(#${uid}-gem)`} />
         <path d="M22 6h56l14 26H8Z" fill="#FFFDF8" opacity="0.34" />
-        <g stroke="#5E2A16" strokeOpacity="0.25" strokeWidth="3" fill="none" strokeLinejoin="round">
+        <g stroke="#1F3325" strokeOpacity="0.25" strokeWidth="3" fill="none" strokeLinejoin="round">
           <path d="M0 32h100M8 32l42 62 42-62M38 6 30 32M62 6l8 26" />
         </g>
         <path d="M30 40 50 88" stroke="#FFFDF8" strokeOpacity="0.45" strokeWidth="4" strokeLinecap="round" fill="none" />
@@ -213,8 +213,8 @@ function GemStack({ uid }) {
 
       <defs>
         <linearGradient id={`${uid}-gem`} x1="0" y1="6" x2="100" y2="94" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#E8C879" />
-          <stop offset="100%" stopColor="#7F5C11" />
+          <stop offset="0%" stopColor="#B5D79F" />
+          <stop offset="100%" stopColor="#3F6630" />
         </linearGradient>
       </defs>
     </>

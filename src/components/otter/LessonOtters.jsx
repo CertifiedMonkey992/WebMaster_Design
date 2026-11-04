@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    LessonOtters.jsx — THE OTTER INSIDE A LESSON
    ---------------------------------------------------------------------------
-   COMPONENT_RULES.md → Revision 13. A lesson is where the learner
+   COMPONENT_RULES.md → Revision 14. A lesson is where the learner
    concentrates, so here the otter only answers the learner (Reports) and
    never performs on its own: intensity `quiet`, no Stage.
 
@@ -22,7 +22,7 @@ const ANSWER_MOOD = { correct: 'happy', wrong: 'sympathetic', reveal: 'curious' 
 export function AnswerOtter({ phase, run = 0 }) {
   return (
     <span className="lm-otter" aria-hidden="true">
-      <Otter pose="peek" mood={ANSWER_MOOD[phase] || 'happy'} moodWeight={0.6} intensity="quiet" cue={answerReaction(phase, run)} />
+      <Otter pose="peek" mood={ANSWER_MOOD[phase] || 'happy'} intensity="quiet" cue={answerReaction(phase, run)} />
     </span>
   )
 }
@@ -30,7 +30,7 @@ export function AnswerOtter({ phase, run = 0 }) {
 export function CompleteOtter({ perfect = false, replay = false }) {
   return (
     <span className="lm-complete-otter" aria-hidden="true">
-      <Otter pose="cheer" mood="happy" moodWeight={0.7} intensity="quiet" cue={completeReaction({ perfect, replay })} />
+      <Otter pose="stand" mood="proud" intensity="quiet" cue={completeReaction({ perfect, replay })} />
     </span>
   )
 }

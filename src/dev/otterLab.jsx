@@ -1,114 +1,75 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    otterLab.jsx — THE OTTER LAB (development only)
    ---------------------------------------------------------------------------
-   /otter-lab.html on the dev server. Every pose side by side, and a button
-   for every emotion, act, mood, intensity and event reaction, so the
-   mascot can be checked by eye without walking the course. Event buttons
-   here only PREVIEW the reaction mapping — they do not touch progress.
+   /otter-lab.html on the dev server. Every pose side by side, a button for
+   every act and mood, and a page lane and a card lane to watch it roam, so
+   the mascot can be checked by eye without walking the course. Event
+   buttons here only PREVIEW the reaction mapping — they touch no progress.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { StrictMode, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import '../index.css'
+import '../App.css'
 import Otter from '../components/otter/Otter'
-import { ACTS } from '../components/otter/acts'
-import { EMOTIONS } from '../components/otter/rig'
+import OtterLane from '../components/otter/OtterLane'
+import { ACTS, MOODS } from '../components/otter/acts'
 import { EVENT_REACTIONS } from '../components/otter/reactions'
 
-const POSES = ['hold', 'cheer', 'perch', 'peek']
+const POSES = ['stand', 'hold', 'peek']
 
 const css = `
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-ui); }
-  .lab { max-width: 1180px; margin: 0 auto; padding: var(--sp-8) var(--sp-6) var(--sp-16); }
+  .lab { max-width: 1100px; margin: 0 auto; padding: var(--sp-8) var(--sp-6) 220px; }
   .lab h1 { font-family: var(--font-display); font-size: var(--fs-section); margin: 0 0 var(--sp-2); }
-  .lab p { color: var(--ink-muted); margin: 0 0 var(--sp-6); max-width: 46rem; }
-  .lab-stage { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-6); align-items: end; margin-bottom: var(--sp-8); }
-  .lab-cell { display: grid; justify-items: center; gap: var(--sp-3); padding: var(--sp-6) var(--sp-4) var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); cursor: pointer; }
-  .lab-cell.is-on { border-color: var(--evergreen); box-shadow: inset 0 0 0 1px var(--evergreen); }
+  .lab p { color: var(--ink-muted); margin: 0 0 var(--sp-6); }
+  .lab-stage { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6); align-items: end; margin-bottom: var(--sp-8); }
+  .lab-cell { display: grid; justify-items: center; gap: var(--sp-3); padding: var(--sp-6) var(--sp-4) var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+  .lab-cell > div { width: 150px; }
   .lab-cell span { font-size: var(--fs-caption); font-weight: var(--fw-bold); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-faint); }
-  .lab-hold, .lab-cheer { width: 200px; }
-  .lab-card { position: relative; width: 220px; margin-top: 30px; }
-  .lab-card .otc-mock { width: 100px; height: calc(100px * 238 / 240); margin: 0 auto; position: relative; z-index: 1; }
-  .lab-card .otc-mock .ot { position: absolute; inset: 0 0 auto; }
-  .lab-card .card { height: 90px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface-raised); }
-  .lab-frame { position: relative; width: 220px; margin-top: 90px; }
-  .lab-frame .peek { position: absolute; width: 140px; right: 20px; bottom: calc(100% - 140px * 20 / 240); }
-  .lab-frame .card { height: 90px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface-raised); }
-  .lab-row { margin-bottom: var(--sp-5); }
-  .lab-row h2 { font-size: var(--fs-body); margin: 0 0 var(--sp-2); }
-  .lab-btns { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
-  .lab-btns button { font: inherit; font-size: var(--fs-small); padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
-  .lab-btns button:hover { border-color: var(--evergreen); color: var(--evergreen); }
-  .lab-btns button.is-on { background: var(--evergreen); color: var(--surface-raised); border-color: var(--evergreen); }
-  .lab-btns button:disabled { opacity: 0.35; cursor: default; }
+  .lab-peek { border-bottom: 3px solid var(--line-strong); }
+  .lab h2 { font-size: var(--fs-lead); margin: var(--sp-6) 0 var(--sp-3); }
+  .lab-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  .lab-row button { padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--surface-raised); font: inherit; font-size: var(--fs-small); cursor: pointer; }
+  .lab-row button:hover { border-color: var(--evergreen); color: var(--evergreen); }
+  .lab-card { width: 320px; margin-top: var(--sp-6); }
+  .lab-card-body { height: 120px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
 `
 
 function Lab() {
-  const refs = { hold: useRef(null), cheer: useRef(null), perch: useRef(null), peek: useRef(null) }
-  const [target, setTarget] = useState('all')
+  const refs = { stand: useRef(null), hold: useRef(null), peek: useRef(null) }
+  const card = useRef(null)
   const [mood, setMood] = useState('happy')
-  const [intensity, setIntensity] = useState('full')
-  const each = (fn) => POSES.forEach((p) => { if (target === 'all' || target === p) fn(refs[p].current, p) })
-
-  const play = (name) => each((o) => { if (o?.can(name)) { o.stop(); o.play(name) } })
-  const feel = (name) => each((o) => o?.feel(name, 2600))
-  const event = (type) => {
-    const r = EVENT_REACTIONS[type]
-    each((o) => {
-      if (!o) return
-      o.stop()
-      if (r.sequence) o.sequence(r.acts.filter((a) => o.can(a)))
-      else { const a = r.acts.find((x) => o.can(x)); if (a) o.play(a) }
-    })
-  }
+  const all = (name) => POSES.forEach((p) => refs[p].current?.can(name) && refs[p].current.play(name))
 
   return (
     <div className="lab">
       <style>{css}</style>
-      <h1>The otter lab</h1>
-      <p>Development only. Click a pose to aim the buttons at it (click again for all). Point at an otter, click it, boop its nose, or click it five times quickly. Leave the page alone for a while and the otters doze off.</p>
-
+      <h1>Otter lab</h1>
+      <p>Click an otter for a trick, five times quickly for dizzy. The lane at the bottom of the window is the landing page's.</p>
       <div className="lab-stage">
         {POSES.map((p) => (
-          <div key={p} className={`lab-cell${target === p ? ' is-on' : ''}`} onClick={() => setTarget(target === p ? 'all' : p)}>
-            {p === 'hold' || p === 'cheer' ? (
-              <div className={`lab-${p}`}><Otter ref={refs[p]} pose={p} mood={mood} intensity={intensity} region={`lab:${p}`} /></div>
-            ) : p === 'perch' ? (
-              <div className="lab-card">
-                <div className="otc-mock"><Otter ref={refs[p]} pose="perch" mood={mood} intensity={intensity} region="lab:perch" /></div>
-                <div className="card" />
-              </div>
-            ) : (
-              <div className="lab-frame">
-                <div className="peek"><Otter ref={refs[p]} pose="peek" mood={mood} intensity={intensity} region="lab:peek" /></div>
-                <div className="card" />
-              </div>
-            )}
+          <div key={p} className="lab-cell">
+            <div className={p === 'peek' ? 'lab-peek' : ''}><Otter ref={refs[p]} pose={p} mood={mood} region={`lab:${p}`} /></div>
             <span>{p}</span>
           </div>
         ))}
       </div>
-
+      <h2>Acts</h2>
+      <div className="lab-row">{Object.keys(ACTS).map((a) => <button key={a} type="button" onClick={() => all(a)}>{a}</button>)}</div>
+      <h2>Moods</h2>
+      <div className="lab-row">{Object.keys(MOODS).map((m) => <button key={m} type="button" onClick={() => setMood(m)}>{m}</button>)}</div>
+      <h2>Event reactions (preview only)</h2>
       <div className="lab-row">
-        <h2>Emotions (held 2.6s)</h2>
-        <div className="lab-btns">{Object.keys(EMOTIONS).map((e) => <button key={e} onClick={() => feel(e)}>{e}</button>)}</div>
+        {Object.entries(EVENT_REACTIONS).map(([type, r]) => (
+          <button key={type} type="button" onClick={() => card.current?.cue([r.acts.find((a) => card.current.can(a))].filter(Boolean))}>{type}</button>
+        ))}
       </div>
-      <div className="lab-row">
-        <h2>Acts</h2>
-        <div className="lab-btns">{Object.keys(ACTS).map((a) => <button key={a} onClick={() => play(a)}>{a}{ACTS[a].rare ? ' ★' : ''}</button>)}</div>
+      <div className="lab-card">
+        <OtterLane ref={card} variant="card" pose="stand" mood={mood} region="lab:card" />
+        <div className="lab-card-body" />
       </div>
-      <div className="lab-row">
-        <h2>Event reactions (preview only)</h2>
-        <div className="lab-btns">{Object.keys(EVENT_REACTIONS).map((t) => <button key={t} onClick={() => event(t)}>{t}</button>)}</div>
-      </div>
-      <div className="lab-row">
-        <h2>Mood</h2>
-        <div className="lab-btns">{Object.keys(EMOTIONS).map((m) => <button key={m} className={mood === m ? 'is-on' : ''} onClick={() => setMood(m)}>{m}</button>)}</div>
-      </div>
-      <div className="lab-row">
-        <h2>Intensity</h2>
-        <div className="lab-btns">{['full', 'calm', 'quiet', 'still'].map((i) => <button key={i} className={intensity === i ? 'is-on' : ''} onClick={() => setIntensity(i)}>{i}</button>)}</div>
-      </div>
+      <OtterLane variant="page" pose="hold" mood="mischievous" region="lab:page" stops={false} />
     </div>
   )
 }
