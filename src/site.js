@@ -15,6 +15,8 @@
    Node, so nothing here may touch the DOM at import time.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { TOTAL_LESSONS } from './data/learnData.js'
+
 export const SITE = {
   name: 'LunX',
   /* Where the build is published (GitHub Pages, deployed by CI). */
@@ -65,7 +67,7 @@ export const ROUTES = [
     page: 'about',
     path: 'about/',
     title: 'About LunX · The story, the course and the TSA brief',
-    description: 'Why LunX looks like a printed field guide, what its 22-lesson AI course covers, how a lesson works, and how it answers the 2026–27 TSA Webmaster theme.',
+    description: `Why LunX looks like a printed field guide, what its ${TOTAL_LESSONS}-lesson AI course covers, how a lesson works, and how it answers the 2026–27 TSA Webmaster theme.`,
     sitemap: { priority: '0.8', changefreq: 'monthly' },
   },
   {
@@ -110,7 +112,7 @@ export const ROUTES = [
     page: 'learn',
     path: 'learn/',
     title: 'The course · LunX',
-    description: 'Start the LunX course: 22 short, interactive lessons on how AI works, from what counts as AI to the ethics of using it. Free account; progress saves in your browser.',
+    description: `Start the LunX course: ${TOTAL_LESSONS} short, interactive lessons on how AI works, from what counts as AI to the ethics of using it. Free account; progress saves as you go.`,
     sitemap: { priority: '0.9', changefreq: 'weekly' },
   },
   {
