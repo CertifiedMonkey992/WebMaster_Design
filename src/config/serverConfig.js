@@ -16,16 +16,28 @@
    Under Node — the test suites — it is undefined, hence the fallback. */
 const env = import.meta.env ?? {}
 
+/** What a VITE_LUNX_SERVER value means. The build reads the variable too
+ *  (vite.config.js), to write each page's head for the build it is in.
+ *  @param {unknown} value */
+export function serverFrom(value) {
+  const url = String(value ?? '').trim().replace(/\/+$/, '')
+  let host = ''
+  if (url) {
+    try { host = new URL(url).host } catch { host = url }
+  }
+  return { url, connected: url.length > 0, host }
+}
+
+const server = serverFrom(env.VITE_LUNX_SERVER)
+
 /** The server's origin, without a trailing slash, or '' on a local build. */
-export const SERVER_URL = String(env.VITE_LUNX_SERVER ?? '').trim().replace(/\/+$/, '')
+export const SERVER_URL = server.url
 
 /** True on a connected build. */
-export const CONNECTED = SERVER_URL.length > 0
+export const CONNECTED = server.connected
 
 /** The server's host, for the sentences that name it ("kept on lunx.example.org"). */
-export const SERVER_HOST = (() => {
-  try { return CONNECTED ? new URL(SERVER_URL).host : '' } catch { return SERVER_URL }
-})()
+export const SERVER_HOST = server.host
 
 /** How often a connected build asks for new notifications, rewards and
  *  standings while its live stream (services/liveUpdates.js) is down… */

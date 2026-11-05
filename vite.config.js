@@ -2,8 +2,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { SITE, ROUTES, structuredData } from './src/site.js'
+import { SITE, ROUTES, descriptionOf, structuredData } from './src/site.js'
 import { SECTIONS, TOTAL_LESSONS } from './src/data/learnData.js'
+import { serverFrom } from './src/config/serverConfig.js'
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Every page gets a real, static head.
@@ -16,6 +17,11 @@ import { SECTIONS, TOTAL_LESSONS } from './src/data/learnData.js'
    docs/404.html for any unknown address, and the app renders its not-found
    page there. sitemap.xml and robots.txt are written from the same table
    (src/site.js), so nothing can list a page that does not exist.
+
+   A description that says where accounts live is written for the build it
+   heads: the VITE_LUNX_SERVER this build compiles into the app (Vite's own
+   resolved env, so the environment and any .env file count exactly as they
+   do for import.meta.env) picks the local or the connected sentence.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const COURSE = {
@@ -27,20 +33,21 @@ const COURSE = {
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-function headFor(route) {
+function headFor(route, serverHost) {
   const url = route.path == null ? null : SITE.url + route.path
   const image = SITE.url + SITE.ogImage
-  const ld = JSON.stringify(structuredData(route.page, COURSE)).replace(/</g, '\\u003c')
+  const description = descriptionOf(route.page, serverHost)
+  const ld = JSON.stringify(structuredData(route.page, COURSE, serverHost)).replace(/</g, '\\u003c')
   return [
     `<title>${esc(route.title)}</title>`,
-    `<meta name="description" content="${esc(route.description)}">`,
+    `<meta name="description" content="${esc(description)}">`,
     route.noindex ? '<meta name="robots" content="noindex, follow">' : null,
     url ? `<link rel="canonical" href="${url}">` : null,
     '<meta property="og:type" content="website">',
     `<meta property="og:site_name" content="${SITE.name}">`,
     `<meta property="og:locale" content="${SITE.locale}">`,
     `<meta property="og:title" content="${esc(route.title)}">`,
-    `<meta property="og:description" content="${esc(route.description)}">`,
+    `<meta property="og:description" content="${esc(description)}">`,
     url ? `<meta property="og:url" content="${url}">` : null,
     `<meta property="og:image" content="${image}">`,
     '<meta property="og:image:type" content="image/jpeg">',
@@ -49,7 +56,7 @@ function headFor(route) {
     `<meta property="og:image:alt" content="${esc(SITE.ogImageAlt)}">`,
     '<meta name="twitter:card" content="summary_large_image">',
     `<meta name="twitter:title" content="${esc(route.title)}">`,
-    `<meta name="twitter:description" content="${esc(route.description)}">`,
+    `<meta name="twitter:description" content="${esc(description)}">`,
     `<meta name="twitter:image" content="${image}">`,
     `<meta name="twitter:image:alt" content="${esc(SITE.ogImageAlt)}">`,
     `<script type="application/ld+json">${ld}</script>`,
@@ -59,11 +66,16 @@ function headFor(route) {
 const SEO_BLOCK = /<!-- seo:start -->[\s\S]*?<!-- seo:end -->/
 
 function pagesPlugin() {
+  /* The server's host, or '' on a local build (config/serverConfig.js). */
+  let serverHost = ''
   return {
     name: 'lunx-pages',
+    configResolved(config) {
+      serverHost = serverFrom(config.env.VITE_LUNX_SERVER).host
+    },
     /* Dev and build both get the home page's head from the table. */
     transformIndexHtml(html) {
-      return html.replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(ROUTES[0])}\n    <!-- seo:end -->`)
+      return html.replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(ROUTES[0], serverHost)}\n    <!-- seo:end -->`)
     },
     /* writeBundle, not closeBundle: it runs only after this build has
        written its files, and names the folder it wrote them to. A failed
@@ -74,7 +86,7 @@ function pagesPlugin() {
       const indexFile = path.join(outDir, 'index.html')
       if (!fs.existsSync(indexFile)) return
       const shell = fs.readFileSync(indexFile, 'utf8')
-      const render = (route) => shell.replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(route)}\n    <!-- seo:end -->`)
+      const render = (route) => shell.replace(SEO_BLOCK, `<!-- seo:start -->\n    ${headFor(route, serverHost)}\n    <!-- seo:end -->`)
 
       for (const route of ROUTES) {
         if (route.page === 'notfound') {

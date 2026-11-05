@@ -54,7 +54,9 @@ export const SITE = {
 
 const DESCRIPTION = 'LunX is a field guide to how AI works for high school students: interactive lessons on machine learning, neural networks, AI tools and ethics, with XP, streaks and badges. Free.'
 
-/* Order matters: it is the book's order, and sets which way a page turns. */
+/* Order matters: it is the book's order, and sets which way a page turns.
+   A description is a string, or — on a page that says where accounts live —
+   { local, connected(host) }, one per build; descriptionOf picks. */
 export const ROUTES = [
   {
     page: 'landing',
@@ -71,13 +73,15 @@ export const ROUTES = [
     sitemap: { priority: '0.8', changefreq: 'monthly' },
   },
   {
-    /* Accounts live only in the reader's browser, so this page is not
-       something search should send anyone to — and it carries the
+    /* Nobody needs search to find a sign-in form — and this one carries the
        reviewer's credentials, which are for judges, not for crawlers. */
     page: 'signin',
     path: 'signin/',
     title: 'Sign in · LunX',
-    description: 'Sign in to LunX or create a free account. Accounts are kept in your browser; TSA judges can use the reviewer account.',
+    description: {
+      local: 'Sign in to LunX or create a free account. Accounts are kept in your browser; TSA judges can use the reviewer account.',
+      connected: (host) => `Sign in to LunX or create a free account. Accounts are kept on the LunX server at ${host}; TSA judges can use the reviewer account.`,
+    },
     noindex: true,
   },
   {
@@ -98,7 +102,10 @@ export const ROUTES = [
     page: 'privacy',
     path: 'privacy/',
     title: 'Privacy policy · LunX',
-    description: 'What LunX stores, where it stays, and what it never collects: your account and progress live in your browser, with no tracking cookies.',
+    description: {
+      local: 'What LunX stores, where it stays, and what it never collects: your account and progress live in your browser, with no tracking cookies.',
+      connected: (host) => `What LunX stores and who can see it: your account and progress are kept on the LunX server at ${host}, with no tracking cookies.`,
+    },
     sitemap: { priority: '0.3', changefreq: 'yearly' },
   },
   {
@@ -129,6 +136,20 @@ export const routeOf = (page) => ROUTES.find((r) => r.page === page) ?? ROUTES.f
 
 /** The public URL of a page (absolute). */
 export const urlOf = (page) => SITE.url + (routeOf(page).path ?? '')
+
+/**
+ * A page's description, in the build it is in (CLAUDE.md → described
+ * exactly): a local build keeps accounts in the browser, a connected build
+ * on the LunX server, which it names. `serverHost` is that server's host, or
+ * '' on a local build — config/serverConfig.js reads it from
+ * VITE_LUNX_SERVER for the app (SERVER_HOST) and for the build
+ * (vite.config.js), so a static head and the page under it agree.
+ */
+export function descriptionOf(page, serverHost) {
+  const { description } = routeOf(page)
+  if (typeof description === 'string') return description
+  return serverHost ? description.connected(serverHost) : description.local
+}
 
 /**
  * Which page an address is. Accepts the old hash addresses (#/about,
@@ -169,16 +190,16 @@ const breadcrumbs = (page) => ({
 /**
  * The JSON-LD graph for a page. `course` is { lessons, modules, minutes,
  * moduleTitles } from the course data, passed in by the build so this file
- * does not import the app.
+ * does not import the app; `serverHost` is as for descriptionOf.
  */
-export function structuredData(page, course) {
+export function structuredData(page, course, serverHost) {
   const route = routeOf(page)
   const webpage = {
     '@type': 'WebPage',
     '@id': `${urlOf(page)}#webpage`,
     url: urlOf(page),
     name: route.title,
-    description: route.description,
+    description: descriptionOf(page, serverHost),
     inLanguage: 'en',
     isPartOf: { '@id': `${SITE.url}#website` },
   }

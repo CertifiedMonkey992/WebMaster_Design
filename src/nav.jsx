@@ -17,7 +17,8 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { createContext, forwardRef, useContext, useEffect } from 'react'
-import { SITE, routeOf, urlOf } from './site'
+import { SITE, routeOf, urlOf, descriptionOf } from './site'
+import { SERVER_HOST } from './config/serverConfig'
 
 const NavContext = createContext({ page: 'landing', go: () => {}, href: () => SITE.base })
 
@@ -59,14 +60,15 @@ export function usePageMeta(page) {
   useEffect(() => {
     const route = routeOf(page)
     const url = route.path == null ? null : urlOf(page)
+    const description = descriptionOf(page, SERVER_HOST)
     document.title = route.title
-    setMeta('meta[name="description"]', 'content', route.description, { tag: 'meta', attrs: { name: 'description' } })
+    setMeta('meta[name="description"]', 'content', description, { tag: 'meta', attrs: { name: 'description' } })
     setMeta('link[rel="canonical"]', 'href', url, { tag: 'link', attrs: { rel: 'canonical' } })
     setMeta('meta[property="og:title"]', 'content', route.title, { tag: 'meta', attrs: { property: 'og:title' } })
-    setMeta('meta[property="og:description"]', 'content', route.description, { tag: 'meta', attrs: { property: 'og:description' } })
+    setMeta('meta[property="og:description"]', 'content', description, { tag: 'meta', attrs: { property: 'og:description' } })
     setMeta('meta[property="og:url"]', 'content', url, { tag: 'meta', attrs: { property: 'og:url' } })
     setMeta('meta[name="twitter:title"]', 'content', route.title, { tag: 'meta', attrs: { name: 'twitter:title' } })
-    setMeta('meta[name="twitter:description"]', 'content', route.description, { tag: 'meta', attrs: { name: 'twitter:description' } })
+    setMeta('meta[name="twitter:description"]', 'content', description, { tag: 'meta', attrs: { name: 'twitter:description' } })
     setMeta('meta[name="robots"]', 'content', route.noindex ? 'noindex, follow' : null, { tag: 'meta', attrs: { name: 'robots' } })
   }, [page])
 }
