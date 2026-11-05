@@ -36,18 +36,24 @@
 > stand, hold, sit (on a ledge), hang (from a ledge), climb, swim, peek,
 > float (on its back) — switched at run time, and the engine carries it in
 > each (run, swim, climb, drift). Its feelings are acts with emotes:
-> excited, shy, unimpressed, silly, love, dance, angry, cry, scared,
+> excited, shy, unimpressed, silly, dance, angry, cry, scared,
 > sleepy, surprised, confused, proud; and ledge acts — kick, dearLife (one
-> paw lets go), paddle, splash, bob. On the landing page it plays scenes
+> paw lets go), paddle, splash, bob. Since 2026-11-04 it has no hearts
+> (the *love* act and heart eyes are gone) and no sparkles; nothing on
+> the page swims or floats. On the landing page it plays scenes
 > (`components/otter/OtterScenes.jsx`): it jumps from the hero's button
-> onto the headline and hops between words (a word dips when it lands; a
-> clicked word calls it over); it swims in along the Parts band's wave,
-> leaps to a card's top edge, hangs on for dear life and climbs up to sit;
-> it floats on its back on the lessons' bottom edge; it climbs the start
-> card and sits on top, answering the buttons; it sleeps on the footer
-> and is cross when woken. Each scene begins at first sight and takes its
-> later turns from the Stage. Reduced motion places each otter where its
-> scene ends.
+> to a perch by the headline and hops between perches (a word dips when
+> it lands; a clicked word calls it over); it jumps in from the Parts
+> band's edge onto a card's top edge and sits; it jumps onto the left of
+> the start card's top edge, answering the buttons; it sleeps on the
+> right of the footer and is cross when woken — two otters at the foot
+> of the page, on opposite sides. Each scene begins at first sight and
+> takes its later turns from the Stage. Between turns every scene otter
+> **hops** (2026-11-04, a listed Ambient motion): a jump every second or
+> so while its scene is on screen — in place, to a nearby perch or a card
+> over — paused while it is busy, acting, off screen or the tab is
+> hidden. Reduced motion places each otter where its scene
+> ends and nothing hops.
 
 
 > **Revision 14 — a playful landing page and a game-character otter

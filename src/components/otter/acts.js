@@ -30,7 +30,7 @@
      pawEL/R (paws over an edge), ripple, shadow
 
      face       [[ms, eyes, mouth]]
-                eyes:  open wide half angry sad squint happy shut love dizzy
+                eyes:  open wide half angry sad squint happy shut dizzy
                 mouth: smile grin o flat frown smirk tongue wobble
      book       [[ms, state]]   none · closed · open
      needsBook  grabs the book first if its paws are empty
@@ -145,7 +145,6 @@ export const ACTS = {
     head: [[0.15, 0, 1, 0, 1.06, 0.92], [0.4, 0, -1, 0, 0.97, 1.03]],
     nose: [[0.12, 0, 0.6, 0, 0.82, 0.8], [0.4, 0, 0, 0, 1.15, 1.15]],
     ...ears(0.12, 0.3, -14),
-    e_sparkles: pop(0.1, 0.8),
     face: [[0, 'shut', 'o'], [440, 'squint', 'grin']],
   },
   giggle: {
@@ -264,7 +263,6 @@ export const ACTS = {
     legR: [[0.3, 0, -3, 18], [0.5, 0, 0, 0], [0.7, 0, -3, 18], [0.88, 0, 0, 0]],
     ...brows(0.1, 0.88, -1.6, -4),
     ...ears(0.1, 0.88, 10),
-    e_sparkles: rise(0.12, 0.8, -6),
     face: [[0, 'open', 'grin']],
     freeHands: true,
     peek: { fig: [[0.3, 0, -12], [0.5, 0, 1], [0.7, 0, -10], [0.88, 0, 0]] },
@@ -281,7 +279,6 @@ export const ACTS = {
     fig: [[0.15, 0, 1, 0, 1.03, 0.97], [0.85, 0, 1, 0, 1.03, 0.97]],
     ...ears(0.15, 0.85, -12),
     e_blush: glow(0.1, 0.85),
-    e_sparkles: pop(0.18, 0.82),
     face: [[0, 'squint', 'smile']],
     freeHands: true,
   },
@@ -304,19 +301,6 @@ export const ACTS = {
     e_sweat: drip(0.25),
     face: [[0, 'open', 'tongue'], [600, 'squint', 'tongue']],
     freeHands: true,
-  },
-  love: {
-    dur: 2600,
-    armL: hold(0.15, 0.85, 0, 0, -22), armR: hold(0.15, 0.85, 0, 0, 22),
-    pawL: hold(0.15, 0.85, 0, 0, 10), pawR: hold(0.15, 0.85, 0, 0, -10),
-    fig: [[0.2, -2, 0, -4], [0.4, 2, 0, 4], [0.6, -2, 0, -4], [0.8, 2, 0, 4]],
-    head: [[0.2, 0, 0, 6], [0.4, 0, 0, -6], [0.6, 0, 0, 6], [0.8, 0, 0, -6]],
-    ...brows(0.15, 0.85, -0.8, -4),
-    e_hearts: rise(0.1, 0.8, -18),
-    e_blush: glow(0.1, 0.85),
-    face: [[0, 'love', 'smile'], [2200, 'squint', 'smile']],
-    freeHands: true,
-    float: { fig: [[0.5, 0, -2]], head: [] },
   },
   angry: {
     dur: 2200,
@@ -399,7 +383,6 @@ export const ACTS = {
     armL: hold(0.2, 0.8, 0, 0, 58), armR: hold(0.2, 0.8, 0, 0, -58),
     pawL: hold(0.22, 0.8, 0, 0, 24), pawR: hold(0.22, 0.8, 0, 0, -24),
     ...brows(0.2, 0.8, -1, 4),
-    e_sparkles: pop(0.2, 0.8),
     face: [[0, 'squint', 'smirk']],
     freeHands: true,
   },
@@ -422,7 +405,6 @@ export const ACTS = {
     armR: hold(0.25, 0.75, 0, 0, -194),
     pawR: [[0.3, 0, 0, 20], [0.45, 0, 0, -8], [0.75, 0, 0, 0]],
     fig: [[0.2, 0, 1, 0, 1.04, 0.96], [0.4, 0, -6], [0.7, 0, -4]],
-    e_sparkles: pop(0.25, 0.8),
     face: [[0, 'squint', 'grin']],
     peek: { pawER: [[0.25, 2, -18, -20], [0.75, 2, -18, -20]] },
   },
@@ -431,7 +413,6 @@ export const ACTS = {
     armL: [[0.12, 0, 0, -17], [0.24, 0, 0, 12], [0.36, 0, 0, -17], [0.48, 0, 0, 12], [0.6, 0, 0, -17], [0.72, 0, 0, 12], [0.84, 0, 0, -17]],
     armR: [[0.12, 0, 0, 17], [0.24, 0, 0, -12], [0.36, 0, 0, 17], [0.48, 0, 0, -12], [0.6, 0, 0, 17], [0.72, 0, 0, -12], [0.84, 0, 0, 17]],
     fig: [[0.3, 0, -3], [0.6, 0, 0], [0.8, 0, -3]],
-    e_sparkles: pop(0.2, 0.8),
     face: [[0, 'happy', 'grin']],
     freeHands: true,
     peek: {
@@ -447,7 +428,6 @@ export const ACTS = {
     legL: [[0.4, 0, -3, 12], [0.7, 0, 0, 0]], legR: [[0.4, 0, -3, -12], [0.7, 0, 0, 0]],
     ...brows(0.2, 0.85, -1.8, -4),
     ...ears(0.15, 0.85, 10),
-    e_sparkles: rise(0.3, 0.85, -8),
     face: [[0, 'happy', 'grin']],
     freeHands: true,
     peek: { fig: [[0.15, 0, 3, 0, 1.08, 0.92], [0.4, 0, -14], [0.6, 0, -12], [0.82, 0, 1]], pawEL: [[0.4, -4, -22, -30], [0.7, -4, -22, -30]], pawER: [[0.4, 4, -22, 30], [0.7, 4, -22, 30]] },
@@ -459,7 +439,6 @@ export const ACTS = {
     spin: [[0, 0, 0, 0], [0.25, 0, 0, 0], [0.35, 0, 0, -90], [0.55, 0, 0, -250], [0.74, 0, 0, -360], [1, 0, 0, -360]],
     armL: [[0.3, 0, 0, 60], [0.75, 0, 0, 60]], armR: [[0.3, 0, 0, -60], [0.75, 0, 0, -60]],
     legL: [[0.3, 0, -4, -20], [0.75, 0, -4, -20]], legR: [[0.3, 0, -4, 20], [0.75, 0, -4, 20]],
-    e_sparkles: pop(0.78, 0.95),
     face: [[0, 'half', 'smirk'], [380, 'shut', 'grin'], [1100, 'squint', 'grin']],
     freeHands: true,
   },
@@ -485,7 +464,6 @@ export const ACTS = {
     fig: [[0.1, -3, 0, -8], [0.25, 3, 0, 8], [0.4, -3, 0, -8], [0.55, 3, 0, 8], [0.7, -2, 0, -5], [0.85, 1, 0, 3]],
     head: [[0.15, 0, 0, 10], [0.3, 0, 0, -10], [0.45, 0, 0, 10], [0.6, 0, 0, -10], [0.75, 0, 0, 6]],
     ...ears(0.1, 0.85, -12),
-    e_sparkles: [[0.05, 0, 0, 0, 1, 1, 0], [0.12, 0, 0, 40, 1, 1, 1], [0.5, 0, 0, 200, 1, 1, 1], [0.85, 0, 0, 360, 1, 1, 1], [1, 0, 0, 400, 1, 1, 0]],
     face: [[0, 'dizzy', 'tongue'], [2000, 'shut', 'smile']],
   },
 
@@ -585,7 +563,6 @@ export const ACTS = {
     head: [[0.2, 0, 0, -5], [0.85, 0, 0, -5]],
     look: hold(0.2, 0.85, 1.4, -1.2),
     pupils: [[0.2, 2, -2.4], [0.85, 2, -2.4]],
-    e_sparkles: pop(0.4, 0.8),
     face: [[0, 'half', 'smirk'], [1900, 'squint', 'grin']],
   },
   read: {
@@ -612,7 +589,6 @@ export const ACTS = {
     head: [[0.54, 0, 0], [0.58, 0, 4, 0, 1.08, 0.9], [0.68, 0, 2], [0.85, 0, 0]],
     fig: [[0.56, 0, 0], [0.6, 0, 3, 0, 1.06, 0.94], [0.7, 0, 0]],
     earL: [[0.55, 0, 0, 0], [0.59, 0, 0, -24], [0.8, 0, 0, -8]], earR: [[0.55, 0, 0, 0], [0.59, 0, 0, 24], [0.8, 0, 0, 8]],
-    e_sparkles: [[0.58, 0, 0, 0, 0.5, 0.5, 0], [0.62, 0, 0, 30, 1, 1, 1], [0.85, 0, 0, 220, 1, 1, 1], [0.95, 0, 0, 300, 1, 1, 0]],
     face: [[0, 'open', 'smile'], [500, 'wide', 'o'], [1400, 'dizzy', 'o'], [2050, 'half', 'smirk']],
     then: 'grab',
   },
@@ -627,26 +603,26 @@ export const ALIASES = {
 
 /* What it does on its own, by pose (standing with the book is "hold"). */
 export const IDLE = {
-  stand: ['lookAround', 'groom', 'scratch', 'sniff', 'stretch', 'shake', 'dance', 'unimpressed', 'silly', 'shy', 'love', 'confused', 'grab', 'proud'],
-  hold:  ['toss', 'read', 'spinBook', 'bonk', 'lookAround', 'love', 'unimpressed', 'dance', 'sniff'],
-  sit:   ['kick', 'lookAround', 'groom', 'sleepy', 'unimpressed', 'silly', 'shy', 'read', 'love', 'confused'],
+  stand: ['lookAround', 'groom', 'scratch', 'sniff', 'stretch', 'shake', 'dance', 'unimpressed', 'silly', 'shy', 'confused', 'grab', 'proud'],
+  hold:  ['toss', 'read', 'spinBook', 'bonk', 'lookAround', 'unimpressed', 'dance', 'sniff'],
+  sit:   ['kick', 'lookAround', 'groom', 'sleepy', 'unimpressed', 'silly', 'shy', 'read', 'confused'],
   hang:  ['kick', 'dearLife', 'scared', 'lookAround', 'kick'],
   climb: ['scared', 'lookAround'],
   swim:  ['paddle', 'lookAround', 'splash', 'duck', 'silly'],
-  float: ['bob', 'sleepy', 'love', 'splash', 'bob'],
+  float: ['bob', 'sleepy', 'splash', 'bob'],
   peek:  ['lookAround', 'duck', 'nod', 'peer', 'sniff', 'surprised', 'unimpressed'],
 }
 
 /* What a click gets, by pose. */
 export const CLICK_ACTS = {
-  stand: ['backflip', 'excited', 'silly', 'shy', 'dance', 'love', 'angry', 'surprised', 'shake'],
-  hold:  ['toss', 'spinBook', 'bonk', 'love', 'excited'],
+  stand: ['backflip', 'excited', 'silly', 'shy', 'dance', 'angry', 'surprised', 'shake'],
+  hold:  ['toss', 'spinBook', 'bonk', 'excited'],
   sit:   ['kick', 'excited', 'silly', 'shy', 'surprised', 'angry'],
   hang:  ['dearLife', 'kick', 'scared', 'wave'],
   climb: ['scared', 'surprised'],
   swim:  ['splash', 'surprised', 'duck', 'wave'],
-  float: ['splash', 'love', 'sleepy', 'excited'],
-  peek:  ['duck', 'surprised', 'silly', 'love', 'angry'],
+  float: ['splash', 'sleepy', 'excited'],
+  peek:  ['duck', 'surprised', 'silly', 'angry'],
 }
 
 /** A random act from `list`, never `last` twice running. */

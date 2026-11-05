@@ -15,11 +15,15 @@
 
 > **Revision 15 — the otter's scenes (2026-11-04).** Revision 14's page lane
 > (an otter on the bottom edge of the screen) is withdrawn from the landing
-> page. The otter instead appears in five scenes, each placed on the
+> page. The otter instead appears in four scenes, each placed on the
 > page's own elements by an anchor point of the drawing (its feet, seat,
-> grip or waterline): the hero headline, a Parts card, the lessons'
-> bottom edge, the start card, and the footer's top edge. It is small
-> (44–92px) and never covers the text it stands on. The app keeps the card
+> grip or waterline): the hero headline, a Parts card, the start card
+> (its left end) and the footer's top edge (its right end). Since
+> 2026-11-04 nothing swims or floats: each otter jumps onto its ledge. It is small
+> (60–120px; 80–120px on desktop since 2026-11-04) and keeps off the
+> page's words: the hero picks perches whose box is clear of every line
+> of text and lands on a word only now and then (or when a word is
+> clicked). The app keeps the card
 > lane on the Your Progress card; lessons keep the peeking and standing
 > otters, which now cry at a wrong answer and get excited over a run.
 

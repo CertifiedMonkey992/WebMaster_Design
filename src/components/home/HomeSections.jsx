@@ -10,9 +10,8 @@
                     opposite directions
      StartCard      the framed card at the foot of the page: the way in
 
-   The otter lives in three of them (otter/OtterScenes.jsx): it swims in
-   along the band's wave and hangs off a card, floats on its back on the
-   lessons' bottom edge, and climbs the start card.
+   The otter lives in two of them (otter/OtterScenes.jsx): it jumps onto
+   a Parts card's top edge, and onto the left of the start card's.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useRef } from 'react'
@@ -24,7 +23,7 @@ import TextFx, { Marker, RollText, Typewriter } from '../../motion/TextFx'
 import { Icon } from '../progression/Icons'
 import { getLessonIcon } from '../learn/LessonIcons'
 import { jumpTo } from './HomeHeader'
-import { CardSwimmer, Climber, Floater } from '../otter/OtterScenes'
+import { CardHopper, Climber } from '../otter/OtterScenes'
 import { FIRST_MINUTES, LESSONS, PART_CARDS, TOTAL_LESSONS, inWords, inkOf } from './homeData'
 
 function Arrow() {
@@ -77,7 +76,7 @@ export function PartsBand() {
         </Reveal>
       </div>
       <Wave edge="bottom" />
-      <CardSwimmer scope={band} />
+      <CardHopper scope={band} />
     </section>
   )
 }
@@ -120,9 +119,8 @@ function LessonCard({ l }) {
 
 export function LessonMarquee() {
   const half = Math.ceil(LESSONS.length / 2)
-  const section = useRef(null)
   return (
-    <section className="hs-lessons" id="lessons" tabIndex={-1} aria-labelledby="lessons-heading" ref={section}>
+    <section className="hs-lessons" id="lessons" tabIndex={-1} aria-labelledby="lessons-heading">
       <div className="hs-col">
         <TextFx as="h2" fx="bounce" className="hs-title" id="lessons-heading" stagger={30}>{`${inWords(TOTAL_LESSONS)} lessons.`}</TextFx>
         <TextFx as="p" fx="blur" by="word" stagger={14} delay={250} className="hs-sub">
@@ -138,7 +136,6 @@ export function LessonMarquee() {
           {LESSONS.slice(half).map((l) => <LessonCard key={l.id} l={l} />)}
         </Marquee>
       </Reveal>
-      <Floater scope={section} />
     </section>
   )
 }

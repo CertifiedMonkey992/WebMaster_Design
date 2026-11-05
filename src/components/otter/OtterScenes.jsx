@@ -8,23 +8,25 @@
      WordHopper     the hero: stands on the button, then jumps up onto the
                     headline and hops from word to word; a word dips when it
                     lands. Click a word and it jumps there.
-     CardSwimmer    the Parts band: swims in along the band's wave, leaps
-                    out, catches the top edge of a card and hangs on for
-                    dear life, then climbs up and sits on it. Point at
-                    another card and it may hop across.
-     Floater        the lessons: floats on its back on the section's bottom
-                    edge, the field guide shut on its chest, drifting.
-     Climber        the start card: climbs the card's side, sits on its
-                    top edge and points at the way in; it gets excited
-                    when you point at the button.
+     CardHopper     the Parts band: jumps in from the band's edge onto the
+                    first card's top edge, then across to the next, and
+                    sits there. Point at another card and it may hop
+                    across.
+     Climber        the start card: jumps from beside the card onto the
+                    left of its top edge and points at the way in; it gets
+                    excited when you point at the button. (The footer's
+                    otter sits on the right, so the two never stack.)
      Napper         the footer: asleep on its top edge; wake it and it is
                     not pleased.
 
    Every scene is an Actor: an otter positioned by an anchor point of the
    drawing (its feet, its seat, its grip, its waterline) on a point of the
    page, carried along a line or thrown along an arc. Scenes begin when they
-   are first seen; their own turns go through the Stage. Under reduced
-   motion each otter is simply placed where its scene ends.
+   are first seen; their own turns go through the Stage, and between turns
+   each otter hops (useHopping) — a jump every second or so while its scene
+   is on screen. The hero's otter picks perches clear of the page's words
+   and lands on a word only now and then. Under reduced motion each otter
+   is simply placed where its scene ends.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react'
@@ -40,6 +42,7 @@ const ANCHOR = {
 
 const wait = (ms) => new Promise((r) => window.setTimeout(r, ms))
 const still = () => prefersReducedMotion()
+const rand = (a, b) => a + Math.random() * (b - a)
 
 /* ── The Actor ─────────────────────────────────────────────────────────── */
 
@@ -124,6 +127,19 @@ const Actor = forwardRef(function Actor({ pose = 'stand', mood = 'happy', region
         a.oncancel = () => { api.pose(to); write(x, y, to); resolve() }
       })
     },
+    /* A jump where it stands, or a short way along. */
+    jump(dx = 0, height = 32) {
+      const { x, y, pose: p } = st.current
+      return api.leap(x + dx, y, { to: p, height, dur: 340 + height * 5 })
+    },
+    /* The part of the page it would cover standing at (x, y): the drawing's
+       box less its empty margins. */
+    box(x, y, p = st.current.pose) {
+      const w = el.current?.offsetWidth || 64
+      const h = w * 1.25
+      const [cx, cy] = corner(x, y, p)
+      return { left: cx + w * 0.14, right: cx + w * 0.86, top: cy + h * 0.06, bottom: cy + h * 0.97 }
+    },
     play(name) { return otter.current?.play(name) ?? 0 },
     async act(name) { const ms = api.play(name); if (ms) await wait(ms) },
   }
@@ -145,6 +161,40 @@ const rectIn = (target, scope) => {
   const s = scope.getBoundingClientRect()
   return { left: r.left - s.left, top: r.top - s.top, right: r.right - s.left, bottom: r.bottom - s.top, width: r.width, height: r.height, cx: r.left - s.left + r.width / 2 }
 }
+
+/* Text a reader can see: not the otters', not a screen-reader copy, not a
+   word waiting its turn at opacity 0. */
+const shown = (node, root) => {
+  for (let e = node.parentElement; e && e !== root; e = e.parentElement) {
+    if (e.classList.contains('oa')) return false
+    const cs = getComputedStyle(e)
+    if (cs.opacity === '0' || cs.visibility === 'hidden' || cs.display === 'none') return false
+    if (cs.overflow !== 'visible' && (e.offsetWidth <= 2 || e.offsetHeight <= 2)) return false
+  }
+  return true
+}
+
+/* Every line of visible text inside `scope`, in its coordinates. */
+function textRects(scope) {
+  const root = scope.current
+  if (!root) return []
+  const s = root.getBoundingClientRect()
+  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => (n.nodeValue.trim() && shown(n, root) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT),
+  })
+  const range = document.createRange()
+  const out = []
+  for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+    range.selectNodeContents(n)
+    for (const r of range.getClientRects()) {
+      if (r.width > 2 && r.height > 2) out.push({ left: r.left - s.left, top: r.top - s.top, right: r.right - s.left, bottom: r.bottom - s.top })
+    }
+  }
+  return out
+}
+
+const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
+const clearOf = (box, rects) => !rects.some((r) => overlaps(box, r))
 
 /* Runs `start` once, when `scope` is first well into view. */
 function useFirstSight(scope, start, threshold = 0.35) {
@@ -185,6 +235,33 @@ function useTurns(actor, region, run, cooldown = 3600) {
   })
 }
 
+/* Between the Stage's turns the otter never stands still for long: while
+   its scene is on screen and it is not busy or acting, `hop` runs every
+   `every` ms or so (MOTION_RULES.md → the otter hops). */
+function useHopping(actor, scope, hop, every = [900, 1500]) {
+  const fn = useRef(hop)
+  fn.current = hop
+  const [lo, hi] = every
+  useEffect(() => {
+    if (still()) return undefined
+    let alive = true
+    let seen = typeof IntersectionObserver === 'undefined'
+    let t = 0
+    const io = seen ? null : new IntersectionObserver(([e]) => { seen = e.isIntersecting }, { threshold: 0.05 })
+    if (io && scope.current) io.observe(scope.current)
+    const tick = async () => {
+      const a = actor.current
+      if (alive && seen && !document.hidden && a?.state.placed && !a.state.busy && !a.otter?.acting) {
+        a.state.busy = true
+        try { await fn.current(a) } finally { a.state.busy = false }
+      }
+      if (alive) t = window.setTimeout(tick, rand(lo, hi))
+    }
+    t = window.setTimeout(tick, rand(lo, hi))
+    return () => { alive = false; window.clearTimeout(t); io?.disconnect() }
+  }, [actor, scope, lo, hi])
+}
+
 const pick = (list) => list[Math.floor(Math.random() * list.length)]
 
 /* ── The hero: on the words ────────────────────────────────────────────── */
@@ -193,96 +270,126 @@ const WORDS = '.hx-heading .tx--stomp .tx-u, .hx-verb, .hx-heading .tx--tumble .
 
 export function WordHopper({ scope }) {
   const actor = useRef(null)
-  const on = useRef(-1)
+  const on = useRef(null)
 
   const words = useCallback(() => [...(scope.current?.querySelectorAll(WORDS) || [])], [scope])
-  const spot = useCallback((w) => {
-    const r = rectIn(w, scope.current)
-    return [r.cx, r.top + r.height * 0.2]
-  }, [scope])
+
+  /* Its perches: the top of each word, and the line beside each word —
+     each marked `clear` when the otter standing there would cover no text. */
+  const perches = useCallback(() => {
+    const a = actor.current
+    const root = scope.current
+    if (!a || !root) return []
+    const text = textRects(scope)
+    const width = root.offsetWidth
+    const step = (a.el?.offsetWidth || 64) * 0.8
+    const out = []
+    words().forEach((w, i) => {
+      const r = rectIn(w, root)
+      out.push({ key: `w${i}`, word: w, x: r.cx, y: r.top + r.height * 0.2 })
+      const ground = r.bottom - r.height * 0.14
+      for (let k = 1, x = r.right + step * 0.9; k <= 4 && x < width - step * 0.4; k++, x += step) out.push({ key: `g${i}.${k}`, x, y: ground })
+    })
+    const seen = new Set()
+    return out.filter((p) => {
+      const id = `${Math.round(p.x / 12)}:${Math.round(p.y / 12)}`
+      if (seen.has(id)) return false
+      seen.add(id)
+      p.clear = clearOf(a.box(p.x, p.y, 'stand'), text)
+      return true
+    })
+  }, [scope, words])
+
   const dip = (w) => w?.animate?.(
     [{ transform: 'none' }, { transform: 'translateY(0.1em) scaleY(0.9)', offset: 0.3 }, { transform: 'translateY(-0.03em)', offset: 0.65 }, { transform: 'none' }],
     { duration: 460, easing: 'ease-out' },
   )
 
-  const hopTo = useCallback(async (i, height) => {
+  const landOn = useCallback(async (p, height) => {
     const a = actor.current
-    const list = words()
-    const w = list[i]
-    if (!a || !w) return
-    const [x, y] = spot(w)
-    const from = a.state
-    await a.leap(x, y, { to: 'stand', height: height ?? Math.max(30, Math.abs(y - from.y) * 0.6 + 26), dur: 560 })
-    on.current = i
-    dip(w)
-    a.play('hop')
-  }, [spot, words])
+    if (!a || !p) return
+    await a.leap(p.x, p.y, { to: 'stand', height: height ?? Math.max(34, Math.abs(p.y - a.state.y) * 0.6 + 30), dur: 560 })
+    on.current = p.key
+    if (p.word) dip(p.word)
+  }, [])
 
-  /* Begins on the button, then jumps up onto the headline. */
+  /* Mostly a clear perch near by; now and then a word, text or no text. */
+  const wander = useCallback(async (a) => {
+    const all = perches()
+    const far = all.filter((p) => Math.hypot(p.x - a.state.x, p.y - a.state.y) > 10)
+    if (!far.length || Math.random() < 0.3) { await a.jump(0, rand(28, 50)); return }
+    const clear = far.filter((p) => p.clear)
+    const pool = clear.length && Math.random() > 0.12 ? clear : far.filter((p) => p.word)
+    pool.sort((p, q) => Math.hypot(p.x - a.state.x, p.y - a.state.y) - Math.hypot(q.x - a.state.x, q.y - a.state.y))
+    await landOn(pick(pool.slice(0, 3)))
+  }, [landOn, perches])
+
+  const home = useCallback(() => {
+    const all = perches()
+    return all.find((p) => p.clear && p.word) || all.find((p) => p.clear) || all[0]
+  }, [perches])
+
+  /* Begins on the button, then jumps up to a perch by the headline. */
   useEffect(() => {
     const t = window.setTimeout(async () => {
       const a = actor.current
       const btn = scope.current?.querySelector('.hx-actions .btn')
-      const list = words()
-      if (!a || !list.length) return
+      const first = home()
+      if (!a || !first) return
+      if (still()) { a.place(first.x, first.y, 'stand'); on.current = first.key; return }
       if (btn) {
         const r = rectIn(btn, scope.current)
         a.place(r.right - 24, r.top, 'stand')
-      } else a.place(spot(list[0])[0], spot(list[0])[1], 'stand')
-      if (still()) { const [x, y] = spot(list[2] || list[0]); a.place(x, y, 'stand'); on.current = 2; return }
+      } else a.place(first.x, first.y, 'stand')
       a.state.busy = true
       await a.act('notice')
-      await hopTo(Math.min(2, list.length - 1), 90)
+      await landOn(first, 90)
       await a.act('excited')
       a.state.busy = false
     }, 2300)
     return () => clearTimeout(t)
-  }, [hopTo, scope, spot, words])
+  }, [home, landOn, scope])
 
-  /* Keep it on its word when the page reflows. */
+  /* Keep it on its perch when the page reflows. */
   useEffect(() => {
     const onResize = () => {
-      const w = words()[on.current]
-      if (w && actor.current && !actor.current.state.busy) { const [x, y] = spot(w); actor.current.place(x, y, 'stand') }
+      const a = actor.current
+      if (!a?.state.placed || a.state.busy) return
+      const all = perches()
+      const p = all.find((q) => q.key === on.current && q.clear) || home()
+      if (p) { a.place(p.x, p.y, 'stand'); on.current = p.key }
     }
     window.addEventListener('resize', onResize, { passive: true })
     return () => window.removeEventListener('resize', onResize)
-  }, [spot, words])
+  }, [home, perches])
 
   /* Click a word and it jumps there. */
   useEffect(() => {
     const h = scope.current?.querySelector('.hx-heading')
     if (!h) return undefined
     const onClick = (e) => {
-      const list = words()
-      const i = list.findIndex((w) => w.contains(e.target))
+      const p = perches().find((q) => q.word?.contains(e.target))
       const a = actor.current
-      if (i < 0 || !a || a.state.busy || i === on.current) return
+      if (!p || !a || a.state.busy || p.key === on.current) return
       a.state.busy = true
-      hopTo(i).then(() => { a.state.busy = false })
+      landOn(p).then(() => { a.state.busy = false })
     }
     h.addEventListener('click', onClick)
     return () => h.removeEventListener('click', onClick)
-  }, [hopTo, scope, words])
+  }, [landOn, perches, scope])
+
+  useHopping(actor, scope, wander)
 
   useTurns(actor, 'hero:otter', async (a, ctx) => {
-    const list = words()
-    if (Math.random() < 0.55 && list.length > 1) {
-      let i = on.current + (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 2))
-      if (i < 0 || i >= list.length) i = on.current > 0 ? on.current - 1 : 1
-      await hopTo(i)
-      await ctx.wait(400)
-    } else {
-      await ctx.wait(a.play(pick(['unimpressed', 'dance', 'shy', 'silly', 'lookAround', 'love', 'confused', 'proud'])))
-    }
+    await ctx.wait(a.play(pick(['unimpressed', 'dance', 'shy', 'silly', 'lookAround', 'confused', 'proud'])))
   }, 3000)
 
   return <Actor ref={actor} pose="stand" mood="mischievous" region="hero:otter" className="oa--hero" />
 }
 
-/* ── The Parts band: swim in, hang on, climb up ────────────────────────── */
+/* ── The Parts band: jump onto a card's edge ──────────────────────────── */
 
-export function CardSwimmer({ scope }) {
+export function CardHopper({ scope }) {
   const actor = useRef(null)
   const card = useRef(1)
 
@@ -301,22 +408,22 @@ export function CardSwimmer({ scope }) {
     a.play('hop')
   }
 
+  /* In from the band's left edge: onto the first card, then across —
+     once the cards have been dealt, so their edges are where they stay. */
   useFirstSight(scope, async () => {
     const a = actor.current
     if (!a) return
-    const water = -12
+    if (!still()) await wait(1300)
+    const first = ledge(0)
     const target = ledge(card.current)
-    if (!target) return
+    if (!first || !target) return
     if (still()) { a.place(target.x, target.y, 'sit'); return }
     a.state.busy = true
-    a.place(-70, water, 'swim')
+    a.place(-70, first.y + 40, 'stand')
     a.face(1)
-    await a.travel(target.x - 40, water, 0.16)
-    await a.act('surprised')
-    await a.leap(target.x, target.y, { to: 'hang', height: 70, dur: 720 })
-    await a.act('dearLife')
-    await a.act('kick')
-    await climbUp(a)
+    await a.leap(first.x, first.y, { to: 'sit', height: 90, dur: 760 })
+    a.play('hop')
+    if (card.current !== 0) await a.leap(target.x, target.y, { to: 'sit', height: 60, dur: 660 })
     await a.act('excited')
     a.state.busy = false
   }, 0.3)
@@ -345,6 +452,21 @@ export function CardSwimmer({ scope }) {
     return () => { offs.forEach((off) => off()); window.removeEventListener('resize', onResize) }
   }, [cards, ledge])
 
+  /* Hops on its card, and now and then a card over. */
+  useHopping(actor, scope, async (a) => {
+    if (a.state.pose === 'hang') { await climbUp(a); return }
+    if (a.state.pose !== 'sit') return
+    if (Math.random() < 0.25) {
+      const n = cards().length
+      card.current = (card.current + (Math.random() < 0.5 ? 1 : n - 1)) % n
+      const l = ledge(card.current)
+      if (l) await a.leap(l.x, l.y, { to: 'sit', height: 50, dur: 640 })
+      return
+    }
+    const l = ledge(card.current)
+    if (l) await a.leap(l.x + rand(-16, 16), l.y, { to: 'sit', height: rand(24, 44), dur: 480 })
+  })
+
   useTurns(actor, 'parts:otter', async (a, ctx) => {
     const roll = Math.random()
     if (roll < 0.22) {
@@ -360,60 +482,19 @@ export function CardSwimmer({ scope }) {
       await a.leap(l.x, l.y, { to: 'sit', height: 50, dur: 640 })
       await ctx.wait(a.play('hop'))
     } else {
-      await ctx.wait(a.play(pick(['kick', 'read', 'sleepy', 'silly', 'shy', 'unimpressed', 'love'])))
+      await ctx.wait(a.play(pick(['kick', 'read', 'sleepy', 'silly', 'shy', 'unimpressed'])))
     }
   }, 4200)
 
-  return <Actor ref={actor} pose="swim" mood="happy" region="parts:otter" className="oa--card" />
+  return <Actor ref={actor} pose="sit" mood="happy" region="parts:otter" className="oa--card" />
 }
 
-/* ── The lessons: floating on its back ─────────────────────────────────── */
-
-export function Floater({ scope }) {
-  const actor = useRef(null)
-  const water = () => (scope.current?.offsetHeight || 0) - 4
-
-  useFirstSight(scope, async () => {
-    const a = actor.current
-    if (!a) return
-    const w = scope.current.offsetWidth
-    if (still()) { a.place(w * 0.3, water(), 'float'); return }
-    a.state.busy = true
-    a.place(-90, water(), 'float')
-    a.face(1)
-    await a.travel(w * 0.3, water(), 0.07)
-    await a.act('love')
-    a.state.busy = false
-  }, 0.2)
-
-  useEffect(() => {
-    const onResize = () => {
-      const a = actor.current
-      if (a?.state.placed && !a.state.busy) a.place(Math.min(a.state.x, scope.current.offsetWidth - 60), water(), 'float')
-    }
-    window.addEventListener('resize', onResize, { passive: true })
-    return () => window.removeEventListener('resize', onResize)
-  })
-
-  useTurns(actor, 'lessons:otter', async (a, ctx) => {
-    if (Math.random() < 0.4) {
-      const w = scope.current.offsetWidth
-      /* The left half: the start card's otter sits on the right. */
-      const x = 80 + Math.random() * (w * 0.55 - 80)
-      await a.travel(x, water(), 0.06)
-      await ctx.wait(300)
-    } else {
-      await ctx.wait(a.play(pick(['bob', 'sleepy', 'love', 'splash'])))
-    }
-  }, 4600)
-
-  return <Actor ref={actor} pose="float" mood="relaxed" region="lessons:otter" className="oa--float" />
-}
-
-/* ── The start card: up the side and onto the top ─────────────────────── */
+/* ── The start card: a jump onto the left of its top edge ──────────────── */
 
 export function Climber({ scope }) {
   const actor = useRef(null)
+  /* How far in from the card's left edge it sits. */
+  const seat = useRef(90)
   const box = () => {
     const c = scope.current?.querySelector('.hs-start-card')
     return c ? rectIn(c, scope.current) : null
@@ -421,15 +502,18 @@ export function Climber({ scope }) {
 
   useFirstSight(scope, async () => {
     const a = actor.current
+    if (!a) return
+    /* After the card's curtain, so its edge is where it stays. */
+    if (!still()) await wait(1100)
     const r = box()
-    if (!a || !r) return
-    const seat = [r.right - 70, r.top]
-    if (still()) { a.place(seat[0], seat[1], 'sit'); return }
+    if (!r) return
+    const to = [r.left + seat.current, r.top]
+    if (still()) { a.place(to[0], to[1], 'sit'); return }
     a.state.busy = true
-    a.place(r.right + 2, r.bottom + 30, 'climb')
-    a.face(-1)
-    await a.travel(r.right + 2, r.top + 52, 0.07)
-    await a.leap(seat[0], seat[1], { to: 'sit', height: 40, dur: 560 })
+    a.place(r.left - 60, r.bottom, 'stand')
+    a.face(1)
+    await a.act('notice')
+    await a.leap(to[0], to[1], { to: 'sit', height: 80, dur: 720 })
     await a.act('point')
     await a.act('excited')
     a.state.busy = false
@@ -443,7 +527,7 @@ export function Climber({ scope }) {
         const a = actor.current
         if (!a?.state.placed || a.state.busy) return
         a.otter?.stop()
-        a.play(i === 0 ? pick(['excited', 'love']) : 'surprised')
+        a.play(i === 0 ? pick(['excited', 'proud']) : 'surprised')
       }
       b.addEventListener('pointerenter', enter)
       return () => b.removeEventListener('pointerenter', enter)
@@ -451,10 +535,18 @@ export function Climber({ scope }) {
     const onResize = () => {
       const a = actor.current
       const r = box()
-      if (a?.state.placed && !a.state.busy && r) a.place(r.right - 70, r.top, 'sit')
+      if (a?.state.placed && !a.state.busy && r) a.place(r.left + seat.current, r.top, 'sit')
     }
     window.addEventListener('resize', onResize, { passive: true })
     return () => { offs.forEach((off) => off()); window.removeEventListener('resize', onResize) }
+  })
+
+  /* Hops along the card's top edge. */
+  useHopping(actor, scope, async (a) => {
+    const r = box()
+    if (!r) return
+    seat.current = Math.min(Math.max(seat.current + rand(-60, 60), 60), Math.min(240, r.width - 60))
+    await a.leap(r.left + seat.current, r.top, { to: 'sit', height: rand(24, 44), dur: 480 })
   })
 
   useTurns(actor, 'start:otter', async (a, ctx) => {
@@ -496,6 +588,9 @@ export function Napper({ scope }) {
     window.addEventListener('resize', onResize, { passive: true })
     return () => { el.removeEventListener('pointerenter', wake); window.removeEventListener('resize', onResize) }
   })
+
+  /* Even asleep it hops. */
+  useHopping(actor, scope, (a) => a.jump(0, rand(16, 30)), [1600, 2600])
 
   useTurns(actor, 'footer:otter', async (a, ctx) => {
     await ctx.wait(a.play(Math.random() < 0.75 ? 'sleepy' : 'kick'))

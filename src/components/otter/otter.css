@@ -81,10 +81,7 @@
 /* ── Emotes: hidden until an act brings one out ─────────────────────────── */
 
 .ot [data-p^='e_'] { opacity: 0; }
-.ot-e-heart  { fill: var(--clay-bright); }
-.ot-e-soft   { opacity: 0.7; }
-.ot-e-spark  { fill: var(--clay-bright); }
-.ot-e-spark.ot-e-alt, .ot-e-note, .ot-e-water { fill: var(--ot-water); }
+.ot-e-note, .ot-e-water { fill: var(--ot-water); }
 .ot-e-steam  { fill: none; stroke: var(--ink-faint); stroke-width: 10; stroke-linecap: round; opacity: 0.6; }
 .ot-e-tear   { fill: none; stroke: var(--ot-water); stroke-width: 12; stroke-linecap: round; }
 .ot-e-mark   { font-family: var(--font-display); font-weight: var(--fw-bold); font-size: 24px; fill: var(--clay); }
@@ -105,7 +102,6 @@
 .ot[data-eyes='squint'] .ot-lid-squint,
 .ot[data-eyes='happy']  .ot-e-happy,
 .ot[data-eyes='shut']   .ot-e-shut,
-.ot[data-eyes='love']   .ot-e-love,
 .ot[data-eyes='dizzy']  .ot-e-dizzy,
 .ot[data-mouth='smile'] .ot-m-smile,
 .ot[data-mouth='grin']  .ot-m-grin,
@@ -116,7 +112,7 @@
 .ot[data-mouth='tongue'] .ot-m-tongue,
 .ot[data-mouth='wobble'] .ot-m-wobble { display: inline; }
 
-.ot:is([data-eyes='happy'], [data-eyes='shut'], [data-eyes='love'], [data-eyes='dizzy']) .ot-eyes-base { display: none; }
+.ot:is([data-eyes='happy'], [data-eyes='shut'], [data-eyes='dizzy']) .ot-eyes-base { display: none; }
 .ot[data-eyes='wide'] .ot-eye { transform: scale(1.1); transform-box: fill-box; transform-origin: center; }
 .ot[data-eyes='wide'] .ot-glint { r: 5.2px; }
 
@@ -252,15 +248,15 @@
 .oa-facing.is-left { transform: scaleX(-1); }
 .oa .ot { pointer-events: none; }
 
-.oa--hero  { width: 58px; }
-.oa--card  { width: 66px; }
-.oa--float { width: 92px; }
-.oa--start { width: 64px; }
-.oa--nap   { width: 58px; }
+.oa--hero  { width: 80px; }
+.oa--card  { width: 88px; }
+.oa--float { width: 120px; }
+.oa--start { width: 88px; }
+.oa--nap   { width: 80px; }
 
 @media (max-width: 720px) {
-  .oa--hero  { width: 44px; }
-  .oa--card, .oa--start { width: 54px; }
-  .oa--float { width: 74px; }
-  .oa--nap   { width: 48px; }
+  .oa--hero  { width: 60px; }
+  .oa--card, .oa--start { width: 70px; }
+  .oa--float { width: 96px; }
+  .oa--nap   { width: 64px; }
 }

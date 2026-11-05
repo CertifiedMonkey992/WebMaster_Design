@@ -48,8 +48,6 @@ const Z = (name, x, y) => ({ className: `pz pz-${name}`, style: { transformOrigi
 /* The emotes and the field guide keep the old 120 × 150 drawing's units. */
 const OLD = 'translate(138 38) scale(4)'
 
-const heart = (x, y, s) => `M${x} ${y + 3 * s}C${x - 6 * s} ${y - 2 * s} ${x - 3 * s} ${y - 7 * s} ${x} ${y - 4 * s}C${x + 3 * s} ${y - 7 * s} ${x + 6 * s} ${y - 2 * s} ${x} ${y + 3 * s}Z`
-const star = (x, y, s) => `M${x} ${y - 6 * s}Q${x + 1.2 * s} ${y - 1.2 * s} ${x + 6 * s} ${y}Q${x + 1.2 * s} ${y + 1.2 * s} ${x} ${y + 6 * s}Q${x - 1.2 * s} ${y + 1.2 * s} ${x - 6 * s} ${y}Q${x - 1.2 * s} ${y - 1.2 * s} ${x} ${y - 6 * s}Z`
 const drop = (x, y, s) => `M${x} ${y - 5 * s}C${x + 3.6 * s} ${y} ${x + 3.6 * s} ${y + 4 * s} ${x} ${y + 4 * s}S${x - 3.6 * s} ${y} ${x} ${y - 5 * s}Z`
 
 /* A part's fur: [paint, path] pairs from drawing.js. */
@@ -60,17 +58,6 @@ function Fur({ part }) {
 function Emotes() {
   return (
     <g className="ot-emotes">
-      <g {...P('e_hearts', 378, 118)}>
-        <path className="ot-e-heart" d={heart(210, 126, 5.2)} />
-        <path className="ot-e-heart" d={heart(530, 86, 4.4)} />
-        <path className="ot-e-heart ot-e-soft" d={heart(474, 22, 3.2)} />
-      </g>
-      <g {...P('e_sparkles', 378, 158)}>
-        <path className="ot-e-spark" d={star(194, 158, 4.4)} />
-        <path className="ot-e-spark ot-e-alt" d={star(556, 126, 4)} />
-        <path className="ot-e-spark" d={star(536, 286, 2.8)} />
-        <path className="ot-e-spark ot-e-alt" d={star(232, 46, 3)} />
-      </g>
       <g {...P('e_notes', 538, 94)} className="ot-e-note">
         <g transform={OLD}>
           <path d="M96 20.5a3.4 2.6 -20 1 1-1-4.6V3l9-2.6v13.4a3.4 2.6-20 1 1-1.1-4.5V4.9L96 7Z" />
@@ -132,10 +119,6 @@ function Eyes({ uid }) {
       </g>
       <path className="ot-v ot-e-happy ot-stroke" d="M308 184Q321.5 160 335 184M427 184Q440.6 160 454 184" />
       <path className="ot-v ot-e-shut ot-stroke" d="M307 176Q321.5 188 336 176M426 176Q440.6 188 455 176" />
-      <g className="ot-v ot-e-love">
-        <path className="ot-e-heart" d={heart(321.5, 177, 5)} />
-        <path className="ot-e-heart" d={heart(440.6, 177, 5)} />
-      </g>
       <path className="ot-v ot-e-dizzy ot-stroke" d="M321.5 176m-18 0a18 18 0 1 0 36 0a13 13 0 1 0-26 0a7 7 0 1 0 14 0M440.6 176m-18 0a18 18 0 1 0 36 0a13 13 0 1 0-26 0a7 7 0 1 0 14 0" />
     </g>
   )
