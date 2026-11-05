@@ -1,5 +1,18 @@
 # Component Rules
 
+> **Revision 16 — the otter, redrawn (2026-11-04).** The otter component's
+> API, poses, scenes, lanes and sizes are unchanged; its drawing is the
+> owner's reference (VISUAL_SYSTEM.md → Revision 16) and its motion is
+> revision 16's (MOTION_RULES.md). The poses map onto the new body:
+> `stand` is the reference itself, sitting up on its haunches; `hold` adds
+> the field guide under its paws; `sit` puts its seat on the ledge with
+> the feet hanging over the front; `hang` reaches both arms up past the
+> head to paws hooked over the ledge; `climb` reaches one arm up the wall
+> with a knee raised; `peek` and `swim` show the head over the edge with
+> the reference's drooping paws hooked over it; `float` lies back with the
+> book on its chest.
+
+
 > **Revision 15 — the otter's scenes (2026-11-04).** Revision 14's page lane
 > (an otter on the bottom edge of the screen) is withdrawn from the landing
 > page. The otter instead appears in five scenes, each placed on the

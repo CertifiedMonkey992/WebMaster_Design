@@ -1,5 +1,36 @@
 # Motion Rules
 
+> **Revision 16 — the otter moves like an animal (2026-11-04).** With the
+> redrawn otter (VISUAL_SYSTEM.md → Revision 16) the owner asked for
+> smooth movement "like an actual animated animal" — hands, legs, the
+> rest. The engine (`components/otter/engine.js`) keeps revision 15's
+> act model and API and changes how an act becomes motion:
+>
+> - **Smooth curves.** Every track is a monotone cubic through its keys,
+>   sampled every 25 ms, so a part speeds up and slows down through a move
+>   instead of stopping at each key, and a held pose holds without drift.
+> - **Overlapping action.** Parts that hang off another part swing after
+>   it: the tail behind the body, the ears and whiskers behind the head,
+>   the paws at the wrist behind the arms, the feet at the heel behind the
+>   legs and the body's jumps. Each is a damped spring pushed by its
+>   driver's acceleration, worked out when the act starts and played with
+>   it; it may settle for up to 420 ms after the act. A paw's shadow on the
+>   belly fades as its arm lifts it away.
+> - **New parts an act can move:** `look` (the face turning over the
+>   skull — a head turn with depth), `browL`/`browR`, `earL`/`earR`,
+>   `pawL`/`pawR`, `footL`/`footR`, `lids`. Every act is retuned for the
+>   new body; act names, aliases and the reactions mapping are unchanged.
+>   Two idle acts are added: `groom` (washing its face with both paws, as
+>   otters do) and `shake` (shaking off water — the follow-through does the
+>   rest). The run cycle is a bounding hop with the arms pumping.
+> - **Ambient motion** (on screen only, never under reduced motion, and
+>   added on top of any act rather than replacing it): the breath now lifts
+>   the chest, shoulders and head together (3.4 s); the blink is a lid that
+>   sweeps down and up (190 ms), sometimes twice; the tail sways (4.7 s).
+>   Sanctioned idle events are added: an ear flick (every 4–9 s) and a
+>   whisker twitch with a sniff (every 6–13 s).
+
+
 > **Revision 15 — the otter lives in the page (2026-11-04).** The otter is no
 > longer a figure on the bottom edge of the screen. It has eight poses —
 > stand, hold, sit (on a ledge), hang (from a ledge), climb, swim, peek,

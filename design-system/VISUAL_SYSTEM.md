@@ -1,5 +1,43 @@
 # Visual System
 
+> **Revision 16 — the otter, drawn from the owner's reference (2026-11-04).**
+> The owner found the revision 15 otter did not read as an otter and gave
+> a reference illustration to copy exactly. The otter is now that drawing:
+> a brown river otter sitting up on its haunches, forearms raised and paws
+> drooping; a cream mask with zigzag cheek fur; a big dark shield-shaped
+> nose with a light along its top; tilted black eyes (tops toward the
+> nose) with a glint on the inner side; cream brows under a dark stroke;
+> small round ears set behind the dome; whiskers pale over fur with dark
+> roots and freckles on the muzzle; a lighter chest, a tan belly with a
+> few fur marks; heavy thighs and flat, splayed, inked feet; a bushy
+> two-tone tail. Cel shaded, with a thin warm-black inked line — revision
+> 15's "no outline" is withdrawn for the otter, because the reference is
+> inked.
+>
+> - **How it is drawn.** The fur is traced from the reference into
+>   `components/otter/drawing.js`: one list of shapes per part, each part
+>   completed behind the parts in front of it (the belly carries on round
+>   behind the arms, the neck under the head, the tail's root under the
+>   thigh), so a part that moves never opens a hole. The face's features,
+>   whiskers, ears, the field guide and the emotes are drawn by hand in
+>   `Otter.jsx`. Its units are the reference's pixels — viewBox
+>   `138 38 480 600`, the same 4 : 5 box as before, so every scene and
+>   lane places it by the same anchors.
+> - **Palette.** `--ot-*` is resampled from the reference: `--ot-fur`
+>   #9C6B4C, `--ot-fur-light` #AD8164, `--ot-fur-deep` #724734,
+>   `--ot-fur-dark` #613D2F, `--ot-fur-darkest` #45251C, `--ot-mask`
+>   #E4C29C, `--ot-mask-shade` #C1A283, `--ot-cream` #FAE4C1, `--ot-line`
+>   #1E0E0A, with `--ot-eye`, `--ot-shine`, `--ot-nose`, `--ot-nose-light`
+>   and `--ot-whisker`. `--ot-pupil` is gone; `--ot-water` stays the one
+>   cool hue, read by nothing else.
+> - **The face still acts.** Lids in the fur's colour carry half, angry,
+>   sad and squint and the blink; happy, shut, love and dizzy eyes and the
+>   eight mouths (the reference's inked "w" is the smile) are redrawn for
+>   the new face.
+> - **Not copied:** the reference's pool and grass. They are scenery; the
+>   otter lives on the page's own words, cards and edges.
+
+
 > **Revision 15 — the otter, flat and expressive (2026-11-04).** The owner
 > asked for the otter to be drawn the way a well-known language-app mascot
 > is: flat 2D with a lot of small detail, and a full range of feelings. It

@@ -256,23 +256,30 @@
   --lg-diamond-light:  #E1F7FF;
   --lg-white:          #FFFFFF;
 
-  /* ── The otter (VISUAL_SYSTEM.md → Revision 15) ─────────────────────────
+  /* ── The otter (VISUAL_SYSTEM.md → Revision 16) ─────────────────────────
      LunX's mascot. A named, scoped palette, read ONLY by `.ot` artwork
-     (components/otter/). Flat 2D, no outline: four browns from the lit
-     front to the darkest paw, a pale mask, a cream muzzle. --ot-water is
-     the one cool hue in it — tears, sweat, the water it swims in — and is
-     never used outside the otter. */
-  --ot-fur:        #8C5A36;   /* body, head */
-  --ot-fur-light:  #A9774E;   /* belly, a lit crown */
-  --ot-fur-deep:   #6F4428;   /* the shaded side, arms, legs, tail */
-  --ot-fur-dark:   #4F2F1B;   /* paws, feet, inner ears */
-  --ot-mask:       #D9B489;   /* the face mask and its lids */
-  --ot-cream:      #F2DFC2;   /* muzzle */
-  --ot-pupil:      #2E2019;
-  --ot-nose:       #3A2416;   /* nose, and the lines of the face */
-  --ot-mouth:      #5A1F1A;
-  --ot-tongue:     #E07B72;
-  --ot-water:      #79AED1;
+     (components/otter/), sampled from the owner's reference: five browns
+     from the lit chest to the tail's underside, a tan belly and brows, a
+     shaded and a cream mask, a warm black line. --ot-water is the one cool
+     hue in it — tears, sweat, the water it swims in — and is never used
+     outside the otter. */
+  --ot-fur:          #9C6B4C;   /* head, body */
+  --ot-fur-light:    #AD8164;   /* chest, chin, the lit crown */
+  --ot-fur-deep:     #724734;   /* arms, thighs, the shaded sides, ear rims */
+  --ot-fur-dark:     #613D2F;   /* the tail's top, the arms' undersides */
+  --ot-fur-darkest:  #45251C;   /* the tail's underside, feet, brow strokes */
+  --ot-mask:         #E4C29C;   /* belly */
+  --ot-mask-shade:   #C1A283;   /* the cheeks' shaded fur */
+  --ot-cream:        #FAE4C1;   /* muzzle, cheeks, brows */
+  --ot-line:         #1E0E0A;   /* the inked line, claws, mouth */
+  --ot-eye:          #0B0605;
+  --ot-shine:        #F3EAE6;   /* the eyes' glint, the light on the nose */
+  --ot-nose:         #2A0F0A;
+  --ot-nose-light:   #431B13;
+  --ot-whisker:      #F5E7D2;
+  --ot-mouth:        #5A1F1A;
+  --ot-tongue:       #E07B72;
+  --ot-water:        #79AED1;
 
   /* ── The home page (revision 12) ────────────────────────────────────────── */
   --fs-feature: clamp(2.25rem, 3.4vw, 3rem);  /* feature-row + closing headings */
