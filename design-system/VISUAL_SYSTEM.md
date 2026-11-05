@@ -1,5 +1,20 @@
 # Visual System
 
+> **Revision 15 — the otter, flat and expressive (2026-11-04).** The owner
+> asked for the otter to be drawn the way a well-known language-app mascot
+> is: flat 2D with a lot of small detail, and a full range of feelings. It
+> is redrawn with **no outline**: four browns from lit front to darkest paw
+> (`--ot-fur-light`, `--ot-fur`, `--ot-fur-deep`, `--ot-fur-dark`), a pale
+> face mask (`--ot-mask`), a cream muzzle with freckles, crown tufts and
+> cheek fluff, belly fur marks, big white eyes whose **lids** carry the
+> feeling (half, angry, sad, squint) plus happy, shut, heart and dizzy
+> eyes, and eight mouths (smile, grin, o, flat, frown, smirk, tongue,
+> wobble). It has an emote layer — hearts, sparkles, music notes, steam,
+> sweat, tears, "!", "?", "z", a splash. `--ot-water` (#79AED1) is the one
+> cool hue in the scoped otter palette, for tears, sweat and water, and is
+> read by nothing else. Revision 14's outline tokens are gone.
+
+
 > **Revision 14 — the otter redrawn as a game character (2026-11-04).** The
 > product owner found the revision 13 otter too gentle and asked for one
 > like the attached reference: a pet with attitude, not a nerdy or cute

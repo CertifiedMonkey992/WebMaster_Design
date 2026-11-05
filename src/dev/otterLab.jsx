@@ -16,16 +16,16 @@ import OtterLane from '../components/otter/OtterLane'
 import { ACTS, MOODS } from '../components/otter/acts'
 import { EVENT_REACTIONS } from '../components/otter/reactions'
 
-const POSES = ['stand', 'hold', 'peek']
+const POSES = ['stand', 'hold', 'sit', 'hang', 'climb', 'swim', 'peek', 'float']
 
 const css = `
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-ui); }
   .lab { max-width: 1100px; margin: 0 auto; padding: var(--sp-8) var(--sp-6) 220px; }
   .lab h1 { font-family: var(--font-display); font-size: var(--fs-section); margin: 0 0 var(--sp-2); }
   .lab p { color: var(--ink-muted); margin: 0 0 var(--sp-6); }
-  .lab-stage { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6); align-items: end; margin-bottom: var(--sp-8); }
+  .lab-stage { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-6); align-items: end; margin-bottom: var(--sp-8); }
   .lab-cell { display: grid; justify-items: center; gap: var(--sp-3); padding: var(--sp-6) var(--sp-4) var(--sp-4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
-  .lab-cell > div { width: 150px; }
+  .lab-cell > div { width: 130px; margin: 30px 0 10px; }
   .lab-cell span { font-size: var(--fs-caption); font-weight: var(--fw-bold); letter-spacing: var(--ls-label); text-transform: uppercase; color: var(--ink-faint); }
   .lab-peek { border-bottom: 3px solid var(--line-strong); }
   .lab h2 { font-size: var(--fs-lead); margin: var(--sp-6) 0 var(--sp-3); }
@@ -37,8 +37,10 @@ const css = `
 `
 
 function Lab() {
-  const refs = { stand: useRef(null), hold: useRef(null), peek: useRef(null) }
+  const refs = Object.fromEntries(POSES.map((p) => [p, { current: null }]))
+  const setRef = (p) => (o) => { refs[p].current = o }
   const card = useRef(null)
+  window.__lab = refs  // the lab is development-only: lets a console drive each otter
   const [mood, setMood] = useState('happy')
   const all = (name) => POSES.forEach((p) => refs[p].current?.can(name) && refs[p].current.play(name))
 
@@ -50,7 +52,7 @@ function Lab() {
       <div className="lab-stage">
         {POSES.map((p) => (
           <div key={p} className="lab-cell">
-            <div className={p === 'peek' ? 'lab-peek' : ''}><Otter ref={refs[p]} pose={p} mood={mood} region={`lab:${p}`} /></div>
+            <div className={p === 'peek' ? 'lab-peek' : ''}><Otter ref={setRef(p)} pose={p} mood={mood} region={`lab:${p}`} /></div>
             <span>{p}</span>
           </div>
         ))}

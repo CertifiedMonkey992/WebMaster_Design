@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    otter.css — THE OTTER'S PAINT, AND ITS LANES
    ---------------------------------------------------------------------------
-   VISUAL_SYSTEM.md → Revision 14. Fills and strokes, the face variants the
-   engine switches between, and the lanes the otter roams. Every movement is
+   VISUAL_SYSTEM.md → Revision 15. Fills, the face variants the engine
+   switches between, the pose layers, and the lanes the otter roams. Every movement is
    the engine's or the lane's (Web Animations), so nothing here animates.
    The `--ot-*` palette is read by this file and nothing else.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -16,71 +16,133 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Peeking, the edge is the bottom of the drawing: what drops below it hides. */
-.ot--peek { overflow: hidden; }
-
 /* Only the painted otter answers the pointer, never its empty box. */
 .ot-figure { pointer-events: visiblePainted; cursor: pointer; }
 
-/* Parts turn about their joints, given in drawing units. */
-.ot [data-p], .ot-pose { transform-box: view-box; }
-.ot--peek .ot-pose { transform: translate(0px, 74px); }
+/* Parts turn about their joints, given in drawing units. A pose moves the
+   outer layer (.pz-*, below); an act moves the inner one ([data-p]). */
+.ot [data-p], .ot .pz, .ot-pose { transform-box: view-box; }
+.ot .pz, .ot-pose { transition: transform var(--dur-open) var(--ease-snap); }
 
-/* ── Paint ─────────────────────────────────────────────────────────────── */
+/* ── Paint: flat, no outline ───────────────────────────────────────────── */
 
-.ot-stroke { stroke: var(--ot-line); stroke-width: 2.6; stroke-linejoin: round; }
-.ot-line   { fill: none; stroke: var(--ot-line); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-.ot-line--thin { stroke-width: 1.6; }
-
-.ot-fur      { fill: var(--ot-fur); }
-.ot-fur-deep { fill: var(--ot-fur-deep); }
-.ot-head     { fill: var(--ot-head); }
-.ot-belly    { fill: var(--ot-belly); }
-.ot-cream    { fill: var(--ot-cream); }
-.ot-ink      { fill: var(--ot-line); }
-.ot-glint, .ot-white { fill: var(--surface-raised); }
-.ot-mouth    { fill: var(--ot-mouth); }
-.ot-tongue   { fill: var(--ot-tongue); }
-.ot-green    { fill: var(--evergreen); }
+.ot-fur        { fill: var(--ot-fur); }
+.ot-fur-light  { fill: var(--ot-fur-light); }
+.ot-fur-shade  { fill: var(--ot-fur-deep); }
+.ot-fur-dark   { fill: var(--ot-fur-dark); }
+.ot-mask       { fill: var(--ot-mask); }
+.ot-cream      { fill: var(--ot-cream); }
+.ot-white      { fill: var(--surface-raised); }
+.ot-pupil      { fill: var(--ot-pupil); }
+.ot-nose       { fill: var(--ot-nose); }
+.ot-mouth      { fill: var(--ot-mouth); }
+.ot-tongue     { fill: var(--ot-tongue); }
+.ot-green      { fill: var(--evergreen); }
 .ot-green-deep { fill: var(--evergreen-deep); }
-.ot-page     { fill: var(--surface-raised); }
-.ot-clay     { fill: var(--clay); }
-.ot-foil-ring { fill: none; stroke: var(--tan); stroke-width: 1.4; }
-.ot-pads     { fill: none; stroke: var(--ot-line); stroke-width: 1.6; stroke-linecap: round; opacity: 0.55; }
-.ot-shadow   { fill: rgba(var(--ink-rgb), 0.13); }
+.ot-page       { fill: var(--surface-raised); }
+.ot-clay       { fill: var(--clay); }
+.ot-soft       { opacity: 0.5; }
+.ot-shine      { opacity: 0.6; }
+.ot-blush      { fill: var(--clay); opacity: 0.45; }
+.ot-shadow     { fill: rgba(var(--ink-rgb), 0.12); }
+.ot-freckles   { fill: var(--ot-fur-deep); opacity: 0.5; }
 
-.ot-whiskers path { fill: none; stroke: var(--ot-line); stroke-width: 1.2; stroke-linecap: round; opacity: 0.7; }
+.ot-stroke-ink { fill: none; stroke: var(--ot-nose); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.ot-limb       { fill: none; stroke: var(--ot-fur-deep); stroke-width: 11; stroke-linecap: round; }
+.ot-marks      { fill: none; stroke: var(--ot-fur); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.ot-pads, .ot-toes { fill: none; stroke: var(--ot-fur-light); stroke-width: 1.4; stroke-linecap: round; opacity: 0.7; }
+.ot-foil-ring  { fill: none; stroke: var(--tan); stroke-width: 1.4; }
+.ot-page-lines { fill: none; stroke: var(--line-strong); stroke-width: 1.2; stroke-linecap: round; }
+.ot-whiskers path { fill: none; stroke: var(--ot-fur-deep); stroke-width: 1.2; stroke-linecap: round; opacity: 0.6; }
+
+/* ── Emotes: hidden until an act brings one out ─────────────────────────── */
+
+.ot [data-p^='e_'] { opacity: 0; }
+.ot-e-heart  { fill: var(--clay-bright); }
+.ot-e-soft   { opacity: 0.7; }
+.ot-e-spark  { fill: var(--clay-bright); }
+.ot-e-spark.ot-e-alt, .ot-e-note, .ot-e-water { fill: var(--ot-water); }
+.ot-e-steam  { fill: none; stroke: var(--ink-faint); stroke-width: 2.6; stroke-linecap: round; opacity: 0.6; }
+.ot-e-tear   { fill: none; stroke: var(--ot-water); stroke-width: 3.6; stroke-linecap: round; }
+.ot-e-mark   { font-family: var(--font-display); font-weight: var(--fw-bold); font-size: 24px; fill: var(--clay); }
+.ot-e-z      { font-family: var(--font-ui); font-weight: var(--fw-black); font-size: 11px; fill: var(--ink-faint); }
+.ot-e-z-big  { font-size: 15px; }
+.ot-ripple   { fill: none; stroke: var(--ot-water); stroke-width: 2.2; stroke-linecap: round; }
+
+/* A shy otter keeps its blush. */
+.ot[data-mood='shy'] [data-p='e_blush'] { opacity: 1; }
 
 /* ── The face: one eye shape and one mouth shape at a time ─────────────── */
 
 .ot-v { display: none; }
 
-.ot[data-eyes='open']  .ot-e-open,
-.ot[data-eyes='wide']  .ot-e-wide,
-.ot[data-eyes='happy'] .ot-e-happy,
-.ot[data-eyes='shut']  .ot-e-shut,
-.ot[data-eyes='smug']  .ot-e-smug,
-.ot[data-eyes='dizzy'] .ot-e-dizzy,
+.ot[data-eyes='half']   .ot-lid-half,
+.ot[data-eyes='angry']  .ot-lid-angry,
+.ot[data-eyes='sad']    .ot-lid-sad,
+.ot[data-eyes='squint'] .ot-lid-squint,
+.ot[data-eyes='happy']  .ot-e-happy,
+.ot[data-eyes='shut']   .ot-e-shut,
+.ot[data-eyes='love']   .ot-e-love,
+.ot[data-eyes='dizzy']  .ot-e-dizzy,
 .ot[data-mouth='smile'] .ot-m-smile,
 .ot[data-mouth='grin']  .ot-m-grin,
 .ot[data-mouth='o']     .ot-m-o,
 .ot[data-mouth='flat']  .ot-m-flat,
 .ot[data-mouth='frown'] .ot-m-frown,
-.ot[data-mouth='smirk'] .ot-m-smirk { display: inline; }
+.ot[data-mouth='smirk'] .ot-m-smirk,
+.ot[data-mouth='tongue'] .ot-m-tongue,
+.ot[data-mouth='wobble'] .ot-m-wobble { display: inline; }
 
-/* A sympathetic or determined otter carries its brows that way at rest. */
-.ot[data-mood='sympathetic'] [data-p='browL'] { transform: rotate(14deg); }
-.ot[data-mood='sympathetic'] [data-p='browR'] { transform: rotate(-14deg); }
-.ot[data-mood='determined']  [data-p='browL'] { transform: rotate(-12deg); }
-.ot[data-mood='determined']  [data-p='browR'] { transform: rotate(12deg); }
+.ot:is([data-eyes='happy'], [data-eyes='shut'], [data-eyes='love'], [data-eyes='dizzy']) .ot-eyes-base { display: none; }
+.ot[data-eyes='wide'] .ot-pupil { r: 3.6px; }
 
 /* The book: closed, or open to read. */
 .ot[data-book='open'] .ot-b-closed,
 .ot:not([data-book='open']) .ot-b-open { display: none; }
 
+/* ── Poses ─────────────────────────────────────────────────────────────── */
+
+.ot-edgepaws, .ot-ripple, .pz-gripL, .pz-gripR { display: none; }
+
+.ot:is([data-pose='sit'], [data-pose='hang'], [data-pose='climb'], [data-pose='swim'], [data-pose='peek'], [data-pose='float']) [data-p='shadow'] { display: none; }
+
+/* Peek and swim: the head over the edge, the rest of it below. */
+.ot:is([data-pose='peek'], [data-pose='swim']) .ot-pose { transform: translate(0px, 74px); }
+.ot:is([data-pose='peek'], [data-pose='swim']) :is(.pz-body, .pz-legL, .pz-legR, .pz-tail, .pz-armL, .pz-armR, .pz-book) { display: none; }
+.ot:is([data-pose='peek'], [data-pose='swim']) .ot-edgepaws { display: inline; }
+.ot:is([data-pose='swim'], [data-pose='float']) .ot-ripple { display: inline; }
+
+/* Sit: on a ledge at y 128, legs over the front, the tail behind it. */
+.ot[data-pose='sit'] .pz-tail { display: none; }
+.ot[data-pose='sit'] .pz-legL { transform: rotate(10deg); }
+.ot[data-pose='sit'] .pz-legR { transform: rotate(-10deg); }
+
+/* Hang: from a ledge at y 4, by both paws. */
+.ot[data-pose='hang'] :is(.pz-armL, .pz-armR, .pz-book) { display: none; }
+.ot[data-pose='hang'] :is(.pz-gripL, .pz-gripR) { display: inline; }
+.ot[data-pose='hang'] .pz-tail { transform: rotate(28deg); }
+
+/* Climb: one arm reaching up the wall, one pulling, a knee raised. */
+.ot[data-pose='climb'] .pz-book { display: none; }
+.ot[data-pose='climb'] .pz-armL { transform: rotate(160deg); }
+.ot[data-pose='climb'] .pz-armR { transform: rotate(-35deg); }
+.ot[data-pose='climb'] .pz-legL { transform: translate(0px, -7px) rotate(-22deg); }
+.ot[data-pose='climb'] .pz-legR { transform: rotate(12deg); }
+.ot[data-pose='climb'] .pz-tail { transform: rotate(34deg); }
+
+/* Float: on its back, head up, feet out of the water, the book on its
+   chest; the water line is the bottom of the drawing. */
+.ot[data-pose='float'] .ot-pose { transform: translate(6px, 24px) rotate(-90deg); transform-origin: 60px 100px; }
+.ot[data-pose='float'] .pz-head { transform: rotate(64deg); }
+.ot[data-pose='float'] .pz-legL { transform: rotate(-96deg); }
+.ot[data-pose='float'] .pz-legR { transform: rotate(-84deg); }
+.ot[data-pose='float'] .pz-tail { display: none; }
+
 /* Small otters lose their finest lines. */
 .ot--small .ot-whiskers,
-.ot--small .ot-pads { display: none; }
+.ot--small .ot-freckles,
+.ot--small .ot-pads,
+.ot--small .ot-toes { display: none; }
 
 /* ═══ Lanes (COMPONENT_RULES.md → Revision 14 → The otter's lanes) ═════════
    A lane is a strip the otter roams. Its bottom edge is the ground it runs
@@ -136,4 +198,36 @@
 
 @media (max-width: 560px) {
   .olane--card { --ol-size: 60px; }
+}
+
+/* ═══ Scenes (COMPONENT_RULES.md → Revision 15 → The otter's scenes) ═══════
+   An actor is placed by a point of its drawing on a point of the page
+   (OtterScenes.jsx); it stays invisible until its scene first places it. */
+
+.oa {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  width: 64px;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+}
+
+.oa.is-placed { opacity: 1; }
+.oa-facing.is-left { transform: scaleX(-1); }
+.oa .ot { pointer-events: none; }
+
+.oa--hero  { width: 58px; }
+.oa--card  { width: 66px; }
+.oa--float { width: 92px; }
+.oa--start { width: 64px; }
+.oa--nap   { width: 58px; }
+
+@media (max-width: 720px) {
+  .oa--hero  { width: 44px; }
+  .oa--card, .oa--start { width: 54px; }
+  .oa--float { width: 74px; }
+  .oa--nap   { width: 48px; }
 }

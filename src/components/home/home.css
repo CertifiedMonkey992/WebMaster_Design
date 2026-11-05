@@ -17,6 +17,13 @@
 }
 
 .home main > section { scroll-margin-top: calc(var(--head) + var(--sp-4)); }
+
+/* The otter's scenes may run past the sides of the page; they never make
+   it scroll sideways. */
+.home main, .hs-foot { overflow-x: clip; }
+.hx-copy, .hs-lessons, .hs-start, .hs-foot { position: relative; }
+.hx-verb { display: inline-block; }
+.hx-heading .tx-u, .hx-heading .tx-w { cursor: default; }
 .home main > section:focus { outline: none; }
 
 /* ═══ HEADER ═══════════════════════════════════════════════════════════════ */

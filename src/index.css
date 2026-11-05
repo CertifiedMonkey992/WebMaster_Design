@@ -256,19 +256,23 @@
   --lg-diamond-light:  #E1F7FF;
   --lg-white:          #FFFFFF;
 
-  /* ── The otter (VISUAL_SYSTEM.md → Revision 14) ─────────────────────────
+  /* ── The otter (VISUAL_SYSTEM.md → Revision 15) ─────────────────────────
      LunX's mascot. A named, scoped palette, read ONLY by `.ot` artwork
-     (components/otter/). Revision 14 redraws it as a game character: a
-     heavy dark-brown outline, a dark brown body, a pale tan head with a
-     cream muzzle. All warm. */
-  --ot-line:       #2E1D12;   /* outline, eyes, nose */
-  --ot-fur:        #8A5634;   /* body, arms */
-  --ot-fur-deep:   #5F3A22;   /* legs, paws, ears, tail */
-  --ot-head:       #C99E70;   /* the head, paler than the body */
-  --ot-belly:      #A8774F;
-  --ot-cream:      #EED8B6;   /* muzzle */
+     (components/otter/). Flat 2D, no outline: four browns from the lit
+     front to the darkest paw, a pale mask, a cream muzzle. --ot-water is
+     the one cool hue in it — tears, sweat, the water it swims in — and is
+     never used outside the otter. */
+  --ot-fur:        #8C5A36;   /* body, head */
+  --ot-fur-light:  #A9774E;   /* belly, a lit crown */
+  --ot-fur-deep:   #6F4428;   /* the shaded side, arms, legs, tail */
+  --ot-fur-dark:   #4F2F1B;   /* paws, feet, inner ears */
+  --ot-mask:       #D9B489;   /* the face mask and its lids */
+  --ot-cream:      #F2DFC2;   /* muzzle */
+  --ot-pupil:      #2E2019;
+  --ot-nose:       #3A2416;   /* nose, and the lines of the face */
   --ot-mouth:      #5A1F1A;
-  --ot-tongue:     #D9675F;
+  --ot-tongue:     #E07B72;
+  --ot-water:      #79AED1;
 
   /* ── The home page (revision 12) ────────────────────────────────────────── */
   --fs-feature: clamp(2.25rem, 3.4vw, 3rem);  /* feature-row + closing headings */

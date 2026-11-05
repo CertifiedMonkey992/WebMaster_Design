@@ -1,5 +1,24 @@
 # Motion Rules
 
+> **Revision 15 — the otter lives in the page (2026-11-04).** The otter is no
+> longer a figure on the bottom edge of the screen. It has eight poses —
+> stand, hold, sit (on a ledge), hang (from a ledge), climb, swim, peek,
+> float (on its back) — switched at run time, and the engine carries it in
+> each (run, swim, climb, drift). Its feelings are acts with emotes:
+> excited, shy, unimpressed, silly, love, dance, angry, cry, scared,
+> sleepy, surprised, confused, proud; and ledge acts — kick, dearLife (one
+> paw lets go), paddle, splash, bob. On the landing page it plays scenes
+> (`components/otter/OtterScenes.jsx`): it jumps from the hero's button
+> onto the headline and hops between words (a word dips when it lands; a
+> clicked word calls it over); it swims in along the Parts band's wave,
+> leaps to a card's top edge, hangs on for dear life and climbs up to sit;
+> it floats on its back on the lessons' bottom edge; it climbs the start
+> card and sits on top, answering the buttons; it sleeps on the footer
+> and is cross when woken. Each scene begins at first sight and takes its
+> later turns from the Stage. Reduced motion places each otter where its
+> scene ends.
+
+
 > **Revision 14 — a playful landing page and a game-character otter
 > (2026-11-04).** The product owner asked for the landing page to carry as
 > many text animations and transitions as it can — "like a deck editor's

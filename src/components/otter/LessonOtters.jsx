@@ -8,7 +8,7 @@
      AnswerOtter     peeks over the top edge of the answer bar and reacts
                      to the verdict: a nod or a raised paw for a right
                      answer (building to a clap over a run), sympathy and
-                     an encouraging nod for a wrong one, a curious look for
+                     tears for a wrong one, a puzzled look for
                      a reveal
      CompleteOtter   celebrates on the completion screen — a backflip for a
                      perfect Check, a nod for a review

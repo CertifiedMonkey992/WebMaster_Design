@@ -10,11 +10,12 @@
                     opposite directions
      StartCard      the framed card at the foot of the page: the way in
 
-   Each section names the side of the screen the otter runs to as it
-   reaches the middle of the screen, and what it does there (data-otter,
-   read by OtterLane).
+   The otter lives in three of them (otter/OtterScenes.jsx): it swims in
+   along the band's wave and hangs off a card, floats on its back on the
+   lessons' bottom edge, and climbs the start card.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { useRef } from 'react'
 import { PageLink } from '../../nav'
 import { useAuth } from '../../state/AuthContext'
 import Reveal from '../../motion/Reveal'
@@ -23,6 +24,7 @@ import TextFx, { Marker, RollText, Typewriter } from '../../motion/TextFx'
 import { Icon } from '../progression/Icons'
 import { getLessonIcon } from '../learn/LessonIcons'
 import { jumpTo } from './HomeHeader'
+import { CardSwimmer, Climber, Floater } from '../otter/OtterScenes'
 import { FIRST_MINUTES, LESSONS, PART_CARDS, TOTAL_LESSONS, inWords, inkOf } from './homeData'
 
 function Arrow() {
@@ -46,8 +48,9 @@ function Wave({ edge }) {
 /* ── The Parts ─────────────────────────────────────────────────────────── */
 
 export function PartsBand() {
+  const band = useRef(null)
   return (
-    <section className="hs-band" id="parts" tabIndex={-1} aria-labelledby="parts-heading" data-otter="left:spinBook">
+    <section className="hs-band" id="parts" tabIndex={-1} aria-labelledby="parts-heading" ref={band}>
       <Wave edge="top" />
       <div className="hs-band-inner">
         <TextFx as="h2" fx="flip" className="hs-title hs-center" id="parts-heading" stagger={22}>Three parts, one course.</TextFx>
@@ -74,6 +77,7 @@ export function PartsBand() {
         </Reveal>
       </div>
       <Wave edge="bottom" />
+      <CardSwimmer scope={band} />
     </section>
   )
 }
@@ -116,8 +120,9 @@ function LessonCard({ l }) {
 
 export function LessonMarquee() {
   const half = Math.ceil(LESSONS.length / 2)
+  const section = useRef(null)
   return (
-    <section className="hs-lessons" id="lessons" tabIndex={-1} aria-labelledby="lessons-heading" data-otter="left:toss">
+    <section className="hs-lessons" id="lessons" tabIndex={-1} aria-labelledby="lessons-heading" ref={section}>
       <div className="hs-col">
         <TextFx as="h2" fx="bounce" className="hs-title" id="lessons-heading" stagger={30}>{`${inWords(TOTAL_LESSONS)} lessons.`}</TextFx>
         <TextFx as="p" fx="blur" by="word" stagger={14} delay={250} className="hs-sub">
@@ -133,6 +138,7 @@ export function LessonMarquee() {
           {LESSONS.slice(half).map((l) => <LessonCard key={l.id} l={l} />)}
         </Marquee>
       </Reveal>
+      <Floater scope={section} />
     </section>
   )
 }
@@ -141,8 +147,9 @@ export function LessonMarquee() {
 
 export function StartCard() {
   const { account } = useAuth()
+  const section = useRef(null)
   return (
-    <section className="hs-start" aria-labelledby="start-heading" data-otter="right:point">
+    <section className="hs-start" aria-labelledby="start-heading" ref={section}>
       <Reveal className="hs-start-card" variant="curtain">
         <div className="hs-start-head">
           <span className="hs-start-icon"><Icon name="rocket" size={20} /></span>
@@ -166,6 +173,7 @@ export function StartCard() {
           )}
         </div>
       </Reveal>
+      <Climber scope={section} />
     </section>
   )
 }

@@ -64,13 +64,14 @@ There are no level titles: progress is shown as level, XP, lessons and streak.
   values — `leagueConfig.js` holds every league, tournament and challenge
   rule. `src/data/concepts.js` maps each of the 193 gradable questions to
   the concept it tests; Practice and its tests depend on that map.
-- The mascot is `src/components/otter/` (revision 14): an outlined
-  game-character otter (`Otter.jsx`), an engine and an act library
-  (`engine.js`, `acts.js`), and lanes it roams (`OtterLane.jsx`) — the
-  bottom edge of the screen on the home page, the Your Progress card in
-  the app — plus the peeking and standing otters inside lessons. The
-  landing page's text effects are `src/motion/TextFx.jsx`. `npm run dev`
-  serves a lab for the otter at `/otter-lab.html` (not a build input).
+- The mascot is `src/components/otter/` (revision 15): a flat 2D otter
+  with eight poses and a range of feelings (`Otter.jsx`, `engine.js`,
+  `acts.js`), placed in scenes on the landing page (`OtterScenes.jsx` —
+  on the headline's words, hanging off a card, floating, climbing,
+  asleep on the footer), roaming the Your Progress card in the app
+  (`OtterLane.jsx`) and peeking over a lesson's answer bar. The landing
+  page's text effects are `src/motion/TextFx.jsx`. `npm run dev` serves a
+  lab for the otter at `/otter-lab.html` (not a build input).
 - `server/` is the LunX server: `node:http`, `node:sqlite`, `node:crypto`,
   nothing else. It imports the app's pure modules (course content, step
   grading, configs) through `server/resolve.mjs`, so a rule changes in one
@@ -134,7 +135,7 @@ glowing, indigo-to-cyan aesthetic every other product in the category uses.
 ## Do not introduce arbitrary
 
 - **Colours** — every colour is a token in `index.css`. No hex literals in
-  component CSS. No cool hues — except two named, scoped palettes: the
+  component CSS. No cool hues — except three named, scoped palettes: the otter's `--ot-water` (tears, sweat, water; `components/otter/` only), the
   sidebar's full-colour nav icons (`--ni-*`, `VISUAL_SYSTEM.md` → The nav
   icons), read only by `NavIcons.jsx`, and the league artwork (`--lg-*`,
   → The league palette), read only by `leagues/LeagueArt.jsx`.
