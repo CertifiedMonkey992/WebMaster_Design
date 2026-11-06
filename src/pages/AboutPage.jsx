@@ -165,18 +165,18 @@ export default function AboutPage() {
         <section className="ab-hero" aria-labelledby="about-heading">
           <div className="ab-hero-copy">
             <Reveal as="p" variant="left" immediate delay={60} className="ab-hero-eyebrow">
-              About LunX · the story, the course, the work log and our sources
+              TSA Webmaster · 2026–27
             </Reveal>
 
             <SplitText as="h1" className="ab-hero-heading" id="about-heading" immediate delay={100} stagger={34}>
-              What we made, and <em className="em">why it looks like paper</em>.
+              About LunX
             </SplitText>
 
             <Reveal as="p" className="ab-hero-sub" immediate delay={380}>
               LunX is our chapter’s entry for the 2026–27 TSA Webmaster theme: an
-              AI learning portal for high school students in grades 9–12:
-              {TOTAL_LESSONS} lessons in {TOTAL_SECTIONS} modules, built from August
-              to November 2026.
+              AI learning portal for high school students in grades 9–12. It has{' '}
+              {TOTAL_LESSONS} lessons in {TOTAL_SECTIONS} modules, and we built it
+              from August to November 2026.
             </Reveal>
 
             <Reveal className="ab-hero-actions" variant="fade" immediate delay={520}>
