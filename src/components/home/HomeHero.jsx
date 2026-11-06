@@ -28,12 +28,6 @@ export default function HomeHero() {
 
   return (
     <section className="hx" aria-labelledby="hero-heading">
-      <svg className="hx-waves" viewBox="0 0 1440 640" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        {Array.from({ length: 11 }, (_, i) => (
-          <path key={i} d={`M0 ${40 + i * 56}C240 ${18 + i * 56} 480 ${62 + i * 56} 720 ${40 + i * 56}S1200 ${18 + i * 56} 1440 ${40 + i * 56}`} />
-        ))}
-      </svg>
-
       <div className="hx-inner">
         <div className="hx-copy" ref={copy}>
           <Reveal variant="drop" immediate delay={80}>

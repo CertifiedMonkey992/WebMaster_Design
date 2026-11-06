@@ -1,8 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   StreakPanel.jsx — STREAK DETAIL, WEEK CALENDAR AND MILESTONE PATH
+   StreakPanel.jsx — STREAK DETAIL, MONTH CALENDAR AND MILESTONE PATH
    ---------------------------------------------------------------------------
-   The calendar reads the real per-day activity history, so a tick means the
-   learner genuinely did something that day.
+   The calendar reads the real per-day activity history, so a lit day means
+   the learner genuinely did something that day.
+
+   2026-11-05: the week strip became a month (calendar/MonthCalendar.jsx).
+   Every day the history keeps (STREAK.HISTORY_DAYS) can be paged back to;
+   an active day shows its XP in the square, and choosing a day shows what
+   was earned, how many lessons, the time spent and where it sits in a run.
 
    Revision 4 (idle life): embers leave the hero flame; a warm sheen runs
    across the ticked days and the squares hop in turn; a spark walks from
@@ -18,7 +23,9 @@
      · a banked Streak Shield stands guard with its count shown as pips
    ═══════════════════════════════════════════════════════════════════════════ */
 
+import { useMemo, useState } from 'react'
 import { useProgression, useClock } from '../../state/ProgressionContext'
+import MonthCalendar, { longDate } from '../calendar/MonthCalendar'
 import { FlameIcon, ShieldIcon, Icon } from './Icons'
 import { LiveFlame } from './LiveIcons'
 import RollingNumber from '../../motion/RollingNumber'
@@ -26,10 +33,16 @@ import JudgeChip, { JudgeMargin } from '../judge/JudgeChip'
 import { OPS } from '../../services/judgeService'
 import { getActivityMap } from '../../services/streakService'
 import { STREAK } from '../../config/progressionConfig'
-import {
-  getWeekDays, getWeekDayLabels, getLocalDateKey, getShortDate,
-  msUntilEndOfDay, formatDuration,
-} from '../../utils/dateUtils'
+import { getLocalDateKey, addDays, msUntilEndOfDay, formatDuration } from '../../utils/dateUtils'
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
+
+/** Consecutive active days ending at `key` — its place in a run. */
+function runLength(byKey, key) {
+  let n = 0
+  for (let k = key; byKey[k]?.active; k = addDays(k, -1)) n++
+  return n
+}
 
 function milestoneWindow(streak) {
   const all = STREAK.MILESTONES
@@ -44,10 +57,29 @@ export default function StreakPanel({ onOpenShop }) {
   const now = useClock()
 
   const today = getLocalDateKey(new Date(now))
-  const week = getWeekDays(new Date(now))
-  const labels = getWeekDayLabels()
-  const activity = getActivityMap(state, week)
+  const first = addDays(today, -STREAK.HISTORY_DAYS)
+  const [picked, setPicked] = useState(null)
+  const selected = picked ?? today
   const milestone = vm.nextMilestone
+
+  /* Every kept day, read once: active days light up with their XP. */
+  const history = state.streak.history
+  const { days, byKey } = useMemo(() => {
+    const activity = getActivityMap({ streak: { history } }, Object.keys(history ?? {}))
+    const byKey = Object.fromEntries(activity.map((d) => [d.dateKey, d]))
+    const days = {}
+    for (const d of activity) {
+      if (!d.active) continue
+      days[d.dateKey] = {
+        tone: 'streak',
+        summary: d.xp > 0 ? String(d.xp) : '✓',
+        label: `${d.xp} XP, ${plural(d.lessons, 'lesson')}`,
+      }
+    }
+    return { days, byKey }
+  }, [history])
+  const day = byKey[selected]
+  const minutes = day ? Math.round(day.seconds / 60) : 0
 
   /* Stones sit evenly along the path (a path of stops, not a ruler), and a
      streak between two stones is placed proportionally between them. */
@@ -83,49 +115,37 @@ export default function StreakPanel({ onOpenShop }) {
         </div>
       </div>
 
-      {/* ── This week ── */}
-      <div className={`pg-week${vm.streak > 0 ? ' is-running' : ''}`}>
-        <div className="pg-week-head">
-          <span>This week</span>
-          {!vm.activeToday && (
-            <span className="pg-week-timer">
-              <Icon name="clock" size={11} /> {formatDuration(msUntilEndOfDay(new Date(now)))} left
-            </span>
+      {/* ── The month ── */}
+      <div className="pg-month">
+        <MonthCalendar
+          size="compact"
+          label="Your activity"
+          days={days}
+          selected={selected}
+          onSelect={setPicked}
+          today={today}
+          min={first}
+          max={today}
+        />
+
+        <div className="pg-month-day" aria-live="polite">
+          <div className="pg-month-day-head">
+            <span className="pg-month-day-date">{selected === today ? 'Today' : longDate(selected).replace(/, \d{4}$/, '')}</span>
+            {day?.active && <span className="pg-month-day-run">Day {runLength(byKey, selected)} of a run</span>}
+          </div>
+          {day?.active ? (
+            <dl className="pg-month-day-facts">
+              <div><dt>XP</dt><dd className="tnum">{day.xp}</dd></div>
+              <div><dt>Lessons</dt><dd className="tnum">{day.lessons}</dd></div>
+              <div><dt>Time</dt><dd className="tnum">{minutes > 0 ? `${minutes} min` : '<1 min'}</dd></div>
+            </dl>
+          ) : selected === today ? (
+            <p className="pg-month-day-empty">
+              Nothing yet · <Icon name="clock" size={11} /> {formatDuration(msUntilEndOfDay(new Date(now)))} left to keep the streak
+            </p>
+          ) : (
+            <p className="pg-month-day-empty">No activity</p>
           )}
-        </div>
-        <div className="pg-week-grid">
-          {week.map((dateKey, i) => {
-            const day = activity[i]
-            const isToday = dateKey === today
-            const isFuture = dateKey > today
-            const tip = isFuture
-              ? `${getShortDate(dateKey)} · still to come`
-              : day.active
-                ? `${getShortDate(dateKey)} · ${day.xp} XP earned`
-                : isToday
-                  ? `Today · finish a lesson to tick it`
-                  : `${getShortDate(dateKey)} · no activity`
-            return (
-              <div
-                key={dateKey}
-                className={[
-                  'pg-day',
-                  day.active ? 'is-active' : '',
-                  isToday ? 'is-today' : '',
-                  isFuture ? 'is-future' : '',
-                ].join(' ')}
-                style={{ '--i': i }}
-                data-tip={tip}
-              >
-                <span className="pg-day-label">{labels[i]}</span>
-                <span className={`pg-day-dot${isToday && !day.active ? ' fx-ping' : ''}${day.active ? ' is-drawing' : ''}`}>
-                  {day.active
-                    ? <Icon name="check" size={12} strokeWidth={3} />
-                    : <span className="pg-day-empty" />}
-                </span>
-              </div>
-            )
-          })}
         </div>
       </div>
 

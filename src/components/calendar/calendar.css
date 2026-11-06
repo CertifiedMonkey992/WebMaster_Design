@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   calendar.css — MonthCalendar
+   ---------------------------------------------------------------------------
+   A month on the paper ground: hairlines between the days (the row pattern
+   turned into a grid), the date in the corner, a short summary under it.
+   A day with something in it is tinted evergreen; the streak panel's active
+   days are ember, the way its week strip was. Today is ringed in ink
+   (COMPONENT_RULES.md → Streak: today is a border, not a colour); the chosen
+   day is outlined in evergreen.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cal { width: 100%; }
+
+.cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.cal-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
+  text-align: center;
+  flex: 1;
+}
+
+.cal-nav {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out), transform var(--dur-micro) var(--ease-press);
+}
+.cal-nav:hover:not(:disabled) { border-color: var(--line-strong); background: var(--surface-raised); }
+.cal-nav:active:not(:disabled) { transform: scale(0.94); }
+.cal-nav:disabled { opacity: 0.35; cursor: default; }
+
+/* Month buttons: one per month in range, with how many days hold an entry. */
+.cal-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.cal-jump-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  cursor: pointer;
+  transition: border-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out), background-color var(--dur-hover) var(--ease-out);
+}
+.cal-jump-btn:hover { border-color: var(--line-strong); color: var(--ink); }
+.cal-jump-btn.is-on { background: var(--evergreen); border-color: var(--evergreen); color: var(--surface-raised); }
+.cal-jump-count { font-size: var(--fs-micro); opacity: 0.75; }
+
+/* ── The grid ─────────────────────────────────────────────────────────────── */
+
+.cal-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.cal-grid th {
+  padding: 0 0 var(--sp-2);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+}
+
+.cal-grid td { padding: 0; border: 1px solid var(--line-faint); }
+
+/* A month change slides the weeks in from the side it came from. */
+.cal-body { animation: cal-turn var(--dur-open) var(--ease-snap); }
+@keyframes cal-turn { from { opacity: 0; transform: translateX(calc(var(--cal-dir, 0) * 18px)); } }
+
+.cal-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  width: 100%;
+  min-height: 5.5rem;
+  padding: var(--sp-2);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-hover) var(--ease-out);
+}
+
+.cal-day:hover:not(:disabled) { background: var(--surface); }
+.cal-day:focus-visible { outline: 2px solid var(--evergreen); outline-offset: -2px; }
+.cal-day:disabled { cursor: default; }
+
+.cal-num {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semi);
+  color: var(--ink-muted);
+  line-height: 1;
+}
+
+.cal-sum {
+  font-size: var(--fs-caption);
+  color: var(--ink);
+  line-height: var(--lh-snug);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cal-day.has-entry { background: var(--evergreen-tint); }
+.cal-day.has-entry .cal-num { color: var(--evergreen); font-weight: var(--fw-bold); }
+
+.cal-day.is-outside { opacity: 0.4; }
+.cal-day:disabled:not(.has-entry) .cal-num { color: var(--ink-faint); }
+.cal-day.is-future .cal-num { color: var(--ink-faint); }
+
+/* Today: the date sits in an ink ring. */
+.cal-day.is-today .cal-num {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  margin: -0.3em 0 0 -0.3em;
+  border-radius: var(--r-pill);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+  color: var(--ink);
+}
+
+/* The chosen day: an evergreen outline inside the square. */
+.cal-day.is-selected { box-shadow: inset 0 0 0 2px var(--evergreen); }
+
+/* ── Compact: a month inside a panel ──────────────────────────────────────── */
+
+.cal--compact .cal-head { margin-bottom: var(--sp-2); }
+.cal--compact .cal-title { font-size: var(--fs-body); }
+.cal--compact .cal-nav { width: 30px; height: 30px; }
+.cal--compact .cal-grid th { text-align: center; padding-bottom: var(--sp-1); }
+.cal--compact .cal-grid td { border: 0; padding: 2px; }
+
+.cal--compact .cal-day {
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 0;
+  aspect-ratio: 1;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-faint);
+  background: var(--surface);
+}
+.cal--compact .cal-num { font-size: var(--fs-caption); }
+.cal--compact .cal-sum {
+  font-size: 0.625rem;
+  font-weight: var(--fw-bold);
+  color: inherit;
+  -webkit-line-clamp: 1;
+}
+.cal--compact .cal-day.is-today .cal-num { margin: 0; min-width: 1.5em; height: 1.5em; }
+.cal--compact .cal-day.is-future { border-style: dashed; background: transparent; }
+
+/* The learner's active days: ember, as the streak's own colour. */
+.cal-day.is-streak { background: var(--ember); border-color: transparent; color: var(--surface-raised); }
+.cal-day.is-streak .cal-num { color: var(--surface-raised); }
+.cal-day.is-streak:hover:not(:disabled) { background: var(--ember); filter: brightness(1.08); }
+.cal-day.is-streak.is-today .cal-num { box-shadow: inset 0 0 0 1.5px var(--surface-raised); }
+.cal-day.is-streak.is-selected { box-shadow: inset 0 0 0 2px var(--surface-raised), 0 0 0 2px var(--ember); }
+
+
+@media (max-width: 640px) {
+  .cal--full .cal-day { min-height: 3.25rem; padding: var(--sp-1); }
+  .cal--full .cal-sum { display: none; }
+  /* With no room for the summary, a dot says the day holds something. */
+  .cal--full .cal-day.has-entry::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: var(--r-pill);
+    background: var(--evergreen);
+    margin-top: auto;
+  }
+  .cal-grid th { font-size: 0.625rem; letter-spacing: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-body { animation: none; }
+}

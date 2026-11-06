@@ -628,99 +628,54 @@
 .pg-streak-hero-value > span:last-child { font-family: var(--font-ui); font-size: var(--fs-small); color: var(--ink-faint); font-weight: var(--fw-semi); }
 .pg-streak-hero-label { font-size: var(--fs-caption); color: var(--ink-muted); margin-top: 2px; }
 
-.pg-week {
+/* The month (2026-11-05): calendar/MonthCalendar.jsx draws the grid; this is
+   the chosen day's line underneath it. */
+.pg-month {
   background: var(--paper);
   border: 1px solid var(--line-faint);
   border-radius: var(--r-md);
   padding: var(--sp-3);
 }
 
-.pg-week-head {
+.pg-month-day {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line-faint);
+}
+
+.pg-month-day-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-semi);
-  color: var(--ink-faint);
+  align-items: baseline;
+  gap: var(--sp-2);
   margin-bottom: var(--sp-2);
 }
 
-.pg-week-timer { display: inline-flex; align-items: center; gap: 4px; color: var(--clay-ink); }
-
-.pg-week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--sp-1); }
-
-.pg-day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  cursor: default;
-  animation: fx-pop-in var(--dur-lift) var(--ease-spring) backwards;
-  animation-delay: calc(150ms + var(--i, 0) * var(--stagger));
+.pg-month-day-date {
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semi);
+  color: var(--ink);
 }
 
-.pg-day-label { font-size: var(--fs-micro); color: var(--ink-faint); font-weight: var(--fw-semi); }
+.pg-month-day-run { font-size: var(--fs-micro); font-weight: var(--fw-bold); color: var(--clay-ink); white-space: nowrap; }
 
-.pg-day-dot {
-  position: relative;
-  width: 26px; height: 26px;
-  border-radius: var(--r-sm);
-  display: flex; align-items: center; justify-content: center;
+.pg-month-day-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+.pg-month-day-facts > div {
   background: var(--surface);
-  border: 1px solid var(--line);
-  color: transparent;
-  --ping-color: var(--clay);
-  transition: background-color var(--dur-hover) var(--ease-out), color var(--dur-hover) var(--ease-out), border-color var(--dur-hover) var(--ease-out), transform var(--dur-lift) var(--ease-lift);
+  border: 1px solid var(--line-faint);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2);
 }
+.pg-month-day-facts dt { font-size: var(--fs-micro); color: var(--ink-faint); font-weight: var(--fw-semi); }
+.pg-month-day-facts dd { font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--ink); }
 
-.pg-day:hover .pg-day-dot { transform: translateY(-3px) scale(1.12); border-color: var(--line-strong); }
-
-.pg-day.is-active .pg-day-dot {
-  background: var(--ember);
-  border-color: transparent;
-  color: var(--surface-raised);
-}
-
-.pg-day.is-active .ico-check { animation-delay: calc(260ms + var(--i, 0) * var(--stagger)); }
-
-/* Idle (revision 4): a warm sheen runs across the ticked days, left to right,
-   and each check hops as the light passes it — the week read as one run. The
-   travel happens in the last 12% of a 7.3s cycle; the rest is stillness. */
-.pg-week.is-running .pg-day.is-active .pg-day-dot { overflow: hidden; }
-
-.pg-week.is-running .pg-day.is-active .pg-day-dot::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 28%, rgba(var(--sheen-rgb), 0.6) 50%, transparent 72%);
-  transform: translateX(-130%);
-  animation: pg-week-run var(--idle-run) var(--ease-settle) calc(90ms * var(--i, 0) + 1.2s) infinite;
-}
-
-/* The hop moves the square itself (an HTML box the compositor can run), on
-   `translate`/`scale` so the hover's transform still composes. */
-.pg-week.is-running .pg-day.is-active .pg-day-dot {
-  animation: pg-week-hop var(--idle-run) var(--ease-out) calc(90ms * var(--i, 0) + 1.2s) infinite;
-}
-
-@keyframes pg-week-run {
-  0%, 86%   { transform: translateX(-130%); }
-  97%, 100% { transform: translateX(130%); }
-}
-
-@keyframes pg-week-hop {
-  0%, 87%, 97%, 100% { translate: 0 0; scale: 1; }
-  91% { translate: 0 -2px; scale: 1.18; }
-}
-
-.pg-day.is-today .pg-day-dot { border: 1.5px solid var(--ink); }
-.pg-day.is-today .pg-day-label { color: var(--ink); font-weight: var(--fw-bold); }
-.pg-day.is-future .pg-day-dot { opacity: 0.5; border-style: dashed; }
-
-.pg-day-empty {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: var(--line-strong);
+.pg-month-day-empty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-caption);
+  color: var(--ink-muted);
 }
 
 .pg-milestone {
@@ -2571,9 +2526,6 @@
   .pg-recovery-clock-ico .ico-hand,
   .qp-reset .ico-hand,
   .rt-life,
-  .pg-day-dot.fx-ping::after,
-  .pg-week.is-running .pg-day-dot::after,
-  .pg-week.is-running .pg-day-dot,
   .qc-compact-fill::after, .qc-card-fill::after, .lv-fill::after, .ac-card.is-unlocked::after,
   .qc-compact-icon > svg, .qc-card-icon > svg {
     animation: none !important;

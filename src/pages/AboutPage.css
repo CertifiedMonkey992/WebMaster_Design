@@ -404,59 +404,84 @@
 }
 
 /* ── Work log ────────────────────────────────────────────────────────────
-   Rows on the ground, like the steps above: the date in its own column, the
-   milestone beside it. A hairline on the left joins the dates into one line
-   through time; each date sits on it as a small evergreen dot. */
+   The month (components/calendar) on the left, the chosen day on the right.
+   The day's page stays in view while the month is read (the section clips
+   rather than hides its overflow, so it is not a scroll box and sticky works). */
 
-.ab-log { list-style: none; border-top: 1px solid var(--line); }
+.ab-section#worklog { overflow: clip; }
 
-.ab-log-entry {
-  position: relative;
+.ab-cal {
   display: grid;
-  grid-template-columns: 8.5rem 1fr;
-  gap: var(--sp-5);
-  align-items: baseline;
-  padding: var(--sp-4) 0 var(--sp-4) var(--sp-5);
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  gap: var(--sp-10);
+  align-items: start;
+  margin-top: var(--sp-10);
+}
+
+.ab-cal-detail {
+  position: sticky;
+  top: calc(68px + var(--sp-6));
+  padding: var(--sp-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.ab-cal-date {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--evergreen);
+  margin-bottom: var(--sp-2);
+}
+
+.ab-cal-title {
+  font-size: var(--fs-title);
+  line-height: var(--lh-snug);
+  margin-bottom: var(--sp-4);
+}
+
+.ab-cal-items {
+  list-style: none;
+  border-top: 1px solid var(--line-faint);
+}
+
+.ab-cal-items li {
+  position: relative;
+  padding: var(--sp-2) 0 var(--sp-2) var(--sp-4);
   border-bottom: 1px solid var(--line-faint);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  line-height: var(--lh-normal);
+  text-wrap: pretty;
 }
 
-.ab-log-entry::before {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 0;
-  bottom: 0;
-  border-left: 1px solid var(--line);
-}
-
-.ab-log-entry::after {
+.ab-cal-items li::before {
   content: '';
   position: absolute;
   left: 0;
-  top: calc(var(--sp-4) + 0.45em);
-  width: 7px;
-  height: 7px;
+  top: calc(var(--sp-2) + 0.6em);
+  width: 6px;
+  height: 6px;
   border-radius: var(--r-pill);
   background: var(--evergreen);
 }
 
-.ab-log-entry:last-child::after { background: var(--clay); }
-
-.ab-log-date {
-  font-size: var(--fs-small);
-  font-weight: var(--fw-bold);
-  color: var(--evergreen);
-  white-space: nowrap;
+.ab-cal-meta {
+  margin-top: var(--sp-3);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semi);
+  color: var(--ink-faint);
 }
 
-.ab-log-title { font-size: var(--fs-body); font-weight: var(--fw-semi); margin-bottom: var(--sp-1); }
+.ab-cal-none { font-size: var(--fs-small); color: var(--ink-faint); }
 
-.ab-log-text {
-  font-size: var(--fs-small);
-  color: var(--ink-muted);
-  line-height: var(--lh-relaxed);
-  max-width: 36rem;
-  text-wrap: pretty;
+.ab-cal-step {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
 }
 
 /* ── Copyright checklist ─────────────────────────────────────────────────── */
@@ -527,6 +552,8 @@
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 
 @media (max-width: 1100px) {
+  .ab-cal { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .ab-cal-detail { position: static; }
   .ab-hero { grid-template-columns: 1fr; align-items: start; }
   .ab-split,
   .ab-split--wide-right,
@@ -548,7 +575,6 @@
 
 @media (max-width: 560px) {
   .ab-credit { grid-template-columns: 1fr; }
-  .ab-log-entry { grid-template-columns: 1fr; gap: var(--sp-1); }
   .ab-credit-name { grid-row: auto; }
   .ab-step { grid-template-columns: 2.25rem 1fr; }
   .ab-step-yield { grid-column: 2; }

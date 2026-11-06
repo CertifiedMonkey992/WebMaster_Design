@@ -14,7 +14,8 @@
    and then the references (data/references.js), in the order a TSA
    reviewer looks for them:
 
-     worklog       what we built, and when, from the git history
+     worklog       a month calendar of the days we worked (git history);
+                   choosing a day shows what was done
      copyright     the copyright checklist, one claim per row
      credits       the code stack in prose, then every tool with its licence
      sources       the research the lessons cite, by module, and standards
@@ -43,11 +44,13 @@ import SplitText from '../motion/SplitText'
 import Reveal from '../motion/Reveal'
 import CountUp from '../motion/CountUp'
 import { DUR } from '../motion/timing'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useAboutPreviews } from '../components/learn/previews'
 import { CONNECTED } from '../config/serverConfig'
 import { SITE } from '../site'
-import { WORK_LOG, CHECKLIST, TOOLS, RESEARCH, STANDARDS, INSPIRATIONS } from '../data/references'
+import MonthCalendar, { longDate } from '../components/calendar/MonthCalendar'
+import { getLocalDateKey } from '../utils/dateUtils'
+import { WORK_DAYS, CHECKLIST, TOOLS, RESEARCH, STANDARDS, INSPIRATIONS } from '../data/references'
 
 import '../components/showcase/showcase.css'
 import './AboutPage.css'
@@ -85,14 +88,18 @@ const SOURCES_BY_MODULE = SECTIONS
   .map((section, i) => ({ section, number: i + 1, items: RESEARCH.filter((r) => r.module === i + 1) }))
   .filter((m) => m.items.length > 0)
 
-/* '2026-09-04' to '2026-09-05' → 'Sep 4–5'; across months, 'Oct 30 – Nov 4'. */
-const MONTH = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { month: 'short' })
-const DAY = (iso) => Number(iso.slice(8, 10))
-const dateRange = ({ date, end }) => {
-  if (!end) return `${MONTH(date)} ${DAY(date)}`
-  if (MONTH(date) === MONTH(end)) return `${MONTH(date)} ${DAY(date)}–${DAY(end)}`
-  return `${MONTH(date)} ${DAY(date)} – ${MONTH(end)} ${DAY(end)}`
-}
+/* The work log as a calendar: each worked day's few words go in its square. */
+const WORK_CALENDAR = Object.fromEntries(WORK_DAYS.map((d) => [d.date, {
+  summary: d.summary,
+  label: `${d.title}${d.commits ? `, ${d.commits} commit${d.commits === 1 ? '' : 's'}` : ''}`,
+}]))
+const WORK_FIRST = WORK_DAYS[0].date
+const WORK_LAST = WORK_DAYS[WORK_DAYS.length - 1].date
+/* The last month is shown whole; its days after today are still to come. */
+const WORK_LAST_MONTH_END = (() => {
+  const [y, m] = WORK_LAST.split('-').map(Number)
+  return `${WORK_LAST.slice(0, 8)}${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`
+})()
 
 /* An external link: opens in a new tab and says so to a screen reader. */
 function OutLink({ href, children }) {
@@ -142,6 +149,10 @@ const NAV_LINKS = [
 
 export default function AboutPage() {
   const methodRef = useRef(null)
+  const [workDay, setWorkDay] = useState(WORK_LAST)
+  const workEntry = WORK_DAYS.find((d) => d.date === workDay)
+  const prevWork = [...WORK_DAYS].reverse().find((d) => d.date < workDay)
+  const nextWork = WORK_DAYS.find((d) => d.date > workDay)
   const impactRef = useRef(null)
   useAboutPreviews(methodRef, impactRef)
 
@@ -163,10 +174,9 @@ export default function AboutPage() {
 
             <Reveal as="p" className="ab-hero-sub" immediate delay={380}>
               LunX is our chapter’s entry for the 2026–27 TSA Webmaster theme: an
-              AI learning portal for high school students in grades 9–12. This page
-              covers the thinking behind it, what the {TOTAL_LESSONS}-lesson course
-              contains, how a lesson works and the TSA prompt it was built to answer —
-              then how we built it, when, with what, and from which sources.
+              AI learning portal for high school students in grades 9–12:
+              {TOTAL_LESSONS} lessons in {TOTAL_SECTIONS} modules, built from August
+              to November 2026.
             </Reveal>
 
             <Reveal className="ab-hero-actions" variant="fade" immediate delay={520}>
@@ -214,10 +224,6 @@ export default function AboutPage() {
                   Every page layout, style, illustration and interface component on the
                   site was made for LunX. <Mark tone="moss">No pre-built template, theme,
                   UI kit or CSS framework was used.</Mark>
-                </p>
-                <p className="sc-body">
-                  The TSA Webmaster event description and the 2026–27 theme are
-                  quoted here word for word.
                 </p>
               </Reveal>
             </div>
@@ -328,10 +334,6 @@ export default function AboutPage() {
               <SplitText as="h2" className="sc-heading" id="impact-heading" stagger={48}>
                 {`${TOTAL_MINUTES} minutes of AI, in three strands`}
               </SplitText>
-              <Reveal as="p" className="sc-body" delay={220}>
-                The brief names three kinds of learning. This is how the course’s
-                time divides between them, module by module.
-              </Reveal>
             </div>
 
             <Reveal as="dl" className="ab-figures" stagger delay={DUR.hover}>
@@ -387,16 +389,6 @@ export default function AboutPage() {
               </ol>
             </Reveal>
 
-            <Reveal as="p" className="ab-note" variant="fade" delay={DUR.open}>
-              {CONNECTED ? (
-                <>We don’t publish learner numbers. The only figures on this page are the
-                course’s own — each one read from the course data, not typed in.</>
-              ) : (
-                <>We don’t count learners. LunX has no server and no analytics, so the
-                only figures we can show are the course’s own — each one read from the
-                course data, not typed in.</>
-              )}
-            </Reveal>
           </div>
         </section>
 
@@ -408,10 +400,6 @@ export default function AboutPage() {
               <SplitText as="h2" className="sc-heading" id="method-heading" stagger={48}>
                 One lesson, start to finish
               </SplitText>
-              <Reveal as="p" className="sc-body" delay={220}>
-                Every lesson runs the same loop. The numbers beside each step are the
-                ones the course actually uses.
-              </Reveal>
             </div>
 
             <Reveal as="ol" className="ab-steps" stagger delay={DUR.hover}>
@@ -458,38 +446,58 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── Work log ─────────────────────────────────────────────────────── */}
+        {/* ── Work log: a calendar of the days we worked ───────────────────── */}
         <section className="sc-section ab-section" id="worklog" aria-labelledby="worklog-heading">
-          <div className="ab-wrap ab-split">
-            <div>
-              <Eyebrow index={5}>Work log</Eyebrow>
-              <SplitText as="h2" className="sc-heading" id="worklog-heading" stagger={48}>
-                How LunX was built, and when
-              </SplitText>
-              <Reveal stagger delay={220}>
-                <p className="sc-body">
-                  Two of us built LunX between <Mark tone="moss">August 31 and early November 2026</Mark>.
-                  Every change is a commit in the project’s history, and these are its
-                  milestones — including the ideas we tried and dropped.
-                </p>
-                <p className="ab-note">
-                  The full history is public in the{' '}
-                  <OutLink href={SITE.contact.github}>source repository on GitHub</OutLink>.
-                </p>
-              </Reveal>
-            </div>
+          <div className="ab-wrap">
+            <Eyebrow index={5}>Work log</Eyebrow>
+            <SplitText as="h2" className="sc-heading" id="worklog-heading" stagger={48}>
+              How LunX was built, and when
+            </SplitText>
 
-            <Reveal as="ol" className="ab-log" stagger delay={DUR.hover}>
-              {WORK_LOG.map((entry) => (
-                <li className="ab-log-entry" key={entry.date + entry.title}>
-                  <time className="ab-log-date tnum" dateTime={entry.date}>{dateRange(entry)}</time>
-                  <div>
-                    <h3 className="ab-log-title">{entry.title}</h3>
-                    <p className="ab-log-text">{entry.text}</p>
-                  </div>
-                </li>
-              ))}
+            <Reveal className="ab-cal" variant="up" delay={DUR.hover}>
+              <MonthCalendar
+                label="Work log"
+                days={WORK_CALENDAR}
+                selected={workDay}
+                onSelect={setWorkDay}
+                today={getLocalDateKey()}
+                min={WORK_FIRST}
+                max={WORK_LAST_MONTH_END}
+                jump
+              />
+
+              <aside className="ab-cal-detail" aria-live="polite" aria-label="The chosen day">
+                <p className="ab-cal-date">{longDate(workDay)}</p>
+                {workEntry ? (
+                  <>
+                    <h3 className="ab-cal-title">{workEntry.title}</h3>
+                    <ul className="ab-cal-items">
+                      {workEntry.items.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                    <p className="ab-cal-meta tnum">
+                      {workEntry.commits > 0
+                        ? `${workEntry.commits} commit${workEntry.commits === 1 ? '' : 's'}`
+                        : 'No commit that day'}
+                    </p>
+                  </>
+                ) : (
+                  <p className="ab-cal-none">No work logged.</p>
+                )}
+                <div className="ab-cal-step">
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={!prevWork} onClick={() => setWorkDay(prevWork.date)}>
+                    ← Earlier day
+                  </button>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={!nextWork} onClick={() => setWorkDay(nextWork.date)}>
+                    Later day →
+                  </button>
+                </div>
+              </aside>
             </Reveal>
+
+            <p className="ab-note">
+              Every commit is public in the{' '}
+              <OutLink href={SITE.contact.github}>source repository on GitHub</OutLink>.
+            </p>
           </div>
         </section>
 
@@ -501,13 +509,6 @@ export default function AboutPage() {
               <SplitText as="h2" className="sc-heading" id="copyright-heading" stagger={48}>
                 What is ours, and what is not
               </SplitText>
-              <Reveal stagger delay={220}>
-                <p className="sc-body">
-                  Everything a reader sees on LunX was made for LunX, except the
-                  typefaces and the React library. Each line here is checked
-                  against the site as it is.
-                </p>
-              </Reveal>
             </div>
 
             <Reveal as="dl" className="ab-credits" stagger variant="left" delay={DUR.hover}>
@@ -579,11 +580,6 @@ export default function AboutPage() {
               <SplitText as="h2" className="sc-heading" id="sources-heading" stagger={48}>
                 The research behind the lessons
               </SplitText>
-              <Reveal as="p" className="sc-body" delay={220}>
-                When a lesson states a finding or a figure, its source is printed
-                under the answer. These are those sources, by the module that cites
-                them, with links to the original papers and reports.
-              </Reveal>
             </div>
 
             <Reveal className="ab-sources" stagger delay={DUR.hover}>
@@ -627,10 +623,6 @@ export default function AboutPage() {
               <SplitText as="h2" className="sc-heading" id="inspirations-heading" stagger={48}>
                 What we studied, and what we took
               </SplitText>
-              <Reveal as="p" className="sc-body" delay={220}>
-                Before changing the design we wrote down why a few products work, and
-                kept only the principle from each. Nothing on LunX is copied from them.
-              </Reveal>
             </div>
 
             <Reveal as="dl" className="ab-credits" stagger variant="left" delay={DUR.hover}>

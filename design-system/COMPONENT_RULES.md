@@ -677,10 +677,24 @@ semantic colour* — always in that order, always the same sizes.
 ### Streak
 
 - `--ember`, which is `--clay`. A streak is the thing worth looking at.
-- The week strip is seven `--r-sm` squares, not circles: filled `--ember`
-  for a day met, `--paper-deep` for a day missed, hairline for a day not yet
-  reached. Today is marked by a 1.5px `--ink` border, not by a colour.
+- The calendar is a month (2026-11-05, `calendar/MonthCalendar.jsx`,
+  compact size): `--r-sm` squares, not circles — filled `--ember` for a
+  day met with its XP inside, `--surface` for a day missed, dashed for a
+  day not yet reached. Today is ringed by a 1.5px `--ink` border, not a
+  colour. Choosing a day shows its XP, lessons, time and place in a run
+  underneath; the history's kept days (`STREAK.HISTORY_DAYS`) can be paged
+  back through.
 - Milestone row: the target, the reward, and the distance. One line.
+
+### Month calendar
+
+`components/calendar/MonthCalendar.jsx` — the one calendar. Six weeks of
+real dates from the product's week start, hairlines between days (compact:
+separate `--r-sm` squares). A day with an entry is tinted `--evergreen-tint`
+with its summary in the square (the streak's are `--ember`); today has an
+ink ring; the chosen day an evergreen outline. Choosing a day is the parent's
+cue to show the detail. Arrows, Home/End and Page Up/Down move the choice.
+Under 640px the full size drops the summary for a dot.
 
 ### Daily quests
 

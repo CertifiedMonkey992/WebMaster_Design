@@ -5,8 +5,10 @@
    lessons cite and the work that shaped LunX's design. Kept as data so the
    page only lays it out.
 
-     WORK_LOG       milestones from the project's git history (Aug 31 →),
-                    grouped by the days the work happened
+     WORK_DAYS      one entry per day worked, from the git history (Aug 31 →):
+                    a few words for the calendar square, then the detail.
+                    `commits` is that day's count; 0 marks a day whose work
+                    left no commit (a deploy, a redesign set aside)
      CHECKLIST      the copyright checklist, one claim per row, each true
      TOOLS          everything the site is built, tested or hosted with
      RESEARCH       the sources lessons cite under their answers — the same
@@ -19,67 +21,175 @@
    build with a LunX server.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export const WORK_LOG = [
+export const WORK_DAYS = [
   {
-    date: '2026-08-31',
-    title: 'First build',
-    text: 'A React and Vite project with a landing page and the first outline of an AI course for grades 9–12.',
+    date: '2026-08-31', commits: 1, summary: 'First build',
+    title: 'The first build',
+    items: [
+      'Started LunX as a React and Vite project.',
+      'A landing page and the first outline of an AI course for grades 9–12.',
+    ],
   },
   {
-    date: '2026-09-02',
-    title: 'The course path and the lesson screen',
-    text: 'A module path to walk through and a lesson window that asks one question at a time. The same day we tried black and white, indigo and cyan, a glowing chip in the hero and a dark theme — and liked none of them.',
+    date: '2026-09-02', commits: 19, summary: 'Lessons and many looks',
+    title: 'The course path, the lesson screen — and a day of looks',
+    items: [
+      'A module path to walk through, and a lesson window that asks one question at a time.',
+      'Tried black and white, indigo and cyan, a navy theme and a black one.',
+      'Built a glowing chip for the hero, then a triangle canvas.',
+      'An S-shaped lesson path, tried and put back.',
+    ],
   },
   {
-    date: '2026-09-04',
-    end: '2026-09-05',
-    title: 'Progression',
-    text: 'XP, levels, gems, hearts, streaks, daily and weekly quests, badges and a working shop, all in one reducer with its own tests. The landing page was rebuilt around the real product instead of pictures of it.',
+    date: '2026-09-03', commits: 1, summary: 'Lesson cards',
+    title: 'Lessons as cards',
+    items: ['Replaced the neon circles on the course page with a list of lesson cards in the site’s accent color.'],
   },
   {
-    date: '2026-09-12',
+    date: '2026-09-04', commits: 4, summary: 'XP, hearts, streaks',
+    title: 'The progression system',
+    items: [
+      'XP, levels, gems, hearts, streaks and quests, in one reducer.',
+      'A redesigned dashboard for the course.',
+      'Moved the app to a light theme.',
+    ],
+  },
+  {
+    date: '2026-09-05', commits: 7, summary: 'Shop and rewards',
+    title: 'The shop, the rewards and a real landing page',
+    items: [
+      'A working shop and a daily login bonus.',
+      'Rebuilt the landing page around the real product instead of pictures of it.',
+      'A display typeface for headings, and quieter cards.',
+    ],
+  },
+  {
+    date: '2026-09-12', commits: 2, summary: 'Field guide redesign',
     title: 'LunX becomes a field guide',
-    text: 'We dropped the dark “AI look” for warm paper, an evergreen structure color, one terracotta accent, Fraunces and Manrope — and wrote the design system down (philosophy, tokens, components, motion, anti-patterns) before changing any more code.',
+    items: [
+      'Dropped the dark “AI look” for warm paper, evergreen, one terracotta accent, Fraunces and Manrope.',
+      'Wrote the design system down: philosophy, tokens, components, motion and anti-patterns.',
+      'Motion revision 2.',
+    ],
   },
   {
-    date: '2026-09-12',
-    end: '2026-09-15',
-    title: 'Motion, the About page and the compliance statement',
-    text: 'Timing tiers and a small set of named motions; the clothbound field guide on the front page; this page and the TSA compliance statement. Every page got its own address and passed the W3C validator.',
+    date: '2026-09-13', commits: 5, summary: 'About page',
+    title: 'The About page and three motion revisions',
+    items: [
+      'This page and the TSA compliance statement.',
+      'Rewrote the landing page’s copy.',
+      'Motion revisions 3, 4 and 5: timing tiers, the clothbound field guide and the Stage that schedules motion.',
+    ],
   },
   {
-    date: '2026-09-19',
-    end: '2026-09-20',
-    title: 'Review and repair',
-    text: 'A second team member reviewed the whole product and fixed what they found: lost progress, economy loopholes, accessibility, navigation and phone layouts. Tests got a fixed clock and run in two time zones, and GitHub Actions now builds and publishes the site. A reviewer account was added so judges can open everything.',
+    date: '2026-09-14', commits: 3, summary: 'W3C-valid',
+    title: 'Clean validation',
+    items: [
+      'Every page passes the W3C validator, and the build checks it.',
+      'The landing page’s live frames load only as you reach them.',
+    ],
   },
   {
-    date: '2026-09-25',
+    date: '2026-09-15', commits: 8, summary: 'Speed and footer',
+    title: 'Speed, and a new footer',
+    items: [
+      'Held back loading until a page has arrived.',
+      'Tried preloading each page’s code, and reverted it.',
+      'Rebuilt the footer; gave the field guide a flip-through.',
+    ],
+  },
+  {
+    date: '2026-09-17', commits: 4, summary: 'Spider cursor',
+    title: 'A spider cursor',
+    items: ['Two ink spiders that follow the pointer — later held back to become something a learner unlocks.'],
+  },
+  {
+    date: '2026-09-19', commits: 21, summary: 'Review and repair',
+    title: 'A full review, and the fixes',
+    items: [
+      'A second team member reviewed the product: fixed lost progress, economy loopholes, accessibility and navigation.',
+      'Made the site work on phones, with finger-sized targets.',
+      'Tests that run in two time zones; GitHub Actions now builds and publishes the site.',
+      'Tried a scrolling field guide on the home page, and put the old one back.',
+      'Switched rendered text to American English.',
+    ],
+  },
+  {
+    date: '2026-09-20', commits: 7, summary: 'Reviewer account',
+    title: 'Every reward reachable, and an account for judges',
+    items: [
+      'Every quest and badge can now be earned.',
+      'An error boundary, focus inside dialogs and deep links that land.',
+      'Profiles, and a reviewer account so judges can open everything.',
+    ],
+  },
+  {
+    date: '2026-09-25', commits: 4, summary: 'Course rebuilt',
     title: 'The course, rebuilt',
-    text: 'Three Parts — Understand AI, Use AI Well, Use AI Responsibly — seven modules and twenty-one lessons, with simulations that train real models in the browser.',
+    items: [
+      'Three Parts, seven modules and twenty-one lessons.',
+      'Simulations that train real models in the browser.',
+      'A title sequence for a first visit.',
+    ],
   },
   {
-    date: '2026-10-08',
-    end: '2026-10-09',
+    date: '2026-10-08', commits: 1, summary: 'Simpler',
     title: 'Simpler',
-    text: 'Accounts became required, with hashed passwords. A daily spin with published odds replaced the seven-day bonus, every lesson became Learn then Check, and a first-visit title sequence was cut.',
+    items: [
+      'Accounts became required, with hashed passwords.',
+      'A daily spin with published odds replaced the seven-day bonus.',
+      'Every lesson became Learn, then Check. New navigation icons.',
+    ],
   },
   {
-    date: '2026-10-12',
-    end: '2026-10-14',
+    date: '2026-10-09', commits: 1, summary: 'Intro cut',
+    title: 'The title sequence, cut',
+    items: ['Removed the first-visit title sequence: the course should start sooner.'],
+  },
+  {
+    date: '2026-10-12', commits: 2, summary: 'LunX server',
     title: 'The LunX server',
-    text: 'A small Node server with a built-in database: accounts that follow you between devices, weekly leagues, friends, challenges, reset emails and moderation. It runs on Oracle Cloud’s free tier.',
+    items: [
+      'A Node server with its own database: accounts across devices, leagues, friends, challenges, Practice, reset emails and moderation.',
+      'A one-command setup for Oracle Cloud’s free tier.',
+    ],
   },
   {
-    date: '2026-10-30',
-    end: '2026-11-04',
-    title: 'The home page, again',
-    text: 'A clearer home page, built around one way into the course, with the field guide back in the hero. A monochrome redesign was built and set aside in favor of the warm one. The share image and page descriptions were brought up to date with the course.',
+    date: '2026-10-13', commits: 1, summary: 'Site connected',
+    title: 'The site, connected',
+    items: ['Rebuilt the published site against the LunX server.'],
   },
   {
-    date: '2026-11-05',
-    title: 'References',
-    text: 'This section: the work log, the copyright checklist, the stack, the research and the inspirations, all on one page.',
+    date: '2026-10-14', commits: 0, summary: 'Server live',
+    title: 'The server goes live',
+    items: ['The LunX server started running on Oracle Cloud.'],
+  },
+  {
+    date: '2026-10-30', commits: 2, summary: 'New home page',
+    title: 'A new home page',
+    items: ['Rebuilt the home page around one way into the course, on a Duolingo-like structure.'],
+  },
+  {
+    date: '2026-11-03', commits: 0, summary: 'Monochrome tried',
+    title: 'A monochrome redesign, set aside',
+    items: ['Built a black-and-white redesign of the whole site, compared it, and kept the warm field guide.'],
+  },
+  {
+    date: '2026-11-04', commits: 7, summary: 'Hub home page',
+    title: 'The home page, settled',
+    items: [
+      'The landing page in a hub format, with the field guide back in the hero.',
+      'Brought the share image and page descriptions up to date with the course.',
+    ],
+  },
+  {
+    date: '2026-11-05', commits: 2, summary: 'References, calendars',
+    title: 'References and calendars',
+    items: [
+      'This page’s work log, copyright checklist, code stack, sources and inspirations.',
+      'The work log and the streak became month calendars.',
+      'Home links lead to the course, never back to the landing page.',
+    ],
   },
 ]
 

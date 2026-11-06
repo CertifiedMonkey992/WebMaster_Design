@@ -655,7 +655,6 @@ The sanctioned idle events:
 | **Flame** (live, lit) | embers rising from the tip |
 | **XP bolt** (level badge) | a double flicker |
 | **Streak Shield** | a glint crossing the face |
-| **Streak week** | a warm sheen runs across the ticked days, left to right |
 | **Milestone path** | a spark walks from today's streak to the next stone (Invitation) |
 | **Quest icons** | each quest's icon ticks once, one row after another |
 | **Course ticks** | a wave runs along the lessons already done and lands on the next one |
@@ -844,7 +843,7 @@ near the viewport.
 | Hero | assembles on load | the book floats and performs its repertoire; the scribble and the terms are inked again; tabs, needle and pose follow the pointer | the book drifts up slower than the page and turns a few degrees |
 | Lesson ticker | — | drifts; scroll velocity pushes it | — |
 | Course | eyebrow rule draws, words rise, frame stands up | **the frame tours the real course by itself**, and now and then the demo learner finishes the lesson it is holding on | — |
-| Streaks | frame slides in from its own side | embers rise from the flame, a sheen runs the week; the demo learner keeps a day, spends and refills a heart | — |
+| Streaks | frame slides in from its own side | embers rise from the flame; the demo learner keeps a day, spends and refills a heart | — |
 | Daily spin | — | the demo learner spins the wheel with the real odds, then moves to tomorrow | — |
 | Quests & shop | quest bars fill when seen | shop items float, price gems glint; the demo learner finishes lessons, completes a quest and is paid | — |
 | Closing | the tally counts, the clock sweeps | the clock ticks each second; the rules under the tally are drawn again in turn; the tally column floats on a slower parallax than the copy | — |
