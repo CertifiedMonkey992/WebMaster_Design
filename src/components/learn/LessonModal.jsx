@@ -59,6 +59,7 @@ import RollingNumber from '../../motion/RollingNumber'
 import { useFlightTarget, useLandedValue } from '../../motion/flight'
 import { burst, ring, shake } from '../../motion/burst'
 import { AnswerOtter, CompleteOtter } from '../otter/LessonOtters'
+import { OTTER_SHOWN } from '../otter/shown'
 
 /* When each reward tile has landed and its figure should start counting:
    the tile's CSS delay (470ms + i × --lag-finish) plus most of its rise. */
@@ -565,8 +566,8 @@ export default function LessonModal({ lessonId, onClose }) {
       <div className={overlayCls} {...dialogProps}>
         <div className="lm-complete">
           <CloseButton onClick={requestClose} className="lm-close--abs" />
-          <div className="lm-complete-hero">
-            <CompleteOtter perfect={perfect} replay={isReplay} />
+          <div className={`lm-complete-hero${OTTER_SHOWN ? ' lm-complete-hero--otter' : ''}`}>
+            {OTTER_SHOWN && <CompleteOtter perfect={perfect} replay={isReplay} />}
             <div className="lm-stamp" ref={stampRef} aria-hidden="true">
               <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -733,7 +734,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
       {stepPhase === 'correct' && (
         <div className="lm-action lm-action--correct" key="correct">
-          <AnswerOtter phase="correct" run={runRef.current - 1} />
+          {OTTER_SHOWN && <AnswerOtter phase="correct" run={runRef.current - 1} />}
           <div className="lm-feedback">
             <span className="lm-fb-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -753,7 +754,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
       {stepPhase === 'reveal' && (
         <div className="lm-action lm-action--reveal" key="reveal">
-          <AnswerOtter phase="reveal" />
+          {OTTER_SHOWN && <AnswerOtter phase="reveal" />}
           <div className="lm-feedback">
             <span className="lm-fb-icon lm-fb-icon--reveal">
               <Icon name="info" size={20} strokeWidth={2.4} />
@@ -776,7 +777,7 @@ export default function LessonModal({ lessonId, onClose }) {
 
       {stepPhase === 'wrong' && (
         <div className="lm-action lm-action--wrong" key="wrong">
-          <AnswerOtter phase="wrong" />
+          {OTTER_SHOWN && <AnswerOtter phase="wrong" />}
           <div className="lm-feedback">
             <span className="lm-fb-icon lm-fb-icon--wrong">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>

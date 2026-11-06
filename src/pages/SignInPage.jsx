@@ -346,7 +346,7 @@ function Shell({ children, after = null }) {
   return (
     <div className="au-page">
       <main className="au" id="main" tabIndex={-1}>
-        <PageLink page="landing" className="au-logo" aria-label="LunX home">
+        <PageLink page="learn" className="au-logo" aria-label="LunX course">
           <span className="au-logo-mark" aria-hidden="true">
             <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
               <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />
@@ -358,7 +358,6 @@ function Shell({ children, after = null }) {
         {after}
       </main>
       <footer className="au-foot">
-        <PageLink page="landing">Home</PageLink>
         <PageLink page="about">About</PageLink>
         <PageLink page="privacy">Privacy</PageLink>
         <PageLink page="terms">Terms</PageLink>

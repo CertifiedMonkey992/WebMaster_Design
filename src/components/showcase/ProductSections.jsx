@@ -44,6 +44,7 @@ import '../progression/icons.css'
 import '../wheel/wheel.css'
 import './showcase.css'
 import Otter from '../otter/Otter'
+import { OTTER_SHOWN } from '../otter/shown'
 
 /* The four live frames (ShowcaseFrames.jsx) are most of this page's code and
    DOM, and all of them sit below the fold. Their code is fetched once the
@@ -157,7 +158,7 @@ function Section({ id, heading, children, frame: Frame, flip = false, peek = fal
           <Reveal stagger delay={220}>{children}</Reveal>
         </div>
         <div className="sc-frame fr-frame" ref={setFrameNode} style={{ '--side': flip ? -1 : 1 }}>
-          {peek && <span className="fr-peek" aria-hidden="true"><Otter pose="peek" mood="mischievous" region={`${id}:otter`} /></span>}
+          {OTTER_SHOWN && peek && <span className="fr-peek" aria-hidden="true"><Otter pose="peek" mood="mischievous" region={`${id}:otter`} /></span>}
           {near && <Suspense fallback={null}><Frame /></Suspense>}
         </div>
       </div>

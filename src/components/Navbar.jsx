@@ -129,8 +129,8 @@ export default function Navbar({ links = LINKS, scrollLinks = false, pageLink })
       className={`navbar${scrolled ? ' scrolled' : ''}`}
       aria-label="Main navigation"
     >
-      {/* The wordmark goes home — or, on the home page, back to its top. */}
-      <PageLink page="landing" className="nav-logo" aria-label="LunX home">
+      {/* The wordmark opens the course; nothing leads back to the landing page. */}
+      <PageLink page="learn" className="nav-logo" aria-label="LunX course">
         <span className="nav-logo-mark" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />

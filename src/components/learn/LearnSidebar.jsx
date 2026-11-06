@@ -6,7 +6,7 @@
    The nav icons). Each still has ONE move that depicts the destination —
    played on hover, and held while active:
 
-     Home        the globe turns           Learn     the roof lifts
+     About       the book opens            Learn     the roof lifts
      Practice    the dumbbell is lifted    Quests    the chest hops
      Shop        the awning lifts          Profile   the head nods
      Friends     the friend leans in       Leagues   the shield is raised
@@ -24,7 +24,10 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { HomeIcon, AboutIcon, LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon, FriendsIcon, LeaguesIcon } from './NavIcons'
+/* There is no Home item (2026-11-05): nothing in the app leads back to the
+   landing page. The wordmark returns to the course map instead, and
+   HomeIcon stays in NavIcons.jsx, unused. */
+import { AboutIcon, LearnIcon, PracticeIcon, QuestIcon, ShopIcon, ProfileIcon, FriendsIcon, LeaguesIcon } from './NavIcons'
 import { CONNECTED } from '../../config/serverConfig'
 
 const NAV_GROUPS = [
@@ -32,7 +35,6 @@ const NAV_GROUPS = [
     id: 'primary',
     label: 'Learn',
     items: [
-      { id: 'home',     label: 'Home',     Icon: HomeIcon, action: 'home', tip: 'Back to the LunX front page' },
       { id: 'about',    label: 'About',    Icon: AboutIcon, action: 'about', tip: 'Our story and the TSA compliance statement' },
       { id: 'learn',    label: 'Learn',    Icon: LearnIcon },
       { id: 'practice', label: 'Practice', Icon: PracticeIcon, tip: 'Review built from your own answers — never costs a heart' },
@@ -111,8 +113,7 @@ export default function LearnSidebar({ active, onChange, onGoHome, onGoAbout, ba
           data-nav={item.id}
           className={`ls-nav-btn${isActive ? ' active' : ''}`}
           onClick={() => {
-            if (item.action === 'home') onGoHome()
-            else if (item.action === 'about') onGoAbout?.()
+            if (item.action === 'about') onGoAbout?.()
             else onChange(item.id)
           }}
           onPointerEnter={() => setHover(item.id)}
@@ -133,7 +134,7 @@ export default function LearnSidebar({ active, onChange, onGoHome, onGoAbout, ba
 
   return (
     <nav className="learn-sidebar" aria-label="Learning navigation">
-      <button className="ls-logo" onClick={onGoHome} aria-label="Return to LunX home">
+      <button className="ls-logo" onClick={onGoHome} aria-label="Back to the course map">
         <span className="ls-logo-mark" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />

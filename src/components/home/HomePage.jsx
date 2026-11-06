@@ -23,6 +23,7 @@ import HomeHero from './HomeHero'
 import { InsideHead, LessonMarquee, PartsBand, StartCard } from './HomeSections'
 import ProductSections from '../showcase/ProductSections'
 import { Napper } from '../otter/OtterScenes'
+import { OTTER_SHOWN } from '../otter/shown'
 import Footer from '../Footer'
 import StickyCta from '../StickyCta'
 import './home.css'
@@ -44,7 +45,7 @@ export default function HomePage() {
       </main>
       <div className="hs-foot" ref={foot}>
         <Footer />
-        <Napper scope={foot} />
+        {OTTER_SHOWN && <Napper scope={foot} />}
       </div>
       <StickyCta after=".home-hero-actions" until=".hs-start" />
     </div>

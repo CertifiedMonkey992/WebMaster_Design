@@ -898,7 +898,8 @@ kbd,
 }
 
 /* The completion screen: the otter celebrates, the stamp is pressed beside
-   its feet like a seal. */
+   its feet like a seal. With the otter off the site (otter/shown.js) the
+   stamp stands alone at its own size. */
 .lm-complete-hero {
   position: relative;
   margin-bottom: var(--sp-4);
@@ -909,7 +910,7 @@ kbd,
   width: 104px;
 }
 
-.lm-complete-hero .lm-stamp {
+.lm-complete-hero--otter .lm-stamp {
   position: absolute;
   right: -34px;
   bottom: 2px;
@@ -919,7 +920,7 @@ kbd,
   border-width: 2.5px;
 }
 
-.lm-complete-hero .lm-stamp svg { width: 28px; height: 28px; }
+.lm-complete-hero--otter .lm-stamp svg { width: 28px; height: 28px; }
 
 @media (max-width: 640px) {
   .lm-otter { display: none; }

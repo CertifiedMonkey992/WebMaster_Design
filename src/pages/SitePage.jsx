@@ -23,7 +23,7 @@ const NO_LINKS = []
 export default function SitePage({ eyebrow, title, lead, children, wide = false, headingId = 'page-heading' }) {
   return (
     <div className="app">
-      <Navbar links={NO_LINKS} pageLink={{ label: 'Home', page: 'landing' }} />
+      <Navbar links={NO_LINKS} />
       <main className={`sp${wide ? ' sp--wide' : ''}`} id="main" tabIndex={-1}>
         <header className="sp-head">
           {eyebrow && (

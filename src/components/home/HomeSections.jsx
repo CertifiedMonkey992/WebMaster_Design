@@ -24,6 +24,7 @@ import { Icon } from '../progression/Icons'
 import { getLessonIcon } from '../learn/LessonIcons'
 import { jumpTo } from './HomeHeader'
 import { CardHopper, Climber } from '../otter/OtterScenes'
+import { OTTER_SHOWN } from '../otter/shown'
 import { FIRST_MINUTES, LESSONS, PART_CARDS, TOTAL_LESSONS, inWords, inkOf } from './homeData'
 
 function Arrow() {
@@ -76,7 +77,7 @@ export function PartsBand() {
         </Reveal>
       </div>
       <Wave edge="bottom" />
-      <CardHopper scope={band} />
+      {OTTER_SHOWN && <CardHopper scope={band} />}
     </section>
   )
 }
@@ -170,7 +171,7 @@ export function StartCard() {
           )}
         </div>
       </Reveal>
-      <Climber scope={section} />
+      {OTTER_SHOWN && <Climber scope={section} />}
     </section>
   )
 }

@@ -19,6 +19,7 @@ import TextFx, { Rotator, Scramble, Squiggle } from '../../motion/TextFx'
 import { Icon } from '../progression/Icons'
 import FieldGuide from '../guide/FieldGuide'
 import { WordHopper } from '../otter/OtterScenes'
+import { OTTER_SHOWN } from '../otter/shown'
 import { TOTAL_LESSONS, TOTAL_SECTIONS, inWords } from './homeData'
 
 export default function HomeHero() {
@@ -65,7 +66,7 @@ export default function HomeHero() {
               </PageLink>
             )}
           </Reveal>
-          <WordHopper scope={copy} />
+          {OTTER_SHOWN && <WordHopper scope={copy} />}
         </div>
 
         <div className="hx-art">

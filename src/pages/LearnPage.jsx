@@ -62,7 +62,7 @@ function CourseGate(props) {
   )
 }
 
-function Course({ onGoHome, onGoAbout }) {
+function Course({ onGoAbout }) {
   const { vm } = useProgression()
   const { isJudge } = useAuth()
   const social = useSocial()
@@ -90,7 +90,7 @@ function Course({ onGoHome, onGoAbout }) {
       <LearnSidebar
         active={activeNav}
         onChange={navigate}
-        onGoHome={onGoHome}
+        onGoHome={() => navigate('learn')}
         onGoAbout={onGoAbout}
         badges={{
           quests: vm.quests.claimableCount,
@@ -100,7 +100,7 @@ function Course({ onGoHome, onGoAbout }) {
       />
 
       <header className="learn-topbar">
-        <button className="lt-brand" onClick={onGoHome} aria-label="Return to LunX home">
+        <button className="lt-brand" onClick={() => navigate('learn')} aria-label="Back to the course map">
           <span className="lt-brand-mark" aria-hidden="true">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
               <path className="nav-logo-l" d="M2 2h2.5v8H10v2H2V2Z" />

@@ -68,8 +68,8 @@ export const ROUTES = [
   {
     page: 'about',
     path: 'about/',
-    title: 'About LunX · The story, the course and the TSA brief',
-    description: `Why LunX looks like a printed field guide, what its ${TOTAL_LESSONS}-lesson AI course covers, how a lesson works, and how it answers the 2026–27 TSA Webmaster theme.`,
+    title: 'About LunX · The story, the work log and our sources',
+    description: `Why LunX looks like a printed field guide, what its ${TOTAL_LESSONS}-lesson AI course covers and how it answers the 2026–27 TSA Webmaster theme — plus our work log, copyright checklist, code stack, research sources and inspirations.`,
     sitemap: { priority: '0.8', changefreq: 'monthly' },
   },
   {

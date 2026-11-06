@@ -9,8 +9,16 @@
                    and theme, word for word
      story         why a field guide, and the three principles behind it
      impact        the course counted, split into the brief's three strands
-     credits       everything the site uses that it did not write
      method        one lesson, start to finish, with the real numbers
+
+   and then the references (data/references.js), in the order a TSA
+   reviewer looks for them:
+
+     worklog       what we built, and when, from the git history
+     copyright     the copyright checklist, one claim per row
+     credits       the code stack in prose, then every tool with its licence
+     sources       the research the lessons cite, by module, and standards
+     inspirations  what we studied, and what we took from each
      closing       the shared closing CTA
 
    Every figure is read from course data or config — nothing is typed in —
@@ -38,6 +46,8 @@ import { DUR } from '../motion/timing'
 import { useRef } from 'react'
 import { useAboutPreviews } from '../components/learn/previews'
 import { CONNECTED } from '../config/serverConfig'
+import { SITE } from '../site'
+import { WORK_LOG, CHECKLIST, TOOLS, RESEARCH, STANDARDS, INSPIRATIONS } from '../data/references'
 
 import '../components/showcase/showcase.css'
 import './AboutPage.css'
@@ -65,16 +75,40 @@ const strand = (id) => STRANDS.find((s) => s.id === id)
 /* A list in prose: "a, b and c". */
 const inProse = (items) => (items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`)
 
-/* ── Credits ─────────────────────────────────────────────────────────────── */
+/* ── References ──────────────────────────────────────────────────────────── */
 
-const CREDITS = [
-  { name: 'React 18',       role: 'Interface components',              licence: 'MIT License' },
-  { name: 'Vite 5',         role: 'Development server and build',      licence: 'MIT License' },
-  { name: 'Fraunces',       role: 'Headings — the product’s voice',    licence: 'SIL Open Font License 1.1, via Google Fonts' },
-  { name: 'Manrope',        role: 'Interface text',                    licence: 'SIL Open Font License 1.1, via Google Fonts' },
-  { name: 'JetBrains Mono', role: 'The stylesheet’s monospace face',   licence: 'SIL Open Font License 1.1, via Google Fonts' },
-  { name: 'Icons, illustrations and the field guide', role: 'Inline SVG written for LunX', licence: 'Original work' },
-]
+/* A tool that only a connected build uses is not listed on a local one. */
+const BUILT_WITH = TOOLS.filter((t) => CONNECTED || !t.connected)
+
+/* The research, by the module whose lessons cite it. */
+const SOURCES_BY_MODULE = SECTIONS
+  .map((section, i) => ({ section, number: i + 1, items: RESEARCH.filter((r) => r.module === i + 1) }))
+  .filter((m) => m.items.length > 0)
+
+/* '2026-09-04' to '2026-09-05' → 'Sep 4–5'; across months, 'Oct 30 – Nov 4'. */
+const MONTH = (iso) => new Date(`${iso}T00:00:00`).toLocaleDateString('en-US', { month: 'short' })
+const DAY = (iso) => Number(iso.slice(8, 10))
+const dateRange = ({ date, end }) => {
+  if (!end) return `${MONTH(date)} ${DAY(date)}`
+  if (MONTH(date) === MONTH(end)) return `${MONTH(date)} ${DAY(date)}–${DAY(end)}`
+  return `${MONTH(date)} ${DAY(date)} – ${MONTH(end)} ${DAY(end)}`
+}
+
+/* An external link: opens in a new tab and says so to a screen reader. */
+function OutLink({ href, children }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer noopener">
+      {children}<span className="pg-sr-only"> (opens in a new tab)</span>
+    </a>
+  )
+}
+
+const Check = () => (
+  <svg className="ab-check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20 6 9 17 4 12" />
+  </svg>
+)
 
 const TRADEMARKS = ['ChatGPT', 'GPT-4', 'Claude', 'Gemini', 'Microsoft Copilot', 'GitHub Copilot', 'Perplexity', 'Character.AI', 'Stable Diffusion']
 
@@ -99,8 +133,9 @@ const scrollToId = (e, id) => {
 const NAV_LINKS = [
   { id: 'compliance', label: 'Compliance' },
   { id: 'story',      label: 'Story' },
-  { id: 'impact',     label: 'The course' },
   { id: 'method',     label: 'How it works' },
+  { id: 'worklog',    label: 'Work log' },
+  { id: 'sources',    label: 'Sources' },
 ]
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -112,18 +147,14 @@ export default function AboutPage() {
 
   return (
     <div className="app">
-      <Navbar
-        links={NAV_LINKS}
-        scrollLinks
-        pageLink={{ label: 'Home', page: 'landing' }}
-      />
+      <Navbar links={NAV_LINKS} scrollLinks />
 
       <main className="about" id="main" tabIndex={-1}>
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <section className="ab-hero" aria-labelledby="about-heading">
           <div className="ab-hero-copy">
             <Reveal as="p" variant="left" immediate delay={60} className="ab-hero-eyebrow">
-              About LunX · the story, the course and the compliance statement
+              About LunX · the story, the course, the work log and our sources
             </Reveal>
 
             <SplitText as="h1" className="ab-hero-heading" id="about-heading" immediate delay={100} stagger={34}>
@@ -134,7 +165,8 @@ export default function AboutPage() {
               LunX is our chapter’s entry for the 2026–27 TSA Webmaster theme: an
               AI learning portal for high school students in grades 9–12. This page
               covers the thinking behind it, what the {TOTAL_LESSONS}-lesson course
-              contains, how a lesson works, and the TSA prompt it was built to answer.
+              contains, how a lesson works and the TSA prompt it was built to answer —
+              then how we built it, when, with what, and from which sources.
             </Reveal>
 
             <Reveal className="ab-hero-actions" variant="fade" immediate delay={520}>
@@ -142,8 +174,8 @@ export default function AboutPage() {
                 Read the compliance statement
                 <ArrowDown />
               </a>
-              <a href="#method" className="btn btn-outline" onClick={(e) => scrollToId(e, 'method')} data-magnetic="6">
-                How a lesson works
+              <a href="#worklog" className="btn btn-outline" onClick={(e) => scrollToId(e, 'worklog')} data-magnetic="6">
+                Work log and sources
               </a>
             </Reveal>
           </div>
@@ -368,44 +400,11 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── Credits ──────────────────────────────────────────────────────── */}
-        <section className="sc-section ab-section" id="credits" aria-labelledby="credits-heading">
-          <div className="ab-wrap ab-split ab-split--flip">
-            <div>
-              <Eyebrow index={4}>Credits</Eyebrow>
-              <SplitText as="h2" className="sc-heading" id="credits-heading" stagger={48}>
-                Built with, and credited
-              </SplitText>
-              <Reveal stagger delay={220}>
-                <p className="sc-body">
-                  LunX loads no template, theme, UI kit, icon library or stock image.
-                  What it does use is listed here with its license.
-                </p>
-                <p className="ab-note">
-                  Product names mentioned in the course, mostly in the {strand('II').sections[0].title} module’s tool guide —{' '}
-                  {inProse(TRADEMARKS)} — are trademarks of their owners. LunX is a
-                  student project and is not affiliated with or endorsed by any of them.
-                </p>
-              </Reveal>
-            </div>
-
-            <Reveal as="dl" className="ab-credits" stagger variant="left" delay={DUR.hover}>
-              {CREDITS.map((c) => (
-                <div className="ab-credit" key={c.name}>
-                  <dt className="ab-credit-name">{c.name}</dt>
-                  <dd className="ab-credit-role">{c.role}</dd>
-                  <dd className="ab-credit-licence">{c.licence}</dd>
-                </div>
-              ))}
-            </Reveal>
-          </div>
-        </section>
-
         {/* ── How it works ─────────────────────────────────────────────────── */}
         <section className="sc-section ab-section" id="method" aria-labelledby="method-heading" ref={methodRef}>
           <div className="ab-wrap ab-split">
             <div>
-              <Eyebrow index={5}>How it works</Eyebrow>
+              <Eyebrow index={4}>How it works</Eyebrow>
               <SplitText as="h2" className="sc-heading" id="method-heading" stagger={48}>
                 One lesson, start to finish
               </SplitText>
@@ -455,6 +454,192 @@ export default function AboutPage() {
                 </div>
                 <span className="ab-step-yield tnum">+{XP.LESSON} XP</span>
               </li>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Work log ─────────────────────────────────────────────────────── */}
+        <section className="sc-section ab-section" id="worklog" aria-labelledby="worklog-heading">
+          <div className="ab-wrap ab-split">
+            <div>
+              <Eyebrow index={5}>Work log</Eyebrow>
+              <SplitText as="h2" className="sc-heading" id="worklog-heading" stagger={48}>
+                How LunX was built, and when
+              </SplitText>
+              <Reveal stagger delay={220}>
+                <p className="sc-body">
+                  Two of us built LunX between <Mark tone="moss">August 31 and early November 2026</Mark>.
+                  Every change is a commit in the project’s history, and these are its
+                  milestones — including the ideas we tried and dropped.
+                </p>
+                <p className="ab-note">
+                  The full history is public in the{' '}
+                  <OutLink href={SITE.contact.github}>source repository on GitHub</OutLink>.
+                </p>
+              </Reveal>
+            </div>
+
+            <Reveal as="ol" className="ab-log" stagger delay={DUR.hover}>
+              {WORK_LOG.map((entry) => (
+                <li className="ab-log-entry" key={entry.date + entry.title}>
+                  <time className="ab-log-date tnum" dateTime={entry.date}>{dateRange(entry)}</time>
+                  <div>
+                    <h3 className="ab-log-title">{entry.title}</h3>
+                    <p className="ab-log-text">{entry.text}</p>
+                  </div>
+                </li>
+              ))}
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Copyright checklist ──────────────────────────────────────────── */}
+        <section className="sc-section ab-section" id="copyright" aria-labelledby="copyright-heading">
+          <div className="ab-wrap ab-split ab-split--flip">
+            <div>
+              <Eyebrow index={6}>Copyright checklist</Eyebrow>
+              <SplitText as="h2" className="sc-heading" id="copyright-heading" stagger={48}>
+                What is ours, and what is not
+              </SplitText>
+              <Reveal stagger delay={220}>
+                <p className="sc-body">
+                  Everything a reader sees on LunX was made for LunX, except the
+                  typefaces and the React library. Each line here is checked
+                  against the site as it is.
+                </p>
+              </Reveal>
+            </div>
+
+            <Reveal as="dl" className="ab-credits" stagger variant="left" delay={DUR.hover}>
+              {CHECKLIST.map((row) => (
+                <div className="ab-credit ab-check" key={row.item}>
+                  <dt className="ab-credit-name"><Check />{row.item}</dt>
+                  <dd className="ab-credit-role">{row.status}</dd>
+                </div>
+              ))}
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Code stack ───────────────────────────────────────────────────── */}
+        <section className="sc-section ab-section" id="credits" aria-labelledby="credits-heading">
+          <div className="ab-wrap ab-split">
+            <div>
+              <Eyebrow index={7}>Code stack</Eyebrow>
+              <SplitText as="h2" className="sc-heading" id="credits-heading" stagger={48}>
+                Built with, and credited
+              </SplitText>
+              <Reveal stagger delay={220}>
+                <p className="sc-body">
+                  LunX is a React 18 application built with Vite 5. There is no CSS
+                  framework: every style is plain CSS written against our own token
+                  layer of colors, type sizes, spacing, radii and motion timings,
+                  documented in the project’s design system. Every illustration and
+                  icon is inline SVG we drew, and the simulations — a classifier and
+                  a small neural network among them — are trained in the reader’s
+                  browser by code we wrote, on data the page generates.
+                </p>
+                <p className="sc-body">
+                  {CONNECTED ? (
+                    <>Accounts, leagues, friends and challenges run on the LunX server:
+                    a Node.js program with no packages, using Node’s own SQLite database
+                    and scrypt password hashing. It grades answers and counts league XP
+                    itself, so the browser never reports its own score.</>
+                  ) : (
+                    <>This build has no server. Accounts are kept in the reader’s own
+                    browser, with passwords hashed using PBKDF2, and nothing is sent
+                    anywhere.</>
+                  )}
+                </p>
+                <p className="ab-note">
+                  Product names mentioned in the course, mostly in the {strand('II').sections[0].title} module’s tool guide —{' '}
+                  {inProse(TRADEMARKS)} — are trademarks of their owners. LunX is a
+                  student project and is not affiliated with or endorsed by any of them.
+                </p>
+              </Reveal>
+            </div>
+
+            <Reveal as="dl" className="ab-credits" stagger variant="right" delay={DUR.hover}>
+              {BUILT_WITH.map((t) => (
+                <div className="ab-credit" key={t.name}>
+                  <dt className="ab-credit-name">{t.name}</dt>
+                  <dd className="ab-credit-role">{t.role}</dd>
+                  <dd className="ab-credit-licence">{t.licence}</dd>
+                </div>
+              ))}
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Sources ──────────────────────────────────────────────────────── */}
+        <section className="sc-section ab-section" id="sources" aria-labelledby="sources-heading">
+          <div className="ab-wrap">
+            <Eyebrow index={8}>Sources</Eyebrow>
+            <div className="ab-impact-head">
+              <SplitText as="h2" className="sc-heading" id="sources-heading" stagger={48}>
+                The research behind the lessons
+              </SplitText>
+              <Reveal as="p" className="sc-body" delay={220}>
+                When a lesson states a finding or a figure, its source is printed
+                under the answer. These are those sources, by the module that cites
+                them, with links to the original papers and reports.
+              </Reveal>
+            </div>
+
+            <Reveal className="ab-sources" stagger delay={DUR.hover}>
+              {SOURCES_BY_MODULE.map(({ section, number, items }) => (
+                <div className="ab-source-group" key={section.id}>
+                  <h3 className="ab-source-module">
+                    <span className="ab-source-num tnum" style={{ '--chapter': `var(${CHAPTER_INK[number - 1]})` }}>{pad(number)}</span>
+                    {section.title}
+                  </h3>
+                  <ul className="ab-source-list">
+                    {items.map((r) => (
+                      <li className="ab-source" key={r.url}>
+                        <span className="ab-source-cite">{r.cite}.</span>{' '}
+                        <OutLink href={r.url}>{r.title}</OutLink>.{' '}
+                        <span className="ab-source-where">{r.where}.</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <div className="ab-source-group">
+                <h3 className="ab-source-module">Standards and the brief</h3>
+                <ul className="ab-source-list">
+                  {STANDARDS.map((r) => (
+                    <li className="ab-source" key={r.url}>
+                      <span className="ab-source-cite">{r.cite}.</span>{' '}
+                      <OutLink href={r.url}>{r.title}</OutLink>.
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Inspirations ─────────────────────────────────────────────────── */}
+        <section className="sc-section ab-section" id="inspirations" aria-labelledby="inspirations-heading">
+          <div className="ab-wrap ab-split ab-split--flip">
+            <div>
+              <Eyebrow index={9}>Inspirations</Eyebrow>
+              <SplitText as="h2" className="sc-heading" id="inspirations-heading" stagger={48}>
+                What we studied, and what we took
+              </SplitText>
+              <Reveal as="p" className="sc-body" delay={220}>
+                Before changing the design we wrote down why a few products work, and
+                kept only the principle from each. Nothing on LunX is copied from them.
+              </Reveal>
+            </div>
+
+            <Reveal as="dl" className="ab-credits" stagger variant="left" delay={DUR.hover}>
+              {INSPIRATIONS.map((i) => (
+                <div className="ab-credit" key={i.name}>
+                  <dt className="ab-credit-name">{i.url ? <OutLink href={i.url}>{i.name}</OutLink> : i.name}</dt>
+                  <dd className="ab-credit-role">{i.took}</dd>
+                </div>
+              ))}
             </Reveal>
           </div>
         </section>

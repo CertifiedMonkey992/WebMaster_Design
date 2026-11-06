@@ -26,7 +26,7 @@ export default function NotFoundPage() {
             <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
           </svg>
         </PageLink>
-        <PageLink page="landing" className="btn btn-outline btn-lg">Back to the home page</PageLink>
+        <PageLink page="about" className="btn btn-outline btn-lg">About LunX</PageLink>
       </div>
 
       <h2 className="sp-h2">Contents</h2>

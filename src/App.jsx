@@ -99,10 +99,14 @@ function Site() {
      the html element scrolls smoothly, and the new page must start at its
      top, not travel. */
   const go = useCallback((asked, { push = true, replace = false, section = null } = {}) => {
+    /* Nothing leads back to the landing page (2026-11-05): it is the front
+       door, seen on arrival only. A link, a logo or Back that asks for it
+       from anywhere else opens the course — or, signed out, the sign-in page. */
+    const wanted = asked === 'landing' && pageRef.current !== 'landing' ? 'learn' : asked
     /* The account book, not only the last render: a sign-in that has just
        finished has written its session, but this component has not
        re-rendered with it yet. */
-    const page = gate(asked, signedInRef.current || Boolean(currentAccount()))
+    const page = gate(wanted, signedInRef.current || Boolean(currentAccount()))
     /* Turned away from the course: the address must say where the reader
        actually is, not where they asked to go. */
     if (page !== asked && !push) replace = true
@@ -223,10 +227,7 @@ function Site() {
        code loads with the course rather than with the home page. */
     const LearnPage = LAZY.learn
     page = (
-      <LearnPage
-        onGoHome={() => go('landing')}
-        onGoAbout={() => go('about')}
-      />
+      <LearnPage onGoAbout={() => go('about')} />
     )
   } else {
     const Page = LAZY[currentPage] ?? LAZY.notfound
